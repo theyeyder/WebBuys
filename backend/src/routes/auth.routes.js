@@ -1,8 +1,5 @@
 import { Router } from 'express';
-import { login, perfil } from '../controllers/auth.controller.js';
-import { proteger } from '../middlewares/auth.middleware.js';
-
+import { login } from '../controllers/auth.controller.js';
 const router = Router();
 router.post('/login', login);
-router.get('/perfil', proteger, perfil);
 export default router;
