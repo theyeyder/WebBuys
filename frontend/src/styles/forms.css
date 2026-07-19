@@ -1,0 +1,19 @@
+.modal-box {
+    background: rgba(255, 255, 255, .84);
+    backdrop-filter: blur(24px);
+    padding: 24px;
+    border-radius: 26px;
+    box-shadow: 0 24px 70px rgba(17, 32, 51, .13)
+}
+
+.table-actions {
+    display: flex;
+    gap: 8px
+}
+
+button.danger {
+    background: #ef4444;
+    color: white;
+    border-radius: 12px;
+    padding: 9px 13px
+}
