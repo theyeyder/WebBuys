@@ -23,7 +23,7 @@ export default function Sidebar() {
         <div className="brand-mark">W</div>
         <div>
           <strong>WebBuys</strong>
-          <span>Lácteos NAPOLESS</span>
+          <span>Lácteos Del Tolima</span>
         </div>
       </div>
       <nav className="side-nav">

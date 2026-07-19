@@ -70,7 +70,7 @@ export default function Login() {
         animate={{ opacity: 1, y: 0 }}
       >
         <span className="login-tag">
-          <center>ACCESO WEBBUYS</center>
+          <center>ACCESO A WEBBUYS</center>
         </span>
 
         <center>
