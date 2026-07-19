@@ -24,7 +24,6 @@ export default function App() {
       <AuthProvider>
 
         <Routes>
-
           <Route
             path="/login"
             element={<Login />}
