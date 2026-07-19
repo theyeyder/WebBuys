@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const configuracionSchema = new mongoose.Schema({
-  nombreEmpresa: { type: String, default: 'LÁCTEOS DEL TOLIMA' },
+  nombreEmpresa: { type: String, default: 'LÁCTEOS DEL NAPOLESS' },
   nit: { type: String, default: '' },
   direccion: { type: String, default: '' },
   telefono: { type: String, default: '' },
