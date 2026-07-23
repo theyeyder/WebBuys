@@ -113,15 +113,15 @@
 }
 
 .usuario-modal-save-button {
-  background: #2563eb;
+  background: #e8eaee;
 }
 
 .usuario-modal-reset-button {
-  background: #f59e0b;
+  background: #f4f4f5;
 }
 
 .usuario-modal-block-button {
-  background: #dc2626;
+  background: #f9f8f8;
 }
 
 .usuario-modal-unblock-button {
@@ -130,7 +130,7 @@
 
 .usuario-modal-cancel-button,
 .usuario-modal-close-button {
-  background: #475467;
+  background: #f2f2f2;
 }
 
 @media (max-width: 640px) {
