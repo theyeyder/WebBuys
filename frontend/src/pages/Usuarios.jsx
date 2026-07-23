@@ -4,6 +4,13 @@ import AppLayout from "../layouts/AppLayout.jsx";
 import SpatialCard from "../components/cards/SpatialCard.jsx";
 import UsuarioModal from "../components/UsuarioModal.jsx";
 
+import editarIcon from "../assets/icons/editar.png";
+import resetearIcon from "../assets/icons/resetear.png";
+import bloquearIcon from "../assets/icons/bloquear.png";
+import desbloquearIcon from "../assets/icons/desbloquear.png";
+import nuevoUsuarioIcon from "../assets/icons/nuevo-usuario.png";
+import "../styles/usuarios.css";
+
 import {
   listarUsuarios,
   crearUsuario,
@@ -110,7 +117,7 @@ export default function Usuarios() {
 
   async function resetear(usuario) {
     const confirmar = window.confirm(
-      `La contraseña de ${usuario.usuario} quedará en 123. ¿Deseas continuar?`
+      `La contraseña de ${usuario.usuario} quedará en 123456. ¿Deseas continuar?`
     );
 
     if (!confirmar) return;
@@ -122,7 +129,7 @@ export default function Usuarios() {
       await resetearPassword(usuario._id);
 
       setMensaje(
-        `La contraseña de ${usuario.usuario} fue restablecida a 123.`
+        `La contraseña de ${usuario.usuario} fue restablecida a 123456.`
       );
     } catch (err) {
       setError(
@@ -181,7 +188,12 @@ export default function Usuarios() {
             type="button"
             onClick={abrirNuevoUsuario}
           >
-            + Nuevo usuario
+            <img
+              src={nuevoUsuarioIcon}
+              alt="Nuevo usuario"
+              className="btn-icon"
+            />
+            <span>Nuevo usuario</span>
           </button>
         </div>
 
@@ -242,41 +254,72 @@ export default function Usuarios() {
                         </span>
                       </td>
 
+                      
                       <td>
                         <div className="table-actions">
                           <button
-                            className="icon-btn"
+                            className="icon-btn icon-btn-edit"
                             type="button"
                             title="Editar usuario"
-                            onClick={() =>
-                              abrirEditarUsuario(usuario)
-                            }
+                            data-tooltip="Editar usuario"
+                            aria-label={`Editar usuario ${usuario.usuario}`}
+                            onClick={() => abrirEditarUsuario(usuario)}
                           >
-                            {/* ICONO EDITAR */}
+                            <img
+                              src={editarIcon}
+                              alt=""
+                              className="table-icon"
+                            />
                           </button>
 
                           <button
-                            className="icon-btn"
+                            className="icon-btn icon-btn-reset"
                             type="button"
                             title="Resetear contraseña"
+                            data-tooltip="Resetear contraseña"
+                            aria-label={`Resetear contraseña de ${usuario.usuario}`}
                             onClick={() => resetear(usuario)}
                           >
-                            {/* ICONO RESETEAR */}
+                            <img
+                              src={resetearIcon}
+                              alt=""
+                              className="table-icon"
+                            />
                           </button>
 
                           <button
-                            className="icon-btn"
+                            className={
+                              usuario.estado === "Activo"
+                                ? "icon-btn icon-btn-block"
+                                : "icon-btn icon-btn-unblock"
+                            }
                             type="button"
                             title={
                               usuario.estado === "Activo"
                                 ? "Bloquear usuario"
                                 : "Desbloquear usuario"
                             }
-                            onClick={() =>
-                              cambiarEstado(usuario)
+                            data-tooltip={
+                              usuario.estado === "Activo"
+                                ? "Bloquear usuario"
+                                : "Desbloquear usuario"
                             }
+                            aria-label={
+                              usuario.estado === "Activo"
+                                ? `Bloquear usuario ${usuario.usuario}`
+                                : `Desbloquear usuario ${usuario.usuario}`
+                            }
+                            onClick={() => cambiarEstado(usuario)}
                           >
-                            {/* ICONO BLOQUEAR / DESBLOQUEAR */}
+                            <img
+                              src={
+                                usuario.estado === "Activo"
+                                  ? bloquearIcon
+                                  : desbloquearIcon
+                              }
+                              alt=""
+                              className="table-icon"
+                            />
                           </button>
                         </div>
                       </td>
