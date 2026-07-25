@@ -337,6 +337,8 @@ export default function Usuarios() {
         usuarioEditar={usuarioEditar}
         onClose={cerrarModal}
         onGuardar={guardarUsuario}
+        onResetear={resetear}
+        onCambiarEstado={cambiarEstado}
       />
     </AppLayout>
   );

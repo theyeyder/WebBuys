@@ -473,10 +473,10 @@
   left: 50%;
   transform: translateX(-50%) translateY(8px);
 
-  padding: 7px 12px;
-  border-radius: 8px;
+  padding: 5px 14px;
+  border-radius: 10px;
 
-  background: #0ad7c6;
+  background: #20afb2;
   color: #ffffff;
 
   font-size: 12px;
