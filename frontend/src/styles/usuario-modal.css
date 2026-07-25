@@ -25,7 +25,7 @@
   gap: 20px;
   padding: 24px 28px;
   color: #ffffff;
-  background: linear-gradient(135deg, #173f9f, #1f5eff);
+  background: linear-gradient(135deg, #27cf3e, #5fe0cc);
 }
 
 .usuario-modal-header h2 {
@@ -130,7 +130,7 @@
 
 .usuario-modal-cancel-button,
 .usuario-modal-close-button {
-  background: #f2f2f2;
+  background: #ffffff;
 }
 
 @media (max-width: 640px) {
