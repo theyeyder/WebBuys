@@ -3,12 +3,17 @@ import { useEffect, useState } from "react";
 import AppLayout from "../layouts/AppLayout.jsx";
 import SpatialCard from "../components/cards/SpatialCard.jsx";
 import UsuarioModal from "../components/UsuarioModal.jsx";
+import CambiarPasswordModal from "../components/CambiarPasswordModal.jsx";
+
 
 import editarIcon from "../assets/icons/editar.png";
 import resetearIcon from "../assets/icons/resetear.png";
 import bloquearIcon from "../assets/icons/bloquear.png";
 import desbloquearIcon from "../assets/icons/desbloquear.png";
 import nuevoUsuarioIcon from "../assets/icons/nuevo-usuario.png";
+import cambiarPasswordIcon from "../assets/icons/cambiar-password.png";
+
+
 import "../styles/usuarios.css";
 
 import {
@@ -16,13 +21,21 @@ import {
   crearUsuario,
   actualizarUsuario,
   resetearPassword,
+  cambiarPassword,
   cambiarEstadoUsuario,
 } from "../services/usuario.service.js";
 
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
+
   const [modalAbierto, setModalAbierto] = useState(false);
   const [usuarioEditar, setUsuarioEditar] = useState(null);
+
+  const [modalPasswordAbierto, setModalPasswordAbierto] =
+    useState(false);
+
+  const [usuarioPassword, setUsuarioPassword] = useState(null);
+
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
@@ -67,6 +80,18 @@ export default function Usuarios() {
     setUsuarioEditar(null);
   }
 
+  function abrirCambiarPassword(usuario) {
+    setUsuarioPassword(usuario);
+    setModalPasswordAbierto(true);
+    setMensaje("");
+    setError("");
+  }
+
+  function cerrarCambiarPassword() {
+    setModalPasswordAbierto(false);
+    setUsuarioPassword(null);
+  }
+
   async function guardarUsuario(form) {
     try {
       setError("");
@@ -85,6 +110,13 @@ export default function Usuarios() {
       if (!usuarioEditar) {
         if (!form.password) {
           setError("La contraseña es obligatoria.");
+          return;
+        }
+
+        if (form.password.length < 6) {
+          setError(
+            "La contraseña debe tener mínimo 6 caracteres."
+          );
           return;
         }
 
@@ -111,6 +143,50 @@ export default function Usuarios() {
       setError(
         err.response?.data?.mensaje ||
           "No fue posible guardar el usuario."
+      );
+    }
+  }
+
+  async function guardarNuevaPassword(form) {
+    try {
+      setError("");
+      setMensaje("");
+
+      if (!usuarioPassword?._id) {
+        setError("No se seleccionó un usuario.");
+        return;
+      }
+
+      if (!form.password || !form.repetirPassword) {
+        setError(
+          "Debes ingresar y repetir la nueva contraseña."
+        );
+        return;
+      }
+
+      if (form.password.length < 6) {
+        setError(
+          "La contraseña debe tener mínimo 6 caracteres."
+        );
+        return;
+      }
+
+      if (form.password !== form.repetirPassword) {
+        setError("Las contraseñas no coinciden.");
+        return;
+      }
+
+      await cambiarPassword(usuarioPassword._id, form);
+
+      setMensaje(
+        `La contraseña de ${usuarioPassword.usuario} fue actualizada correctamente.`
+      );
+
+      cerrarCambiarPassword();
+    } catch (err) {
+      setError(
+        err.response?.data?.mensaje ||
+          "No fue posible cambiar la contraseña."
       );
     }
   }
@@ -179,7 +255,8 @@ export default function Usuarios() {
             <h2>Usuarios</h2>
 
             <p>
-              Administra los usuarios y sus roles dentro de WebBuys.
+              Administra los usuarios y sus roles dentro de
+              WebBuys.
             </p>
           </div>
 
@@ -193,6 +270,7 @@ export default function Usuarios() {
               alt="Nuevo usuario"
               className="btn-icon"
             />
+
             <span>Nuevo usuario</span>
           </button>
         </div>
@@ -237,7 +315,8 @@ export default function Usuarios() {
                       <td>{usuario.usuario}</td>
 
                       <td>
-                        {usuario.nombres} {usuario.apellidos}
+                        {usuario.nombres}{" "}
+                        {usuario.apellidos}
                       </td>
 
                       <td>{usuario.rol}</td>
@@ -254,7 +333,6 @@ export default function Usuarios() {
                         </span>
                       </td>
 
-                      
                       <td>
                         <div className="table-actions">
                           <button
@@ -263,7 +341,9 @@ export default function Usuarios() {
                             title="Editar usuario"
                             data-tooltip="Editar usuario"
                             aria-label={`Editar usuario ${usuario.usuario}`}
-                            onClick={() => abrirEditarUsuario(usuario)}
+                            onClick={() =>
+                              abrirEditarUsuario(usuario)
+                            }
                           >
                             <img
                               src={editarIcon}
@@ -282,6 +362,21 @@ export default function Usuarios() {
                           >
                             <img
                               src={resetearIcon}
+                              alt=""
+                              className="table-icon"
+                            />
+                          </button>
+
+                          <button
+                            className="icon-btn icon-btn-password"
+                            type="button"
+                            title="Cambiar contraseña"
+                            data-tooltip="Cambiar contraseña"
+                            aria-label={`Cambiar contraseña de ${usuario.usuario}`}
+                            onClick={() => abrirCambiarPassword(usuario)}
+                          >
+                            <img
+                              src={cambiarPasswordIcon}
                               alt=""
                               className="table-icon"
                             />
@@ -309,7 +404,9 @@ export default function Usuarios() {
                                 ? `Bloquear usuario ${usuario.usuario}`
                                 : `Desbloquear usuario ${usuario.usuario}`
                             }
-                            onClick={() => cambiarEstado(usuario)}
+                            onClick={() =>
+                              cambiarEstado(usuario)
+                            }
                           >
                             <img
                               src={
@@ -339,6 +436,13 @@ export default function Usuarios() {
         onGuardar={guardarUsuario}
         onResetear={resetear}
         onCambiarEstado={cambiarEstado}
+      />
+
+      <CambiarPasswordModal
+        abierto={modalPasswordAbierto}
+        usuario={usuarioPassword}
+        onClose={cerrarCambiarPassword}
+        onGuardar={guardarNuevaPassword}
       />
     </AppLayout>
   );

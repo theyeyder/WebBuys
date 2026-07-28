@@ -6,6 +6,7 @@ import bloquearIcon from "../assets/icons/bloquear.png";
 import desbloquearIcon from "../assets/icons/desbloquear.png";
 import cerrarIcon from "../assets/icons/cerrar.png";
 
+
 import "../styles/usuario-modal.css";
 
 const FORM_INICIAL = {

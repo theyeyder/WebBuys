@@ -122,24 +122,73 @@ export const actualizarUsuario = async (req, res) => {
 /* ===========================
    RESETEAR PASSWORD
 =========================== */
-
 export const resetearPassword = async (req, res) => {
   try {
+    const usuario = await Usuario.findById(req.params.id);
 
-    const password = await bcrypt.hash("123", 10);
+    if (!usuario) {
+      return res.status(404).json({
+        mensaje: "Usuario no encontrado.",
+      });
+    }
 
-    await Usuario.findByIdAndUpdate(
-      req.params.id,
-      {
-        password,
-        debeCambiarPassword: true,
-      }
-    );
+    usuario.password = await bcrypt.hash("123456", 10);
+    usuario.debeCambiarPassword = true;
+
+    await usuario.save();
 
     res.json({
-      mensaje: "Contraseña restablecida correctamente.",
+      mensaje: "Contraseña restablecida a 123456.",
     });
+  } catch (error) {
+    res.status(500).json({
+      mensaje: error.message,
+    });
+  }
+};
 
+/* ===========================
+   CAMBIAR PASSWORD
+=========================== */
+
+export const cambiarPassword = async (req, res) => {
+  try {
+    const { password, repetirPassword } = req.body;
+
+    if (!password || !repetirPassword) {
+      return res.status(400).json({
+        mensaje: "Debes ingresar y repetir la nueva contraseña.",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        mensaje: "La contraseña debe tener mínimo 6 caracteres.",
+      });
+    }
+
+    if (password !== repetirPassword) {
+      return res.status(400).json({
+        mensaje: "Las contraseñas no coinciden.",
+      });
+    }
+
+    const usuario = await Usuario.findById(req.params.id);
+
+    if (!usuario) {
+      return res.status(404).json({
+        mensaje: "Usuario no encontrado.",
+      });
+    }
+
+    usuario.password = await bcrypt.hash(password, 10);
+    usuario.debeCambiarPassword = false;
+
+    await usuario.save();
+
+    res.json({
+      mensaje: "Contraseña actualizada correctamente.",
+    });
   } catch (error) {
     res.status(500).json({
       mensaje: error.message,
@@ -186,3 +235,4 @@ export const cambiarEstadoUsuario = async (req, res) => {
     });
   }
 };
+

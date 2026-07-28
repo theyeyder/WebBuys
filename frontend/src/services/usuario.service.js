@@ -18,14 +18,30 @@ export const actualizarUsuario = async (id, datos) => {
   return response.data;
 };
 
-/* Resetear contraseña a 123 */
+/* Resetear contraseña a 123456 */
 export const resetearPassword = async (id) => {
-  const response = await api.patch(`/usuarios/${id}/reset-password`);
+  const response = await api.patch(
+    `/usuarios/${id}/reset-password`
+  );
+
+  return response.data;
+};
+
+/* Cambiar contraseña */
+export const cambiarPassword = async (id, datos) => {
+  const response = await api.patch(
+    `/usuarios/${id}/cambiar-password`,
+    datos
+  );
+
   return response.data;
 };
 
 /* Bloquear o desbloquear usuario */
 export const cambiarEstadoUsuario = async (id) => {
-  const response = await api.patch(`/usuarios/${id}/estado`);
+  const response = await api.patch(
+    `/usuarios/${id}/estado`
+  );
+
   return response.data;
 };

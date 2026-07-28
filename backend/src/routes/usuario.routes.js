@@ -6,6 +6,7 @@ import {
   actualizarUsuario,
   resetearPassword,
   cambiarEstadoUsuario,
+  cambiarPassword,
 } from "../controllers/usuario.controller.js";
 
 import { proteger } from "../middlewares/auth.middleware.js";
@@ -26,8 +27,11 @@ router.post("/", crearUsuario);
 /* Actualizar usuario */
 router.put("/:id", actualizarUsuario);
 
-/* Resetear contraseña a 123 */
+/* Resetear contraseña a 123456 */
 router.patch("/:id/reset-password", resetearPassword);
+
+/* Cambiar contraseña */
+router.patch("/:id/cambiar-password", cambiarPassword);
 
 /* Bloquear o desbloquear usuario */
 router.patch("/:id/estado", cambiarEstadoUsuario);
