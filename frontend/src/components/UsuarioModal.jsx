@@ -12,6 +12,7 @@ import "../styles/usuario-modal.css";
 const FORM_INICIAL = {
   nombres: "",
   apellidos: "",
+  usuario: "",
   rol: "Empleado",
   password: "",
   repetirPassword: "",
@@ -34,6 +35,7 @@ export default function UsuarioModal({
       setForm({
         nombres: usuarioEditar.nombres || "",
         apellidos: usuarioEditar.apellidos || "",
+        usuario: usuarioEditar.usuario || "",
         rol: usuarioEditar.rol || "Empleado",
         password: "",
         repetirPassword: "",
@@ -107,6 +109,17 @@ export default function UsuarioModal({
                   name="apellidos"
                   value={form.apellidos}
                   onChange={cambiar}
+                  required
+                />
+              </label>
+
+              <label>
+                Usuario
+                <input
+                  name="usuario"
+                  value={form.usuario}
+                  onChange={cambiar}
+                  
                   required
                 />
               </label>

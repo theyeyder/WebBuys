@@ -25,9 +25,11 @@ export const listarUsuarios = async (req, res) => {
 
 export const crearUsuario = async (req, res) => {
   try {
+    // ✅ MODIFICADO: Ahora incluye 'usuario'
     const {
       nombres,
       apellidos,
+      usuario,
       rol,
       password,
       repetirPassword,
@@ -36,6 +38,7 @@ export const crearUsuario = async (req, res) => {
     if (
       !nombres ||
       !apellidos ||
+      !usuario ||
       !rol ||
       !password ||
       !repetirPassword
@@ -51,25 +54,26 @@ export const crearUsuario = async (req, res) => {
       });
     }
 
-    /* Generar usuario automáticamente */
+    // ✅ NUEVO: Validación y normalización de usuario
+    const usuarioNormalizado = usuario
+      .trim()
+      .toLowerCase();
 
-    let usuario = `${nombres.split(" ")[0]}.${apellidos.split(" ")[0]}`
-      .toLowerCase()
-      .replace(/\s+/g, "");
+    const existe = await Usuario.findOne({
+      usuario: usuarioNormalizado,
+    });
 
-    let contador = 1;
-
-    while (await Usuario.findOne({ usuario })) {
-      contador++;
-      usuario = `${nombres.split(" ")[0]}.${apellidos.split(" ")[0]}${contador}`
-        .toLowerCase()
-        .replace(/\s+/g, "");
+    if (existe) {
+      return res.status(400).json({
+        mensaje: "Ese nombre de usuario ya existe.",
+      });
     }
 
+    // ✅ MODIFICADO: Ahora usa 'usuarioNormalizado'
     const nuevoUsuario = await Usuario.create({
       nombres,
       apellidos,
-      usuario,
+      usuario: usuarioNormalizado,
       rol,
       password: await bcrypt.hash(password, 10),
       estado: "Activo",
@@ -102,15 +106,39 @@ export const crearUsuario = async (req, res) => {
 export const actualizarUsuario = async (req, res) => {
   try {
 
-    const usuario = await Usuario.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-      }
-    ).select("-password");
+    const {
+      nombres,
+      apellidos,
+      usuario,
+      rol,
+    } = req.body;
 
-    res.json(usuario);
+    const usuarioNormalizado = usuario.trim().toLowerCase();
+
+    const existe = await Usuario.findOne({
+      usuario: usuarioNormalizado,
+      _id: { $ne: req.params.id },
+    });
+
+    if (existe) {
+      return res.status(400).json({
+        mensaje: "Ese nombre de usuario ya existe.",
+      });
+    }
+
+    const actualizado =
+      await Usuario.findByIdAndUpdate(
+        req.params.id,
+        {
+          nombres,
+          apellidos,
+          usuario: usuarioNormalizado,
+          rol,
+        },
+        { new: true }
+      ).select("-password");
+
+    res.json(actualizado);
 
   } catch (error) {
     res.status(500).json({
@@ -118,7 +146,6 @@ export const actualizarUsuario = async (req, res) => {
     });
   }
 };
-
 /* ===========================
    RESETEAR PASSWORD
 =========================== */
@@ -235,4 +262,3 @@ export const cambiarEstadoUsuario = async (req, res) => {
     });
   }
 };
-

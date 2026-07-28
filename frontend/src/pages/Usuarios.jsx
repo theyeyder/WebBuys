@@ -107,6 +107,12 @@ export default function Usuarios() {
         return;
       }
 
+      // ✅ NUEVA VALIDACIÓN AGREGADA
+      if (!form.usuario.trim()) {
+        setError("El usuario es obligatorio.");
+        return;
+      }
+
       if (!usuarioEditar) {
         if (!form.password) {
           setError("La contraseña es obligatoria.");
@@ -128,9 +134,11 @@ export default function Usuarios() {
         await crearUsuario(form);
         setMensaje("Usuario creado correctamente.");
       } else {
+        
         await actualizarUsuario(usuarioEditar._id, {
           nombres: form.nombres,
           apellidos: form.apellidos,
+          usuario: form.usuario,
           rol: form.rol,
         });
 
@@ -255,8 +263,7 @@ export default function Usuarios() {
             <h2>Usuarios</h2>
 
             <p>
-              Administra los usuarios y sus roles dentro de
-              WebBuys.
+              Administracion de usuarios
             </p>
           </div>
 
