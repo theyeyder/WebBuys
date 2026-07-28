@@ -11,10 +11,10 @@
 }
 
 .usuario-modal-card {
-  width: min(720px, 100%);
+  width: min(680px, 100%);
   border-radius: 22px;
   overflow: hidden;
-  background: #ffffff;
+  background: #f5f8f9;
   box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35);
 }
 
@@ -25,7 +25,7 @@
   gap: 20px;
   padding: 24px 28px;
   color: #ffffff;
-  background: linear-gradient(135deg, #27cf3e, #5fe0cc);
+  background: linear-gradient(135deg, #177524, #5fe0cc);
 }
 
 .usuario-modal-header h2 {
@@ -46,7 +46,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  color: #24324a;
+  color: #050505;
   font-size: 13px;
   font-weight: 700;
 }
@@ -69,9 +69,9 @@
 
 .usuario-modal-grid input:focus,
 .usuario-modal-grid select:focus {
-  border-color: #1f5eff;
+  border-color: #0d57178e;
   background: #ffffff;
-  box-shadow: 0 0 0 4px rgba(31, 94, 255, 0.12);
+  box-shadow: 0 0 0 4px rgba(167, 227, 220, 0.881);
 }
 
 .usuario-modal-footer {
@@ -79,8 +79,8 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 20px 28px 26px;
-  border-top: 1px solid #e7edf5;
-  background: #fbfcfe;
+  border-top: 1px solid #fff5f5;
+  background: #f4f6f8;
 }
 
 .usuario-modal-icon-button {
@@ -117,7 +117,7 @@
 }
 
 .usuario-modal-reset-button {
-  background: #f4f4f5;
+  background: #f5f5f5;
 }
 
 .usuario-modal-block-button {
@@ -125,7 +125,7 @@
 }
 
 .usuario-modal-unblock-button {
-  background: #16a34a;
+  background: #f7f7f7;
 }
 
 .usuario-modal-cancel-button,
