@@ -25,7 +25,7 @@ export const listarUsuarios = async (req, res) => {
 
 export const crearUsuario = async (req, res) => {
   try {
-    // ✅ MODIFICADO: Ahora incluye 'usuario'
+    
     const {
       nombres,
       apellidos,
@@ -54,7 +54,6 @@ export const crearUsuario = async (req, res) => {
       });
     }
 
-    // ✅ NUEVO: Validación y normalización de usuario
     const usuarioNormalizado = usuario
       .trim()
       .toLowerCase();
@@ -69,7 +68,7 @@ export const crearUsuario = async (req, res) => {
       });
     }
 
-    // ✅ MODIFICADO: Ahora usa 'usuarioNormalizado'
+    
     const nuevoUsuario = await Usuario.create({
       nombres,
       apellidos,
