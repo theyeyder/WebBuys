@@ -12,6 +12,7 @@ import bloquearIcon from "../assets/icons/bloquear.png";
 import desbloquearIcon from "../assets/icons/desbloquear.png";
 import nuevoUsuarioIcon from "../assets/icons/nuevo-usuario.png";
 import cambiarPasswordIcon from "../assets/icons/cambiar-password.png";
+import buscarIcon from "../assets/icons/buscar.png";
 
 
 import "../styles/usuarios.css";
@@ -27,6 +28,8 @@ import {
 
 export default function Usuarios() {
   const [usuarios, setUsuarios] = useState([]);
+
+  const [busqueda, setBusqueda] = useState("");
 
   const [modalAbierto, setModalAbierto] = useState(false);
   const [usuarioEditar, setUsuarioEditar] = useState(null);
@@ -107,7 +110,6 @@ export default function Usuarios() {
         return;
       }
 
-      // ✅ NUEVA VALIDACIÓN AGREGADA
       if (!form.usuario.trim()) {
         setError("El usuario es obligatorio.");
         return;
@@ -251,6 +253,27 @@ export default function Usuarios() {
     }
   }
 
+  // ✅ NUEVO: Filtrar usuarios según la búsqueda
+  const usuariosFiltrados = usuarios.filter((usuario) => {
+    const textoBusqueda = busqueda.trim().toLowerCase();
+
+    if (!textoBusqueda) {
+      return true;
+    }
+
+    const nombreCompleto =
+      `${usuario.nombres || ""} ${usuario.apellidos || ""}`.toLowerCase();
+
+    return (
+      usuario.usuario?.toLowerCase().includes(textoBusqueda) ||
+      usuario.nombres?.toLowerCase().includes(textoBusqueda) ||
+      usuario.apellidos?.toLowerCase().includes(textoBusqueda) ||
+      nombreCompleto.includes(textoBusqueda) ||
+      usuario.rol?.toLowerCase().includes(textoBusqueda) ||
+      usuario.estado?.toLowerCase().includes(textoBusqueda)
+    );
+  });
+
   return (
     <AppLayout title="Usuarios">
       <SpatialCard className="usuarios-module">
@@ -294,6 +317,44 @@ export default function Usuarios() {
           </div>
         )}
 
+        {/* ✅ NUEVO: Barra de búsqueda */}
+        <div className="usuarios-search-container">
+          <div className="usuarios-search-box">
+            <img
+              src={buscarIcon}
+              alt=""
+              className="usuarios-search-icon"
+            />
+
+            <input
+              type="search"
+              value={busqueda}
+              onChange={(event) => setBusqueda(event.target.value)}
+              placeholder="Buscar por usuario, nombre, apellido, rol o estado..."
+              aria-label="Buscar usuarios"
+            />
+
+            {busqueda && (
+              <button
+                type="button"
+                className="usuarios-search-clear"
+                title="Limpiar búsqueda"
+                aria-label="Limpiar búsqueda"
+                onClick={() => setBusqueda("")}
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          {busqueda && (
+            <span className="usuarios-search-results">
+              {usuariosFiltrados.length} resultado
+              {usuariosFiltrados.length !== 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+
         {cargando ? (
           <p>Cargando usuarios...</p>
         ) : (
@@ -310,14 +371,17 @@ export default function Usuarios() {
               </thead>
 
               <tbody>
-                {usuarios.length === 0 ? (
+             
+                {usuariosFiltrados.length === 0 ? (
                   <tr>
                     <td colSpan="5">
-                      No hay usuarios registrados.
+                      {busqueda
+                        ? "No se encontraron usuarios con esa búsqueda."
+                        : "No hay usuarios registrados."}
                     </td>
                   </tr>
                 ) : (
-                  usuarios.map((usuario) => (
+                  usuariosFiltrados.map((usuario) => (
                     <tr key={usuario._id}>
                       <td>{usuario.usuario}</td>
 

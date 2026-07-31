@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import guardarIcon from "../assets/icons/guardar.png";
 import cerrarIcon from "../assets/icons/cerrar.png";
 
+import verIcon from "../assets/icons/ver.png";
+import ocultarIcon from "../assets/icons/ocultar.png";
+
 import "../styles/usuario-modal.css";
 
 const FORM_INICIAL = {
@@ -17,10 +20,16 @@ export default function CambiarPasswordModal({
   onClose,
 }) {
   const [form, setForm] = useState(FORM_INICIAL);
+ 
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarRepetirPassword, setMostrarRepetirPassword] = useState(false);
+
 
   useEffect(() => {
     if (abierto) {
       setForm(FORM_INICIAL);
+      setMostrarPassword(false);
+      setMostrarRepetirPassword(false);
     }
   }, [abierto]);
 
@@ -65,25 +74,87 @@ export default function CambiarPasswordModal({
               <label className="usuario-modal-full">
                 Nueva contraseña
 
-                <input
-                  type="password"
-                  name="password"
-                  value={form.password}
-                  onChange={cambiar}
-                  required
-                />
+               
+                <div className="usuario-password-container">
+                  <input
+                    type={mostrarPassword ? "text" : "password"}
+                    name="password"
+                    value={form.password}
+                    onChange={cambiar}
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    className="usuario-password-toggle"
+                    title={
+                      mostrarPassword
+                        ? "Ocultar contraseña"
+                        : "Ver contraseña"
+                    }
+                    aria-label={
+                      mostrarPassword
+                        ? "Ocultar contraseña"
+                        : "Ver contraseña"
+                    }
+                    onClick={() =>
+                      setMostrarPassword((estadoActual) => !estadoActual)
+                    }
+                  >
+                    <img
+                      src={mostrarPassword ? ocultarIcon : verIcon}
+                      alt=""
+                    />
+                  </button>
+                </div>
               </label>
 
               <label className="usuario-modal-full">
                 Repetir contraseña
 
-                <input
-                  type="password"
-                  name="repetirPassword"
-                  value={form.repetirPassword}
-                  onChange={cambiar}
-                  required
-                />
+              
+                <div className="usuario-password-container">
+                  <input
+                    type={
+                      mostrarRepetirPassword
+                        ? "text"
+                        : "password"
+                    }
+                    name="repetirPassword"
+                    value={form.repetirPassword}
+                    onChange={cambiar}
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    className="usuario-password-toggle"
+                    title={
+                      mostrarRepetirPassword
+                        ? "Ocultar contraseña"
+                        : "Ver contraseña"
+                    }
+                    aria-label={
+                      mostrarRepetirPassword
+                        ? "Ocultar contraseña"
+                        : "Ver contraseña"
+                    }
+                    onClick={() =>
+                      setMostrarRepetirPassword(
+                        (estadoActual) => !estadoActual
+                      )
+                    }
+                  >
+                    <img
+                      src={
+                        mostrarRepetirPassword
+                          ? ocultarIcon
+                          : verIcon
+                      }
+                      alt=""
+                    />
+                  </button>
+                </div>
               </label>
             </div>
           </div>

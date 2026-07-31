@@ -6,6 +6,9 @@ import bloquearIcon from "../assets/icons/bloquear.png";
 import desbloquearIcon from "../assets/icons/desbloquear.png";
 import cerrarIcon from "../assets/icons/cerrar.png";
 
+import verIcon from "../assets/icons/ver.png";
+import ocultarIcon from "../assets/icons/ocultar.png";
+
 
 import "../styles/usuario-modal.css";
 
@@ -27,9 +30,16 @@ export default function UsuarioModal({
   usuarioEditar = null,
 }) {
   const [form, setForm] = useState(FORM_INICIAL);
+ 
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarRepetirPassword, setMostrarRepetirPassword] = useState(false);
 
   useEffect(() => {
     if (!abierto) return;
+
+
+    setMostrarPassword(false);
+    setMostrarRepetirPassword(false);
 
     if (usuarioEditar) {
       setForm({
@@ -119,7 +129,6 @@ export default function UsuarioModal({
                   name="usuario"
                   value={form.usuario}
                   onChange={cambiar}
-                  
                   required
                 />
               </label>
@@ -136,24 +145,80 @@ export default function UsuarioModal({
                 <>
                   <label>
                     Contraseña
-                    <input
-                      type="password"
-                      name="password"
-                      value={form.password}
-                      onChange={cambiar}
-                      required
-                    />
+                    
+                    <div className="usuario-password-container">
+                      <input
+                        type={mostrarPassword ? "text" : "password"}
+                        name="password"
+                        value={form.password}
+                        onChange={cambiar}
+                        required
+                      />
+
+                      <button
+                        type="button"
+                        className="usuario-password-toggle"
+                        onClick={() =>
+                          setMostrarPassword(!mostrarPassword)
+                        }
+                        title={
+                          mostrarPassword
+                            ? "Ocultar contraseña"
+                            : "Ver contraseña"
+                        }
+                      >
+                        <img
+                          src={
+                            mostrarPassword
+                              ? ocultarIcon
+                              : verIcon
+                          }
+                          alt=""
+                        />
+                      </button>
+                    </div>
                   </label>
 
                   <label>
                     Repetir contraseña
-                    <input
-                      type="password"
-                      name="repetirPassword"
-                      value={form.repetirPassword}
-                      onChange={cambiar}
-                      required
-                    />
+                   
+                    <div className="usuario-password-container">
+                      <input
+                        type={
+                          mostrarRepetirPassword
+                            ? "text"
+                            : "password"
+                        }
+                        name="repetirPassword"
+                        value={form.repetirPassword}
+                        onChange={cambiar}
+                        required
+                      />
+
+                      <button
+                        type="button"
+                        className="usuario-password-toggle"
+                        onClick={() =>
+                          setMostrarRepetirPassword(
+                            !mostrarRepetirPassword
+                          )
+                        }
+                        title={
+                          mostrarRepetirPassword
+                            ? "Ocultar contraseña"
+                            : "Ver contraseña"
+                        }
+                      >
+                        <img
+                          src={
+                            mostrarRepetirPassword
+                              ? ocultarIcon
+                              : verIcon
+                          }
+                          alt=""
+                        />
+                      </button>
+                    </div>
                   </label>
                 </>
               )}
