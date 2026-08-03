@@ -71,7 +71,7 @@
   pointer-events: none;
 }
 
-/* ✅ NUEVO: Estilos para la barra de búsqueda */
+
 .usuarios-search-container {
   width: 100%;
   margin-top: 22px;
@@ -235,6 +235,11 @@
 
 .table th:nth-child(5),
 .table td:nth-child(5) {
+  width: 18%;
+}
+
+.table th:nth-child(6),
+.table td:nth-child(6) {
   width: 23%;
 }
 
@@ -420,7 +425,7 @@
     width: 100%;
   }
 
-  /* ✅ NUEVO: Ajuste responsive para la barra de búsqueda */
+
   .usuarios-search-box {
     max-width: none;
   }
@@ -428,4 +433,35 @@
   .table-responsive {
     margin-top: 18px;
   }
+}
+.icon-btn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.icon-btn:disabled:hover {
+  transform: none;
+}
+
+.ultimo-acceso {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ultimo-acceso strong {
+  font-size: 13px;
+  color: #172033;
+}
+
+.ultimo-acceso small {
+  color: #667085;
+  font-size: 12px;
+}
+
+.sin-acceso {
+  color: #98a2b3;
+  font-style: italic;
 }

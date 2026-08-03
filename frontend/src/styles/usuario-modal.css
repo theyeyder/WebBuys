@@ -74,7 +74,7 @@
   box-shadow: 0 0 0 4px rgba(167, 227, 220, 0.881);
 }
 
-/* ✅ NUEVO: Estilos para el contenedor de contraseña con toggle */
+
 .usuario-password-container {
   position: relative;
   width: 100%;
@@ -132,7 +132,7 @@
   pointer-events: none;
 }
 
-/* ✅ NUEVO: Enfoque visual del campo cuando el botón está enfocado */
+
 .usuario-password-container:focus-within input {
   border-color: #0d57178e;
   background: #ffffff;

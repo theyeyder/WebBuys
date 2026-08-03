@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+import { useAuth } from "../context/AuthContext.jsx";
+
 import AppLayout from "../layouts/AppLayout.jsx";
 import SpatialCard from "../components/cards/SpatialCard.jsx";
 import UsuarioModal from "../components/UsuarioModal.jsx";
@@ -27,6 +29,9 @@ import {
 } from "../services/usuario.service.js";
 
 export default function Usuarios() {
+
+  const { usuario: usuarioSesion } = useAuth();
+
   const [usuarios, setUsuarios] = useState([]);
 
   const [busqueda, setBusqueda] = useState("");
@@ -253,7 +258,6 @@ export default function Usuarios() {
     }
   }
 
-  // ✅ NUEVO: Filtrar usuarios según la búsqueda
   const usuariosFiltrados = usuarios.filter((usuario) => {
     const textoBusqueda = busqueda.trim().toLowerCase();
 
@@ -317,7 +321,6 @@ export default function Usuarios() {
           </div>
         )}
 
-        {/* ✅ NUEVO: Barra de búsqueda */}
         <div className="usuarios-search-container">
           <div className="usuarios-search-box">
             <img
@@ -366,6 +369,8 @@ export default function Usuarios() {
                   <th>Nombre completo</th>
                   <th>Rol</th>
                   <th>Estado</th>
+                  {/* ✅ NUEVO: Columna Último acceso */}
+                  <th>Último acceso</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -374,125 +379,168 @@ export default function Usuarios() {
              
                 {usuariosFiltrados.length === 0 ? (
                   <tr>
-                    <td colSpan="5">
+                    {/* ✅ MODIFICADO: colSpan de 5 a 6 */}
+                    <td colSpan="6">
                       {busqueda
                         ? "No se encontraron usuarios con esa búsqueda."
                         : "No hay usuarios registrados."}
                     </td>
                   </tr>
                 ) : (
-                  usuariosFiltrados.map((usuario) => (
-                    <tr key={usuario._id}>
-                      <td>{usuario.usuario}</td>
+                  usuariosFiltrados.map((usuario) => {
+                    
+                    const esMiUsuario =
+                      usuarioSesion?._id === usuario._id;
 
-                      <td>
-                        {usuario.nombres}{" "}
-                        {usuario.apellidos}
-                      </td>
+                    return (
+                      <tr key={usuario._id}>
+                        <td>{usuario.usuario}</td>
 
-                      <td>{usuario.rol}</td>
+                        <td>
+                          {usuario.nombres}{" "}
+                          {usuario.apellidos}
+                        </td>
 
-                      <td>
-                        <span
-                          className={
-                            usuario.estado === "Activo"
-                              ? "status-badge active"
-                              : "status-badge blocked"
-                          }
-                        >
-                          {usuario.estado}
-                        </span>
-                      </td>
+                        <td>{usuario.rol}</td>
 
-                      <td>
-                        <div className="table-actions">
-                          <button
-                            className="icon-btn icon-btn-edit"
-                            type="button"
-                            title="Editar usuario"
-                            data-tooltip="Editar usuario"
-                            aria-label={`Editar usuario ${usuario.usuario}`}
-                            onClick={() =>
-                              abrirEditarUsuario(usuario)
-                            }
-                          >
-                            <img
-                              src={editarIcon}
-                              alt=""
-                              className="table-icon"
-                            />
-                          </button>
-
-                          <button
-                            className="icon-btn icon-btn-reset"
-                            type="button"
-                            title="Resetear contraseña"
-                            data-tooltip="Resetear contraseña"
-                            aria-label={`Resetear contraseña de ${usuario.usuario}`}
-                            onClick={() => resetear(usuario)}
-                          >
-                            <img
-                              src={resetearIcon}
-                              alt=""
-                              className="table-icon"
-                            />
-                          </button>
-
-                          <button
-                            className="icon-btn icon-btn-password"
-                            type="button"
-                            title="Cambiar contraseña"
-                            data-tooltip="Cambiar contraseña"
-                            aria-label={`Cambiar contraseña de ${usuario.usuario}`}
-                            onClick={() => abrirCambiarPassword(usuario)}
-                          >
-                            <img
-                              src={cambiarPasswordIcon}
-                              alt=""
-                              className="table-icon"
-                            />
-                          </button>
-
-                          <button
+                        <td>
+                          <span
                             className={
                               usuario.estado === "Activo"
-                                ? "icon-btn icon-btn-block"
-                                : "icon-btn icon-btn-unblock"
-                            }
-                            type="button"
-                            title={
-                              usuario.estado === "Activo"
-                                ? "Bloquear usuario"
-                                : "Desbloquear usuario"
-                            }
-                            data-tooltip={
-                              usuario.estado === "Activo"
-                                ? "Bloquear usuario"
-                                : "Desbloquear usuario"
-                            }
-                            aria-label={
-                              usuario.estado === "Activo"
-                                ? `Bloquear usuario ${usuario.usuario}`
-                                : `Desbloquear usuario ${usuario.usuario}`
-                            }
-                            onClick={() =>
-                              cambiarEstado(usuario)
+                                ? "status-badge active"
+                                : "status-badge blocked"
                             }
                           >
-                            <img
-                              src={
-                                usuario.estado === "Activo"
-                                  ? bloquearIcon
-                                  : desbloquearIcon
+                            {usuario.estado}
+                          </span>
+                        </td>
+
+                        {/* ✅ NUEVO: Celda de Último acceso */}
+                        <td className="ultimo-acceso">
+                          {usuario.ultimoIngreso ? (
+                            <>
+                              <strong>
+                                {new Date(usuario.ultimoIngreso).toLocaleDateString(
+                                  "es-CO"
+                                )}
+                              </strong>
+
+                              <small>
+                                {new Date(usuario.ultimoIngreso).toLocaleTimeString(
+                                  "es-CO",
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
+                              </small>
+                            </>
+                          ) : (
+                            <span className="sin-acceso">
+                              Sin ingresos
+                            </span>
+                          )}
+                        </td>
+
+                        <td>
+                          <div className="table-actions">
+                            <button
+                              className="icon-btn icon-btn-edit"
+                              type="button"
+                              title="Editar usuario"
+                              data-tooltip="Editar usuario"
+                              aria-label={`Editar usuario ${usuario.usuario}`}
+                              onClick={() =>
+                                abrirEditarUsuario(usuario)
                               }
-                              alt=""
-                              className="table-icon"
-                            />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            >
+                              <img
+                                src={editarIcon}
+                                alt=""
+                                className="table-icon"
+                              />
+                            </button>
+
+                            <button
+                              className="icon-btn icon-btn-reset"
+                              type="button"
+                              title="Resetear contraseña"
+                              data-tooltip="Resetear contraseña"
+                              aria-label={`Resetear contraseña de ${usuario.usuario}`}
+                              onClick={() => resetear(usuario)}
+                            >
+                              <img
+                                src={resetearIcon}
+                                alt=""
+                                className="table-icon"
+                              />
+                            </button>
+
+                            <button
+                              className="icon-btn icon-btn-password"
+                              type="button"
+                              title="Cambiar contraseña"
+                              data-tooltip="Cambiar contraseña"
+                              aria-label={`Cambiar contraseña de ${usuario.usuario}`}
+                              onClick={() => abrirCambiarPassword(usuario)}
+                            >
+                              <img
+                                src={cambiarPasswordIcon}
+                                alt=""
+                                className="table-icon"
+                              />
+                            </button>
+
+                            <button
+                              className={
+                                usuario.estado === "Activo"
+                                  ? "icon-btn icon-btn-block"
+                                  : "icon-btn icon-btn-unblock"
+                              }
+                              type="button"
+                              disabled={esMiUsuario}
+                              title={
+                                esMiUsuario
+                                  ? "No puedes bloquear tu propia cuenta"
+                                  : usuario.estado === "Activo"
+                                    ? "Bloquear usuario"
+                                    : "Desbloquear usuario"
+                              }
+                              data-tooltip={
+                                esMiUsuario
+                                  ? "No puedes bloquear tu propia cuenta"
+                                  : usuario.estado === "Activo"
+                                    ? "Bloquear usuario"
+                                    : "Desbloquear usuario"
+                              }
+                              aria-label={
+                                esMiUsuario
+                                  ? "No puedes bloquear tu propia cuenta"
+                                  : usuario.estado === "Activo"
+                                    ? `Bloquear usuario ${usuario.usuario}`
+                                    : `Desbloquear usuario ${usuario.usuario}`
+                              }
+                              onClick={() => {
+                                if (!esMiUsuario) {
+                                  cambiarEstado(usuario);
+                                }
+                              }}
+                            >
+                              <img
+                                src={
+                                  usuario.estado === "Activo"
+                                    ? bloquearIcon
+                                    : desbloquearIcon
+                                }
+                                alt=""
+                                className="table-icon"
+                              />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

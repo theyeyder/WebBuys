@@ -237,6 +237,13 @@ export const cambiarEstadoUsuario = async (req, res) => {
       });
     }
 
+
+    if (req.usuario._id.toString() === usuario._id.toString()) {
+      return res.status(400).json({
+        mensaje: "No puedes bloquear tu propia cuenta.",
+      });
+    }
+
     if (usuario.usuario === "admin") {
       return res.status(400).json({
         mensaje: "No se puede bloquear el administrador principal.",

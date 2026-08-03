@@ -14,6 +14,11 @@ import Categorias from "./pages/Categorias.jsx";
 import Pedidos from "./pages/Pedidos.jsx";
 import Facturacion from "./pages/Facturacion.jsx";
 import Empleados from "./pages/Empleados.jsx";
+import Empresa from "./pages/Empresa.jsx";
+import Rutas from "./pages/Rutas.jsx";
+import Numeracion from "./pages/Numeracion.jsx";
+import Auditoria from "./pages/Auditoria.jsx";
+import Preferencias from "./pages/Preferencias.jsx";
 
 import Configuracion from "./pages/Configuracion.jsx";
 import Usuarios from "./pages/Usuarios.jsx";
@@ -85,7 +90,50 @@ export default function App() {
             />
 
           </Route>
+<Route
+  path="/configuracion/empresa"
+  element={
+    <RoleRoute roles={["Administrador"]}>
+      <Empresa />
+    </RoleRoute>
+  }
+/>
 
+<Route
+  path="/configuracion/rutas"
+  element={
+    <RoleRoute roles={["Administrador"]}>
+      <Rutas />
+    </RoleRoute>
+  }
+/>
+
+<Route
+  path="/configuracion/numeracion"
+  element={
+    <RoleRoute roles={["Administrador"]}>
+      <Numeracion />
+    </RoleRoute>
+  }
+/>
+
+<Route
+  path="/configuracion/auditoria"
+  element={
+    <RoleRoute roles={["Administrador"]}>
+      <Auditoria />
+    </RoleRoute>
+  }
+/>
+
+<Route
+  path="/configuracion/preferencias"
+  element={
+    <RoleRoute roles={["Administrador"]}>
+      <Preferencias />
+    </RoleRoute>
+  }
+/>
           <Route
             path="*"
             element={<Navigate to="/" replace />}
