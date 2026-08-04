@@ -1,6 +1,11 @@
-import api from './api';
-const url = '/configuracion';
-export const listar = () => api.get(url);
-export const crear = (data) => api.post(url, data);
-export const actualizar = (id, data) => api.put(url + '/' + id, data);
-export const eliminar = (id) => api.delete(url + '/' + id);
+import api from "./api.js";
+
+export async function obtenerConfiguracion() {
+  const response = await api.get("/configuracion");
+  return response.data;
+}
+
+export async function actualizarConfiguracion(datos) {
+  const response = await api.put("/configuracion", datos);
+  return response.data;
+}

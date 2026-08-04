@@ -1,14 +1,129 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const configuracionSchema = new mongoose.Schema({
-  nombreEmpresa: { type: String, default: 'LÁCTEOS DEL TOLIMA' },
-  nit: { type: String, default: '' },
-  direccion: { type: String, default: '' },
-  telefono: { type: String, default: '' },
-  correo: { type: String, default: '' },
-  logo: { type: String, default: '' },
-  iva: { type: Number, default: 0 },
-  consecutivoFactura: { type: Number, default: 1 }
-}, { timestamps: true });
+const configuracionSchema = new mongoose.Schema(
+  {
+    /* EMPRESA */
 
-export default mongoose.model('Configuracion', configuracionSchema);
+    nombreComercial: {
+      type: String,
+      default: "Lácteos Del Tolima S.A.S.",
+    },
+
+    razonSocial: {
+      type: String,
+      default: "",
+    },
+
+    nit: {
+      type: String,
+      default: "",
+    },
+
+    regimenTributario: {
+      type: String,
+      default: "",
+    },
+
+    direccion: {
+      type: String,
+      default: "",
+    },
+
+    ciudad: {
+      type: String,
+      default: "",
+    },
+
+    departamento: {
+      type: String,
+      default: "",
+    },
+
+    pais: {
+      type: String,
+      default: "Colombia",
+    },
+
+    telefono: {
+      type: String,
+      default: "",
+    },
+
+    celular: {
+      type: String,
+      default: "",
+    },
+
+    whatsapp: {
+      type: String,
+      default: "",
+    },
+
+    correo: {
+      type: String,
+      default: "",
+    },
+
+    paginaWeb: {
+      type: String,
+      default: "",
+    },
+
+    logo: {
+      type: String,
+      default: "",
+    },
+
+    /* FACTURACIÓN */
+
+    prefijoFactura: {
+      type: String,
+      default: "FAC",
+    },
+
+    resolucionDIAN: {
+      type: String,
+      default: "",
+    },
+
+    consecutivoInicial: {
+      type: Number,
+      default: 1,
+    },
+
+    consecutivoActual: {
+      type: Number,
+      default: 1,
+    },
+
+    consecutivoFinal: {
+      type: Number,
+      default: 999999,
+    },
+
+    iva: {
+      type: Number,
+      default: 19,
+    },
+
+    /* IMPRESIÓN */
+
+    piePaginaFactura: {
+      type: String,
+      default: "",
+    },
+
+    observacionesFactura: {
+      type: String,
+      default: "",
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+export default mongoose.model(
+  "Configuracion",
+  configuracionSchema
+);

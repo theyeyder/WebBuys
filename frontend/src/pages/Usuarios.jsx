@@ -284,14 +284,11 @@ export default function Usuarios() {
         <div className="module-header">
           <div>
             <span className="eyebrow">
-              Configuración
+              Admisnistración de usuarios
             </span>
 
-            <h2>Usuarios</h2>
 
-            <p>
-              Administracion de usuarios
-            </p>
+           
           </div>
 
           <button
