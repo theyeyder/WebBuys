@@ -56,11 +56,14 @@ export default function Empresa() {
       setCargando(true);
       setError("");
 
-      const data = await obtenerConfiguracion();
+      const respuesta = await obtenerConfiguracion();
+
+      const configuracion =
+        respuesta?.configuracion || respuesta || {};
 
       setForm({
         ...FORM_INICIAL,
-        ...data,
+        ...configuracion,
       });
     } catch (err) {
       setError(
@@ -117,8 +120,11 @@ export default function Empresa() {
         return;
       }
 
-      const configuracion =
+      const respuesta =
         await actualizarConfiguracion(form);
+
+      const configuracion =
+        respuesta?.configuracion || respuesta || {};
 
       setForm({
         ...FORM_INICIAL,
@@ -126,7 +132,8 @@ export default function Empresa() {
       });
 
       setMensaje(
-        "La configuración de la empresa fue guardada correctamente."
+        respuesta?.mensaje ||
+          "La configuración de la empresa fue guardada correctamente."
       );
     } catch (err) {
       setError(

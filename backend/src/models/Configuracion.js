@@ -6,7 +6,7 @@ const configuracionSchema = new mongoose.Schema(
 
     nombreComercial: {
       type: String,
-      default: "Lácteos Del Tolima S.A.S.",
+      default: "",
     },
 
     razonSocial: {

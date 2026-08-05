@@ -1,14 +1,55 @@
-import Configuracion from '../models/Configuracion.js';
+import Configuracion from "../models/Configuracion.js";
+
+/* ===========================
+   OBTENER CONFIGURACIÓN
+=========================== */
 
 export const obtenerConfiguracion = async (req, res) => {
-  let config = await Configuracion.findOne();
-  if (!config) config = await Configuracion.create({});
-  res.json(config);
+  try {
+    let configuracion = await Configuracion.findOne();
+
+    if (!configuracion) {
+      configuracion = await Configuracion.create({});
+    }
+
+    res.json(configuracion);
+  } catch (error) {
+    res.status(500).json({
+      mensaje: error.message,
+    });
+  }
 };
 
+/* ===========================
+   ACTUALIZAR CONFIGURACIÓN
+=========================== */
+
 export const actualizarConfiguracion = async (req, res) => {
-  let config = await Configuracion.findOne();
-  if (!config) config = await Configuracion.create(req.body);
-  else config = await Configuracion.findByIdAndUpdate(config._id, req.body, { new: true });
-  res.json(config);
+  try {
+    let configuracion = await Configuracion.findOne();
+
+    if (!configuracion) {
+      configuracion = await Configuracion.create(req.body);
+    } else {
+      configuracion = await Configuracion.findByIdAndUpdate(
+        configuracion._id,
+        {
+          $set: req.body,
+        },
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+    }
+
+    res.json({
+      mensaje: "Configuración guardada correctamente.",
+      configuracion,
+    });
+  } catch (error) {
+    res.status(500).json({
+      mensaje: error.message,
+    });
+  }
 };

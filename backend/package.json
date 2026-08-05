@@ -14,7 +14,8 @@
     "express": "latest",
     "jsonwebtoken": "latest",
     "mongoose": "latest",
-    "morgan": "latest"
+    "morgan": "latest",
+    "multer": "^2.2.0"
   },
   "devDependencies": {
     "nodemon": "latest"
