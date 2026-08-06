@@ -9,6 +9,7 @@ export async function actualizarConfiguracion(datos) {
   const response = await api.put("/configuracion", datos);
   return response.data;
 }
+
 export async function subirLogoEmpresa(archivo) {
   const formData = new FormData();
 
@@ -22,6 +23,18 @@ export async function subirLogoEmpresa(archivo) {
         "Content-Type": "multipart/form-data",
       },
     }
+  );
+
+  return response.data;
+}
+
+/**
+ * Eliminar el logo de la empresa
+ * @returns {Promise} Datos de la respuesta
+ */
+export async function eliminarLogoEmpresa() {
+  const response = await api.delete(
+    "/configuracion/logo"
   );
 
   return response.data;

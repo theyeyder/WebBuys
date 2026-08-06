@@ -6,11 +6,13 @@ import {
   obtenerConfiguracion,
   actualizarConfiguracion,
   subirLogoEmpresa,
+  eliminarLogoEmpresa,
 } from "../services/configuracion.service.js";
 
 
 import subirArchivoIcon from "../assets/icons/subir-archivo.png";
-
+import guardarIcon from "../assets/icons/guardar.png";
+import eliminarLogoIcon from "../assets/icons/eliminar-logo.png";
 import "../styles/empresa.css";
 
 const FORM_INICIAL = {
@@ -85,7 +87,7 @@ export default function Empresa() {
     } catch (err) {
       setError(
         err.response?.data?.mensaje ||
-          "No fue posible cargar los datos de la empresa."
+        "No fue posible cargar los datos de la empresa."
       );
     } finally {
       setCargando(false);
@@ -140,16 +142,43 @@ export default function Empresa() {
 
       setMensaje(
         respuesta.mensaje ||
-          "Logo actualizado correctamente."
+        "Logo actualizado correctamente."
       );
     } catch (err) {
       setError(
         err.response?.data?.mensaje ||
-          "No fue posible cargar el logo."
+        "No fue posible cargar el logo."
       );
     } finally {
       setSubiendoLogo(false);
       event.target.value = "";
+    }
+  }
+
+
+  async function quitarLogo() {
+    if (!window.confirm("¿Desea eliminar el logo?")) {
+      return;
+    }
+
+    try {
+      setMensaje("");
+      setError("");
+
+      const respuesta = await eliminarLogoEmpresa();
+
+      setForm((actual) => ({
+        ...actual,
+        logo: "",
+      }));
+
+      setMensaje(respuesta.mensaje);
+
+    } catch (err) {
+      setError(
+        err.response?.data?.mensaje ||
+        "No fue posible eliminar el logo."
+      );
     }
   }
 
@@ -202,12 +231,12 @@ export default function Empresa() {
 
       setMensaje(
         respuesta?.mensaje ||
-          "La configuración de la empresa fue guardada correctamente."
+        "La configuración de la empresa fue guardada correctamente."
       );
     } catch (err) {
       setError(
         err.response?.data?.mensaje ||
-          "No fue posible guardar la configuración."
+        "No fue posible guardar la configuración."
       );
     } finally {
       setGuardando(false);
@@ -460,7 +489,6 @@ export default function Empresa() {
                         onChange={seleccionarLogo}
                       />
 
-                      
                       <button
                         type="button"
                         className="logo-upload-btn"
@@ -481,6 +509,23 @@ export default function Empresa() {
                               : "Cargar logo"}
                         </span>
                       </button>
+
+                      {logoSrc && (
+                        <button
+                          type="button"
+                          className="empresa-action-icon empresa-delete-logo-button"
+                          title="Quitar logo"
+                          data-tooltip="Quitar logo"
+                          aria-label="Quitar logo"
+                          onClick={quitarLogo}
+                        >
+                          <img
+                            src={eliminarLogoIcon}
+                            alt=""
+                            className="empresa-action-image"
+                          />
+                        </button>
+                      )}
 
                       <small>
                         PNG, JPG, JPEG o WEBP. Tamaño máximo: 2 MB.
@@ -588,13 +633,26 @@ export default function Empresa() {
 
             <div className="empresa-footer">
               <button
-                className="primary-btn"
+                className="empresa-action-icon empresa-save-button"
                 type="submit"
                 disabled={guardando}
+                title={
+                  guardando
+                    ? "Guardando configuración"
+                    : "Guardar configuración"
+                }
+                data-tooltip={
+                  guardando
+                    ? "Guardando configuración"
+                    : "Guardar configuración"
+                }
+                aria-label="Guardar configuración"
               >
-                {guardando
-                  ? "Guardando..."
-                  : "Guardar configuración"}
+                <img
+                  src={guardarIcon}
+                  alt=""
+                  className="empresa-action-image"
+                />
               </button>
             </div>
           </form>

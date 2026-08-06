@@ -89,3 +89,44 @@ export const subirLogo = async (req, res) => {
     });
   }
 };
+/* ===========================
+   ELIMINAR LOGO
+=========================== */
+
+export const eliminarLogo = async (req, res) => {
+  try {
+    const configuracion = await Configuracion.findOne();
+
+    if (!configuracion || !configuracion.logo) {
+      return res.status(404).json({
+        mensaje: "La empresa no tiene un logo registrado.",
+      });
+    }
+
+    const nombreArchivo = path.basename(configuracion.logo);
+
+    const rutaArchivo = path.resolve(
+      "uploads",
+      nombreArchivo
+    );
+
+    if (fs.existsSync(rutaArchivo)) {
+      fs.unlinkSync(rutaArchivo);
+    }
+
+    configuracion.logo = "";
+
+    await configuracion.save();
+
+    res.json({
+      mensaje: "Logo eliminado correctamente.",
+      logo: "",
+    });
+  } catch (error) {
+    console.error("Error eliminando logo:", error);
+
+    res.status(500).json({
+      mensaje: error.message,
+    });
+  }
+};

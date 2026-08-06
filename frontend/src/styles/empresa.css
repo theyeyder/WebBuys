@@ -335,3 +335,137 @@
   font-weight: 650;
   color: #177524;
 }
+
+/* ==========================
+   BOTONES DE ACCIÓN EMPRESA
+========================== */
+
+.empresa-action-icon {
+  position: relative;
+
+  width: 54px;
+  height: 54px;
+  padding: 8px;
+
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 15px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #ffffff;
+  cursor: pointer;
+  overflow: visible;
+
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.empresa-action-icon:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 13px 26px rgba(15, 23, 42, 0.16);
+}
+
+.empresa-action-icon:active {
+  transform: translateY(0);
+}
+
+.empresa-action-icon:focus-visible {
+  outline: 3px solid rgba(32, 175, 178, 0.22);
+  outline-offset: 3px;
+}
+
+.empresa-action-icon:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
+  box-shadow: none;
+}
+
+.empresa-action-image {
+  display: block;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* Guardar */
+
+.empresa-save-button {
+  background: #ffffff;
+}
+
+/* Eliminar logo */
+
+.empresa-delete-logo-button {
+  background: #ffffff;
+}
+
+/* Tooltip */
+
+.empresa-action-icon::after {
+  content: attr(data-tooltip);
+
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(7px);
+
+  padding: 7px 12px;
+  border-radius: 9px;
+
+  background: #20afb2;
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 9999;
+
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease,
+    transform 0.2s ease;
+}
+
+.empresa-action-icon::before {
+  content: "";
+
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%) translateY(7px);
+
+  border: 6px solid transparent;
+  border-top-color: #20afb2;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 9999;
+
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease,
+    transform 0.2s ease;
+}
+
+.empresa-action-icon:hover::after,
+.empresa-action-icon:hover::before,
+.empresa-action-icon:focus-visible::after,
+.empresa-action-icon:focus-visible::before {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
