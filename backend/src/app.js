@@ -5,11 +5,16 @@ import morgan from "morgan";
 import authRoutes from "./routes/auth.routes.js";
 import usuarioRoutes from "./routes/usuario.routes.js";
 import configuracionRoutes from "./routes/configuracion.routes.js";
+import path from "path";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use(
+  "/uploads",
+  express.static(path.resolve("uploads"))
+);
 app.use(morgan("dev"));
 
 app.get("/", (_, res) =>
@@ -22,5 +27,6 @@ app.get("/", (_, res) =>
 app.use("/api/auth", authRoutes);
 app.use("/api/usuarios", usuarioRoutes);
 app.use("/api/configuracion", configuracionRoutes);
+
 
 export default app;

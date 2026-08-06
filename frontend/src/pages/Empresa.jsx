@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react";
-
+import { useEffect, useRef, useState } from "react";
 import AppLayout from "../layouts/AppLayout.jsx";
 import SpatialCard from "../components/cards/SpatialCard.jsx";
 
 import {
   obtenerConfiguracion,
   actualizarConfiguracion,
+  subirLogoEmpresa,
 } from "../services/configuracion.service.js";
+
+
+import subirArchivoIcon from "../assets/icons/subir-archivo.png";
 
 import "../styles/empresa.css";
 
@@ -37,6 +40,11 @@ const FORM_INICIAL = {
   observacionesFactura: "",
 };
 
+const API_ORIGIN = (
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000/api"
+).replace(/\/api\/?$/, "");
+
 export default function Empresa() {
   const [form, setForm] = useState(FORM_INICIAL);
   const [pestana, setPestana] = useState("empresa");
@@ -46,6 +54,15 @@ export default function Empresa() {
 
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
+
+  const inputLogoRef = useRef(null);
+  const [subiendoLogo, setSubiendoLogo] = useState(false);
+
+  const logoSrc = form.logo
+    ? form.logo.startsWith("http")
+      ? form.logo
+      : `${API_ORIGIN}${form.logo}`
+    : "";
 
   useEffect(() => {
     cargarConfiguracion();
@@ -82,6 +99,58 @@ export default function Empresa() {
       ...formActual,
       [name]: type === "number" ? Number(value) : value,
     }));
+  }
+
+  async function seleccionarLogo(event) {
+    const archivo = event.target.files?.[0];
+
+    if (!archivo) return;
+
+    const formatosPermitidos = [
+      "image/png",
+      "image/jpeg",
+      "image/webp",
+    ];
+
+    if (!formatosPermitidos.includes(archivo.type)) {
+      setError(
+        "Solo se permiten imágenes PNG, JPG, JPEG o WEBP."
+      );
+      event.target.value = "";
+      return;
+    }
+
+    if (archivo.size > 2 * 1024 * 1024) {
+      setError("El logo no puede superar los 2 MB.");
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      setSubiendoLogo(true);
+      setMensaje("");
+      setError("");
+
+      const respuesta = await subirLogoEmpresa(archivo);
+
+      setForm((formActual) => ({
+        ...formActual,
+        logo: respuesta.logo,
+      }));
+
+      setMensaje(
+        respuesta.mensaje ||
+          "Logo actualizado correctamente."
+      );
+    } catch (err) {
+      setError(
+        err.response?.data?.mensaje ||
+          "No fue posible cargar el logo."
+      );
+    } finally {
+      setSubiendoLogo(false);
+      event.target.value = "";
+    }
   }
 
   async function guardar(event) {
@@ -151,13 +220,12 @@ export default function Empresa() {
         <div className="empresa-header">
           <div>
             <span className="eyebrow">Información de la empresa</span>
-           
           </div>
 
-          {form.logo && (
+          {logoSrc && (
             <div className="empresa-logo-preview">
               <img
-                src={form.logo}
+                src={logoSrc}
                 alt="Logo de la empresa"
                 onError={(event) => {
                   event.currentTarget.style.display = "none";
@@ -366,16 +434,60 @@ export default function Empresa() {
                   />
                 </label>
 
-                <label className="empresa-field-full">
-                  Dirección web del logo
-                  <input
-                    type="url"
-                    name="logo"
-                    value={form.logo}
-                    onChange={cambiar}
-                    placeholder="https://.../logo.png"
-                  />
-                </label>
+                <div className="empresa-field-full empresa-logo-field">
+                  <span className="empresa-logo-label">
+                    Logo de la empresa
+                  </span>
+
+                  <div className="empresa-logo-uploader">
+                    <div className="empresa-logo-image">
+                      {logoSrc ? (
+                        <img
+                          src={logoSrc}
+                          alt="Logo actual de la empresa"
+                        />
+                      ) : (
+                        <span>Sin logo</span>
+                      )}
+                    </div>
+
+                    <div className="empresa-logo-actions">
+                      <input
+                        ref={inputLogoRef}
+                        type="file"
+                        accept=".png,.jpg,.jpeg,.webp"
+                        hidden
+                        onChange={seleccionarLogo}
+                      />
+
+                      
+                      <button
+                        type="button"
+                        className="logo-upload-btn"
+                        disabled={subiendoLogo}
+                        onClick={() => inputLogoRef.current?.click()}
+                      >
+                        <img
+                          src={subirArchivoIcon}
+                          alt="Subir logo"
+                          className="logo-upload-icon"
+                        />
+
+                        <span>
+                          {subiendoLogo
+                            ? "Cargando..."
+                            : logoSrc
+                              ? "Cambiar logo"
+                              : "Cargar logo"}
+                        </span>
+                      </button>
+
+                      <small>
+                        PNG, JPG, JPEG o WEBP. Tamaño máximo: 2 MB.
+                      </small>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
