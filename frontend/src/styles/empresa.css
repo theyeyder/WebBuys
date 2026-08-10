@@ -205,6 +205,7 @@
   }
 }
 
+
 @media (max-width: 680px) {
   .empresa-module {
     padding: 18px;
@@ -235,10 +236,28 @@
     width: 100%;
   }
 }
-<<<<<<< HEAD
+.empresa-logo-actions {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  flex-wrap: wrap;
+}
+.empresa-logo-buttons {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.empresa-logo-note {
+  flex-basis: 100%;
+  margin-top: 10px;
+  color: #667085;
+  font-size: 14px;
+}
+
 
 /* ==========================
-   LOGO EMPRESA
+   CARGA Y ACCIONES DEL LOGO
 ========================== */
 
 .empresa-logo-field {
@@ -248,27 +267,29 @@
 }
 
 .empresa-logo-label {
+  color: #172033;
   font-size: 13px;
   font-weight: 800;
-  color: #172033;
 }
 
 .empresa-logo-uploader {
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 20px;
+  gap: 28px;
+  width: 100%;
+  padding: 24px;
   border: 2px dashed #d8e0ec;
-  border-radius: 18px;
+  border-radius: 20px;
   background: #fafcff;
 }
 
 .empresa-logo-image {
+  flex: 0 0 140px;
   width: 140px;
   height: 140px;
+  border: 1px solid #d8e0ec;
   border-radius: 18px;
   background: #ffffff;
-  border: 1px solid #d8e0ec;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -285,102 +306,52 @@
 .empresa-logo-image span {
   color: #98a2b3;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .empresa-logo-actions {
+  flex: 1;
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.empresa-logo-actions small {
-  color: #667085;
-  line-height: 1.5;
-}
-
-@media (max-width: 768px) {
-  .empresa-logo-uploader {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .empresa-logo-image {
-    width: 120px;
-    height: 120px;
-  }
-}
-
-.logo-upload-btn {
-  border: none;
-  background: transparent;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  transition: transform .2s;
+  gap: 18px;
+  flex-wrap: wrap;
 }
 
-.logo-upload-btn:hover {
-  transform: scale(1.05);
+.empresa-logo-buttons {
+  display: flex;
+  align-items: center;
+  gap: 18px;
 }
 
-.logo-upload-icon {
-  width: 70px;
-  height: 70px;
-  object-fit: contain;
-}
-
-.logo-upload-btn span {
-  font-weight: 650;
-  color: #177524;
-}
-
-/* ==========================
-   BOTONES DE ACCIÓN EMPRESA
-========================== */
-
+.logo-upload-btn,
 .empresa-action-icon {
   position: relative;
-
-  width: 54px;
-  height: 54px;
+  flex: 0 0 70px;
+  width: 70px;
+  height: 70px;
   padding: 8px;
-
   border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 15px;
-
+  border-radius: 16px;
+  background: #ffffff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  background: #ffffff;
   cursor: pointer;
   overflow: visible;
-
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
-
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease,
     opacity 0.2s ease;
 }
 
+.logo-upload-btn:hover,
 .empresa-action-icon:hover {
   transform: translateY(-3px);
   box-shadow: 0 13px 26px rgba(15, 23, 42, 0.16);
 }
 
-.empresa-action-icon:active {
-  transform: translateY(0);
-}
-
-.empresa-action-icon:focus-visible {
-  outline: 3px solid rgba(32, 175, 178, 0.22);
-  outline-offset: 3px;
-}
-
+.logo-upload-btn:disabled,
 .empresa-action-icon:disabled {
   opacity: 0.55;
   cursor: wait;
@@ -388,74 +359,52 @@
   box-shadow: none;
 }
 
+.logo-upload-icon,
 .empresa-action-image {
   display: block;
-  width: 34px;
-  height: 34px;
+  width: 42px;
+  height: 42px;
   object-fit: contain;
   pointer-events: none;
 }
 
-/* Guardar */
-
-.empresa-save-button {
-  background: #ffffff;
+.logo-upload-btn span {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #177524;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
-/* Eliminar logo */
-
-.empresa-delete-logo-button {
-  background: #ffffff;
+.empresa-logo-note {
+  flex-basis: 100%;
+  margin-top: 20px;
+  color: #667085;
+  font-size: 14px;
 }
 
-/* Tooltip */
+/* Tooltip para Quitar logo y Guardar */
 
 .empresa-action-icon::after {
   content: attr(data-tooltip);
-
   position: absolute;
   bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%) translateY(7px);
-
   padding: 7px 12px;
   border-radius: 9px;
-
   background: #20afb2;
   color: #ffffff;
-
   font-size: 12px;
   font-weight: 700;
-  line-height: 1;
   white-space: nowrap;
-
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   z-index: 9999;
-
-  transition:
-    opacity 0.2s ease,
-    visibility 0.2s ease,
-    transform 0.2s ease;
-}
-
-.empresa-action-icon::before {
-  content: "";
-
-  position: absolute;
-  bottom: calc(100% + 4px);
-  left: 50%;
-  transform: translateX(-50%) translateY(7px);
-
-  border: 6px solid transparent;
-  border-top-color: #20afb2;
-
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  z-index: 9999;
-
   transition:
     opacity 0.2s ease,
     visibility 0.2s ease,
@@ -463,12 +412,8 @@
 }
 
 .empresa-action-icon:hover::after,
-.empresa-action-icon:hover::before,
-.empresa-action-icon:focus-visible::after,
-.empresa-action-icon:focus-visible::before {
+.empresa-action-icon:focus-visible::after {
   opacity: 1;
   visibility: visible;
   transform: translateX(-50%) translateY(0);
 }
-=======
->>>>>>> eb1e5a24721e11605c9d37fafb8559161ac513ce

@@ -479,8 +479,8 @@ export default function Empresa() {
                         <span>Sin logo</span>
                       )}
                     </div>
-
                     <div className="empresa-logo-actions">
+
                       <input
                         ref={inputLogoRef}
                         type="file"
@@ -489,48 +489,54 @@ export default function Empresa() {
                         onChange={seleccionarLogo}
                       />
 
-                      <button
-                        type="button"
-                        className="logo-upload-btn"
-                        disabled={subiendoLogo}
-                        onClick={() => inputLogoRef.current?.click()}
-                      >
-                        <img
-                          src={subirArchivoIcon}
-                          alt="Subir logo"
-                          className="logo-upload-icon"
-                        />
+                      <div className="empresa-logo-buttons">
 
-                        <span>
-                          {subiendoLogo
-                            ? "Cargando..."
-                            : logoSrc
-                              ? "Cambiar logo"
-                              : "Cargar logo"}
-                        </span>
-                      </button>
-
-                      {logoSrc && (
                         <button
                           type="button"
-                          className="empresa-action-icon empresa-delete-logo-button"
-                          title="Quitar logo"
-                          data-tooltip="Quitar logo"
-                          aria-label="Quitar logo"
-                          onClick={quitarLogo}
+                          className="logo-upload-btn"
+                          disabled={subiendoLogo}
+                          onClick={() => inputLogoRef.current?.click()}
                         >
                           <img
-                            src={eliminarLogoIcon}
+                            src={subirArchivoIcon}
                             alt=""
-                            className="empresa-action-image"
+                            className="logo-upload-icon"
                           />
-                        </button>
-                      )}
 
-                      <small>
+                          <span>
+                            {subiendoLogo
+                              ? "Cargando..."
+                              : logoSrc
+                                ? "Cambiar logo"
+                                : "Cargar logo"}
+                          </span>
+                        </button>
+
+                        {logoSrc && (
+                          <button
+                            type="button"
+                            className="empresa-action-icon empresa-delete-logo-button"
+                            title="Quitar logo"
+                            data-tooltip="Quitar logo"
+                            aria-label="Quitar logo"
+                            onClick={quitarLogo}
+                          >
+                            <img
+                              src={eliminarLogoIcon}
+                              alt=""
+                              className="empresa-action-image"
+                            />
+                          </button>
+                        )}
+
+                      </div>
+
+                      <small className="empresa-logo-note">
                         PNG, JPG, JPEG o WEBP. Tamaño máximo: 2 MB.
                       </small>
+
                     </div>
+
                   </div>
                 </div>
               </div>
