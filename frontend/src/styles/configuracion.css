@@ -57,9 +57,9 @@
 
 .configuracion-nav-button:hover {
   transform: translateY(-2px);
-  background: #ecfdf3;
-  color: #067647;
-  box-shadow: 0 12px 24px rgba(18, 183, 106, 0.14);
+  background: #85f6ce;
+  color: #0c6942;
+  box-shadow: 0 12px 24px rgba(183, 40, 18, 0.14);
 }
 
 .configuracion-nav-button:focus-visible {
