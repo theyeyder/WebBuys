@@ -9,10 +9,10 @@ import {
   eliminarLogoEmpresa,
 } from "../services/configuracion.service.js";
 
-
 import subirArchivoIcon from "../assets/icons/subir-archivo.png";
 import guardarIcon from "../assets/icons/guardar.png";
 import eliminarLogoIcon from "../assets/icons/eliminar-logo.png";
+import CalendarInput from "../components/CalendarInput.jsx"; // 👈 NUEVO IMPORT
 import "../styles/empresa.css";
 
 const FORM_INICIAL = {
@@ -33,9 +33,12 @@ const FORM_INICIAL = {
 
   prefijoFactura: "FAC",
   resolucionDIAN: "",
-  consecutivoInicial: 1,
+  fechaResolucionDIAN: "",
+  vigenciaDesde: "",
+  vigenciaHasta: "",
+  rangoAutorizadoDesde: 1,
+  rangoAutorizadoHasta: 999999,
   consecutivoActual: 1,
-  consecutivoFinal: 999999,
   iva: 19,
 
   piePaginaFactura: "",
@@ -83,6 +86,21 @@ export default function Empresa() {
       setForm({
         ...FORM_INICIAL,
         ...configuracion,
+
+        fechaResolucionDIAN:
+          configuracion.fechaResolucionDIAN
+            ? configuracion.fechaResolucionDIAN.substring(0, 10)
+            : "",
+
+        vigenciaDesde:
+          configuracion.vigenciaDesde
+            ? configuracion.vigenciaDesde.substring(0, 10)
+            : "",
+
+        vigenciaHasta:
+          configuracion.vigenciaHasta
+            ? configuracion.vigenciaHasta.substring(0, 10)
+            : "",
       });
     } catch (err) {
       setError(
@@ -209,11 +227,35 @@ export default function Empresa() {
       }
 
       if (
-        form.consecutivoFinal <
-        form.consecutivoInicial
+        form.rangoAutorizadoHasta <
+        form.rangoAutorizadoDesde
       ) {
         setError(
-          "El consecutivo final no puede ser menor que el inicial."
+          "El rango autorizado hasta no puede ser menor que el rango autorizado desde."
+        );
+        return;
+      }
+
+      if (
+        form.consecutivoActual <
+          form.rangoAutorizadoDesde ||
+        form.consecutivoActual >
+          form.rangoAutorizadoHasta
+      ) {
+        setError(
+          "El consecutivo actual debe estar dentro del rango autorizado."
+        );
+        return;
+      }
+
+      if (
+        form.vigenciaDesde &&
+        form.vigenciaHasta &&
+        new Date(form.vigenciaHasta) <
+          new Date(form.vigenciaDesde)
+      ) {
+        setError(
+          "La fecha final de vigencia no puede ser anterior a la fecha inicial."
         );
         return;
       }
@@ -227,6 +269,21 @@ export default function Empresa() {
       setForm({
         ...FORM_INICIAL,
         ...configuracion,
+
+        fechaResolucionDIAN:
+          configuracion.fechaResolucionDIAN
+            ? configuracion.fechaResolucionDIAN.substring(0, 10)
+            : "",
+
+        vigenciaDesde:
+          configuracion.vigenciaDesde
+            ? configuracion.vigenciaDesde.substring(0, 10)
+            : "",
+
+        vigenciaHasta:
+          configuracion.vigenciaHasta
+            ? configuracion.vigenciaHasta.substring(0, 10)
+            : "",
       });
 
       setMensaje(
@@ -544,6 +601,7 @@ export default function Empresa() {
 
             {pestana === "facturacion" && (
               <div className="empresa-form-grid">
+
                 <label>
                   Prefijo de factura
                   <input
@@ -555,7 +613,7 @@ export default function Empresa() {
                 </label>
 
                 <label>
-                  IVA por defecto
+                  IVA por defecto (%)
                   <input
                     type="number"
                     name="iva"
@@ -567,22 +625,63 @@ export default function Empresa() {
                 </label>
 
                 <label className="empresa-field-full">
-                  Resolución DIAN
+                  Número de resolución DIAN
                   <input
                     name="resolucionDIAN"
                     value={form.resolucionDIAN}
                     onChange={cambiar}
-                    placeholder="Número y descripción de la resolución"
+                    placeholder="Ejemplo: 18764012345678"
                   />
                 </label>
 
                 <label>
-                  Consecutivo inicial
+                  Fecha de resolución
+                  <CalendarInput
+                    name="fechaResolucionDIAN"
+                    value={form.fechaResolucionDIAN || ""}
+                    onChange={cambiar}
+                    placeholder="Seleccionar fecha"
+                  />
+                </label>
+
+                <label>
+                  Vigencia desde
+                  <CalendarInput
+                    name="vigenciaDesde"
+                    value={form.vigenciaDesde || ""}
+                    onChange={cambiar}
+                    placeholder="Seleccionar fecha"
+                  />
+                </label>
+
+                <label>
+                  Vigencia hasta
+                  <CalendarInput
+                    name="vigenciaHasta"
+                    value={form.vigenciaHasta || ""}
+                    onChange={cambiar}
+                    placeholder="Seleccionar fecha"
+                  />
+                </label>
+
+                <label>
+                  Rango autorizado desde
                   <input
                     type="number"
-                    name="consecutivoInicial"
+                    name="rangoAutorizadoDesde"
                     min="1"
-                    value={form.consecutivoInicial}
+                    value={form.rangoAutorizadoDesde}
+                    onChange={cambiar}
+                  />
+                </label>
+
+                <label>
+                  Rango autorizado hasta
+                  <input
+                    type="number"
+                    name="rangoAutorizadoHasta"
+                    min="1"
+                    value={form.rangoAutorizadoHasta}
                     onChange={cambiar}
                   />
                 </label>
@@ -598,16 +697,6 @@ export default function Empresa() {
                   />
                 </label>
 
-                <label>
-                  Consecutivo final
-                  <input
-                    type="number"
-                    name="consecutivoFinal"
-                    min="1"
-                    value={form.consecutivoFinal}
-                    onChange={cambiar}
-                  />
-                </label>
               </div>
             )}
 

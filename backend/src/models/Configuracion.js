@@ -76,35 +76,57 @@ const configuracionSchema = new mongoose.Schema(
 
     /* FACTURACIÓN */
 
-    prefijoFactura: {
-      type: String,
-      default: "FAC",
-    },
+prefijoFactura: {
+  type: String,
+  default: "FAC",
+  trim: true,
+},
 
-    resolucionDIAN: {
-      type: String,
-      default: "",
-    },
+resolucionDIAN: {
+  type: String,
+  default: "",
+  trim: true,
+},
 
-    consecutivoInicial: {
-      type: Number,
-      default: 1,
-    },
+fechaResolucionDIAN: {
+  type: Date,
+  default: null,
+},
 
-    consecutivoActual: {
-      type: Number,
-      default: 1,
-    },
+vigenciaDesde: {
+  type: Date,
+  default: null,
+},
 
-    consecutivoFinal: {
-      type: Number,
-      default: 999999,
-    },
+vigenciaHasta: {
+  type: Date,
+  default: null,
+},
 
-    iva: {
-      type: Number,
-      default: 19,
-    },
+rangoAutorizadoDesde: {
+  type: Number,
+  default: 1,
+  min: 1,
+},
+
+rangoAutorizadoHasta: {
+  type: Number,
+  default: 999999,
+  min: 1,
+},
+
+consecutivoActual: {
+  type: Number,
+  default: 1,
+  min: 1,
+},
+
+iva: {
+  type: Number,
+  default: 19,
+  min: 0,
+  max: 100,
+},
 
     /* IMPRESIÓN */
 

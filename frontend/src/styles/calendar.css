@@ -1,0 +1,196 @@
+.wb-calendar-input {
+  position: relative;
+  width: 100%;
+}
+
+.wb-date-trigger {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+
+  border: 1px solid #d8e0ec;
+  border-radius: 13px;
+
+  background: #f8fafc;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  color: #172033;
+  cursor: pointer;
+}
+
+.wb-date-placeholder {
+  color: #98a2b3;
+}
+
+.wb-date-value {
+  color: #172033;
+}
+
+.wb-date-symbol {
+  font-size: 20px;
+  color: #667085;
+}
+
+/* =========================
+   CALENDARIO
+========================= */
+
+.wb-calendar {
+  position: absolute;
+  z-index: 10000;
+
+  width: 300px;
+  max-width: calc(100vw - 24px); /*  CAMBIADO de 32px a 24px */
+
+  top: calc(100% + 8px); /*  CAMBIADO de 10px a 8px */
+  left: 0;
+
+  padding: 16px; /*  CAMBIADO de 24px a 16px */
+
+  border-radius: 16px; /*  CAMBIADO de 20px a 16px */
+
+  background: /*  NUEVO FONDO */
+    linear-gradient(
+      142deg,
+      rgba(254, 248, 255, 0.93),
+      rgba(105, 224, 222, 0.82)
+    );
+
+  box-shadow: /*  NUEVA SOMBRA */
+    0 16px 38px rgba(15, 23, 42, 0.14),
+    inset -4px -4px 12px rgba(0, 0, 0, 0.05),
+    inset 4px 4px 10px #ffffff;
+
+  backdrop-filter: blur(20px); /*  CAMBIADO de 24px a 20px */
+
+  /* Estas propiedades se eliminan o sobrescriben: */
+  /* border: 1px solid rgb(253, 253, 253); */ /* ELIMINADO */
+}
+
+/* =========================
+   ENCABEZADO
+========================= */
+
+.wb-calendar-header {
+  display: grid;
+  grid-template-columns: 30px 1fr 30px auto; /*  CAMBIADO de 36px a 30px */
+  align-items: center;
+  gap: 6px; /*  CAMBIADO de 8px a 6px */
+  margin-bottom: 14px; /*  CAMBIADO de 22px a 14px */
+}
+
+.wb-calendar-header strong {
+  color: #474c59;
+  font-size: 12px; /*  CAMBIADO de 14px a 12px */
+  font-weight: 500;
+  text-align: center;
+}
+
+.wb-calendar-arrow {
+  width: 30px; /*  CAMBIADO de 34px a 30px */
+  height: 30px; /*  CAMBIADO de 34px a 30px */
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(71, 76, 89, 0.06);
+  color: #474c59;
+
+  font-size: 20px; /* CAMBIADO de 24px a 20px */
+  cursor: pointer;
+}
+
+.wb-calendar-arrow:hover {
+  background: rgba(71, 76, 89, 0.12);
+}
+
+.wb-calendar-today {
+  border: none;
+  background: transparent;
+
+  color: #020202;
+
+  font-size: 11px; /*  CAMBIADO de 12px a 11px */
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.wb-calendar-week,
+.wb-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.wb-calendar-week {
+  margin-bottom: 8px;
+}
+
+.wb-calendar-week span {
+  height: 26px; /*  CAMBIADO de 32px a 26px */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ff9330;
+
+  font-size: 10px; /*  CAMBIADO de 12px a 10px */
+  font-weight: 700;
+}
+
+.wb-calendar-grid {
+  gap: 2px; /*  de 3px a 2px */
+}
+
+.wb-calendar-day {
+  height: 31px; /*  CAMBIADO de 38px a 31px */
+
+  border: none;
+  border-radius: 7px; /*  CAMBIADO de 8px a 7px */
+
+  background: transparent;
+  color: #343841;
+
+  font-size: 12px; /*  CAMBIADO de 14px a 12px */
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.wb-calendar-day:hover {
+  background: rgba(255, 147, 48, 0.12);
+  transform: translateY(-1px);
+}
+
+.wb-calendar-day.outside {
+  color: rgba(52, 56, 65, 0.35);
+}
+
+.wb-calendar-day.selected {
+  color: #f3f4f2;
+
+  background:
+    radial-gradient(
+      circle at 28% 17%,
+      #ffa800 0%,
+      #ff4d00 100%
+    );
+
+  box-shadow:
+    1px 8px 11px -1px
+    rgba(223, 81, 21, 0.35);
+}
+
+@media (max-width: 520px) {
+  .wb-calendar {
+    width: min(340px, calc(100vw - 32px));
+    padding: 18px;
+  }
+}
