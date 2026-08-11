@@ -1,5 +1,6 @@
-import Configuracion from "../models/Configuracion.js";
+import fs from "fs";
 import path from "path";
+import Configuracion from "../models/Configuracion.js";
 
 /* ===========================
    OBTENER CONFIGURACIÓN
@@ -12,7 +13,6 @@ export const obtenerConfiguracion = async (req, res) => {
     if (!configuracion) {
       configuracion = await Configuracion.create({});
     }
-
     res.json(configuracion);
   } catch (error) {
     res.status(500).json({
