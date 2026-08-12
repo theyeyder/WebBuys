@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "../styles/calendar.css";
+import calendarioIcon from "../assets/icons/calendario.png";
 
 const MESES = [
   "ENERO",
@@ -8,7 +9,7 @@ const MESES = [
   "ABRIL",
   "MAYO",
   "JUNIO",
-  "JULIO",
+  "JULIO",w
   "AGOSTO",
   "SEPTIEMBRE",
   "OCTUBRE",
@@ -47,6 +48,7 @@ export default function CalendarInput({
     : new Date();
 
   const [abierto, setAbierto] = useState(false);
+  const [posicionCalendario, setPosicionCalendario] = useState("abajo");
   const [mesActual, setMesActual] = useState(
     fechaInicial.getMonth()
   );
@@ -54,6 +56,7 @@ export default function CalendarInput({
     fechaInicial.getFullYear()
   );
 
+  // Cerrar al hacer clic fuera
   useEffect(() => {
     function cerrar(event) {
       if (
@@ -70,6 +73,36 @@ export default function CalendarInput({
       document.removeEventListener("mousedown", cerrar);
     };
   }, []);
+
+  useEffect(() => {
+    if (!abierto) return;
+
+    calcularPosicion();
+
+    window.addEventListener(
+      "scroll",
+      calcularPosicion,
+      true
+    );
+
+    window.addEventListener(
+      "resize",
+      calcularPosicion
+    );
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        calcularPosicion,
+        true
+      );
+
+      window.removeEventListener(
+        "resize",
+        calcularPosicion
+      );
+    };
+  }, [abierto]);
 
   const diasCalendario = useMemo(() => {
     const primerDia = new Date(
@@ -179,6 +212,25 @@ export default function CalendarInput({
     seleccionar(fecha);
   }
 
+  function calcularPosicion() {
+    if (!containerRef.current) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+
+    const altoCalendario = 320;
+    const espacioAbajo = window.innerHeight - rect.bottom;
+    const espacioArriba = rect.top;
+
+    if (
+      espacioAbajo < altoCalendario &&
+      espacioArriba > espacioAbajo
+    ) {
+      setPosicionCalendario("arriba");
+    } else {
+      setPosicionCalendario("abajo");
+    }
+  }
+
   return (
     <div
       className="wb-calendar-input"
@@ -187,7 +239,10 @@ export default function CalendarInput({
       <button
         type="button"
         className="wb-date-trigger"
-        onClick={() => setAbierto((actual) => !actual)}
+        onClick={() => {
+          calcularPosicion();
+          setAbierto((actual) => !actual);
+        }}
       >
         <span
           className={
@@ -201,13 +256,23 @@ export default function CalendarInput({
             : placeholder}
         </span>
 
-        <span className="wb-date-symbol">
-          ▦
-        </span>
+              <span className="wb-date-symbol">
+                  <img
+                      src={calendarioIcon}
+                      alt="Calendario"
+                      className="wb-calendar-icon"
+                  />
+              </span>
       </button>
 
       {abierto && (
-        <div className="wb-calendar">
+        <div
+          className={`wb-calendar ${
+            posicionCalendario === "arriba"
+              ? "wb-calendar-up"
+              : "wb-calendar-down"
+          }`}
+        >
           <div className="wb-calendar-header">
             <button
               type="button"
