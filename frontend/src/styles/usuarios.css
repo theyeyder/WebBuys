@@ -471,3 +471,70 @@
   color: #98a2b3;
   font-style: italic;
 }
+/* ==========================
+   NOTIFICACIONES USUARIOS
+========================== */
+
+.usuarios-toast {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  z-index: 99999;
+
+  min-width: 280px;
+  max-width: 420px;
+
+  padding: 15px 20px;
+
+  border-radius: 14px;
+
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+
+  box-shadow:
+    0 12px 35px rgba(15, 23, 42, 0.2);
+
+  animation:
+    usuariosToastEntrada 0.3s ease;
+}
+  
+.usuarios-toast-success {
+  background:
+    linear-gradient(135deg,
+      #116015,
+      #096c2d);
+}
+
+.usuarios-toast-error {
+  background:
+    linear-gradient(
+      135deg,
+      #b42318,
+      #f04438
+    );
+}
+
+@keyframes usuariosToastEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 600px) {
+  .usuarios-toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+
+    min-width: 0;
+    max-width: none;
+  }
+}

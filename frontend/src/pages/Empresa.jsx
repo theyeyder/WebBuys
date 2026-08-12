@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import AppLayout from "../layouts/AppLayout.jsx";
 import SpatialCard from "../components/cards/SpatialCard.jsx";
+import Toast from "../components/Toast.jsx"; 
 
 import {
   obtenerConfiguracion,
@@ -12,7 +13,7 @@ import {
 import subirArchivoIcon from "../assets/icons/subir-archivo.png";
 import guardarIcon from "../assets/icons/guardar.png";
 import eliminarLogoIcon from "../assets/icons/eliminar-logo.png";
-import CalendarInput from "../components/CalendarInput.jsx"; // 👈 NUEVO IMPORT
+import CalendarInput from "../components/CalendarInput.jsx"; 
 import "../styles/empresa.css";
 
 const FORM_INICIAL = {
@@ -68,6 +69,18 @@ export default function Empresa() {
       ? form.logo
       : `${API_ORIGIN}${form.logo}`
     : "";
+
+  // 👇 TOAST AUTO-CLOSE
+  useEffect(() => {
+    if (!mensaje && !error) return;
+
+    const timer = setTimeout(() => {
+      setMensaje("");
+      setError("");
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [mensaje, error]);
 
   useEffect(() => {
     cargarConfiguracion();
@@ -172,7 +185,6 @@ export default function Empresa() {
       event.target.value = "";
     }
   }
-
 
   async function quitarLogo() {
     if (!window.confirm("¿Desea eliminar el logo?")) {
@@ -359,12 +371,7 @@ export default function Empresa() {
           </button>
         </div>
 
-        {mensaje && (
-          <div className="success-message">{mensaje}</div>
-        )}
-
-        {error && <div className="error">{error}</div>}
-
+       
         {cargando ? (
           <div className="empresa-loading">
             Cargando información de la empresa...
@@ -752,6 +759,12 @@ export default function Empresa() {
             </div>
           </form>
         )}
+
+     
+        <Toast
+          mensaje={mensaje}
+          error={error}
+        />
       </SpatialCard>
     </AppLayout>
   );

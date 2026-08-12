@@ -5,6 +5,7 @@ import './styles/global.css';
 import './styles/login.css';
 import './styles/layout.css';
 import './styles/dashboard.css';
+import "./styles/toast.css";
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

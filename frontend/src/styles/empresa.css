@@ -417,3 +417,65 @@
   visibility: visible;
   transform: translateX(-50%) translateY(0);
 }
+/* ==========================
+   NOTIFICACIONES
+========================== */
+
+.empresa-toast {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  z-index: 99999;
+
+  min-width: 280px;
+  max-width: 420px;
+
+  padding: 15px 20px;
+  border-radius: 14px;
+
+  color: #f7f7f7;
+  font-size: 14px;
+  font-weight: 700;
+
+  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.2);
+
+  animation: empresaToastEntrada 0.3s ease;
+}
+
+.empresa-toast-success {
+  background: linear-gradient(
+    135deg,
+    #116015,
+    #096c2d
+  );
+}
+
+.empresa-toast-error {
+  background: linear-gradient(
+    135deg,
+    #b42318,
+    #f04438
+  );
+}
+
+@keyframes empresaToastEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 600px) {
+  .empresa-toast {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    min-width: 0;
+    max-width: none;
+  }
+}

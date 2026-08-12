@@ -6,6 +6,7 @@ import AppLayout from "../layouts/AppLayout.jsx";
 import SpatialCard from "../components/cards/SpatialCard.jsx";
 import UsuarioModal from "../components/UsuarioModal.jsx";
 import CambiarPasswordModal from "../components/CambiarPasswordModal.jsx";
+import Toast from "../components/Toast.jsx"; // 👈 NUEVO IMPORT
 
 
 import editarIcon from "../assets/icons/editar.png";
@@ -52,6 +53,18 @@ export default function Usuarios() {
     cargarUsuarios();
   }, []);
 
+  // 👇 TOAST AUTO-CLOSE
+  useEffect(() => {
+    if (!mensaje && !error) return;
+
+    const timer = setTimeout(() => {
+      setMensaje("");
+      setError("");
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [mensaje, error]);
+
   async function cargarUsuarios() {
     try {
       setCargando(true);
@@ -68,7 +81,7 @@ export default function Usuarios() {
       setCargando(false);
     }
   }
-
+  
   function abrirNuevoUsuario() {
     setUsuarioEditar(null);
     setModalAbierto(true);
@@ -306,7 +319,8 @@ export default function Usuarios() {
           </button>
         </div>
 
-        {mensaje && (
+        {/* 👇 MENSAJES ANTIGUOS ELIMINADOS */}
+        {/* {mensaje && (
           <div className="success-message">
             {mensaje}
           </div>
@@ -316,7 +330,7 @@ export default function Usuarios() {
           <div className="error">
             {error}
           </div>
-        )}
+        )} */}
 
         <div className="usuarios-search-container">
           <div className="usuarios-search-box">
@@ -366,7 +380,6 @@ export default function Usuarios() {
                   <th>Nombre completo</th>
                   <th>Rol</th>
                   <th>Estado</th>
-                  {/* ✅ NUEVO: Columna Último acceso */}
                   <th>Último acceso</th>
                   <th>Acciones</th>
                 </tr>
@@ -376,7 +389,6 @@ export default function Usuarios() {
              
                 {usuariosFiltrados.length === 0 ? (
                   <tr>
-                    {/* ✅ MODIFICADO: colSpan de 5 a 6 */}
                     <td colSpan="6">
                       {busqueda
                         ? "No se encontraron usuarios con esa búsqueda."
@@ -412,7 +424,6 @@ export default function Usuarios() {
                           </span>
                         </td>
 
-                        {/* ✅ NUEVO: Celda de Último acceso */}
                         <td className="ultimo-acceso">
                           {usuario.ultimoIngreso ? (
                             <>
@@ -543,6 +554,12 @@ export default function Usuarios() {
             </table>
           </div>
         )}
+
+        {/* 👇 TOAST CON COMPONENTE REUTILIZABLE */}
+        <Toast
+          mensaje={mensaje}
+          error={error}
+        />
       </SpatialCard>
 
       <UsuarioModal
