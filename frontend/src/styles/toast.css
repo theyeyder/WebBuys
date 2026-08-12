@@ -25,11 +25,9 @@
 
 .webbuys-toast-success {
   background:
-    linear-gradient(
-      135deg,
-      #177524,
-      #20afb2
-    );
+    linear-gradient(135deg,
+      #116015,
+      #136531);
 }
 
 .webbuys-toast-error {
