@@ -1,4 +1,5 @@
 import Ruta from "../models/Rutas.js";
+import Usuario from "../models/Usuario.js";
 
 /* ===========================
    LISTAR RUTAS
@@ -7,7 +8,11 @@ import Ruta from "../models/Rutas.js";
 export const listarRutas = async (req, res) => {
   try {
     const rutas = await Ruta.find()
-      .populate("empleado", "nombres apellidos")
+      .populate({
+        path: "empleado",
+        model: Usuario,
+        select: "nombre usuario rol estado bloqueado",
+      })
       .sort({ createdAt: -1 });
 
     res.json(rutas);
@@ -70,10 +75,11 @@ export const crearRuta = async (req, res) => {
 
     const rutaCreada = await Ruta.findById(
       nuevaRuta._id
-    ).populate(
-      "empleado",
-      "nombres apellidos"
-    );
+    ).populate({
+      path: "empleado",
+      model: Usuario,
+      select: "nombre usuario rol estado bloqueado",
+    });
 
     res.status(201).json({
       mensaje: "Ruta creada correctamente.",
@@ -165,10 +171,11 @@ export const actualizarRuta = async (req, res) => {
 
     const rutaActualizada = await Ruta.findById(
       ruta._id
-    ).populate(
-      "empleado",
-      "nombres apellidos"
-    );
+    ).populate({
+      path: "empleado",
+      model: Usuario,
+      select: "nombre usuario rol estado bloqueado",
+    });
 
     res.json({
       mensaje: "Ruta actualizada correctamente.",
@@ -202,9 +209,17 @@ export const cambiarEstadoRuta = async (req, res) => {
 
     await ruta.save();
 
+    // Obtener la ruta actualizada con el empleado
+    const rutaActualizada = await Ruta.findById(ruta._id)
+      .populate({
+        path: "empleado",
+        model: Usuario,
+        select: "nombre usuario rol estado bloqueado",
+      });
+
     res.json({
       mensaje: "Estado de la ruta actualizado.",
-      estado: ruta.estado,
+      ruta: rutaActualizada,
     });
   } catch (error) {
     res.status(500).json({

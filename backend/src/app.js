@@ -5,6 +5,7 @@ import morgan from "morgan";
 import authRoutes from "./routes/auth.routes.js";
 import usuarioRoutes from "./routes/usuario.routes.js";
 import configuracionRoutes from "./routes/configuracion.routes.js";
+import rutaRoutes from "./routes/ruta.routes.js";
 import path from "path";
 
 const app = express();
@@ -27,6 +28,7 @@ app.get("/", (_, res) =>
 app.use("/api/auth", authRoutes);
 app.use("/api/usuarios", usuarioRoutes);
 app.use("/api/configuracion", configuracionRoutes);
+app.use("/api/rutas", rutaRoutes);
 
 
 export default app;

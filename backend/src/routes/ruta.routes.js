@@ -8,47 +8,18 @@ import {
   eliminarRuta,
 } from "../controllers/ruta.controller.js";
 
-import authMiddleware from "../middlewares/auth.middleware.js";
+import { proteger } from "../middlewares/auth.middleware.js";
+import { soloAdmin } from "../middlewares/role.middleware.js";
 
 const router = Router();
 
-/* ===========================
-   RUTAS
-=========================== */
+router.use(proteger);
+router.use(soloAdmin);
 
-// Listar todas las rutas
-router.get(
-  "/",
-  authMiddleware,
-  listarRutas
-);
-
-// Crear una nueva ruta
-router.post(
-  "/",
-  authMiddleware,
-  crearRuta
-);
-
-// Actualizar una ruta
-router.put(
-  "/:id",
-  authMiddleware,
-  actualizarRuta
-);
-
-// Activar / desactivar
-router.patch(
-  "/:id/estado",
-  authMiddleware,
-  cambiarEstadoRuta
-);
-
-// Eliminar
-router.delete(
-  "/:id",
-  authMiddleware,
-  eliminarRuta
-);
+router.get("/", listarRutas);
+router.post("/", crearRuta);
+router.put("/:id", actualizarRuta);
+router.patch("/:id/estado", cambiarEstadoRuta);
+router.delete("/:id", eliminarRuta);
 
 export default router;

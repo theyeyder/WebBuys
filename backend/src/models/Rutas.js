@@ -24,7 +24,7 @@ const rutaSchema = new mongoose.Schema(
 
     empleado: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Empleado",
+      ref: "Usuario",  
       default: null,
     },
 
