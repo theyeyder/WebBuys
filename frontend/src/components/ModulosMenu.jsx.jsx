@@ -127,11 +127,10 @@ export default function ModulosMenu() {
             <button
               key={modulo.ruta}
               type="button"
-              className={`config-quick-item ${
-                activo
-                  ? "active"
-                  : ""
-              }`}
+              className={`config-quick-item ${activo ? "active" : ""
+                }`}
+              data-tooltip={modulo.nombre}
+              aria-label={modulo.nombre}
               onClick={() => {
                 navigate(modulo.ruta);
                 setAbierto(false);
@@ -141,10 +140,6 @@ export default function ModulosMenu() {
                 src={modulo.icono}
                 alt=""
               />
-
-              <span>
-                {modulo.nombre}
-              </span>
             </button>
           );
         })}

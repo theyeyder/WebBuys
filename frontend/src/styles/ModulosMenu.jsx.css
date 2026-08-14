@@ -41,8 +41,8 @@
 /* Icono de módulos */
 
 .config-modulos-icon {
-  width:70px;
-  height: 70px;
+  width:50px;
+  height: 50px;
   object-fit: contain;
   pointer-events: none;
 } 
@@ -55,7 +55,7 @@
   border: 1px solid rgba(15, 23, 42, 0.07);
   border-radius: 14px;
 
-  background: #fefdfd;
+  background: #ffffff;
 
   display: flex;
   align-items: center;
@@ -76,6 +76,57 @@
 
   box-shadow:
     0 12px 28px rgba(15, 23, 42, 0.15);
+}
+
+/* =========================
+   NOMBRE AL PASAR CURSOR
+========================= */
+
+.config-quick-item::after {
+  content: attr(data-tooltip);
+
+  position: absolute;
+
+  /* APARECE DEBAJO DEL ICONO */
+  top: calc(100% + 9px);
+  left: 50%;
+
+  transform:
+    translateX(-50%)
+    translateY(-5px);
+
+  padding: 7px 11px;
+
+  border-radius: 8px;
+
+  background: #a3c5dd;
+  color: #092d06;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  opacity: 0;
+  visibility: hidden;
+
+  pointer-events: none;
+
+  z-index: 99999;
+
+  transition:
+    opacity 0.18s ease,
+    visibility 0.18s ease,
+    transform 0.18s ease;
+}
+
+.config-quick-item:hover::after {
+  opacity: 1;
+  visibility: visible;
+
+  transform:
+    translateX(-50%)
+    translateY(0);
 }
 
 /* Panel desplegable */
