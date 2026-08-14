@@ -6,7 +6,7 @@ import AppLayout from "../layouts/AppLayout.jsx";
 import SpatialCard from "../components/cards/SpatialCard.jsx";
 import UsuarioModal from "../components/UsuarioModal.jsx";
 import CambiarPasswordModal from "../components/CambiarPasswordModal.jsx";
-import Toast from "../components/Toast.jsx"; // 👈 NUEVO IMPORT
+import Toast from "../components/Toast.jsx"; 
 
 
 import editarIcon from "../assets/icons/editar.png";
@@ -53,7 +53,7 @@ export default function Usuarios() {
     cargarUsuarios();
   }, []);
 
-  // 👇 TOAST AUTO-CLOSE
+  
   useEffect(() => {
     if (!mensaje && !error) return;
 

@@ -1,5 +1,7 @@
 .rutas-module {
+  position: relative;
   width: 100%;
+  min-height: 100vh;
   padding: 28px;
 }
 
@@ -18,16 +20,36 @@
 
 .rutas-header p {
   margin: 0;
-  color: #667085;
+  color: #77a3a2;
 }
 
+/* ✅ EYEBROW MEJORADO */
 .rutas-eyebrow {
-  display: block;
-  color: #12b76a;
-  font-size: 12px;
-  font-weight: 800;
+  display: inline-block;
+
+  padding: 8px 14px;
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(18, 183, 106, 0.18),
+      rgba(32, 175, 178, 0.20)
+    );
+
+  backdrop-filter: blur(8px);
+
+  color: #067647;
+
+  font-size: 13px;
+  font-weight: 900;
+
   text-transform: uppercase;
   letter-spacing: 0.08em;
+
+  box-shadow:
+    0 5px 15px rgba(15, 23, 42, 0.08);
 }
 
 /* BOTÓN PRINCIPAL */
@@ -73,8 +95,7 @@
   transform: none;
 }
 
-/* BUSCADOR */
-
+/* ✅ BUSCADOR MEJORADO */
 .rutas-search-container {
   margin-top: 20px;
 }
@@ -89,10 +110,20 @@
   display: flex;
   align-items: center;
 
-  border: 1px solid #d8e0ec;
+  border: 1px solid rgba(32, 175, 178, 0.35);
   border-radius: 15px;
 
-  background: #f8faf9;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.95),
+      rgba(234,255,248,0.90)
+    );
+
+  backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 10px 25px rgba(15, 23, 42, 0.10);
 
   transition:
     border-color 0.2s ease,
@@ -161,13 +192,26 @@
   font-weight: 600;
 }
 
-/* TABLA */
-
+/* ✅ TABLA MEJORADA */
 .rutas-table-responsive {
   width: 100%;
   overflow-x: auto;
-
   margin-top: 22px;
+  padding: 14px;
+
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.58),
+      rgba(231, 255, 247, 0.52)
+    );
+
+  backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 16px 40px rgba(15, 23, 42, 0.10);
 }
 
 .rutas-table {
@@ -175,114 +219,192 @@
   min-width: 1050px;
 
   border-collapse: separate;
-  border-spacing: 0 10px;
+  border-spacing: 0 12px;
 }
 
-.rutas-table th {
-  padding: 0 15px 8px;
+/* CABECERA */
+.rutas-table thead th {
+  padding: 14px 16px;
 
   text-align: left;
 
-  color: #172033;
+  color: #ffffff;
 
-  font-size: 13px;
-  font-weight: 800;
-}
+  font-size: 14px;
+  font-weight: 900;
 
-.rutas-table tbody tr:not(:has(.rutas-empty)) {
+  letter-spacing: 0.02em;
+
   background:
     linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.85),
-      rgb(219, 237, 236),
-      rgb(249, 251, 250)
+      #0ea56b,
+      #21b6b5
+    );
+
+  border-top: 1px solid rgba(255,255,255,0.25);
+  border-bottom: 1px solid rgba(255,255,255,0.18);
+
+  box-shadow:
+    inset 0 -1px 0 rgba(255,255,255,0.15);
+}
+
+.rutas-table thead th:first-child {
+  border-radius: 14px 0 0 14px;
+}
+
+.rutas-table thead th:last-child {
+  border-radius: 0 14px 14px 0;
+}
+
+/* FILAS */
+.rutas-table tbody tr:not(:has(.rutas-empty)) {
+  background:
+    linear-gradient(
+      110deg,
+      rgba(239, 255, 248, 0.96) 0%,
+      rgba(216, 249, 240, 0.95) 40%,
+      rgba(219, 246, 255, 0.96) 100%
     );
 
   box-shadow:
-    0 7px 18px
-    rgba(15, 23, 42, 0.05);
+    0 10px 25px rgba(15, 23, 42, 0.10);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.rutas-table tbody tr:not(:has(.rutas-empty)):hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 16px 32px rgba(18, 183, 106, 0.18);
+
+  filter: saturate(1.08);
 }
 
 .rutas-table td {
-  padding: 14px 15px;
+  padding: 16px;
 
-  color: #050505;
+  color: #102335;
+
   font-size: 14px;
+  font-weight: 700;
 
   vertical-align: middle;
 }
 
 .rutas-table td:first-child {
-  border-radius: 14px 0 0 14px;
+  border-radius: 16px 0 0 16px;
 }
 
 .rutas-table td:last-child {
-  border-radius: 0 14px 14px 0;
+  border-radius: 0 16px 16px 0;
 }
 
-.ruta-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+/* CÓDIGO */
+.rutas-table td:first-child strong {
+  color: #067647;
+
+  font-size: 15px;
+  font-weight: 900;
+}
+
+/* RUTA */
+.ruta-info strong {
+  color: #0b3550;
+
+  font-size: 15px;
+  font-weight: 900;
 }
 
 .ruta-info small {
-  max-width: 300px;
+  margin-top: 4px;
 
   color: #475467;
 
-  line-height: 1.35;
+  font-size: 12px;
+  font-weight: 600;
 }
 
-/* DÍAS */
-
+/* ✅ DÍAS MEJORADOS */
 .rutas-dias-list {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .rutas-dias-list span {
-  padding: 5px 7px;
+  min-width: 38px;
 
-  border-radius: 7px;
+  padding: 6px 9px;
+
+  border-radius: 9px;
 
   background:
-    rgba(255, 255, 255, 0.7);
+    linear-gradient(
+      135deg,
+      #0ea56b,
+      #21b6b5
+    );
 
-  color: #344054;
+  color: #ffffff;
 
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 900;
+
+  text-align: center;
+
+  box-shadow:
+    0 5px 12px rgba(15, 23, 42, 0.10);
 }
 
-/* ESTADO */
-
+/* ✅ ESTADO MEJORADO */
 .rutas-status {
   display: inline-flex;
 
-  min-width: 85px;
+  min-width: 92px;
 
   align-items: center;
   justify-content: center;
 
-  padding: 7px 12px;
+  padding: 8px 14px;
 
   border-radius: 999px;
 
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .rutas-status.active {
-  color: #067647;
-  background: #ecfdf3;
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #12b76a,
+      #20afb2
+    );
+
+  box-shadow:
+    0 6px 14px rgba(18, 183, 106, 0.25);
 }
 
 .rutas-status.inactive {
-  color: #b42318;
-  background: #fef3f2;
+  color: #ffffff;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f04438,
+      #d92d20
+    );
+
+  box-shadow:
+    0 6px 14px rgba(217, 45, 32, 0.20);
 }
 
 /* ACCIONES */
@@ -691,18 +813,18 @@
   pointer-events: none;
 }
 
-/* Tooltip */
-
+/* Tooltip - Nueva ruta (debajo) */
 .rutas-icon-main::after {
   content: attr(data-tooltip);
 
   position: absolute;
-  bottom: calc(100% + 10px);
+  top: calc(100% + 10px);
+  bottom: auto;
   left: 50%;
 
   transform:
     translateX(-50%)
-    translateY(7px);
+    translateY(-7px);
 
   padding: 7px 12px;
 
@@ -786,18 +908,18 @@
   pointer-events: none;
 }
 
-/* Tooltip */
-
+/* Tooltip - Cerrar modal (debajo) */
 .rutas-modal-icon-btn::after {
   content: attr(data-tooltip);
 
   position: absolute;
-  bottom: calc(100% + 10px);
+  top: calc(100% + 10px);
+  bottom: auto;
   left: 50%;
 
   transform:
     translateX(-50%)
-    translateY(7px);
+    translateY(-7px);
 
   padding: 5px 10px;
 
@@ -833,50 +955,7 @@
     translateY(0);
 }
 
-
-.rutas-modal-save-btn {
-  background: linear-gradient(135deg, #eff1f0, #e0e7e1) !important;
-  border-color: transparent !important;
-  box-shadow: 0 7px 18px rgba(18, 183, 106, 0.25) !important;
-}
-
-.rutas-modal-save-btn:hover {
-  box-shadow: 0 12px 28px rgba(18, 183, 106, 0.35) !important;
-  transform: translateY(-3px);
-}
-
-.rutas-modal-save-btn:disabled {
-  opacity: 0.55;
-  cursor: wait;
-  transform: none;
-  box-shadow: none !important;
-}
-/* ==========================
-   TOOLTIPS DEBAJO
-   Nueva ruta + Cerrar
-========================== */
-
-/* Nueva ruta */
-
-.rutas-icon-main::after {
-  top: calc(100% + 10px);
-  bottom: auto;
-
-  transform:
-    translateX(-50%)
-    translateY(-7px);
-}
-
-.rutas-icon-main:hover::after,
-.rutas-icon-main:focus-visible::after {
-  transform:
-    translateX(-50%)
-    translateY(0);
-}
-
-
-/* Cerrar modal */
-
+/* Tooltip para cerrar con clase específica */
 .rutas-modal-icon-btn.rutas-tooltip-bottom::after {
   top: calc(100% + 10px);
   bottom: auto;
@@ -891,4 +970,22 @@
   transform:
     translateX(-50%)
     translateY(0);
+}
+
+.rutas-modal-save-btn {
+  background: linear-gradient(135deg, #12b76a, #43d85f) !important;
+  border-color: transparent !important;
+  box-shadow: 0 7px 18px rgba(18, 183, 106, 0.25) !important;
+}
+
+.rutas-modal-save-btn:hover {
+  box-shadow: 0 12px 28px rgba(18, 183, 106, 0.35) !important;
+  transform: translateY(-3px);
+}
+
+.rutas-modal-save-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
+  box-shadow: none !important;
 }

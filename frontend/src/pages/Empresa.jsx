@@ -70,7 +70,7 @@ export default function Empresa() {
       : `${API_ORIGIN}${form.logo}`
     : "";
 
-  // 👇 TOAST AUTO-CLOSE
+  
   useEffect(() => {
     if (!mensaje && !error) return;
 

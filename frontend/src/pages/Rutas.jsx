@@ -21,6 +21,7 @@ import nuevaRutaIcon from "../assets/icons/nueva-ruta.png";
 import guardarIcon from "../assets/icons/guardar.png";
 import cancelarIcon from "../assets/icons/cancelar.png";
 import EliminarRutaIcon from "../assets/icons/Eliminar ruta.png";
+import fondoRutas from "../assets/imagenes/fondo-rutas.png";
 import "../styles/rutas.css";
 
 const DIAS = [
@@ -149,7 +150,8 @@ export default function Rutas() {
     if (!texto) return rutas;
 
     return rutas.filter((ruta) => {
-      // ✅ CAMBIADO: usar nombre en lugar de nombres + apellidos
+      
+      
       const empleado = ruta.empleado?.nombre || "";
 
       const dias = Array.isArray(
@@ -372,11 +374,10 @@ export default function Rutas() {
   }
 
   return (
-    <section className="rutas-module">
-      <Toast
-        mensaje={mensaje}
-        error={error}
-      />
+    <section
+  className="rutas-module"
+  
+>
 
       {/* CABECERA */}
 
