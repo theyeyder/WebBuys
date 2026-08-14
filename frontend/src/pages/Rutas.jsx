@@ -11,6 +11,7 @@ import {
 import { listarUsuarios } from "../services/usuario.service.js";
 
 import Toast from "../components/Toast.jsx";
+import ModulosMenu from "../components/ModulosMenu.jsx";
 
 import buscarIcon from "../assets/icons/buscar.png";
 import editarIcon from "../assets/icons/Editar-ruta.png";
@@ -21,7 +22,7 @@ import nuevaRutaIcon from "../assets/icons/nueva-ruta.png";
 import guardarIcon from "../assets/icons/guardar.png";
 import cancelarIcon from "../assets/icons/cancelar.png";
 import EliminarRutaIcon from "../assets/icons/Eliminar ruta.png";
-import fondoRutas from "../assets/imagenes/fondo-rutas.png";
+
 import "../styles/rutas.css";
 
 const DIAS = [
@@ -150,8 +151,6 @@ export default function Rutas() {
     if (!texto) return rutas;
 
     return rutas.filter((ruta) => {
-      
-      
       const empleado = ruta.empleado?.nombre || "";
 
       const dias = Array.isArray(
@@ -374,20 +373,18 @@ export default function Rutas() {
   }
 
   return (
-    <section
-  className="rutas-module"
-  
->
+    <section className="rutas-module">
+      {/* MENÚ DE MÓDULOS */}
+      <ModulosMenu />
 
       {/* CABECERA */}
-
       <div className="rutas-header">
         <div>
-          <h2><span className="rutas-eyebrow">
-            Rutas de atención y distribución
-          </span></h2>
-
-  
+          <h2>
+            <span className="rutas-eyebrow">
+              Rutas de atención y distribución
+            </span>
+          </h2>
         </div>
 
         <button
@@ -406,7 +403,6 @@ export default function Rutas() {
       </div>
 
       {/* BUSCADOR */}
-
       <div className="rutas-search-container">
         <div className="rutas-search-box">
           <img
@@ -447,7 +443,6 @@ export default function Rutas() {
       </div>
 
       {/* TABLA */}
-
       {cargando ? (
         <div className="rutas-loading">
           Cargando rutas...
@@ -503,7 +498,6 @@ export default function Rutas() {
                         </div>
                       </td>
 
-                      {/* ✅ CAMBIADO: usar nombre en lugar de nombres + apellidos */}
                       <td>
                         {ruta.empleado?.nombre || "Sin asignar"}
                       </td>
@@ -613,7 +607,6 @@ export default function Rutas() {
       )}
 
       {/* MODAL */}
-
       {modalAbierto && (
         <div
           className="rutas-modal-overlay"
@@ -704,7 +697,6 @@ export default function Rutas() {
                     Sin asignar
                   </option>
 
-                  {/* ✅ CAMBIADO: usar nombre en lugar de nombres + apellidos */}
                   {empleados.map(
                     (empleado) => (
                       <option
@@ -772,7 +764,6 @@ export default function Rutas() {
               </div>
             </div>
 
-          
             <div className="rutas-modal-footer">
               <button
                 type="button"
