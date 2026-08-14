@@ -13,6 +13,7 @@ import pedidosIcon from "../assets/icons/pedidos.png";
 import facturacionIcon from "../assets/icons/facturacion.png";
 import empleadosIcon from "../assets/icons/empleados.png";
 import configuracionIcon from "../assets/icons/configuracion.png";
+import modulosIcon from "../assets/icons/modulos.png";
 
 import "../styles/ModulosMenu.jsx.css";
 
@@ -108,11 +109,11 @@ export default function ModulosMenu() {
         aria-label="Abrir módulos"
         title="Módulos"
       >
-        <span className="config-cubes">
-          <i></i>
-          <i></i>
-          <i></i>
-        </span>
+        <img
+          src={modulosIcon}
+          alt=""
+          className="config-modulos-icon"
+        />
       </button>
 
       {/* MÓDULOS PRINCIPALES */}

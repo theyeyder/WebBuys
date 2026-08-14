@@ -38,41 +38,44 @@
     0 12px 28px rgba(15, 23, 42, 0.14);
 }
 
-/* Cubitos de colores */
+/* Icono de módulos */
 
-.config-cubes {
-  position: relative;
-  width: 26px;
-  height: 26px;
+.config-modulos-icon {
+  width:70px;
+  height: 70px;
+  object-fit: contain;
+  pointer-events: none;
+} 
+.config-quick-trigger {
+  width: 50px;  
+  height: 50px;
+
+  padding: 7px;
+
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 14px;
+
+  background: #fefdfd;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 22px rgba(251, 254, 251, 0.605);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.config-cubes i {
-  position: absolute;
+.config-quick-trigger:hover {
+  transform: translateY(-2px);
 
-  width: 12px;
-  height: 12px;
-
-  transform: rotate(30deg) skewY(-30deg);
-
-  border-radius: 2px;
-}
-
-.config-cubes i:nth-child(1) {
-  top: 0;
-  left: 7px;
-  background: #ff1744;
-}
-
-.config-cubes i:nth-child(2) {
-  bottom: 1px;
-  left: 0;
-  background: #00d7c7;
-}
-
-.config-cubes i:nth-child(3) {
-  bottom: 1px;
-  right: 0;
-  background: #ffd600;
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.15);
 }
 
 /* Panel desplegable */
@@ -92,7 +95,7 @@
   border: 1px solid rgba(15, 23, 42, 0.07);
   border-radius: 16px;
 
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(235, 251, 238, 0.96);
 
   box-shadow:
     0 14px 36px rgba(15, 23, 42, 0.12);
