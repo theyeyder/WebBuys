@@ -382,7 +382,7 @@ export default function Rutas() {
   <div className="rutas-header-title">
     <h2>
       <span className="rutas-eyebrow">
-        Rutas de atención y distribución
+   
       </span>
     </h2>
   </div>
