@@ -379,69 +379,74 @@ export default function Rutas() {
 
       {/* CABECERA */}
       <div className="rutas-header">
-        <div>
-          <h2>
-            <span className="rutas-eyebrow">
-              Rutas de atención y distribución
-            </span>
-          </h2>
-        </div>
+  <div className="rutas-header-title">
+    <h2>
+      <span className="rutas-eyebrow">
+        Rutas de atención y distribución
+      </span>
+    </h2>
+  </div>
 
+  <div className="rutas-header-actions">
+
+    {/* BUSCADOR */}
+    <div className="rutas-search-box">
+      <img
+        src={buscarIcon}
+        alt=""
+        className="rutas-search-icon"
+      />
+
+      <input
+        type="search"
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+        placeholder="Buscar por código, ruta, empleado, día..."
+      />
+
+      {busqueda && (
         <button
           type="button"
-          className="rutas-icon-main"
-          data-tooltip="Nueva ruta"
-          aria-label="Nueva ruta"
-          onClick={abrirNuevaRuta}
+          className="rutas-search-clear"
+          onClick={() => setBusqueda("")}
+          aria-label="Limpiar búsqueda"
         >
-          <img
-            src={nuevaRutaIcon}
-            alt=""
-            className="rutas-icon-main-image"
-          />
+          ×
         </button>
-      </div>
+      )}
+    </div>
+
+    {/* NUEVA RUTA */}
+    <button
+      type="button"
+      className="rutas-icon-main"
+      data-tooltip="Nueva ruta"
+      aria-label="Nueva ruta"
+      onClick={abrirNuevaRuta}
+    >
+      <img
+        src={nuevaRutaIcon}
+        alt=""
+        className="rutas-icon-main-image"
+      />
+    </button>
+
+  </div>
+</div>
 
       {/* BUSCADOR */}
       <div className="rutas-search-container">
-        <div className="rutas-search-box">
-          <img
-            src={buscarIcon}
-            alt=""
-            className="rutas-search-icon"
-          />
+        <div className="rutas-tools">
 
-          <input
-            type="search"
-            value={busqueda}
-            onChange={(event) =>
-              setBusqueda(event.target.value)
-            }
-            placeholder="Buscar por código, ruta, empleado, día..."
-          />
+          <span className="rutas-search-results">
+            {rutasFiltradas.length}{" "}  
+            {rutasFiltradas.length === 1 ? "ruta" : "rutas"}
+          </span>
+</div>
+</div>
+          
 
-          {busqueda && (
-            <button
-              type="button"
-              className="rutas-search-clear"
-              onClick={() =>
-                setBusqueda("")
-              }
-              title="Limpiar búsqueda"
-            >
-              ×
-            </button>
-          )}
-        </div>
-
-        <span className="rutas-search-results">
-          {rutasFiltradas.length} ruta
-          {rutasFiltradas.length !== 1
-            ? "s"
-            : ""}
-        </span>
-      </div>
-
+           
       {/* TABLA */}
       {cargando ? (
         <div className="rutas-loading">
@@ -628,13 +633,13 @@ export default function Rutas() {
                 <span className="rutas-eyebrow">
                   {rutaEditando
                     ? "Editar"
-                    : "Nueva"}
+                    : "Crear Ruta"}
                 </span>
 
                 <h3>
                   {rutaEditando
                     ? "Editar ruta"
-                    : "Crear ruta"}
+                    : ""}
                 </h3>
               </div>
 
