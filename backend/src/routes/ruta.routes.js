@@ -6,6 +6,7 @@ import {
   actualizarRuta,
   cambiarEstadoRuta,
   eliminarRuta,
+  obtenerSiguienteCodigoRuta,
 } from "../controllers/ruta.controller.js";
 
 import { proteger } from "../middlewares/auth.middleware.js";
@@ -21,5 +22,7 @@ router.post("/", crearRuta);
 router.put("/:id", actualizarRuta);
 router.patch("/:id/estado", cambiarEstadoRuta);
 router.delete("/:id", eliminarRuta);
+router.get( "/siguiente-codigo",obtenerSiguienteCodigoRuta);
 
 export default router;
+

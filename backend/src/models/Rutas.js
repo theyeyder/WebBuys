@@ -10,6 +10,13 @@ const rutaSchema = new mongoose.Schema(
       uppercase: true,
     },
 
+    codigo: {
+  type: String,
+  required: true,
+  unique: true,
+  trim: true,
+},
+
     nombre: {
       type: String,
       required: true,

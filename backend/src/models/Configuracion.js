@@ -128,7 +128,7 @@ iva: {
   max: 100,
 },
 
-    /* IMPRESIÓN */
+        /* IMPRESIÓN */
 
     piePaginaFactura: {
       type: String,
@@ -138,6 +138,14 @@ iva: {
     observacionesFactura: {
       type: String,
       default: "",
+    },
+
+    /* RUTAS */
+
+    consecutivoRuta: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
   },
   {

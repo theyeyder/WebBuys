@@ -1,5 +1,8 @@
 import Ruta from "../models/Rutas.js";
 import Usuario from "../models/Usuario.js";
+import Configuracion from "../models/Configuracion.js";
+
+
 
 /* ===========================
    LISTAR RUTAS
@@ -30,7 +33,6 @@ export const listarRutas = async (req, res) => {
 export const crearRuta = async (req, res) => {
   try {
     const {
-      codigo,
       nombre,
       descripcion,
       empleado,
@@ -38,11 +40,9 @@ export const crearRuta = async (req, res) => {
       estado,
     } = req.body;
 
-    if (!codigo?.trim()) {
-      return res.status(400).json({
-        mensaje: "El código de la ruta es obligatorio.",
-      });
-    }
+    /* =========================
+       VALIDAR NOMBRE
+    ========================= */
 
     if (!nombre?.trim()) {
       return res.status(400).json({
@@ -50,48 +50,83 @@ export const crearRuta = async (req, res) => {
       });
     }
 
-    const codigoNormalizado = codigo.trim().toUpperCase();
+    /* =========================
+       OBTENER CONSECUTIVO
+    ========================= */
 
-    const rutaExistente = await Ruta.findOne({
-      codigo: codigoNormalizado,
-    });
+    let configuracion = await Configuracion.findOne();
 
-    if (rutaExistente) {
-      return res.status(400).json({
-        mensaje: "Ya existe una ruta con ese código.",
+    if (!configuracion) {
+      configuracion = await Configuracion.create({
+        consecutivoRuta: 0,
       });
     }
 
+    /*
+      Incrementamos primero.
+
+      0 -> 1 = RUTA-01
+      1 -> 2 = RUTA-02
+      2 -> 3 = RUTA-03
+    */
+
+    configuracion.consecutivoRuta =
+      (configuracion.consecutivoRuta || 0) + 1;
+
+    await configuracion.save();
+
+    const numeroRuta =
+      configuracion.consecutivoRuta;
+
+    const codigo = `RUTA-${String(
+      numeroRuta
+    ).padStart(2, "0")}`;
+
+    /* =========================
+       CREAR RUTA
+    ========================= */
+
     const nuevaRuta = await Ruta.create({
-      codigo: codigoNormalizado,
+      codigo,
       nombre: nombre.trim(),
       descripcion: descripcion?.trim() || "",
       empleado: empleado || null,
+
       diasAtencion: Array.isArray(diasAtencion)
         ? diasAtencion
         : [],
+
       estado: estado || "Activa",
     });
+
+    /* =========================
+       CARGAR EMPLEADO
+    ========================= */
 
     const rutaCreada = await Ruta.findById(
       nuevaRuta._id
     ).populate({
       path: "empleado",
       model: Usuario,
-      select: "nombre usuario rol estado bloqueado",
+      select:
+        "nombre usuario rol estado bloqueado",
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       mensaje: "Ruta creada correctamente.",
       ruta: rutaCreada,
     });
   } catch (error) {
-    res.status(500).json({
+    console.error(
+      "Error creando ruta:",
+      error
+    );
+
+    return res.status(500).json({
       mensaje: error.message,
     });
   }
 };
-
 /* ===========================
    ACTUALIZAR RUTA
 =========================== */
@@ -107,7 +142,6 @@ export const actualizarRuta = async (req, res) => {
     }
 
     const {
-      codigo,
       nombre,
       descripcion,
       empleado,
@@ -115,30 +149,7 @@ export const actualizarRuta = async (req, res) => {
       estado,
     } = req.body;
 
-    if (codigo !== undefined) {
-      const codigoNormalizado =
-        codigo.trim().toUpperCase();
-
-      if (!codigoNormalizado) {
-        return res.status(400).json({
-          mensaje: "El código de la ruta es obligatorio.",
-        });
-      }
-
-      const otraRuta = await Ruta.findOne({
-        codigo: codigoNormalizado,
-        _id: { $ne: ruta._id },
-      });
-
-      if (otraRuta) {
-        return res.status(400).json({
-          mensaje: "Ya existe otra ruta con ese código.",
-        });
-      }
-
-      ruta.codigo = codigoNormalizado;
-    }
-
+    
     if (nombre !== undefined) {
       if (!nombre.trim()) {
         return res.status(400).json({
@@ -249,6 +260,37 @@ export const eliminarRuta = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      mensaje: error.message,
+    });
+  }
+};
+
+/* ===========================
+  CONSECUTIVO RUTA-CARGUE AUTOMÁTICO
+=========================== */
+
+export const obtenerSiguienteCodigoRuta = async (req, res) => {
+  try {
+    let configuracion = await Configuracion.findOne();
+
+    if (!configuracion) {
+      configuracion = await Configuracion.create({
+        consecutivoRuta: 0,
+      });
+    }
+
+    const siguiente =
+      (configuracion.consecutivoRuta || 0) + 1;
+
+    const codigo = `RUTA-${String(
+      siguiente
+    ).padStart(2, "0")}`;
+
+    return res.json({
+      codigo,
+    });
+  } catch (error) {
+    return res.status(500).json({
       mensaje: error.message,
     });
   }

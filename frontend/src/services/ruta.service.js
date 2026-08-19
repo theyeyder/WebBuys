@@ -29,3 +29,13 @@ export async function eliminarRuta(id) {
   const response = await api.delete(`/rutas/${id}`);
   return response.data;
 }
+
+/* Obtener siguiente código de ruta */
+
+export async function obtenerSiguienteCodigoRuta() {
+  const response = await api.get(
+    "/rutas/siguiente-codigo"
+  );
+
+  return response.data;
+}

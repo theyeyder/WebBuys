@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 
+
 import {
   listarRutas,
   crearRuta,
   actualizarRuta,
   cambiarEstadoRuta,
   eliminarRuta,
+  obtenerSiguienteCodigoRuta,  
 } from "../services/ruta.service.js";
 
 import { listarUsuarios } from "../services/usuario.service.js";
@@ -202,11 +204,26 @@ export default function Rutas() {
     });
   }
 
-  function abrirNuevaRuta() {
-    setRutaEditando(null);
-    setForm(FORM_INICIAL);
-    setError("");
-    setModalAbierto(true);
+  // ✅ FUNCIÓN MODIFICADA - Ahora es async y obtiene el código automático
+  async function abrirNuevaRuta() {
+    try {
+      setRutaEditando(null);
+      setError("");
+
+      const data = await obtenerSiguienteCodigoRuta();
+
+      setForm({
+        ...FORM_INICIAL,
+        codigo: data.codigo || "",
+      });
+
+      setModalAbierto(true);
+    } catch (err) {
+      setError(
+        err?.response?.data?.mensaje ||
+          "No fue posible obtener el siguiente código."
+      );
+    }
   }
 
   function abrirEditarRuta(ruta) {
@@ -659,13 +676,14 @@ export default function Rutas() {
             </div>
 
             <div className="rutas-form-grid">
+              {/* ✅ CAMPO CÓDIGO MODIFICADO - readOnly y placeholder actualizado */}
               <label>
                 Código
                 <input
                   name="codigo"
                   value={form.codigo}
-                  onChange={cambiar}
-                  placeholder="RUTA-01"
+                  readOnly
+                  placeholder="Código automático"
                   autoComplete="off"
                 />
               </label>
