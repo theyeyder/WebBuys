@@ -9,6 +9,7 @@ import rutasIcon from "../assets/icons/rutas.png";
 import numeracionIcon from "../assets/icons/numeracion.png";
 import auditoriaIcon from "../assets/icons/auditoria.png";
 import preferenciasIcon from "../assets/icons/preferencias.png";
+import zonasDespachoIcon from "../assets/icons/zonas-despacho.png";
 
 import "../styles/configuracion.css";
 
@@ -29,6 +30,11 @@ const opciones = [
     icono: rutasIcon,
   },
   {
+    nombre: "Zonas de despacho",
+    ruta: "/configuracion/zonas-despacho",
+    icono: zonasDespachoIcon,
+  },
+  {
     nombre: "Numeración",
     ruta: "/configuracion/numeracion",
     icono: numeracionIcon,
@@ -44,7 +50,6 @@ const opciones = [
     icono: preferenciasIcon,
   },
 ];
-
 export default function Configuracion() {
   const navigate = useNavigate();
 

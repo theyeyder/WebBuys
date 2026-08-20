@@ -1,8 +1,7 @@
 import Ruta from "../models/Rutas.js";
 import Usuario from "../models/Usuario.js";
 import Configuracion from "../models/Configuracion.js";
-
-
+import ZonaDespacho from "../models/ZonaDespacho.js"; 
 
 /* ===========================
    LISTAR RUTAS
@@ -15,6 +14,11 @@ export const listarRutas = async (req, res) => {
         path: "empleado",
         model: Usuario,
         select: "nombre usuario rol estado bloqueado",
+      })
+      .populate({
+        path: "zonasDespacho", 
+        model: ZonaDespacho,
+        select: "nombre estado",
       })
       .sort({ createdAt: -1 });
 
@@ -36,6 +40,7 @@ export const crearRuta = async (req, res) => {
       nombre,
       descripcion,
       empleado,
+      zonasDespacho, 
       diasAtencion,
       estado,
     } = req.body;
@@ -62,14 +67,6 @@ export const crearRuta = async (req, res) => {
       });
     }
 
-    /*
-      Incrementamos primero.
-
-      0 -> 1 = RUTA-01
-      1 -> 2 = RUTA-02
-      2 -> 3 = RUTA-03
-    */
-
     configuracion.consecutivoRuta =
       (configuracion.consecutivoRuta || 0) + 1;
 
@@ -91,26 +88,32 @@ export const crearRuta = async (req, res) => {
       nombre: nombre.trim(),
       descripcion: descripcion?.trim() || "",
       empleado: empleado || null,
-
+      zonasDespacho: Array.isArray(zonasDespacho) 
+        ? zonasDespacho
+        : [],
       diasAtencion: Array.isArray(diasAtencion)
         ? diasAtencion
         : [],
-
       estado: estado || "Activa",
     });
 
     /* =========================
-       CARGAR EMPLEADO
+       CARGAR EMPLEADO Y ZONAS
     ========================= */
 
     const rutaCreada = await Ruta.findById(
       nuevaRuta._id
-    ).populate({
-      path: "empleado",
-      model: Usuario,
-      select:
-        "nombre usuario rol estado bloqueado",
-    });
+    )
+      .populate({
+        path: "empleado",
+        model: Usuario,
+        select: "nombre usuario rol estado bloqueado",
+      })
+      .populate({
+        path: "zonasDespacho", 
+        model: ZonaDespacho,
+        select: "nombre estado",
+      });
 
     return res.status(201).json({
       mensaje: "Ruta creada correctamente.",
@@ -127,6 +130,7 @@ export const crearRuta = async (req, res) => {
     });
   }
 };
+
 /* ===========================
    ACTUALIZAR RUTA
 =========================== */
@@ -145,11 +149,11 @@ export const actualizarRuta = async (req, res) => {
       nombre,
       descripcion,
       empleado,
+      zonasDespacho, 
       diasAtencion,
       estado,
     } = req.body;
 
-    
     if (nombre !== undefined) {
       if (!nombre.trim()) {
         return res.status(400).json({
@@ -168,6 +172,13 @@ export const actualizarRuta = async (req, res) => {
       ruta.empleado = empleado || null;
     }
 
+   
+    if (zonasDespacho !== undefined) {
+      ruta.zonasDespacho = Array.isArray(zonasDespacho)
+        ? zonasDespacho
+        : [];
+    }
+
     if (diasAtencion !== undefined) {
       ruta.diasAtencion = Array.isArray(diasAtencion)
         ? diasAtencion
@@ -182,11 +193,17 @@ export const actualizarRuta = async (req, res) => {
 
     const rutaActualizada = await Ruta.findById(
       ruta._id
-    ).populate({
-      path: "empleado",
-      model: Usuario,
-      select: "nombre usuario rol estado bloqueado",
-    });
+    )
+      .populate({
+        path: "empleado",
+        model: Usuario,
+        select: "nombre usuario rol estado bloqueado",
+      })
+      .populate({
+        path: "zonasDespacho", 
+        model: ZonaDespacho,
+        select: "nombre estado",
+      });
 
     res.json({
       mensaje: "Ruta actualizada correctamente.",
@@ -220,12 +237,17 @@ export const cambiarEstadoRuta = async (req, res) => {
 
     await ruta.save();
 
-    // Obtener la ruta actualizada con el empleado
+    // Obtener la ruta actualizada con el empleado y zonas
     const rutaActualizada = await Ruta.findById(ruta._id)
       .populate({
         path: "empleado",
         model: Usuario,
         select: "nombre usuario rol estado bloqueado",
+      })
+      .populate({
+        path: "zonasDespacho", // ✅ NUEVO
+        model: ZonaDespacho,
+        select: "nombre estado",
       });
 
     res.json({

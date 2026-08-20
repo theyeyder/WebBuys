@@ -10,13 +10,6 @@ const rutaSchema = new mongoose.Schema(
       uppercase: true,
     },
 
-    codigo: {
-  type: String,
-  required: true,
-  unique: true,
-  trim: true,
-},
-
     nombre: {
       type: String,
       required: true,
@@ -31,9 +24,17 @@ const rutaSchema = new mongoose.Schema(
 
     empleado: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Usuario",  
+      ref: "Usuario",
       default: null,
     },
+
+   
+    zonasDespacho: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ZonaDespacho",
+      },
+    ],
 
     diasAtencion: {
       type: [String],
@@ -59,5 +60,12 @@ const rutaSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Índices para mejorar el rendimiento
+rutaSchema.index({ codigo: 1 });
+rutaSchema.index({ nombre: 1 });
+rutaSchema.index({ empleado: 1 });
+rutaSchema.index({ estado: 1 });
+rutaSchema.index({ zonasDespacho: 1 });
 
 export default mongoose.model("Ruta", rutaSchema);

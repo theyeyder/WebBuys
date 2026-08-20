@@ -22,6 +22,7 @@ import Preferencias from "./pages/Preferencias.jsx";
 
 import Configuracion from "./pages/Configuracion.jsx";
 import Usuarios from "./pages/Usuarios.jsx";
+import ZonasDespacho from "./pages/ZonasDespacho.jsx";
 
 export default function App() {
   return (
@@ -90,50 +91,53 @@ export default function App() {
             />
 
           </Route>
-<Route
-  path="/configuracion/empresa"
-  element={
-    <RoleRoute roles={["Administrador"]}>
-      <Empresa />
-    </RoleRoute>
-  }
-/>
+          <Route
+            path="/configuracion/empresa"
+            element={
+              <RoleRoute roles={["Administrador"]}>
+                <Empresa />
+              </RoleRoute>
+            }
+          />
 
-<Route
-  path="/configuracion/rutas"
-  element={
-    <RoleRoute roles={["Administrador"]}>
-      <Rutas />
-    </RoleRoute>
-  }
-/>
+          <Route
+            path="/configuracion/rutas"
+            element={
+              <RoleRoute roles={["Administrador"]}>
+                <Rutas />
+              </RoleRoute>
+            }
+          />
+          <Route
+            path="/configuracion/zonas-despacho"
+            element={<ZonasDespacho />}
+          />
+          <Route
+            path="/configuracion/numeracion"
+            element={
+              <RoleRoute roles={["Administrador"]}>
+                <Numeracion />
+              </RoleRoute>
+            }
+          />
 
-<Route
-  path="/configuracion/numeracion"
-  element={
-    <RoleRoute roles={["Administrador"]}>
-      <Numeracion />
-    </RoleRoute>
-  }
-/>
+          <Route
+            path="/configuracion/auditoria"
+            element={
+              <RoleRoute roles={["Administrador"]}>
+                <Auditoria />
+              </RoleRoute>
+            }
+          />
 
-<Route
-  path="/configuracion/auditoria"
-  element={
-    <RoleRoute roles={["Administrador"]}>
-      <Auditoria />
-    </RoleRoute>
-  }
-/>
-
-<Route
-  path="/configuracion/preferencias"
-  element={
-    <RoleRoute roles={["Administrador"]}>
-      <Preferencias />
-    </RoleRoute>
-  }
-/>
+          <Route
+            path="/configuracion/preferencias"
+            element={
+              <RoleRoute roles={["Administrador"]}>
+                <Preferencias />
+              </RoleRoute>
+            }
+          />
           <Route
             path="*"
             element={<Navigate to="/" replace />}
