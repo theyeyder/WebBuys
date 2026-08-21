@@ -6,7 +6,7 @@ export default function Navbar({ title = 'Dashboard' }) {
   return (
     <header className="topbar spatial-card">
       <div>
-        <span className="eyebrow">Panel WebBuys</span>
+       
         <h1>{title}</h1>
       </div>
       <div className="topbar-actions">

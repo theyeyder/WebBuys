@@ -22,6 +22,8 @@ import guardarIcon from "../assets/icons/guardar.png";
 import nuevoClienteIcon from "../assets/icons/nuevo-cliente.png";
 import editarClienteIcon from "../assets/icons/editar-cliente.png";
 import eliminarClienteIcon from "../assets/icons/eliminar-cliente.png";
+import bloquearIcon from "../assets/icons/bloquear.png";
+import desbloquearIcon from "../assets/icons/desbloquear.png";
 
 
 /* =========================================
@@ -175,11 +177,11 @@ export default function Clientes() {
 
   function nuevoCliente() {
 
-    setForm(FORM_INICIAL);
-
     setClienteSeleccionado(null);
 
     setModoEdicion(false);
+
+    setForm(FORM_INICIAL);
 
     setMensaje("");
 
@@ -264,6 +266,68 @@ export default function Clientes() {
       top: 0,
       behavior: "smooth",
     });
+
+  }
+
+
+  /* =========================================
+     ACTIVAR / DESACTIVAR CLIENTE SELECCIONADO
+  ========================================= */
+
+  async function cambiarEstadoClienteSeleccionado() {
+
+    if (!clienteSeleccionado?._id) {
+
+      setMensaje("Seleccione primero un cliente.");
+
+      setTipoMensaje("info");
+
+      return;
+
+    }
+
+    try {
+
+      const nuevoEstado =
+        !clienteSeleccionado.estado;
+
+      await actualizarCliente(
+        clienteSeleccionado._id,
+        {
+          estado: nuevoEstado,
+        }
+      );
+
+      setMensaje(
+        nuevoEstado
+          ? "Cliente activado correctamente."
+          : "Cliente desactivado correctamente."
+      );
+
+      setTipoMensaje("success");
+
+      setClienteSeleccionado((actual) => ({
+        ...actual,
+        estado: nuevoEstado,
+      }));
+
+      setForm((actual) => ({
+        ...actual,
+        estado: nuevoEstado,
+      }));
+
+      await cargarClientes();
+
+    } catch (error) {
+
+      setMensaje(
+        error?.response?.data?.mensaje ||
+        "No fue posible cambiar el estado del cliente."
+      );
+
+      setTipoMensaje("error");
+
+    }
 
   }
 
@@ -493,7 +557,7 @@ export default function Clientes() {
 
 
   /* =========================================
-     ACTIVAR / DESACTIVAR
+     CAMBIAR ESTADO DESDE LA TABLA
   ========================================= */
 
   async function cambiarEstadoCliente(cliente) {
@@ -696,7 +760,7 @@ export default function Clientes() {
 
               <button
                 type="button"
-                className="clientes-icon-btn"
+                className="clientes-icon-btn clientes-icon-btn-edit"
                 onClick={editarClienteSeleccionado}
                 data-tooltip="Editar cliente"
                 aria-label="Editar cliente"
@@ -707,6 +771,38 @@ export default function Clientes() {
               >
                 <img
                   src={editarClienteIcon}
+                  alt=""
+                />
+              </button>
+
+
+              {/* ACTIVAR / DESACTIVAR */}
+
+              <button
+                type="button"
+                className="clientes-icon-btn"
+                onClick={cambiarEstadoClienteSeleccionado}
+                data-tooltip={
+                  clienteSeleccionado?.estado
+                    ? "Desactivar cliente"
+                    : "Activar cliente"
+                }
+                aria-label={
+                  clienteSeleccionado?.estado
+                    ? "Desactivar cliente"
+                    : "Activar cliente"
+                }
+                disabled={
+                  guardando ||
+                  !clienteSeleccionado
+                }
+              >
+                <img
+                  src={
+                    clienteSeleccionado?.estado
+                      ? bloquearIcon
+                      : desbloquearIcon
+                  }
                   alt=""
                 />
               </button>

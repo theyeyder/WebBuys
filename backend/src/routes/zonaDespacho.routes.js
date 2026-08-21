@@ -13,16 +13,42 @@ import { soloAdmin } from "../middlewares/role.middleware.js";
 
 const router = Router();
 
+/* TODAS requieren autenticación */
 router.use(proteger);
-router.use(soloAdmin);
 
-router.get("/", listarZonasDespacho);
-router.post("/", crearZonaDespacho);
-router.put("/:id", actualizarZonaDespacho);
+/* CONSULTAR ZONAS
+   Puede hacerlo cualquier usuario autenticado
+*/
+router.get(
+  "/",
+  listarZonasDespacho
+);
+
+/* ADMINISTRAR ZONAS
+   Solo administrador
+*/
+router.post(
+  "/",
+  soloAdmin,
+  crearZonaDespacho
+);
+
+router.put(
+  "/:id",
+  soloAdmin,
+  actualizarZonaDespacho
+);
+
 router.patch(
   "/:id/estado",
+  soloAdmin,
   cambiarEstadoZonaDespacho
 );
-router.delete("/:id", eliminarZonaDespacho);
+
+router.delete(
+  "/:id",
+  soloAdmin,
+  eliminarZonaDespacho
+);
 
 export default router;
