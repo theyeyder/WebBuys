@@ -204,11 +204,11 @@
 }
 
 .table tbody td {
-  padding: 14px 16px;
+  padding: 2px 5px;
   vertical-align: middle;
   color: #050505; 
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .table tbody td:first-child {
@@ -271,9 +271,9 @@
 
 .icon-btn {
   position: relative;
-  flex: 0 0 42px;
-  width: 42px;
-  height: 42px;
+  flex: 0 0 40px;
+  width: 23px;
+  height: 23px;
   padding: 0;
   border: 1px solid rgba(15, 23, 42, 0.06);
   border-radius: 12px;
@@ -313,8 +313,8 @@
 
 .table-icon {
   display: block;
-  width: 23px;
-  height: 23px;
+  width: 20px;
+  height: 20px;
   object-fit: contain;
   pointer-events: none;
 }

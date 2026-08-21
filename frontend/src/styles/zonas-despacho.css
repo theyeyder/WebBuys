@@ -2,7 +2,7 @@
    MODULO PRINCIPAL
 ========================= */
 
-.rutas-module {
+.zonas-module {
   position: relative;
   width: 100%;
   min-height: 100vh;
@@ -31,7 +31,7 @@
    HEADER
 ========================= */
 
-.rutas-header {
+.zonas-header {
   width: 100%;
 
   display: flex;
@@ -43,15 +43,15 @@
   margin-bottom: 18px;
 }
 
-.rutas-header-title {
+.zonas-header-title {
   flex: 0 0 auto;
 }
 
-.rutas-header-title h2 {
+.zonas-header-title h2 {
   margin: 0;
 }
 
-.rutas-eyebrow {
+.zonas-eyebrow {
   display: inline-block;
 
   padding: 9px 16px;
@@ -71,16 +71,16 @@
 }
 
 @media (max-width: 900px) {
-  .rutas-header {
+  .zonas-header {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .rutas-header-actions {
+  .zonas-header-actions {
     width: 100%;
   }
 
-  .rutas-header-actions .rutas-search-box {
+  .zonas-header-actions .zonas-search-box {
     max-width: none;
   }
 }
@@ -89,7 +89,7 @@
    HEADER ACTIONS (Buscador + Botón)
 ========================= */
 
-.rutas-header-actions {
+.zonas-header-actions {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -99,7 +99,7 @@
   flex: 1;
 }
 
-.rutas-header-actions .rutas-search-box {
+.zonas-header-actions .zonas-search-box {
   width: 100%;
   max-width: 520px;
   min-height: 52px;
@@ -107,7 +107,7 @@
   margin: 0;
 }
 
-.rutas-header-actions .rutas-icon-main {
+.zonas-header-actions .zonas-icon-main {
   flex: 0 0 54px;
 
   width: 54px;
@@ -117,10 +117,10 @@
 }
 
 /* =========================
-   BOTÓN NUEVA RUTA
+   BOTÓN NUEVA ZONA
 ========================= */
 
-.rutas-icon-main {
+.zonas-icon-main {
   position: relative;
 
   width: 54px;
@@ -148,21 +148,21 @@
   transition: var(--transition);
 }
 
-.rutas-icon-main:hover {
+.zonas-icon-main:hover {
   transform: translateY(-3px);
 
   box-shadow: 0 13px 26px rgba(15, 23, 42, 0.16);
 }
 
-.rutas-icon-main-image {
+.zonas-icon-main-image {
   width: 34px;
   height: 34px;
   object-fit: contain;
   pointer-events: none;
 }
 
-/* Tooltip - Nueva ruta */
-.rutas-icon-main::after {
+/* Tooltip - Nueva zona */
+.zonas-icon-main::after {
   content: attr(data-tooltip);
 
   position: absolute;
@@ -192,8 +192,8 @@
   transition: var(--transition);
 }
 
-.rutas-icon-main:hover::after,
-.rutas-icon-main:focus-visible::after {
+.zonas-icon-main:hover::after,
+.zonas-icon-main:focus-visible::after {
   opacity: 1;
   visibility: visible;
 
@@ -204,7 +204,7 @@
    BUSCADOR
 ========================= */
 
-.rutas-search-box {
+.zonas-search-box {
   position: relative;
 
   width: 100%;
@@ -228,7 +228,7 @@
     transform 0.2s ease;
 }
 
-.rutas-search-box:focus-within {
+.zonas-search-box:focus-within {
   border-color: #2a9d8f;
 
   box-shadow:
@@ -238,14 +238,14 @@
   transform: translateY(-1px);
 }
 
-.rutas-search-icon {
+.zonas-search-icon {
   width: 26px;
   height: 26px;
   margin-left: 15px;
   object-fit: contain;
 }
 
-.rutas-search-box input {
+.zonas-search-box input {
   width: 100%;
   min-height: 50px;
 
@@ -260,11 +260,11 @@
   font-size: 14px;
 }
 
-.rutas-search-box input::-webkit-search-cancel-button {
+.zonas-search-box input::-webkit-search-cancel-button {
   display: none;
 }
 
-.rutas-search-clear {
+.zonas-search-clear {
   position: absolute;
   right: 12px;
 
@@ -283,10 +283,10 @@
 }
 
 /* =========================
-   TOOLS (Resultados)
+   RESULTS ROW (Resultados)
 ========================= */
 
-.rutas-tools {
+.zonas-results-row {
   width: 100%;
 
   display: flex;
@@ -297,7 +297,7 @@
   margin: 12px 0 22px;
 }
 
-.rutas-search-results {
+.zonas-search-results {
   margin: 0;
 
   color: #167c13;
@@ -309,7 +309,7 @@
    TABLA
 ========================= */
 
-.rutas-table-responsive {
+.zonas-table-responsive {
   width: 100%;
   overflow-x: auto;
 
@@ -323,16 +323,16 @@
   box-shadow: none;
 }
 
-.rutas-table {
+.zonas-table {
   width: 100%;
-  min-width: 1050px;
+  min-width: 650px;
 
   border-collapse: separate;
   border-spacing: 0 10px;
 }
 
 /* CABECERA */
-.rutas-table thead th {
+.zonas-table thead th {
   padding: 0 16px 11px;
 
   text-align: left;
@@ -348,13 +348,13 @@
 }
 
 /* FILAS */
-.rutas-table tbody tr:not(:has(.rutas-empty)) {
+.zonas-table tbody tr:not(:has(.zonas-empty)) {
   background:
     linear-gradient(
       110deg,
-      #dff7ec 0%,
-      #e8f8f3 45%,
-      #e6f3f9 100%
+      #fcfdfc 0%,
+      #e7f4f0 45%,
+      #d0ead5 100%
     );
 
   box-shadow:
@@ -365,14 +365,14 @@
     box-shadow 0.2s ease;
 }
 
-.rutas-table tbody tr:not(:has(.rutas-empty)):hover {
+.zonas-table tbody tr:not(:has(.zonas-empty)):hover {
   transform: translateY(-2px);
 
   box-shadow:
     0 13px 28px rgba(42, 157, 143, 0.16);
 }
 
-.rutas-table td {
+.zonas-table td {
   padding: 5px 10px;
 
   color: #172033;
@@ -383,83 +383,27 @@
   vertical-align: middle;
 }
 
-.rutas-table td:first-child {
+.zonas-table td:first-child {
   border-radius: 14px 0 0 14px;
 }
 
-.rutas-table td:last-child {
+.zonas-table td:last-child {
   border-radius: 0 14px 14px 0;
 }
 
-/* CÓDIGO */
-.rutas-table td:first-child strong {
+/* NOMBRE */
+.zonas-table td:first-child strong {
   color: #067647;
 
   font-size: 15px;
   font-weight: 900;
 }
 
-/* RUTA */
-.ruta-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.ruta-info strong {
-  color: #132238;
-
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.ruta-info small {
-  max-width: 300px;
-
-  color: #475467;
-
-  font-size: 12px;
-  font-weight: 500;
-
-  line-height: 1.35;
-}
-
-/* =========================
-   DÍAS DE ATENCIÓN
-========================= */
-
-.rutas-dias-list {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-.rutas-dias-list span {
-  min-width: 38px;
-
-  padding: 6px 9px;
-
-  border: 1px solid #b7e7d0;
-  border-radius: 8px;
-
-  background: #ffffff;
-
-  color: #087443;
-
-  font-size: 11px;
-  font-weight: 800;
-
-  text-align: center;
-
-  box-shadow: none;
-}
-
 /* =========================
    ESTADO
 ========================= */
 
-.rutas-status {
+.zonas-status {
   display: inline-flex;
 
   min-width: 85px;
@@ -475,7 +419,7 @@
   font-weight: 700;
 }
 
-.rutas-status.active {
+.zonas-status.active {
   color: #067647;
 
   background: #dcfae6;
@@ -485,7 +429,7 @@
   box-shadow: none;
 }
 
-.rutas-status.inactive {
+.zonas-status.inactive {
   color: #b42318;
 
   background: #fef3f2;
@@ -499,13 +443,15 @@
    ACCIONES - Botones
 ========================= */
 
-.rutas-actions {
+.zonas-actions {
   display: flex;
-  gap: 9px;
   align-items: center;
+  justify-content: flex-end;
+
+  gap: 8px;
 }
 
-.rutas-icon-btn {
+.zonas-icon-btn {
   position: relative;
 
   width: 41px;
@@ -531,17 +477,17 @@
   transition: var(--transition);
 }
 
-.rutas-icon-btn:hover {
+.zonas-icon-btn:hover {
   transform: translateY(-3px);
 
   box-shadow: 0 10px 20px rgba(15, 23, 42, 0.14);
 }
 
-.rutas-icon-btn:active {
+.zonas-icon-btn:active {
   transform: translateY(0) scale(0.95);
 }
 
-.rutas-icon-btn img {
+.zonas-icon-btn img {
   width: 23px;
   height: 23px;
 
@@ -549,7 +495,7 @@
 }
 
 /* Tooltip - Botones tabla */
-.rutas-icon-btn::after {
+.zonas-icon-btn::after {
   content: attr(data-tooltip);
 
   position: absolute;
@@ -581,7 +527,7 @@
   transition: var(--transition);
 }
 
-.rutas-icon-btn:hover::after {
+.zonas-icon-btn:hover::after {
   opacity: 1;
   visibility: visible;
 
@@ -592,7 +538,7 @@
    ESTADOS VACÍO / LOADING
 ========================= */
 
-.rutas-empty {
+.zonas-empty {
   padding: 35px !important;
 
   text-align: center;
@@ -604,7 +550,7 @@
   border-radius: 14px !important;
 }
 
-.rutas-loading {
+.zonas-loading {
   margin-top: 24px;
   padding: 30px;
 
@@ -621,7 +567,7 @@
    MODAL
 ========================= */
 
-.rutas-modal-overlay {
+.zonas-modal-overlay {
   position: fixed;
   inset: 0;
 
@@ -638,7 +584,7 @@
   backdrop-filter: blur(4px);
 }
 
-.rutas-modal {
+.zonas-modal {
   width: min(720px, 100%);
   max-height: calc(100vh - 48px);
 
@@ -648,13 +594,13 @@
 
   border-radius: 22px;
 
-  background: #ffffff;
+  background: #f7f7f7;
 
   box-shadow:
     0 30px 80px rgba(15, 23, 42, 0.24);
 }
 
-.rutas-modal-header {
+.zonas-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -662,7 +608,7 @@
   margin-bottom: 24px;
 }
 
-.rutas-modal-header h3 {
+.zonas-modal-header h3 {
   margin: 5px 0 0;
 
   color: #172033;
@@ -672,7 +618,7 @@
 
 /* FORMULARIO */
 
-.rutas-form-grid {
+.zonas-form-grid {
   display: grid;
 
   grid-template-columns:
@@ -681,7 +627,7 @@
   gap: 18px;
 }
 
-.rutas-form-grid label {
+.zonas-form-grid label {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -692,13 +638,13 @@
   font-weight: 800;
 }
 
-.rutas-field-full {
+.zonas-field-full {
   grid-column: 1 / -1;
 }
 
-.rutas-form-grid input,
-.rutas-form-grid select,
-.rutas-form-grid textarea {
+.zonas-form-grid input,
+.zonas-form-grid select,
+.zonas-form-grid textarea {
   width: 100%;
 
   border: 1px solid #d8e0ec;
@@ -713,13 +659,13 @@
   font: inherit;
 }
 
-.rutas-form-grid input,
-.rutas-form-grid select {
+.zonas-form-grid input,
+.zonas-form-grid select {
   min-height: 47px;
   padding: 11px 13px;
 }
 
-.rutas-form-grid textarea {
+.zonas-form-grid textarea {
   min-height: 95px;
 
   padding: 13px;
@@ -727,9 +673,9 @@
   resize: vertical;
 }
 
-.rutas-form-grid input:focus,
-.rutas-form-grid select:focus,
-.rutas-form-grid textarea:focus {
+.zonas-form-grid input:focus,
+.zonas-form-grid select:focus,
+.zonas-form-grid textarea:focus {
   border-color: #20afb2;
 
   background: #ffffff;
@@ -738,7 +684,7 @@
     0 0 0 4px rgba(32, 175, 178, 0.14);
 }
 
-.rutas-field-label {
+.zonas-field-label {
   display: block;
 
   margin-bottom: 9px;
@@ -749,59 +695,9 @@
   font-weight: 800;
 }
 
-/* SELECTOR DÍAS */
-
-.rutas-days-selector {
-  display: grid;
-
-  grid-template-columns:
-    repeat(7, 1fr);
-
-  gap: 7px;
-}
-
-.rutas-days-selector button {
-  min-height: 40px;
-
-  border: 1px solid #d8e0ec;
-  border-radius: 10px;
-
-  background: #f8fafc;
-  color: #667085;
-
-  font-size: 12px;
-  font-weight: 800;
-
-  cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.rutas-days-selector button:hover {
-  transform: translateY(-1px);
-
-  border-color: #12b76a;
-}
-
-.rutas-days-selector button.selected {
-  border-color: transparent;
-
-  background:
-    linear-gradient(
-      135deg,
-      #12b76a,
-      #20afb2
-    );
-
-  color: #ffffff;
-}
-
 /* FOOTER MODAL */
 
-.rutas-modal-footer {
+.zonas-modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
@@ -814,7 +710,7 @@
 
 /* BOTONES MODALES */
 
-.rutas-modal-icon-btn {
+.zonas-modal-icon-btn {
   position: relative;
 
   width: 50px;
@@ -837,20 +733,20 @@
   transition: var(--transition);
 }
 
-.rutas-modal-icon-btn:hover {
+.zonas-modal-icon-btn:hover {
   transform: translateY(-3px);
 
   box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
 }
 
-.rutas-modal-icon-btn:disabled {
+.zonas-modal-icon-btn:disabled {
   opacity: 0.55;
   cursor: wait;
   transform: none;
   box-shadow: none;
 }
 
-.rutas-modal-icon-image {
+.zonas-modal-icon-image {
   width: 31px;
   height: 31px;
   object-fit: contain;
@@ -858,7 +754,7 @@
 }
 
 /* Tooltip - Cerrar modal */
-.rutas-modal-icon-btn::after {
+.zonas-modal-icon-btn::after {
   content: attr(data-tooltip);
 
   position: absolute;
@@ -889,39 +785,39 @@
   transition: var(--transition);
 }
 
-.rutas-modal-icon-btn:hover::after,
-.rutas-modal-icon-btn:focus-visible::after {
+.zonas-modal-icon-btn:hover::after,
+.zonas-modal-icon-btn:focus-visible::after {
   opacity: 1;
   visibility: visible;
 
   transform: translateX(-50%) translateY(0);
 }
 
-.rutas-modal-icon-btn.rutas-tooltip-bottom::after {
+.zonas-modal-icon-btn.zonas-tooltip-bottom::after {
   top: calc(100% + 10px);
   bottom: auto;
 
   transform: translateX(-50%) translateY(-7px);
 }
 
-.rutas-modal-icon-btn.rutas-tooltip-bottom:hover::after,
-.rutas-modal-icon-btn.rutas-tooltip-bottom:focus-visible::after {
+.zonas-modal-icon-btn.zonas-tooltip-bottom:hover::after,
+.zonas-modal-icon-btn.zonas-tooltip-bottom:focus-visible::after {
   transform: translateX(-50%) translateY(0);
 }
 
 /* BOTÓN GUARDAR */
-.rutas-modal-save-btn {
+.zonas-modal-save-btn {
   background: linear-gradient(135deg, #eff1f0, #ffffff) !important;
   border-color: transparent !important;
   box-shadow: 0 7px 18px rgba(18, 183, 106, 0.25) !important;
 }
 
-.rutas-modal-save-btn:hover {
+.zonas-modal-save-btn:hover {
   box-shadow: 0 12px 28px rgba(18, 183, 106, 0.35) !important;
   transform: translateY(-3px);
 }
 
-.rutas-modal-save-btn:disabled {
+.zonas-modal-save-btn:disabled {
   opacity: 0.55;
   cursor: wait;
   transform: none;
@@ -933,58 +829,53 @@
 ========================= */
 
 @media (max-width: 768px) {
-  .rutas-module {
+  .zonas-module {
     padding: 18px;
   }
 
-  .rutas-header {
+  .zonas-header {
     flex-direction: column;
     align-items: stretch;
     gap: 16px;
   }
 
-  .rutas-header-actions {
+  .zonas-header-actions {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
 
-  .rutas-header-actions .rutas-search-box {
+  .zonas-header-actions .zonas-search-box {
     max-width: none;
   }
 
-  .rutas-header-actions .rutas-icon-main {
+  .zonas-header-actions .zonas-icon-main {
     align-self: flex-end;
   }
 
-  .rutas-tools {
+  .zonas-results-row {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
   }
 
-  .rutas-search-box {
+  .zonas-search-box {
     max-width: none;
   }
 
-  .rutas-form-grid {
+  .zonas-form-grid {
     grid-template-columns: 1fr;
   }
 
-  .rutas-field-full {
+  .zonas-field-full {
     grid-column: auto;
   }
 
-  .rutas-days-selector {
-    grid-template-columns:
-      repeat(4, 1fr);
-  }
-
-  .rutas-modal-footer {
+  .zonas-modal-footer {
     flex-direction: column-reverse;
   }
 
-  .rutas-modal-footer button {
+  .zonas-modal-footer button {
     width: 100%;
   }
 }

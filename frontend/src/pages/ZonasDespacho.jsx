@@ -231,14 +231,14 @@ export default function ZonasDespacho() {
 
       <ModulosMenu />
 
-      <div className="rutas-header">
+      <div className="zonas-header">
         
-        <div className="rutas-header-actions">
-          <div className="rutas-search-box">
+        <div className="zonas-header-actions">
+          <div className="zonas-search-box">
             <img
               src={buscarIcon}
               alt=""
-              className="rutas-search-icon"
+              className="zonas-search-icon"
             />
 
             <input
@@ -253,7 +253,7 @@ export default function ZonasDespacho() {
             {busqueda && (
               <button
                 type="button"
-                className="rutas-search-clear"
+                className="zonas-search-clear"
                 onClick={() => setBusqueda("")}
                 aria-label="Limpiar búsqueda"
               >
@@ -264,7 +264,7 @@ export default function ZonasDespacho() {
 
           <button
             type="button"
-            className="rutas-icon-main"
+            className="zonas-icon-main"
             data-tooltip="Nueva zona"
             aria-label="Nueva zona"
             onClick={abrirNuevaZona}
@@ -272,14 +272,14 @@ export default function ZonasDespacho() {
             <img
               src={nuevaZonaIcon}
               alt=""
-              className="rutas-icon-main-image"
+              className="zonas-icon-main-image"
             />
           </button>
         </div>
       </div>
 
-      <div className="rutas-results-row">
-        <span className="rutas-search-results">
+      <div className="zonas-results-row">
+        <span className="zonas-search-results">
           {zonasFiltradas.length}{" "}
           {zonasFiltradas.length === 1
             ? "zona"
@@ -288,12 +288,12 @@ export default function ZonasDespacho() {
       </div>
 
       {cargando ? (
-        <div className="rutas-loading">
+        <div className="zonas-loading">
           Cargando zonas...
         </div>
       ) : (
-        <div className="rutas-table-responsive">
-          <table className="rutas-table">
+        <div className="zonas-table-responsive">
+          <table className="zonas-table">
             <thead>
               <tr>
                 <th>Nombre</th>
@@ -308,7 +308,7 @@ export default function ZonasDespacho() {
                 <tr>
                   <td
                     colSpan="4"
-                    className="rutas-empty"
+                    className="zonas-empty"
                   >
                     No hay zonas de despacho.
                   </td>
@@ -327,7 +327,7 @@ export default function ZonasDespacho() {
 
                     <td>
                       <span
-                        className={`rutas-status ${
+                        className={`zonas-status ${
                           zona.estado === "Activa"
                             ? "active"
                             : "inactive"
@@ -338,10 +338,10 @@ export default function ZonasDespacho() {
                     </td>
 
                     <td>
-                      <div className="rutas-actions">
+                      <div className="zonas-actions">
                         <button
                           type="button"
-                          className="rutas-icon-btn"
+                          className="zonas-icon-btn"
                           data-tooltip="Editar zona"
                           onClick={() =>
                             abrirEditarZona(zona)
@@ -355,7 +355,7 @@ export default function ZonasDespacho() {
 
                         <button
                           type="button"
-                          className="rutas-icon-btn"
+                          className="zonas-icon-btn"
                           data-tooltip={
                             zona.estado === "Activa"
                               ? "Desactivar"
@@ -377,7 +377,7 @@ export default function ZonasDespacho() {
 
                         <button
                           type="button"
-                          className="rutas-icon-btn"
+                          className="zonas-icon-btn"
                           data-tooltip="Eliminar zona"
                           onClick={() =>
                             eliminar(zona)
@@ -400,7 +400,7 @@ export default function ZonasDespacho() {
 
       {modalAbierto && (
         <div
-          className="rutas-modal-overlay"
+          className="zonas-modal-overlay"
           onMouseDown={(event) => {
             if (
               event.target ===
@@ -411,12 +411,12 @@ export default function ZonasDespacho() {
           }}
         >
           <form
-            className="rutas-modal"
+            className="zonas-modal"
             onSubmit={guardarZona}
           >
-            <div className="rutas-modal-header">
+            <div className="zonas-modal-header">
               <div>
-                <span className="rutas-eyebrow">
+                <span className="zonas-eyebrow">
                   {zonaEditando
                     ? "Editar zona"
                     : "Nueva zona"}
@@ -425,19 +425,19 @@ export default function ZonasDespacho() {
 
               <button
                 type="button"
-                className="rutas-modal-icon-btn rutas-tooltip-bottom"
+                className="zonas-modal-icon-btn zonas-tooltip-bottom"
                 data-tooltip="Cerrar"
                 onClick={cerrarModal}
               >
                 <img
                   src={cerrarIcon}
                   alt=""
-                  className="rutas-modal-icon-image"
+                  className="zonas-modal-icon-image"
                 />
               </button>
             </div>
 
-            <div className="rutas-form-grid">
+            <div className="zonas-form-grid">
               <label>
                 Nombre
                 <input
@@ -464,7 +464,7 @@ export default function ZonasDespacho() {
                 </select>
               </label>
 
-              <label className="rutas-field-full">
+              <label className="zonas-field-full">
                 Descripción
                 <textarea
                   name="descripcion"
@@ -475,10 +475,10 @@ export default function ZonasDespacho() {
               </label>
             </div>
 
-            <div className="rutas-modal-footer">
+            <div className="zonas-modal-footer">
               <button
                 type="button"
-                className="rutas-modal-icon-btn"
+                className="zonas-modal-icon-btn"
                 data-tooltip="Cancelar"
                 onClick={cerrarModal}
                 disabled={guardando}
@@ -486,13 +486,13 @@ export default function ZonasDespacho() {
                 <img
                   src={cancelarIcon}
                   alt=""
-                  className="rutas-modal-icon-image"
+                  className="zonas-modal-icon-image"
                 />
               </button>
 
               <button
                 type="submit"
-                className="rutas-modal-icon-btn rutas-modal-save-btn"
+                className="zonas-modal-icon-btn zonas-modal-save-btn"
                 data-tooltip={
                   zonaEditando
                     ? "Guardar cambios"
@@ -503,7 +503,7 @@ export default function ZonasDespacho() {
                 <img
                   src={guardarIcon}
                   alt=""
-                  className="rutas-modal-icon-image"
+                  className="zonas-modal-icon-image"
                 />
               </button>
             </div>
