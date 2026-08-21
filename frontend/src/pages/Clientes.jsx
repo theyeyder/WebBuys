@@ -149,6 +149,24 @@ export default function Clientes() {
 
 
   /* =========================================
+     OCULTAR NOTIFICACIONES
+     DESPUÉS DE 3 SEGUNDOS
+  ========================================= */
+
+  useEffect(() => {
+
+    if (!mensaje) return;
+
+    const timer = setTimeout(() => {
+      setMensaje("");
+    }, 3000);
+
+    return () => clearTimeout(timer);
+
+  }, [mensaje]);
+
+
+  /* =========================================
      CAMBIAR CAMPOS
   ========================================= */
 
@@ -1246,9 +1264,7 @@ export default function Clientes() {
                     Estado
                   </th>
 
-                  <th className="clientes-th-actions">
-                    Acciones
-                  </th>
+                 
 
                 </tr>
 
@@ -1388,53 +1404,16 @@ export default function Clientes() {
                         </td>
 
 
-                        {/* ACCIONES */}
+              
 
                         <td>
 
                           <div className="clientes-table-actions">
 
 
-                            {/* EDITAR */}
+                          
 
-                            <button
-                              type="button"
-                              className="clientes-action-btn clientes-action-edit"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                seleccionarCliente(cliente);
-                              }}
-                              title="Editar cliente"
-                            >
-                              ✎
-                            </button>
-
-
-                            {/* ACTIVAR / DESACTIVAR */}
-
-                            <button
-                              type="button"
-                              className={
-                                cliente.estado
-                                  ? "clientes-action-btn clientes-action-disable"
-                                  : "clientes-action-btn clientes-action-enable"
-                              }
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                cambiarEstadoCliente(cliente);
-                              }}
-                              title={
-                                cliente.estado
-                                  ? "Desactivar cliente"
-                                  : "Activar cliente"
-                              }
-                            >
-
-                              {cliente.estado
-                                ? "⊘"
-                                : "✓"}
-
-                            </button>
+                          
 
                           </div>
 

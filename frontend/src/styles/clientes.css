@@ -235,33 +235,38 @@
 
   pointer-events: none;
 }
-
-
 /* =========================================
-   TOOLTIP BOTONES SUPERIORES
+   TOOLTIP DE ACCIONES - DEBAJO
 ========================================= */
 
-.clientes-icon-btn::after,
-.clientes-title-actions button::after {
+.clientes-icon-btn {
+  position: relative;
+}
+
+/* Texto */
+.clientes-icon-btn::after {
   content: attr(data-tooltip);
 
   position: absolute;
 
-  top: calc(100% + 9px);
+  /* DEBAJO DEL BOTÓN */
+  top: calc(100% + 8px);
+  bottom: auto;
+
   left: 50%;
 
   transform:
     translateX(-50%)
-    translateY(-5px);
+    translateY(-4px);
 
-  padding: 6px 5px;
-
-  border-radius: 5px;
+  padding: 6px 10px;
 
   background: #172033;
   color: #ffffff;
 
-  font-size: 10px;
+  border-radius: 7px;
+
+  font-size: 11px;
   font-weight: 700;
 
   white-space: nowrap;
@@ -271,7 +276,7 @@
 
   pointer-events: none;
 
-  z-index: 9999;
+  z-index: 99999;
 
   transition:
     opacity 0.18s ease,
@@ -279,15 +284,48 @@
     transform 0.18s ease;
 }
 
+/* Flechita */
+.clientes-icon-btn::before {
+  content: "";
+
+  position: absolute;
+
+  top: calc(100% + 3px);
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #172033;
+
+  opacity: 0;
+  visibility: hidden;
+
+  z-index: 99999;
+
+  transition:
+    opacity 0.18s ease,
+    visibility 0.18s ease;
+}
+
+
+
+/* MOSTRAR */
+
 .clientes-icon-btn:hover::after,
-.clientes-title-actions button:hover::after {
+.clientes-icon-btn:hover::before {
   opacity: 1;
   visibility: visible;
+}
 
+.clientes-icon-btn:hover::after {
   transform:
     translateX(-50%)
     translateY(0);
 }
+
+
 
 
 /* =========================================
