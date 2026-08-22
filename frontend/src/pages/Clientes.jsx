@@ -63,6 +63,9 @@ export default function Clientes() {
 
   const [filtro, setFiltro] = useState("");
 
+  const [paginaActual, setPaginaActual] = useState(1);
+  const CLIENTES_POR_PAGINA = 5;
+
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
 
@@ -407,15 +410,19 @@ export default function Clientes() {
 
 
   /* =========================================
-     VALIDAR
+     VALIDAR FORMULARIO
   ========================================= */
 
   function validarFormulario() {
 
-    if (!form.documento.trim()) {
+    const documento = form.documento.trim();
+    const nombre = form.nombre.trim();
+    const telefono = form.telefono.trim();
+
+    if (!documento) {
 
       setMensaje(
-        "Ingrese el número de documento."
+        "El número de documento es obligatorio."
       );
 
       setTipoMensaje("error");
@@ -424,10 +431,93 @@ export default function Clientes() {
 
     }
 
-    if (!form.nombre.trim()) {
+    if (!nombre) {
 
       setMensaje(
-        "Ingrese el nombre del cliente."
+        "El nombre del cliente es obligatorio."
+      );
+
+      setTipoMensaje("error");
+
+      return false;
+
+    }
+
+    /* =========================
+       VALIDAR CC
+    ========================= */
+
+    if (
+      form.tipoDocumento === "CC" &&
+      !/^\d{5,12}$/.test(documento)
+    ) {
+
+      setMensaje(
+        "La cédula debe contener únicamente números (5-12 dígitos)."
+      );
+
+      setTipoMensaje("error");
+
+      return false;
+
+    }
+
+    /* =========================
+       VALIDAR NIT
+    ========================= */
+
+    if (
+      form.tipoDocumento === "NIT" &&
+      !/^\d{8,10}-?\d?$/.test(documento)
+    ) {
+
+      setMensaje(
+        "Ingrese un NIT válido. Ejemplo: 900123456-7"
+      );
+
+      setTipoMensaje("error");
+
+      return false;
+
+    }
+
+    /* =========================
+       VALIDAR TELÉFONO
+    ========================= */
+
+    if (
+      telefono &&
+      !/^\d{7,10}$/.test(telefono)
+    ) {
+
+      setMensaje(
+        "El teléfono debe contener entre 7 y 10 números."
+      );
+
+      setTipoMensaje("error");
+
+      return false;
+
+    }
+
+    /* =========================
+       DOCUMENTO DUPLICADO
+    ========================= */
+
+    const documentoExiste = clientes.some(
+      (cliente) =>
+        cliente.documento
+          ?.trim()
+          .toLowerCase() ===
+          documento.toLowerCase() &&
+        cliente._id !==
+          clienteSeleccionado?._id
+    );
+
+    if (documentoExiste) {
+
+      setMensaje(
+        "Ya existe un cliente registrado con este documento."
       );
 
       setTipoMensaje("error");
@@ -493,7 +583,6 @@ export default function Clientes() {
 
       };
 
-
       /* EDITAR */
 
       if (
@@ -534,6 +623,8 @@ export default function Clientes() {
       setClienteSeleccionado(null);
 
       setModoEdicion(false);
+
+      setPaginaActual(1);
 
 
     } catch (error) {
@@ -665,6 +756,33 @@ export default function Clientes() {
     });
 
   }, [clientes, filtro]);
+
+
+  /* =========================================
+     PAGINACIÓN
+  ========================================= */
+
+  const totalPaginas = Math.max(
+    1,
+    Math.ceil(
+      clientesFiltrados.length /
+        CLIENTES_POR_PAGINA
+    )
+  );
+
+  const indiceInicial =
+    (paginaActual - 1) *
+    CLIENTES_POR_PAGINA;
+
+  const indiceFinal =
+    indiceInicial +
+    CLIENTES_POR_PAGINA;
+
+  const clientesPaginados =
+    clientesFiltrados.slice(
+      indiceInicial,
+      indiceFinal
+    );
 
 
   /* =========================================
@@ -1185,9 +1303,10 @@ export default function Clientes() {
               <input
                 type="text"
                 value={filtro}
-                onChange={(e) =>
-                  setFiltro(e.target.value)
-                }
+                onChange={(e) => {
+                  setFiltro(e.target.value);
+                  setPaginaActual(1);
+                }}
                 placeholder="Buscar por documento, nombre, teléfono, barrio, zona..."
               />
 
@@ -1196,7 +1315,10 @@ export default function Clientes() {
                 <button
                   type="button"
                   className="clientes-clear-search"
-                  onClick={() => setFiltro("")}
+                  onClick={() => {
+                    setFiltro("");
+                    setPaginaActual(1);
+                  }}
                   title="Limpiar búsqueda"
                 >
                   ×
@@ -1264,8 +1386,6 @@ export default function Clientes() {
                     Estado
                   </th>
 
-                 
-
                 </tr>
 
               </thead>
@@ -1278,7 +1398,7 @@ export default function Clientes() {
                   <tr>
 
                     <td
-                      colSpan="8"
+                      colSpan="7"
                       className="clientes-table-message"
                     >
                       Cargando clientes...
@@ -1286,9 +1406,9 @@ export default function Clientes() {
 
                   </tr>
 
-                ) : clientesFiltrados.length > 0 ? (
+                ) : clientesPaginados.length > 0 ? (
 
-                  clientesFiltrados.map(
+                  clientesPaginados.map(
                     (cliente) => (
 
                       <tr
@@ -1312,7 +1432,7 @@ export default function Clientes() {
                           <div className="clientes-document-cell">
 
                             <span className="clientes-document-type">
-                              {cliente.tipoDocumento || "CC"}
+                              {cliente.tipoDocumento || "-"}
                             </span>
 
                             <strong>
@@ -1403,22 +1523,6 @@ export default function Clientes() {
 
                         </td>
 
-
-              
-
-                        <td>
-
-                          <div className="clientes-table-actions">
-
-
-                          
-
-                          
-
-                          </div>
-
-                        </td>
-
                       </tr>
 
                     )
@@ -1429,7 +1533,7 @@ export default function Clientes() {
                   <tr>
 
                     <td
-                      colSpan="8"
+                      colSpan="7"
                       className="clientes-empty"
                     >
 
@@ -1458,6 +1562,87 @@ export default function Clientes() {
             </table>
 
           </div>
+
+
+          {/* ===============================
+              PAGINACIÓN
+          =============================== */}
+
+          {clientesFiltrados.length > 0 && (
+
+            <div className="clientes-pagination">
+
+              <div className="clientes-pagination-info">
+
+                Mostrando{" "}
+                <strong>
+                  {indiceInicial + 1}
+                </strong>
+                {" - "}
+                <strong>
+                  {Math.min(
+                    indiceFinal,
+                    clientesFiltrados.length
+                  )}
+                </strong>
+                {" de "}
+                <strong>
+                  {clientesFiltrados.length}
+                </strong>
+                {" clientes"}
+
+              </div>
+
+
+              <div className="clientes-pagination-controls">
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPaginaActual(
+                      (pagina) =>
+                        Math.max(1, pagina - 1)
+                    )
+                  }
+                  disabled={paginaActual === 1}
+                  title="Página anterior"
+                >
+                  ‹
+                </button>
+
+
+                <span>
+                  Página{" "}
+                  <strong>{paginaActual}</strong>
+                  {" de "}
+                  <strong>{totalPaginas}</strong>
+                </span>
+
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPaginaActual(
+                      (pagina) =>
+                        Math.min(
+                          totalPaginas,
+                          pagina + 1
+                        )
+                    )
+                  }
+                  disabled={
+                    paginaActual === totalPaginas
+                  }
+                  title="Página siguiente"
+                >
+                  ›
+                </button>
+
+              </div>
+
+            </div>
+
+          )}
 
         </section>
 

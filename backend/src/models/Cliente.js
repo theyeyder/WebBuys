@@ -2,6 +2,13 @@ import mongoose from "mongoose";
 
 const clienteSchema = new mongoose.Schema(
   {
+    tipoDocumento: {
+      type: String,
+      enum: ["CC", "NIT"],
+      default: "CC",
+      required: true,
+    },
+
     documento: {
       type: String,
       required: true,
