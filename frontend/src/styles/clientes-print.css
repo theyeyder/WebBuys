@@ -1,0 +1,170 @@
+/* =========================================
+   WEBBUYS - IMPRESIÓN DE CLIENTES
+========================================= */
+
+.clientes-print-page {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #172033;
+  background: #ffffff;
+}
+
+
+/* =========================================
+   ENCABEZADO
+========================================= */
+
+.clientes-print-header {
+  margin-bottom: 22px;
+  padding-bottom: 12px;
+
+  border-bottom: 2px solid #087443;
+}
+
+.clientes-print-header h1 {
+  margin: 0 0 5px;
+
+  font-size: 24px;
+  font-weight: 800;
+
+  color: #172033;
+}
+
+.clientes-print-header p {
+  margin: 0;
+
+  font-size: 12px;
+  color: #667085;
+}
+
+
+/* =========================================
+   TABLA
+========================================= */
+
+.clientes-print-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  font-size: 11px;
+}
+
+.clientes-print-table thead {
+  display: table-header-group;
+}
+
+.clientes-print-table th {
+  padding: 9px 7px;
+
+  background: #087443;
+  color: #ffffff;
+
+  border: 1px solid #087443;
+
+  text-align: left;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+}
+
+.clientes-print-table td {
+  padding: 8px 7px;
+
+  border: 1px solid #dfe5e2;
+
+  vertical-align: middle;
+}
+
+.clientes-print-table tbody tr:nth-child(even) {
+  background: #f7faf9;
+}
+
+
+/* =========================================
+   DOCUMENTO
+========================================= */
+
+.clientes-print-document {
+  white-space: nowrap;
+}
+
+.clientes-print-document strong {
+  margin-right: 4px;
+
+  color: #087443;
+}
+
+
+/* =========================================
+   ESTADO
+========================================= */
+
+.clientes-print-status {
+  font-weight: 700;
+}
+
+
+/* =========================================
+   TOTAL
+========================================= */
+
+.clientes-print-total {
+  margin-top: 15px;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  color: #344054;
+}
+
+.clientes-print-total strong {
+  color: #087443;
+}
+
+
+/* =========================================
+   PIE
+========================================= */
+
+.clientes-print-footer {
+  margin-top: 20px;
+  padding-top: 10px;
+
+  border-top: 1px solid #dfe5e2;
+
+  font-size: 10px;
+  color: #98a2b3;
+
+  text-align: center;
+}
+
+
+/* =========================================
+   CONFIGURACIÓN DE IMPRESIÓN
+========================================= */
+
+@media print {
+
+  @page {
+    size: landscape;
+    margin: 10mm;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+
+    background: #ffffff;
+  }
+
+  .clientes-print-page {
+    width: 100%;
+  }
+
+  .clientes-print-table tr {
+    page-break-inside: avoid;
+  }
+
+}

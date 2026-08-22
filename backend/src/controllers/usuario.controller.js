@@ -25,8 +25,8 @@ export const listarUsuarios = async (req, res) => {
 
 export const crearUsuario = async (req, res) => {
   try {
-    
     const {
+      documento,
       nombres,
       apellidos,
       usuario,
@@ -36,6 +36,7 @@ export const crearUsuario = async (req, res) => {
     } = req.body;
 
     if (
+      !documento ||
       !nombres ||
       !apellidos ||
       !usuario ||
@@ -68,10 +69,22 @@ export const crearUsuario = async (req, res) => {
       });
     }
 
-    
+    const documentoNormalizado = documento.trim();
+
+    const existeDocumento = await Usuario.findOne({
+      documento: documentoNormalizado,
+    });
+
+    if (existeDocumento) {
+      return res.status(400).json({
+        mensaje: "Ya existe un usuario con ese documento.",
+      });
+    }
+
     const nuevoUsuario = await Usuario.create({
-      nombres,
-      apellidos,
+      documento: documentoNormalizado,
+      nombres: nombres.trim(),
+      apellidos: apellidos.trim(),
       usuario: usuarioNormalizado,
       rol,
       password: await bcrypt.hash(password, 10),
@@ -83,6 +96,7 @@ export const crearUsuario = async (req, res) => {
       mensaje: "Usuario creado correctamente.",
       usuario: {
         id: nuevoUsuario._id,
+        documento: nuevoUsuario.documento,
         nombres: nuevoUsuario.nombres,
         apellidos: nuevoUsuario.apellidos,
         usuario: nuevoUsuario.usuario,
@@ -90,7 +104,6 @@ export const crearUsuario = async (req, res) => {
         estado: nuevoUsuario.estado,
       },
     });
-
   } catch (error) {
     res.status(500).json({
       mensaje: error.message,
@@ -104,13 +117,25 @@ export const crearUsuario = async (req, res) => {
 
 export const actualizarUsuario = async (req, res) => {
   try {
-
     const {
+      documento,
       nombres,
       apellidos,
       usuario,
       rol,
     } = req.body;
+
+    if (
+      !documento ||
+      !nombres ||
+      !apellidos ||
+      !usuario ||
+      !rol
+    ) {
+      return res.status(400).json({
+        mensaje: "Todos los campos son obligatorios.",
+      });
+    }
 
     const usuarioNormalizado = usuario.trim().toLowerCase();
 
@@ -125,29 +150,43 @@ export const actualizarUsuario = async (req, res) => {
       });
     }
 
-    const actualizado =
-      await Usuario.findByIdAndUpdate(
-        req.params.id,
-        {
-          nombres,
-          apellidos,
-          usuario: usuarioNormalizado,
-          rol,
-        },
-        { new: true }
-      ).select("-password");
+    const documentoNormalizado = documento.trim();
+
+    const existeDocumento = await Usuario.findOne({
+      documento: documentoNormalizado,
+      _id: { $ne: req.params.id },
+    });
+
+    if (existeDocumento) {
+      return res.status(400).json({
+        mensaje: "Ya existe otro usuario con ese documento.",
+      });
+    }
+
+    const actualizado = await Usuario.findByIdAndUpdate(
+      req.params.id,
+      {
+        documento: documentoNormalizado,
+        nombres: nombres.trim(),
+        apellidos: apellidos.trim(),
+        usuario: usuarioNormalizado,
+        rol,
+      },
+      { new: true }
+    ).select("-password");
 
     res.json(actualizado);
-
   } catch (error) {
     res.status(500).json({
       mensaje: error.message,
     });
   }
 };
+
 /* ===========================
    RESETEAR PASSWORD
 =========================== */
+
 export const resetearPassword = async (req, res) => {
   try {
     const usuario = await Usuario.findById(req.params.id);
@@ -228,7 +267,6 @@ export const cambiarPassword = async (req, res) => {
 
 export const cambiarEstadoUsuario = async (req, res) => {
   try {
-
     const usuario = await Usuario.findById(req.params.id);
 
     if (!usuario) {
@@ -236,7 +274,6 @@ export const cambiarEstadoUsuario = async (req, res) => {
         mensaje: "Usuario no encontrado.",
       });
     }
-
 
     if (req.usuario._id.toString() === usuario._id.toString()) {
       return res.status(400).json({
@@ -261,7 +298,6 @@ export const cambiarEstadoUsuario = async (req, res) => {
       mensaje: "Estado actualizado.",
       estado: usuario.estado,
     });
-
   } catch (error) {
     res.status(500).json({
       mensaje: error.message,

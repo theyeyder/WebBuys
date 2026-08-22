@@ -49,7 +49,7 @@ const clienteSchema = new mongoose.Schema(
 
     ciudad: {
       type: String,
-      default: "Ibagué",
+      default: "",
     },
 
     tipoCliente: {

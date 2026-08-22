@@ -14,6 +14,7 @@ import {
 } from "../services/zonaDespacho.service.js";
 
 import "../styles/clientes.css";
+import clientesPrintCss from "../styles/clientes-print.css?inline";
 
 // Iconos
 import clientesIcon from "../assets/icons/clientes.png";
@@ -24,6 +25,7 @@ import editarClienteIcon from "../assets/icons/editar-cliente.png";
 import eliminarClienteIcon from "../assets/icons/eliminar-cliente.png";
 import bloquearIcon from "../assets/icons/bloquear.png";
 import desbloquearIcon from "../assets/icons/desbloquear.png";
+import imprimirIcon from "../assets/icons/imprimir.png";
 
 
 /* =========================================
@@ -66,11 +68,30 @@ export default function Clientes() {
   const [paginaActual, setPaginaActual] = useState(1);
   const CLIENTES_POR_PAGINA = 5;
 
+  const [orden, setOrden] = useState({
+    campo: "nombre",
+    direccion: "asc",
+  });
+
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
 
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
+
+
+  /* =========================================
+     ESCAPAR HTML
+  ========================================= */
+
+  function escaparHtml(valor) {
+    return String(valor ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 
 
   /* =========================================
@@ -721,6 +742,248 @@ export default function Clientes() {
 
 
   /* =========================================
+     CAMBIAR ORDEN
+  ========================================= */
+
+  function cambiarOrden(campo) {
+
+    setOrden((actual) => {
+
+      if (actual.campo === campo) {
+
+        return {
+          campo,
+          direccion:
+            actual.direccion === "asc"
+              ? "desc"
+              : "asc",
+        };
+
+      }
+
+      return {
+        campo,
+        direccion: "asc",
+      };
+
+    });
+
+    setPaginaActual(1);
+
+  }
+
+
+  /* =========================================
+     IMPRIMIR CLIENTES
+  ========================================= */
+
+  function imprimirClientes() {
+
+    if (clientes.length === 0) {
+
+      setMensaje("No hay clientes para imprimir.");
+
+      setTipoMensaje("info");
+
+      return;
+
+    }
+
+    const filas = clientes
+      .map((cliente) => {
+
+        const tipoDocumento =
+          cliente.tipoDocumento || "-";
+
+        const documento =
+          cliente.documento || "-";
+
+        const nombre =
+          cliente.nombre || "-";
+
+        const telefono =
+          cliente.telefono || "-";
+
+        const direccion =
+          cliente.direccion || "-";
+
+        const barrio =
+          cliente.barrio || "-";
+
+        const zona =
+          obtenerNombreZona(cliente);
+
+        const tipoCliente =
+          cliente.tipoCliente || "-";
+
+        const estado =
+          cliente.estado
+            ? "Activo"
+            : "Inactivo";
+
+        return `
+          <tr>
+
+            <td class="clientes-print-document">
+              <strong>
+                ${escaparHtml(tipoDocumento)}
+              </strong>
+
+              ${escaparHtml(documento)}
+            </td>
+
+            <td>
+              ${escaparHtml(nombre)}
+            </td>
+
+            <td>
+              ${escaparHtml(telefono)}
+            </td>
+
+            <td>
+              ${escaparHtml(direccion)}
+            </td>
+
+            <td>
+              ${escaparHtml(barrio)}
+            </td>
+
+            <td>
+              ${escaparHtml(zona)}
+            </td>
+
+            <td>
+              ${escaparHtml(tipoCliente)}
+            </td>
+
+            <td class="clientes-print-status">
+              ${estado}
+            </td>
+
+          </tr>
+        `;
+
+      })
+      .join("");
+
+    const ventanaImpresion =
+      window.open(
+        "",
+        "_blank",
+        "width=1200,height=800"
+      );
+
+    if (!ventanaImpresion) {
+
+      setMensaje(
+        "El navegador bloqueó la ventana de impresión."
+      );
+
+      setTipoMensaje("error");
+
+      return;
+
+    }
+
+    ventanaImpresion.document.write(`
+      <!DOCTYPE html>
+
+      <html lang="es">
+
+        <head>
+
+          <meta charset="UTF-8" />
+
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1"
+          />
+
+          <title>
+            Clientes registrados - WebBuys
+          </title>
+
+          <style>
+            ${clientesPrintCss}
+          </style>
+
+        </head>
+
+        <body>
+
+          <main class="clientes-print-page">
+
+            <header class="clientes-print-header">
+
+              <h1>
+                Clientes registrados
+              </h1>
+
+              <p>
+                WebBuys - Listado de clientes
+              </p>
+
+            </header>
+
+
+            <table class="clientes-print-table">
+
+              <thead>
+
+                <tr>
+                  <th>Documento</th>
+                  <th>Cliente</th>
+                  <th>Teléfono</th>
+                  <th>Dirección</th>
+                  <th>Barrio</th>
+                  <th>Zona</th>
+                  <th>Tipo</th>
+                  <th>Estado</th>
+                </tr>
+
+              </thead>
+
+              <tbody>
+                ${filas}
+              </tbody>
+
+            </table>
+
+
+            <div class="clientes-print-total">
+
+              Total clientes:
+
+              <strong>
+                ${clientes.length}
+              </strong>
+
+            </div>
+
+
+            <footer class="clientes-print-footer">
+              WebBuys
+            </footer>
+
+          </main>
+
+        </body>
+
+      </html>
+    `);
+
+    ventanaImpresion.document.close();
+
+    ventanaImpresion.focus();
+
+    setTimeout(() => {
+      ventanaImpresion.print();
+    }, 300);
+
+  }
+
+
+  /* =========================================
      CLIENTES FILTRADOS
   ========================================= */
 
@@ -759,13 +1022,85 @@ export default function Clientes() {
 
 
   /* =========================================
+     CLIENTES ORDENADOS
+  ========================================= */
+
+  const clientesOrdenados = useMemo(() => {
+
+    const lista = [...clientesFiltrados];
+
+    lista.sort((a, b) => {
+
+      let valorA = "";
+      let valorB = "";
+
+      switch (orden.campo) {
+
+        case "documento":
+          valorA = `${a.tipoDocumento || ""} ${a.documento || ""}`;
+          valorB = `${b.tipoDocumento || ""} ${b.documento || ""}`;
+          break;
+
+        case "nombre":
+          valorA = a.nombre || "";
+          valorB = b.nombre || "";
+          break;
+
+        case "barrio":
+          valorA = a.barrio || "";
+          valorB = b.barrio || "";
+          break;
+
+        case "zona":
+          valorA =
+            a.zonaDespacho?.nombre ||
+            obtenerNombreZona(a) ||
+            "";
+
+          valorB =
+            b.zonaDespacho?.nombre ||
+            obtenerNombreZona(b) ||
+            "";
+          break;
+
+        case "estado":
+          valorA = a.estado ? "Activo" : "Inactivo";
+          valorB = b.estado ? "Activo" : "Inactivo";
+          break;
+
+        default:
+          return 0;
+
+      }
+
+      const resultado = String(valorA).localeCompare(
+        String(valorB),
+        "es",
+        {
+          sensitivity: "base",
+          numeric: true,
+        }
+      );
+
+      return orden.direccion === "asc"
+        ? resultado
+        : -resultado;
+
+    });
+
+    return lista;
+
+  }, [clientesFiltrados, orden, zonas]);
+
+
+  /* =========================================
      PAGINACIÓN
   ========================================= */
 
   const totalPaginas = Math.max(
     1,
     Math.ceil(
-      clientesFiltrados.length /
+      clientesOrdenados.length /
         CLIENTES_POR_PAGINA
     )
   );
@@ -779,7 +1114,7 @@ export default function Clientes() {
     CLIENTES_POR_PAGINA;
 
   const clientesPaginados =
-    clientesFiltrados.slice(
+    clientesOrdenados.slice(
       indiceInicial,
       indiceFinal
     );
@@ -959,6 +1294,26 @@ export default function Clientes() {
               >
                 <img
                   src={eliminarClienteIcon}
+                  alt=""
+                />
+              </button>
+
+
+              {/* IMPRIMIR */}
+
+              <button
+                type="button"
+                className="clientes-icon-btn"
+                onClick={imprimirClientes}
+                data-tooltip="Imprimir clientes"
+                aria-label="Imprimir clientes"
+                disabled={
+                  guardando ||
+                  clientes.length === 0
+                }
+              >
+                <img
+                  src={imprimirIcon}
                   alt=""
                 />
               </button>
@@ -1359,11 +1714,43 @@ export default function Clientes() {
                 <tr>
 
                   <th>
-                    Documento
+                    <button
+                      type="button"
+                      className="clientes-sort-btn"
+                      onClick={() =>
+                        cambiarOrden("documento")
+                      }
+                    >
+                      Documento
+
+                      {orden.campo === "documento" && (
+                        <span>
+                          {orden.direccion === "asc"
+                            ? " ↑"
+                            : " ↓"}
+                        </span>
+                      )}
+                    </button>
                   </th>
 
                   <th>
-                    Cliente
+                    <button
+                      type="button"
+                      className="clientes-sort-btn"
+                      onClick={() =>
+                        cambiarOrden("nombre")
+                      }
+                    >
+                      Cliente
+
+                      {orden.campo === "nombre" && (
+                        <span>
+                          {orden.direccion === "asc"
+                            ? " ↑"
+                            : " ↓"}
+                        </span>
+                      )}
+                    </button>
                   </th>
 
                   <th>
@@ -1371,11 +1758,43 @@ export default function Clientes() {
                   </th>
 
                   <th>
-                    Barrio
+                    <button
+                      type="button"
+                      className="clientes-sort-btn"
+                      onClick={() =>
+                        cambiarOrden("barrio")
+                      }
+                    >
+                      Barrio
+
+                      {orden.campo === "barrio" && (
+                        <span>
+                          {orden.direccion === "asc"
+                            ? " ↑"
+                            : " ↓"}
+                        </span>
+                      )}
+                    </button>
                   </th>
 
                   <th>
-                    Zona
+                    <button
+                      type="button"
+                      className="clientes-sort-btn"
+                      onClick={() =>
+                        cambiarOrden("zona")
+                      }
+                    >
+                      Zona
+
+                      {orden.campo === "zona" && (
+                        <span>
+                          {orden.direccion === "asc"
+                            ? " ↑"
+                            : " ↓"}
+                        </span>
+                      )}
+                    </button>
                   </th>
 
                   <th>
@@ -1383,7 +1802,23 @@ export default function Clientes() {
                   </th>
 
                   <th>
-                    Estado
+                    <button
+                      type="button"
+                      className="clientes-sort-btn"
+                      onClick={() =>
+                        cambiarOrden("estado")
+                      }
+                    >
+                      Estado
+
+                      {orden.campo === "estado" && (
+                        <span>
+                          {orden.direccion === "asc"
+                            ? " ↑"
+                            : " ↓"}
+                        </span>
+                      )}
+                    </button>
                   </th>
 
                 </tr>

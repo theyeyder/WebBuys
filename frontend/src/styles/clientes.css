@@ -1072,3 +1072,129 @@
   }
 
 }
+
+/* =========================================
+   PAGINACIÓN CLIENTES
+========================================= */
+
+.clientes-pagination {
+  min-height: 58px;
+
+  padding: 10px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  border-top: 1px solid #e4ebe8;
+
+  background: #ffffff;
+}
+
+.clientes-pagination-info {
+  color: #667085;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.clientes-pagination-info strong {
+  color: #087443;
+  font-weight: 900;
+}
+
+.clientes-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.clientes-pagination-controls span {
+  color: #667085;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.clientes-pagination-controls span strong {
+  color: #172033;
+  font-weight: 900;
+}
+
+.clientes-pagination-controls button {
+  width: 34px;
+  height: 34px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #d8e0dc;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #087443;
+
+  font-size: 22px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.clientes-pagination-controls button:hover:not(:disabled) {
+  background: #eefbf6;
+  border-color: #77c9b0;
+
+  transform: translateY(-1px);
+}
+
+.clientes-pagination-controls button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+/* =========================================
+   ORDENAMIENTO DE TABLA
+========================================= */
+
+.clientes-sort-btn {
+  width: 100%;
+
+  padding: 0;
+
+  border: none;
+
+  background: transparent;
+
+  color: inherit;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  font: inherit;
+  font-weight: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+
+  cursor: pointer;
+
+  text-align: left;
+}
+
+.clientes-sort-btn:hover {
+  color: #eafff8;
+}
+
+.clientes-sort-btn span {
+  font-size: 14px;
+  font-weight: 900;
+}
