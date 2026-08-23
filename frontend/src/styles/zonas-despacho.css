@@ -1,6 +1,6 @@
-/* =========================
+/* =========================================================
    MODULO PRINCIPAL
-========================= */
+========================================================= */
 
 .zonas-module {
   position: relative;
@@ -27,489 +27,144 @@
     );
 }
 
-/* =========================
-   HEADER
-========================= */
 
-.zonas-header {
-  width: 100%;
+/* =========================================================
+   CABECERA PRINCIPAL (TITLE BAR)
+========================================================= */
 
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 30px;
-
-  margin-bottom: 18px;
-}
-
-.zonas-header-title {
-  flex: 0 0 auto;
-}
-
-.zonas-header-title h2 {
-  margin: 0;
-}
-
-.zonas-eyebrow {
-  display: inline-block;
-
-  padding: 9px 16px;
-
-  border-radius: 12px;
-
-  color: #194b22;
-
-  font-size: 14px;
-  font-weight: 900;
-
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-
-  box-shadow:
-    0 7px 18px rgba(15, 23, 42, 0.07);
-}
-
-@media (max-width: 900px) {
-  .zonas-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .zonas-header-actions {
-    width: 100%;
-  }
-
-  .zonas-header-actions .zonas-search-box {
-    max-width: none;
-  }
-}
-
-/* =========================
-   HEADER ACTIONS (Buscador + Botón)
-========================= */
-
-.zonas-header-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-
-  gap: 16px;
-
-  flex: 1;
-}
-
-.zonas-header-actions .zonas-search-box {
-  width: 100%;
-  max-width: 520px;
-  min-height: 52px;
-
-  margin: 0;
-}
-
-.zonas-header-actions .zonas-icon-main {
-  flex: 0 0 54px;
-
-  width: 54px;
-  height: 54px;
-
-  margin: 0;
-}
-
-/* =========================
-   BOTÓN NUEVA ZONA
-========================= */
-
-.zonas-icon-main {
-  position: relative;
-
-  width: 54px;
-  height: 54px;
-
-  min-width: 54px;
-  min-height: 54px;
-  flex: 0 0 54px;
-
-  padding: 8px;
-
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 15px;
-
-  background: #ffffff;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.1);
-
-  transition: var(--transition);
-}
-
-.zonas-icon-main:hover {
-  transform: translateY(-3px);
-
-  box-shadow: 0 13px 26px rgba(15, 23, 42, 0.16);
-}
-
-.zonas-icon-main-image {
-  width: 34px;
-  height: 34px;
-  object-fit: contain;
-  pointer-events: none;
-}
-
-/* Tooltip - Nueva zona */
-.zonas-icon-main::after {
-  content: attr(data-tooltip);
-
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 50%;
-
-  transform: translateX(-50%) translateY(-7px);
-
-  padding: 7px 12px;
-
-  border-radius: 9px;
-
-  background: #20afb2;
-  color: #ffffff;
-
-  font-size: 12px;
-  font-weight: 700;
-
-  white-space: nowrap;
-
-  opacity: 0;
-  visibility: hidden;
-
-  pointer-events: none;
-  z-index: 9999;
-
-  transition: var(--transition);
-}
-
-.zonas-icon-main:hover::after,
-.zonas-icon-main:focus-visible::after {
-  opacity: 1;
-  visibility: visible;
-
-  transform: translateX(-50%) translateY(0);
-}
-
-/* =========================
-   BUSCADOR
-========================= */
-
-.zonas-search-box {
-  position: relative;
-
+.zonas-title-bar {
   width: 100%;
   max-width: 560px;
-  min-height: 52px;
 
-  display: flex;
-  align-items: center;
+  min-height: 46px;
 
-  border: 1px solid rgba(42, 157, 143, 0.25);
-  border-radius: 16px;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 8px 22px rgba(15, 23, 42, 0.08);
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
-
-.zonas-search-box:focus-within {
-  border-color: #2a9d8f;
-
-  box-shadow:
-    0 0 0 4px rgba(42, 157, 143, 0.12),
-    0 10px 26px rgba(15, 23, 42, 0.10);
-
-  transform: translateY(-1px);
-}
-
-.zonas-search-icon {
-  width: 26px;
-  height: 26px;
-  margin-left: 15px;
-  object-fit: contain;
-}
-
-.zonas-search-box input {
-  width: 100%;
-  min-height: 50px;
-
-  padding: 12px 48px 12px 12px;
-
-  border: none;
-  outline: none;
-
-  background: transparent;
-
-  color: #172033;
-  font-size: 14px;
-}
-
-.zonas-search-box input::-webkit-search-cancel-button {
-  display: none;
-}
-
-.zonas-search-clear {
-  position: absolute;
-  right: 12px;
-
-  width: 31px;
-  height: 31px;
-
-  border: none;
-  border-radius: 9px;
-
-  background: #f2f4f7;
-  color: #667085;
-
-  font-size: 21px;
-
-  cursor: pointer;
-}
-
-/* =========================
-   RESULTS ROW (Resultados)
-========================= */
-
-.zonas-results-row {
-  width: 100%;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-
-  margin: 12px 0 22px;
-}
-
-.zonas-search-results {
-  margin: 0;
-
-  color: #167c13;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-/* =========================
-   TABLA
-========================= */
-
-.zonas-table-responsive {
-  width: 100%;
-  overflow-x: auto;
-
-  margin-top: 22px;
-  padding: 0 0 8px;
-
-  background: transparent;
-  border-radius: 0;
-
-  backdrop-filter: none;
-  box-shadow: none;
-}
-
-.zonas-table {
-  width: 100%;
-  min-width: 650px;
-
-  border-collapse: separate;
-  border-spacing: 0 10px;
-}
-
-/* CABECERA */
-.zonas-table thead th {
-  padding: 0 16px 11px;
-
-  text-align: left;
-
-  color: #12344b;
-
-  font-size: 14px;
-  font-weight: 900;
-
-  border-bottom: 2px solid rgba(42, 157, 143, 0.25);
-
-  background: transparent;
-}
-
-/* FILAS */
-.zonas-table tbody tr:not(:has(.zonas-empty)) {
-  background:
-    linear-gradient(
-      110deg,
-      #fcfdfc 0%,
-      #e7f4f0 45%,
-      #d0ead5 100%
-    );
-
-  box-shadow:
-    0 8px 20px rgba(15, 23, 42, 0.08);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.zonas-table tbody tr:not(:has(.zonas-empty)):hover {
-  transform: translateY(-2px);
-
-  box-shadow:
-    0 13px 28px rgba(42, 157, 143, 0.16);
-}
-
-.zonas-table td {
-  padding: 5px 10px;
-
-  color: #172033;
-
-  font-size: 14px;
-  font-weight: 500;
-
-  vertical-align: middle;
-}
-
-.zonas-table td:first-child {
-  border-radius: 14px 0 0 14px;
-}
-
-.zonas-table td:last-child {
-  border-radius: 0 14px 14px 0;
-}
-
-/* NOMBRE */
-.zonas-table td:first-child strong {
-  color: #067647;
-
-  font-size: 15px;
-  font-weight: 900;
-}
-
-/* =========================
-   ESTADO
-========================= */
-
-.zonas-status {
-  display: inline-flex;
-
-  min-width: 85px;
-
-  align-items: center;
-  justify-content: center;
-
-  padding: 7px 14px;
-
-  border-radius: 999px;
-
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.zonas-status.active {
-  color: #067647;
-
-  background: #dcfae6;
-
-  border: 1px solid #abefc6;
-
-  box-shadow: none;
-}
-
-.zonas-status.inactive {
-  color: #b42318;
-
-  background: #fef3f2;
-
-  border: 1px solid #fecdca;
-
-  box-shadow: none;
-}
-
-/* =========================
-   ACCIONES - Botones
-========================= */
-
-.zonas-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-
-  gap: 8px;
-}
-
-.zonas-icon-btn {
-  position: relative;
-
-  width: 41px;
-  height: 41px;
-
-  flex: 0 0 41px;
-
-  padding: 0;
-
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  border-radius: 12px;
-
-  background: #ffffff;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-
-  box-shadow: 0 5px 14px rgba(15, 23, 42, 0.07);
-
-  transition: var(--transition);
-}
-
-.zonas-icon-btn:hover {
-  transform: translateY(-3px);
-
-  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.14);
-}
-
-.zonas-icon-btn:active {
-  transform: translateY(0) scale(0.95);
-}
-
-.zonas-icon-btn img {
-  width: 23px;
-  height: 23px;
-
-  object-fit: contain;
-}
-
-/* Tooltip - Botones tabla */
-.zonas-icon-btn::after {
-  content: attr(data-tooltip);
-
-  position: absolute;
-
-  bottom: calc(100% + 9px);
-  left: 50%;
-
-  transform: translateX(-50%) translateY(6px);
+  margin: 0 auto 18px;
 
   padding: 6px 10px;
 
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-  background: #20afb2;
+  gap: 10px;
+
+  border-radius: 9px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #087f69,
+      #20afb2
+    );
+
+  position: sticky;
+  top: 62px;
+  z-index: 6000;
+
+  overflow: visible;
+
+  box-shadow:
+    0 5px 14px rgba(15, 23, 42, 0.10);
+}
+
+.zonas-title-info h2 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 16px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   BOTONES SUPERIORES
+========================================================= */
+
+.zonas-title-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 4px;
+
+  overflow: visible;
+}
+
+.zonas-top-icon-btn {
+  position: relative;
+
+  width: 30px;
+  height: 30px;
+
+  padding: 3px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 3px 8px rgba(15, 23, 42, 0.10);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.zonas-top-icon-btn img {
+  width: 21px;
+  height: 21px;
+
+  object-fit: contain;
+
+  pointer-events: none;
+}
+
+.zonas-top-icon-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 6px 12px rgba(15, 23, 42, 0.16);
+}
+
+.zonas-top-icon-btn:disabled {
+  opacity: 0.42;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* =========================================================
+   TOOLTIP - BOTONES SUPERIORES
+========================================================= */
+
+.zonas-top-icon-btn::after {
+  content: attr(data-tooltip);
+
+  position: absolute;
+
+  top: calc(100% + 8px);
+  left: 50%;
+
+  transform:
+    translateX(-50%)
+    translateY(-4px);
+
+  padding: 6px 10px;
+
+  border-radius: 7px;
+
+  background: #172033;
   color: #ffffff;
 
   font-size: 11px;
@@ -522,360 +177,455 @@
 
   pointer-events: none;
 
-  z-index: 1000;
+  z-index: 99999;
 
-  transition: var(--transition);
+  transition:
+    opacity 0.18s ease,
+    visibility 0.18s ease,
+    transform 0.18s ease;
 }
 
-.zonas-icon-btn:hover::after {
+.zonas-top-icon-btn:hover::after {
   opacity: 1;
   visibility: visible;
 
-  transform: translateX(-50%) translateY(0);
+  transform:
+    translateX(-50%)
+    translateY(0);
 }
 
-/* =========================
-   ESTADOS VACÍO / LOADING
-========================= */
 
-.zonas-empty {
-  padding: 35px !important;
+/* =========================================================
+   FORMULARIO PRINCIPAL
+========================================================= */
 
-  text-align: center;
+.zonas-main-form {
+  width: 100%;
+  max-width: 480px;
 
-  color: #667085 !important;
+  margin: 24px auto 0;
 
-  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
 
-  border-radius: 14px !important;
+  gap: 14px;
 }
 
-.zonas-loading {
-  margin-top: 24px;
-  padding: 30px;
+.zonas-main-form label {
+  width: 100%;
 
-  border: 1px dashed #d0d5dd;
-  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
 
-  color: #667085;
+  gap: 7px;
 
-  text-align: center;
-  font-weight: 700;
+  color: #344054;
+
+  font-size: 12px;
+  font-weight: 800;
 }
 
-/* =========================
-   MODAL
-========================= */
+.zonas-main-form input,
+.zonas-main-form select,
+.zonas-main-form textarea {
+  width: 100%;
 
-.zonas-modal-overlay {
+  border: 1px solid #d8e0dc;
+  border-radius: 9px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #172033;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.zonas-main-form input,
+.zonas-main-form select {
+  height: 40px;
+
+  padding: 0 12px;
+}
+
+.zonas-main-form textarea {
+  min-height: 82px;
+
+  padding: 10px 12px;
+
+  resize: vertical;
+}
+
+.zonas-main-form input:focus,
+.zonas-main-form select:focus,
+.zonas-main-form textarea:focus {
+  border-color: #20afb2;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(32, 175, 178, 0.12);
+}
+
+
+/* =========================================================
+   MODAL BUSCAR ZONAS
+========================================================= */
+
+.zonas-search-modal-overlay {
   position: fixed;
   inset: 0;
 
   z-index: 100000;
 
-  padding: 24px;
+  background:
+    rgba(15, 23, 42, 0.18);
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: rgba(15, 23, 42, 0.5);
-
-  backdrop-filter: blur(4px);
+  pointer-events: none;
 }
 
-.zonas-modal {
-  width: min(720px, 100%);
-  max-height: calc(100vh - 48px);
+.zonas-search-modal {
+  position: fixed;
 
-  overflow-y: auto;
+  width: min(760px, 94vw);
+  max-height: 78vh;
 
-  padding: 26px;
+  overflow: hidden;
 
-  border-radius: 22px;
-
-  background: #f7f7f7;
-
-  box-shadow:
-    0 30px 80px rgba(15, 23, 42, 0.24);
-}
-
-.zonas-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-
-  margin-bottom: 24px;
-}
-
-.zonas-modal-header h3 {
-  margin: 5px 0 0;
-
-  color: #172033;
-
-  font-size: 22px;
-}
-
-/* FORMULARIO */
-
-.zonas-form-grid {
-  display: grid;
-
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-
-  gap: 18px;
-}
-
-.zonas-form-grid label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  color: #172033;
-
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.zonas-field-full {
-  grid-column: 1 / -1;
-}
-
-.zonas-form-grid input,
-.zonas-form-grid select,
-.zonas-form-grid textarea {
-  width: 100%;
-
-  border: 1px solid #d8e0ec;
-  border-radius: 13px;
-
-  outline: none;
-
-  background: #f8fafc;
-
-  color: #172033;
-
-  font: inherit;
-}
-
-.zonas-form-grid input,
-.zonas-form-grid select {
-  min-height: 47px;
-  padding: 11px 13px;
-}
-
-.zonas-form-grid textarea {
-  min-height: 95px;
-
-  padding: 13px;
-
-  resize: vertical;
-}
-
-.zonas-form-grid input:focus,
-.zonas-form-grid select:focus,
-.zonas-form-grid textarea:focus {
-  border-color: #20afb2;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 0 0 4px rgba(32, 175, 178, 0.14);
-}
-
-.zonas-field-label {
-  display: block;
-
-  margin-bottom: 9px;
-
-  color: #172033;
-
-  font-size: 13px;
-  font-weight: 800;
-}
-
-/* FOOTER MODAL */
-
-.zonas-modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-
-  margin-top: 26px;
-  padding-top: 20px;
-
-  border-top: 1px solid #eaecf0;
-}
-
-/* BOTONES MODALES */
-
-.zonas-modal-icon-btn {
-  position: relative;
-
-  width: 50px;
-  height: 50px;
-  padding: 7px;
-
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  border: 1px solid #d8e5df;
   border-radius: 14px;
 
   background: #ffffff;
 
-  display: inline-flex;
+  box-shadow:
+    0 24px 65px
+    rgba(15, 23, 42, 0.28);
+
+  pointer-events: auto;
+}
+
+
+/* =========================================================
+   CABECERA DEL MODAL
+========================================================= */
+
+.zonas-search-modal-header {
+  min-height: 50px;
+
+  padding: 8px 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background:
+    linear-gradient(
+      135deg,
+      #087f69,
+      #20afb2
+    );
+
+  color: #ffffff;
+
+  cursor: move;
+  user-select: none;
+}
+
+.zonas-search-modal-header h3 {
+  margin: 0;
+
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.zonas-search-modal-close {
+  width: 32px;
+  height: 32px;
+
+  padding: 5px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  display: flex;
   align-items: center;
   justify-content: center;
 
   cursor: pointer;
-
-  box-shadow: 0 7px 18px rgba(15, 23, 42, 0.1);
-
-  transition: var(--transition);
 }
 
-.zonas-modal-icon-btn:hover {
-  transform: translateY(-3px);
+.zonas-search-modal-close img {
+  width: 21px;
+  height: 21px;
 
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
-}
-
-.zonas-modal-icon-btn:disabled {
-  opacity: 0.55;
-  cursor: wait;
-  transform: none;
-  box-shadow: none;
-}
-
-.zonas-modal-icon-image {
-  width: 31px;
-  height: 31px;
   object-fit: contain;
-  pointer-events: none;
 }
 
-/* Tooltip - Cerrar modal */
-.zonas-modal-icon-btn::after {
-  content: attr(data-tooltip);
 
-  position: absolute;
-  top: calc(100% + 10px);
-  bottom: auto;
-  left: 50%;
+/* =========================================================
+   FILTROS DEL BUSCADOR
+========================================================= */
 
-  transform: translateX(-50%) translateY(-7px);
+.zonas-search-modal-filters {
+  padding: 12px 14px;
 
-  padding: 5px 10px;
+  display: grid;
 
-  border-radius: 9px;
+  grid-template-columns:
+    140px 1fr;
 
-  background: #38a266;
-  color: #f9f5f5;
+  gap: 10px;
+
+  border-bottom:
+    1px solid #e4ebe8;
+
+  background: #f8fbfa;
+}
+
+.zonas-search-modal-filters select {
+  height: 38px;
+
+  padding: 0 10px;
+
+  border:
+    1px solid #d0d9d5;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  outline: none;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.zonas-search-modal-input {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  border:
+    1px solid #d0d9d5;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+}
+
+.zonas-search-modal-input:focus-within {
+  border-color: #20afb2;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(32, 175, 178, 0.12);
+}
+
+.zonas-search-modal-input img {
+  width: 21px;
+  height: 21px;
+
+  margin-left: 10px;
+
+  object-fit: contain;
+}
+
+.zonas-search-modal-input input {
+  width: 100%;
+  height: 36px;
+
+  padding: 0 10px;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #172033;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   TABLA EMERGENTE
+========================================================= */
+
+.zonas-search-modal-table-wrap {
+  max-height: 390px;
+
+  overflow: auto;
+
+  background: #ffffff;
+}
+
+.zonas-search-modal-table {
+  width: 100%;
+
+  border-collapse: collapse;
+}
+
+.zonas-search-modal-table thead {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 5;
+}
+
+.zonas-search-modal-table th {
+  padding: 10px 12px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0e7a71,
+      #0e7a71
+    );
+
+  color: #ffffff;
+
+  text-align: center;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+}
+
+.zonas-search-modal-table td {
+  padding: 10px 12px;
+
+  border-bottom:
+    1px solid #e7eeea;
+
+  color: #25333d;
+
+  font-size: 12px;
+
+  text-align: center;
+  vertical-align: middle;
+}
+
+.zonas-search-modal-table tbody tr {
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.zonas-search-modal-table tbody tr:nth-child(even) {
+  background: #f5faf8;
+}
+
+.zonas-search-modal-table tbody tr:hover {
+  background: #ddf5ea;
+
+  box-shadow:
+    inset 4px 0 0 #12b76a;
+}
+
+
+/* =========================================================
+   ESTADO EN TABLA EMERGENTE
+========================================================= */
+
+.zonas-search-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 72px;
+
+  padding: 5px 9px;
+
+  border-radius: 999px;
 
   font-size: 10px;
-  font-weight: 700;
-
-  white-space: nowrap;
-
-  opacity: 0;
-  visibility: hidden;
-
-  pointer-events: none;
-  z-index: 9999;
-
-  transition: var(--transition);
+  font-weight: 800;
 }
 
-.zonas-modal-icon-btn:hover::after,
-.zonas-modal-icon-btn:focus-visible::after {
-  opacity: 1;
-  visibility: visible;
+.zonas-search-status.active {
+  color: #067647;
 
-  transform: translateX(-50%) translateY(0);
+  background: #ecfdf3;
+
+  border: 1px solid #abefc6;
 }
 
-.zonas-modal-icon-btn.zonas-tooltip-bottom::after {
-  top: calc(100% + 10px);
-  bottom: auto;
+.zonas-search-status.inactive {
+  color: #b42318;
 
-  transform: translateX(-50%) translateY(-7px);
+  background: #fef3f2;
+
+  border: 1px solid #fecdca;
 }
 
-.zonas-modal-icon-btn.zonas-tooltip-bottom:hover::after,
-.zonas-modal-icon-btn.zonas-tooltip-bottom:focus-visible::after {
-  transform: translateX(-50%) translateY(0);
+
+/* =========================================================
+   ESTADO VACÍO EN TABLA EMERGENTE
+========================================================= */
+
+.zonas-search-empty {
+  padding: 28px !important;
+
+  color: #98a2b3 !important;
+
+  text-align: center !important;
 }
 
-/* BOTÓN GUARDAR */
-.zonas-modal-save-btn {
-  background: linear-gradient(135deg, #eff1f0, #ffffff) !important;
-  border-color: transparent !important;
-  box-shadow: 0 7px 18px rgba(18, 183, 106, 0.25) !important;
-}
 
-.zonas-modal-save-btn:hover {
-  box-shadow: 0 12px 28px rgba(18, 183, 106, 0.35) !important;
-  transform: translateY(-3px);
-}
-
-.zonas-modal-save-btn:disabled {
-  opacity: 0.55;
-  cursor: wait;
-  transform: none;
-  box-shadow: none !important;
-}
-
-/* =========================
+/* =========================================================
    RESPONSIVE
-========================= */
+========================================================= */
 
 @media (max-width: 768px) {
+
   .zonas-module {
     padding: 18px;
   }
 
-  .zonas-header {
+  .zonas-title-bar {
+    max-width: none;
+
+    align-items: flex-start;
+
     flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
   }
 
-  .zonas-header-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+  .zonas-title-actions {
+    width: 100%;
+
+    justify-content: flex-start;
+
+    flex-wrap: wrap;
   }
 
-  .zonas-header-actions .zonas-search-box {
+  .zonas-main-form {
     max-width: none;
   }
 
-  .zonas-header-actions .zonas-icon-main {
-    align-self: flex-end;
-  }
-
-  .zonas-results-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-
-  .zonas-search-box {
-    max-width: none;
-  }
-
-  .zonas-form-grid {
+  .zonas-search-modal-filters {
     grid-template-columns: 1fr;
   }
 
-  .zonas-field-full {
-    grid-column: auto;
+  .zonas-search-modal {
+    width: 96vw;
+    max-height: 85vh;
   }
 
-  .zonas-modal-footer {
-    flex-direction: column-reverse;
-  }
-
-  .zonas-modal-footer button {
-    width: 100%;
+  .zonas-search-modal-table-wrap {
+    max-height: 280px;
   }
 }

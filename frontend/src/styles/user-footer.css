@@ -1,0 +1,255 @@
+
+/* =========================================
+   ESPACIO PARA FOOTER FIJO
+========================================= */
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* Solo genera scroll cuando realmente
+   el contenido supera la pantalla */
+#root {
+  min-height: 100vh;
+
+  padding-bottom: 50px;
+
+  box-sizing: border-box;
+}
+/* =========================================
+   PIE FIJO DEL USUARIO
+========================================= */
+
+/* =========================================
+   FOOTER - DISTRIBUCIÓN
+========================================= */
+
+.user-footer {
+  position: fixed;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  z-index: 5000;
+
+  height: 42px;
+  min-height: 42px;
+
+  padding: 6px 18px;
+
+  display: grid;
+
+  grid-template-columns:
+    1fr auto 1fr;
+
+  align-items: center;
+
+  background: rgba(255, 255, 255, 0.96);
+
+  border-top: 1px solid #d8e0dc;
+
+  box-shadow:
+    0 -4px 14px rgba(15, 23, 42, 0.06);
+
+  backdrop-filter: blur(8px);
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================
+   USUARIO - IZQUIERDA
+========================================= */
+
+.user-footer-user {
+  justify-self: start;
+
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  font-size: 11px;
+}
+
+.user-footer-user span {
+  color: #667085;
+  font-weight: 700;
+}
+
+.user-footer-user strong {
+  color: #087443;
+  font-weight: 900;
+}
+
+
+/* =========================================
+   FECHA - CENTRO
+========================================= */
+
+.user-footer-date {
+  justify-self: center;
+
+  color: #475467;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+/* =========================================
+   CERRAR SESIÓN - DERECHA
+========================================= */
+
+.user-footer-logout {
+  justify-self: end;
+
+  position: relative;
+
+  width: 30px;
+  height: 30px;
+
+  padding: 4px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 3px 8px rgba(34, 84, 202, 0.1);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.user-footer-logout:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 6px 12px rgba(15, 23, 42, 0.16);
+}
+
+.user-footer-logout img {
+  width: 21px;
+  height: 21px;
+
+  object-fit: contain;
+
+  pointer-events: none;
+}
+
+/* =========================================
+   BOTÓN CERRAR SESIÓN
+========================================= */
+
+.user-footer-logout {
+  position: relative;
+
+  width: 30px;
+  height: 30px;
+
+  padding: 4px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 3px 8px
+    rgba(15, 23, 42, 0.10);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+.user-footer-logout:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 6px 12px
+    rgba(15, 23, 42, 0.16);
+}
+
+
+.user-footer-logout img {
+  width: 21px;
+  height: 21px;
+
+  object-fit: contain;
+
+  pointer-events: none;
+}
+
+
+/* =========================================
+   TOOLTIP
+========================================= */
+
+.user-footer-logout::after {
+  content: attr(data-tooltip);
+
+  position: absolute;
+
+  bottom: calc(100% + 7px);
+  left: 50%;
+
+  transform:
+    translateX(-50%)
+    translateY(4px);
+
+  padding: 5px 8px;
+
+  border-radius: 6px;
+
+  background: #172033;
+  color: #ffffff;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  opacity: 0;
+  visibility: hidden;
+
+  pointer-events: none;
+
+  transition:
+    opacity 0.18s ease,
+    visibility 0.18s ease,
+    transform 0.18s ease;
+}
+
+
+.user-footer-logout:hover::after {
+  opacity: 1;
+  visibility: visible;
+
+  transform:
+    translateX(-50%)
+    translateY(0);
+}

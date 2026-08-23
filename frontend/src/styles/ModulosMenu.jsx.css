@@ -1,59 +1,39 @@
+/* =========================================================
+   BOTÓN TRIGGER - POSICIÓN FIJA
+========================================================= */
+
 .config-quick-menu {
-  position: relative;
-  display: inline-flex;
-  align-items: flex-start;
-  z-index: 5000;
-}
+  position: fixed;
 
-.config-quick-trigger {
-  position: relative;
+  top: 14px;
+  left: 16px;
 
-  width: 48px;
-  height: 48px;
+  z-index: 9000;
 
-  padding: 0;
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  border-radius: 14px;
-
-  background: rgba(245, 242, 242, 0.92);
+  width: 40px;
+  height: 40px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  cursor: pointer;
-
-  box-shadow:
-    0 8px 22px rgba(15, 23, 42, 0.10);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  margin: 0;
 }
 
-.config-quick-trigger:hover {
-  transform: translateY(-2px);
-
-  box-shadow:
-    0 12px 28px rgba(15, 23, 42, 0.14);
-}
-
-/* Icono de módulos */
-
-.config-modulos-icon {
-  width:45px;
-  height: 45px;
-  object-fit: contain;
-  pointer-events: none;
-}   
 .config-quick-trigger {
-  width: 40px;  
+  width: 40px;
   height: 40px;
 
-  padding: 7px;
+  min-width: 40px;
+  min-height: 40px;
 
-  border: 1px solid rgba(15, 23, 42, 0.07);
-  border-radius: 14px;
+  max-width: 40px;
+  max-height: 40px;
+
+  padding: 4px;
+
+  border: none;
+  border-radius: 10px;
 
   background: #ffffff;
 
@@ -63,199 +43,284 @@
 
   cursor: pointer;
 
-  box-shadow:
-    0 8px 22px rgba(251, 254, 251, 0.605);
+  overflow: hidden;
 
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.config-quick-trigger:hover {
-  transform: translateY(-2px);
+  box-sizing: border-box;
 
   box-shadow:
-    0 12px 28px rgba(15, 23, 42, 0.15);
+    0 5px 14px rgba(15, 23, 42, 0.12);
 }
 
-/* =========================
-   NOMBRE AL PASAR CURSOR
-========================= */
+.config-modulos-icon {
+  display: block;
 
-.config-quick-item::after {
-  content: attr(data-tooltip);
+  width: 30px !important;
+  height: 30px !important;
 
-  position: absolute;
+  min-width: 30px;
+  min-height: 30px;
 
-  /* APARECE DEBAJO DEL ICONO */
-  top: calc(100% + 9px);
-  left: 50%;
+  max-width: 30px;
+  max-height: 30px;
 
-  transform:
-    translateX(-50%)
-    translateY(-5px);
-
-  padding: 7px 11px;
-
-  border-radius: 8px;
-
-  background: #a3c5dd;
-  color: #092d06;
-
-  font-size: 12px;
-  font-weight: 700;
-
-  white-space: nowrap;
-
-  opacity: 0;
-  visibility: hidden;
+  object-fit: contain;
 
   pointer-events: none;
+}
 
+
+/* =========================================================
+   OVERLAY - FONDO OSCURO
+========================================================= */
+
+.modulos-menu-overlay {
+  position: fixed;
+  inset: 0;
   z-index: 99999;
-
-  transition:
-    opacity 0.18s ease,
-    visibility 0.18s ease,
-    transform 0.18s ease;
-}
-
-.config-quick-item:hover::after {
-  opacity: 1;
-  visibility: visible;
-
-  transform:
-    translateX(-50%)
-    translateY(0);
-}
-
-/* Panel desplegable */
-
-.config-quick-panel {
-  position: absolute;
-
-  top: 0;
-  left: 58px;
-
+  background: rgba(15, 23, 42, 0.25);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+}
 
-  padding: 8px;
 
-  border: 1px solid rgba(15, 23, 42, 0.07);
+/* =========================================================
+   MODAL CENTRAL
+========================================================= */
+
+.modulos-menu-modal {
+  width: min(620px, 90vw);
+  max-height: 80vh;
+  padding: 20px;
   border-radius: 16px;
-
-  background: rgba(235, 251, 238, 0.96);
-
-  box-shadow:
-    0 14px 36px rgb(117, 227, 163);
-
+  background: rgba(250, 255, 252, 0.98);
+  box-shadow: 0 25px 70px rgba(15, 23, 42, 0.25);
   backdrop-filter: blur(14px);
-
-  opacity: 0;
-  visibility: hidden;
-
-  transform:
-    translateX(-8px)
-    scale(0.98);
-
-  transform-origin: left center;
-
-  transition:
-    opacity 0.22s ease,
-    transform 0.22s ease,
-    visibility 0.22s ease;
+  overflow-y: auto;
 }
 
-.config-quick-menu.open
-.config-quick-panel,
-.config-quick-menu:hover
-.config-quick-panel {
-  opacity: 1;
-  visibility: visible;
 
-  transform:
-    translateX(0)
-    scale(1);
+/* =========================================================
+   CABECERA
+========================================================= */
+
+.modulos-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
 }
 
-/* Cada módulo */
+.modulos-menu-header h3 {
+  margin: 0;
+  color: #172033;
+  font-size: 18px;
+  font-weight: 900;
+}
 
-.config-quick-item {
-  min-width: 92px;
-  height: 35px;
-
-  padding: 7px 11px;
-
+.modulos-menu-close {
+  width: 32px;
+  height: 32px;
+  padding: 5px;
   border: none;
+  border-radius: 8px;
+  background: #f2f4f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.modulos-menu-close:hover {
+  background: #e4e7ec;
+}
+
+.modulos-menu-close img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+
+/* =========================================================
+   GRID DE MÓDULOS
+========================================================= */
+
+.modulos-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+
+/* =========================================================
+   CADA MÓDULO
+========================================================= */
+
+.modulos-menu-item {
+  position: relative;
+  min-height: 92px;
+  padding: 12px 8px;
+  border: 1px solid #e0e9e5;
   border-radius: 12px;
-
-  background: transparent;
-
+  background: linear-gradient(135deg, #ffffff, #f3faf7);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  gap: 5px;
-
+  gap: 8px;
   color: #475467;
-
   font-size: 11px;
   font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04);
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.modulos-menu-item img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.modulos-menu-item span {
+  text-align: center;
+  line-height: 1.2;
+}
+
+.modulos-menu-item:hover {
+  border-color: #20afb2;
+  background: linear-gradient(135deg, #e9faf3, #eaf9f9);
+  color: #067647;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.10);
+}
+
+.modulos-menu-item.active {
+  border-color: #12b76a;
+  background: linear-gradient(135deg, #dcf8ea, #e2f7f5);
+  color: #067647;
+  box-shadow: inset 0 0 0 1px rgba(18, 183, 106, 0.15);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 700px) {
+  .modulos-menu-modal {
+    width: min(440px, 92vw);
+    max-height: 75vh;
+  }
+
+  .modulos-menu-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .modulos-menu-item {
+    min-height: 78px;
+    padding: 10px 6px;
+    font-size: 10px;
+  }
+
+  .modulos-menu-item img {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .modulos-menu-modal {
+    width: min(340px, 94vw);
+  }
+
+  .modulos-menu-item {
+    min-height: 68px;
+    padding: 8px 5px;
+    font-size: 9px;
+  }
+
+  .modulos-menu-item img {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+/* =========================================================
+   BOTÓN DE MÓDULOS - FIJO ARRIBA IZQUIERDA
+========================================================= */
+
+.modulos-menu-trigger {
+  position: fixed;
+
+  top: 14px;
+  left: 16px;
+
+  z-index: 9000;
+
+  width: 40px;
+  height: 40px;
+
+  min-width: 40px;
+  min-height: 40px;
+
+  max-width: 40px;
+  max-height: 40px;
+
+  padding: 4px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   cursor: pointer;
 
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
-}
+  overflow: hidden;
 
-.config-quick-item img {
-  width: 26px;
-  height: 26px;
-
-  object-fit: contain;
-}
-
-.config-quick-item:hover {
-  background: #f0faf6;
-  color: #067647;
-
-  transform: translateY(-2px);
-}
-
-.config-quick-item.active {
-  background:
-    linear-gradient(
-      135deg,
-      #e4f8ed,
-      #e6f7f6
-    );
-
-  color: #067647;
+  box-sizing: border-box;
 
   box-shadow:
-    inset 0 0 0 1px
-    rgba(18, 183, 106, 0.16);
+    0 5px 14px rgba(15, 23, 42, 0.12);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
-@media (max-width: 900px) {
-  .config-quick-panel {
-    flex-direction: column;
-    align-items: stretch;
+.modulos-menu-trigger:hover {
+  transform: translateY(-2px);
 
-    max-height: 380px;
-    overflow-y: auto;
-  }
+  box-shadow:
+    0 8px 18px rgba(15, 23, 42, 0.16);
+}
 
-  .config-quick-item {
-    width: 150px;
-    min-width: 150px;
 
-    flex-direction: row;
-    justify-content: flex-start;
-  }
+/* ICONO DE LOS 9 PUNTOS */
+
+.modulos-menu-trigger > img {
+  display: block;
+
+  width: 30px !important;
+  height: 30px !important;
+
+  min-width: 30px !important;
+  min-height: 30px !important;
+
+  max-width: 30px !important;
+  max-height: 30px !important;
+
+  object-fit: contain;
+
+  flex: 0 0 30px;
+
+  pointer-events: none;
 }

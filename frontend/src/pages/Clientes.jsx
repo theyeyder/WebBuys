@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 
-import AppLayout from "../layouts/AppLayout.jsx";
-
 import {
   listarClientes,
   crearCliente,
@@ -16,8 +14,11 @@ import {
 import "../styles/clientes.css";
 import clientesPrintCss from "../styles/clientes-print.css?inline";
 
+// Importar Toast y ModulosMenu
+import Toast from "../components/Toast.jsx";
+import ModulosMenu from "../components/ModulosMenu.jsx";
+
 // Iconos
-import clientesIcon from "../assets/icons/clientes.png";
 import buscarIcon from "../assets/icons/buscar.png";
 import guardarIcon from "../assets/icons/guardar.png";
 import nuevoClienteIcon from "../assets/icons/nuevo-cliente.png";
@@ -26,7 +27,7 @@ import eliminarClienteIcon from "../assets/icons/eliminar-cliente.png";
 import bloquearIcon from "../assets/icons/bloquear.png";
 import desbloquearIcon from "../assets/icons/desbloquear.png";
 import imprimirIcon from "../assets/icons/imprimir.png";
-
+import cerrarIcon from "../assets/icons/cerrar.png";
 
 /* =========================================
    FORMULARIO INICIAL
@@ -41,8 +42,8 @@ const FORM_INICIAL = {
   direccion: "",
   barrio: "",
   zonaDespacho: "",
-  ciudad: "Ibagué",
-  tipoCliente: "Tienda",
+  ciudad: "",
+  tipoCliente: "",
   estado: true,
 };
 
@@ -65,19 +66,21 @@ export default function Clientes() {
 
   const [filtro, setFiltro] = useState("");
 
-  const [paginaActual, setPaginaActual] = useState(1);
-  const CLIENTES_POR_PAGINA = 5;
-
-  const [orden, setOrden] = useState({
-    campo: "nombre",
-    direccion: "asc",
-  });
-
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
 
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
+
+  // Estados para el modal de búsqueda de clientes
+  const [modalBuscarClientes, setModalBuscarClientes] =
+    useState(false);
+
+  const [filtroBuscarCliente, setFiltroBuscarCliente] =
+    useState("");
+
+  const [campoBuscarCliente, setCampoBuscarCliente] =
+    useState("todos");
 
 
   /* =========================================
@@ -309,6 +312,64 @@ export default function Clientes() {
       behavior: "smooth",
     });
 
+  }
+
+
+  /* =========================================
+     SELECCIONAR CLIENTE DESDE BÚSQUEDA
+  ========================================= */
+
+  function seleccionarClienteBusqueda(cliente) {
+
+    setClienteSeleccionado(cliente);
+
+    setForm({
+      tipoDocumento:
+        cliente.tipoDocumento || "CC",
+
+      documento:
+        cliente.documento || "",
+
+      nombre:
+        cliente.nombre || "",
+
+      razonSocial:
+        cliente.razonSocial || "",
+
+      telefono:
+        cliente.telefono || "",
+
+      direccion:
+        cliente.direccion || "",
+
+      barrio:
+        cliente.barrio || "",
+
+      zonaDespacho:
+        cliente.zonaDespacho?._id ||
+        cliente.zonaDespacho ||
+        "",
+
+      ciudad:
+        cliente.ciudad || "Ibagué",
+
+      tipoCliente:
+        cliente.tipoCliente || "Tienda",
+
+      estado:
+        cliente.estado ?? true,
+    });
+
+    setModoEdicion(true);
+
+    setModalBuscarClientes(false);
+    setFiltroBuscarCliente("");
+
+    setMensaje(
+      `Cliente ${cliente.nombre} cargado correctamente.`
+    );
+
+    setTipoMensaje("success");
   }
 
 
@@ -645,8 +706,6 @@ export default function Clientes() {
 
       setModoEdicion(false);
 
-      setPaginaActual(1);
-
 
     } catch (error) {
 
@@ -737,38 +796,6 @@ export default function Clientes() {
       setTipoMensaje("error");
 
     }
-
-  }
-
-
-  /* =========================================
-     CAMBIAR ORDEN
-  ========================================= */
-
-  function cambiarOrden(campo) {
-
-    setOrden((actual) => {
-
-      if (actual.campo === campo) {
-
-        return {
-          campo,
-          direccion:
-            actual.direccion === "asc"
-              ? "desc"
-              : "asc",
-        };
-
-      }
-
-      return {
-        campo,
-        direccion: "asc",
-      };
-
-    });
-
-    setPaginaActual(1);
 
   }
 
@@ -984,143 +1011,6 @@ export default function Clientes() {
 
 
   /* =========================================
-     CLIENTES FILTRADOS
-  ========================================= */
-
-  const clientesFiltrados = useMemo(() => {
-
-    const textoBusqueda =
-      filtro.trim().toLowerCase();
-
-    if (!textoBusqueda) {
-      return clientes;
-    }
-
-    return clientes.filter((cliente) => {
-
-      const zona =
-        cliente.zonaDespacho?.nombre || "";
-
-      const texto = `
-        ${cliente.tipoDocumento || ""}
-        ${cliente.documento || ""}
-        ${cliente.nombre || ""}
-        ${cliente.razonSocial || ""}
-        ${cliente.telefono || ""}
-        ${cliente.direccion || ""}
-        ${cliente.barrio || ""}
-        ${zona}
-        ${cliente.ciudad || ""}
-        ${cliente.tipoCliente || ""}
-      `.toLowerCase();
-
-      return texto.includes(textoBusqueda);
-
-    });
-
-  }, [clientes, filtro]);
-
-
-  /* =========================================
-     CLIENTES ORDENADOS
-  ========================================= */
-
-  const clientesOrdenados = useMemo(() => {
-
-    const lista = [...clientesFiltrados];
-
-    lista.sort((a, b) => {
-
-      let valorA = "";
-      let valorB = "";
-
-      switch (orden.campo) {
-
-        case "documento":
-          valorA = `${a.tipoDocumento || ""} ${a.documento || ""}`;
-          valorB = `${b.tipoDocumento || ""} ${b.documento || ""}`;
-          break;
-
-        case "nombre":
-          valorA = a.nombre || "";
-          valorB = b.nombre || "";
-          break;
-
-        case "barrio":
-          valorA = a.barrio || "";
-          valorB = b.barrio || "";
-          break;
-
-        case "zona":
-          valorA =
-            a.zonaDespacho?.nombre ||
-            obtenerNombreZona(a) ||
-            "";
-
-          valorB =
-            b.zonaDespacho?.nombre ||
-            obtenerNombreZona(b) ||
-            "";
-          break;
-
-        case "estado":
-          valorA = a.estado ? "Activo" : "Inactivo";
-          valorB = b.estado ? "Activo" : "Inactivo";
-          break;
-
-        default:
-          return 0;
-
-      }
-
-      const resultado = String(valorA).localeCompare(
-        String(valorB),
-        "es",
-        {
-          sensitivity: "base",
-          numeric: true,
-        }
-      );
-
-      return orden.direccion === "asc"
-        ? resultado
-        : -resultado;
-
-    });
-
-    return lista;
-
-  }, [clientesFiltrados, orden, zonas]);
-
-
-  /* =========================================
-     PAGINACIÓN
-  ========================================= */
-
-  const totalPaginas = Math.max(
-    1,
-    Math.ceil(
-      clientesOrdenados.length /
-        CLIENTES_POR_PAGINA
-    )
-  );
-
-  const indiceInicial =
-    (paginaActual - 1) *
-    CLIENTES_POR_PAGINA;
-
-  const indiceFinal =
-    indiceInicial +
-    CLIENTES_POR_PAGINA;
-
-  const clientesPaginados =
-    clientesOrdenados.slice(
-      indiceInicial,
-      indiceFinal
-    );
-
-
-  /* =========================================
      OBTENER NOMBRE ZONA
   ========================================= */
 
@@ -1147,943 +1037,754 @@ export default function Clientes() {
 
 
   /* =========================================
+     FILTRADO PARA BÚSQUEDA EMERGENTE
+  ========================================= */
+
+  const clientesBusqueda = useMemo(() => {
+    const texto =
+      filtroBuscarCliente
+        .trim()
+        .toLowerCase();
+
+    if (!texto) {
+      return clientes;
+    }
+
+    return clientes.filter((cliente) => {
+      const documento =
+        String(cliente.documento || "")
+          .toLowerCase();
+
+      const nombre =
+        String(cliente.nombre || "")
+          .toLowerCase();
+
+      const razonSocial =
+        String(cliente.razonSocial || "")
+          .toLowerCase();
+
+      const telefono =
+        String(cliente.telefono || "")
+          .toLowerCase();
+
+      const barrio =
+        String(cliente.barrio || "")
+          .toLowerCase();
+
+      const zona =
+        String(
+          cliente.zonaDespacho?.nombre || ""
+        ).toLowerCase();
+
+      switch (campoBuscarCliente) {
+        case "documento":
+          return documento.includes(texto);
+
+        case "nombre":
+          return nombre.includes(texto);
+
+        case "razonSocial":
+          return razonSocial.includes(texto);
+
+        case "telefono":
+          return telefono.includes(texto);
+
+        case "barrio":
+          return barrio.includes(texto);
+
+        case "zona":
+          return zona.includes(texto);
+
+        default:
+          return (
+            documento.includes(texto) ||
+            nombre.includes(texto) ||
+            razonSocial.includes(texto) ||
+            telefono.includes(texto) ||
+            barrio.includes(texto) ||
+            zona.includes(texto)
+          );
+      }
+    });
+  }, [
+    clientes,
+    filtroBuscarCliente,
+    campoBuscarCliente,
+  ]);
+
+
+  /* =========================================
      RENDER
   ========================================= */
 
   return (
 
-    <AppLayout title="Clientes">
+    <section className="clientes-page">
 
-      <div className="clientes-page">
+      {/* ===============================
+          MENSAJES
+      =============================== */}
 
+      {mensaje && (
 
-        {/* ===============================
-            MENSAJES
-        =============================== */}
+        <div
+          className={`clientes-alert clientes-alert--${tipoMensaje}`}
+        >
+          {mensaje}
+        </div>
 
-        {mensaje && (
+      )}
 
-          <div
-            className={`clientes-alert clientes-alert--${tipoMensaje}`}
+      {/* ===============================
+          MODULOS MENU
+      =============================== */}
+
+      <ModulosMenu />
+
+      {/* ===============================
+          CABECERA CLIENTES
+      =============================== */}
+
+      <div className="clientes-title-bar">
+
+        <div className="clientes-title-info">
+
+          <h2>
+            {clienteSeleccionado
+              ? "Editar Cliente"
+              : "Clientes"}
+          </h2>
+
+        </div>
+
+        <div className="clientes-title-actions">
+
+          {/* NUEVO */}
+          
+
+          <button
+            type="button"
+            className="clientes-icon-btn"
+            onClick={nuevoCliente}
+            data-tooltip="Nuevo cliente"
+            aria-label="Nuevo cliente"
+            disabled={guardando}
           >
-            {mensaje}
-          </div>
-
-        )}
-
-
-        {/* ===============================
-            TARJETA PRINCIPAL
-        =============================== */}
-
-        <section className="clientes-card">
-
-
-          {/* ===============================
-              BARRA SUPERIOR
-          =============================== */}
-
-          <div className="clientes-title-bar">
-
-            <div className="clientes-title-info">
-
-              <div className="clientes-title-icon">
-                <img
-                  src={clientesIcon}
-                  alt=""
-                />
-              </div>
-
-              <div>
-
-                <h2>
-                  {clienteSeleccionado
-                    ? "Editar Cliente"
-                    : "Clientes"}
-                </h2>
-
-              </div>
-
-            </div>
-
-
-            <div className="clientes-title-actions">
-
-
-              {/* NUEVO */}
-
-              <button
-                type="button"
-                className="clientes-icon-btn"
-                onClick={nuevoCliente}
-                data-tooltip="Nuevo cliente"
-                aria-label="Nuevo cliente"
-                disabled={guardando}
-              >
-                <img
-                  src={nuevoClienteIcon}
-                  alt=""
-                />
-              </button>
-
-
-              {/* EDITAR */}
-
-              <button
-                type="button"
-                className="clientes-icon-btn clientes-icon-btn-edit"
-                onClick={editarClienteSeleccionado}
-                data-tooltip="Editar cliente"
-                aria-label="Editar cliente"
-                disabled={
-                  guardando ||
-                  !clienteSeleccionado
-                }
-              >
-                <img
-                  src={editarClienteIcon}
-                  alt=""
-                />
-              </button>
-
-
-              {/* ACTIVAR / DESACTIVAR */}
-
-              <button
-                type="button"
-                className="clientes-icon-btn"
-                onClick={cambiarEstadoClienteSeleccionado}
-                data-tooltip={
-                  clienteSeleccionado?.estado
-                    ? "Desactivar cliente"
-                    : "Activar cliente"
-                }
-                aria-label={
-                  clienteSeleccionado?.estado
-                    ? "Desactivar cliente"
-                    : "Activar cliente"
-                }
-                disabled={
-                  guardando ||
-                  !clienteSeleccionado
-                }
-              >
-                <img
-                  src={
-                    clienteSeleccionado?.estado
-                      ? bloquearIcon
-                      : desbloquearIcon
-                  }
-                  alt=""
-                />
-              </button>
-
-
-              {/* ELIMINAR */}
-
-              <button
-                type="button"
-                className="clientes-icon-btn clientes-icon-btn-delete"
-                onClick={eliminarClienteSeleccionado}
-                data-tooltip="Eliminar cliente"
-                aria-label="Eliminar cliente"
-                disabled={
-                  guardando ||
-                  !clienteSeleccionado
-                }
-              >
-                <img
-                  src={eliminarClienteIcon}
-                  alt=""
-                />
-              </button>
-
-
-              {/* IMPRIMIR */}
-
-              <button
-                type="button"
-                className="clientes-icon-btn"
-                onClick={imprimirClientes}
-                data-tooltip="Imprimir clientes"
-                aria-label="Imprimir clientes"
-                disabled={
-                  guardando ||
-                  clientes.length === 0
-                }
-              >
-                <img
-                  src={imprimirIcon}
-                  alt=""
-                />
-              </button>
-
-
-              {/* GUARDAR */}
-
-              <button
-                type="button"
-                className="clientes-icon-btn"
-                onClick={guardarCliente}
-                data-tooltip={
-                  modoEdicion
-                    ? "Guardar cambios"
-                    : "Guardar cliente"
-                }
-                aria-label={
-                  modoEdicion
-                    ? "Guardar cambios"
-                    : "Guardar cliente"
-                }
-                disabled={guardando}
-              >
-                <img
-                  src={guardarIcon}
-                  alt=""
-                />
-              </button>
-
-
-            </div>
-
-          </div>
-
-
-          {/* ===============================
-              FORMULARIO
-          =============================== */}
-
-          <div className="clientes-form-grid">
-
-
-            {/* TIPO DOCUMENTO */}
-
-            <div className="clientes-field clientes-field-tipo">
-
-              <label>
-                Tipo
-              </label>
-
-              <select
-                name="tipoDocumento"
-                value={form.tipoDocumento}
-                onChange={cambiar}
-                disabled={guardando}
-              >
-                <option value="CC">
-                  CC
-                </option>
-
-                <option value="NIT">
-                  NIT
-                </option>
-              </select>
-
-            </div>
-
-
-            {/* DOCUMENTO */}
-
-            <div className="clientes-field">
-
-              <label>
-                Documento *
-              </label>
-
-              <input
-                type="text"
-                name="documento"
-                value={form.documento}
-                onChange={cambiar}
-                placeholder={
-                  form.tipoDocumento === "NIT"
-                    ? "900123456-7"
-                    : "Número de cédula"
-                }
-                disabled={guardando}
-              />
-
-            </div>
-
-
-            {/* NOMBRE */}
-
-            <div className="clientes-field">
-
-              <label>
-                Nombre *
-              </label>
-
-              <input
-                type="text"
-                name="nombre"
-                value={form.nombre}
-                onChange={cambiar}
-                placeholder="Nombre del cliente"
-                disabled={guardando}
-              />
-
-            </div>
-
-
-            {/* RAZÓN SOCIAL */}
-
-            <div className="clientes-field">
-
-              <label>
-                Razón social
-              </label>
-
-              <input
-                type="text"
-                name="razonSocial"
-                value={form.razonSocial}
-                onChange={cambiar}
-                placeholder="Razón social"
-                disabled={guardando}
-              />
-
-            </div>
-
-
-            {/* TELÉFONO */}
-
-            <div className="clientes-field">
-
-              <label>
-                Teléfono
-              </label>
-
-              <input
-                type="text"
-                name="telefono"
-                value={form.telefono}
-                onChange={cambiar}
-                placeholder="Teléfono"
-                disabled={guardando}
-              />
-
-            </div>
-
-
-            {/* DIRECCIÓN */}
-
-            <div className="clientes-field">
-
-              <label>
-                Dirección
-              </label>
-
-              <input
-                type="text"
-                name="direccion"
-                value={form.direccion}
-                onChange={cambiar}
-                placeholder="Dirección"
-                disabled={guardando}
-              />
-
-            </div>
-
-
-            {/* BARRIO */}
-
-            <div className="clientes-field">
-
-              <label>
-                Barrio
-              </label>
-
-              <input
-                type="text"
-                name="barrio"
-                value={form.barrio}
-                onChange={cambiar}
-                placeholder="Barrio"
-                disabled={guardando}
-              />
-
-            </div>
-
-
-            {/* ZONA */}
-
-            <div className="clientes-field">
-
-              <label>
-                Zona de despacho
-              </label>
-
-              <select
-                name="zonaDespacho"
-                value={form.zonaDespacho}
-                onChange={cambiar}
-                disabled={guardando}
-              >
-
-                <option value="">
-                  Seleccione una zona
-                </option>
-
-                {zonas
-                  .filter(
-                    (zona) =>
-                      zona.estado === "Activa" ||
-                      zona.estado === true
-                  )
-                  .map((zona) => (
-
-                    <option
-                      key={zona._id}
-                      value={zona._id}
-                    >
-                      {zona.nombre}
-                    </option>
-
-                  ))}
-
-              </select>
-
-            </div>
-
-
-            {/* CIUDAD */}
-
-            <div className="clientes-field">
-
-              <label>
-                Ciudad
-              </label>
-
-              <input
-                type="text"
-                name="ciudad"
-                value={form.ciudad}
-                onChange={cambiar}
-                placeholder="Ciudad"
-                disabled={guardando}
-              />
-
-            </div>
-
-
-            {/* TIPO CLIENTE */}
-
-            <div className="clientes-field">
-
-              <label>
-                Tipo de cliente
-              </label>
-
-              <select
-                name="tipoCliente"
-                value={form.tipoCliente}
-                onChange={cambiar}
-                disabled={guardando}
-              >
-
-                <option value="Tienda">
-                  Tienda
-                </option>
-
-                <option value="Restaurante">
-                  Restaurante
-                </option>
-
-                <option value="Supermercado">
-                  Supermercado
-                </option>
-
-                <option value="Persona Natural">
-                  Persona Natural
-                </option>
-
-                <option value="Otro">
-                  Otro
-                </option>
-
-              </select>
-
-            </div>
-
-
-            {/* ESTADO */}
-
-            <div className="clientes-field clientes-field-estado">
-
-              <label>
-                Estado
-              </label>
-
-              <select
-                name="estado"
-                value={
-                  form.estado
-                    ? "true"
-                    : "false"
-                }
-                onChange={cambiar}
-                disabled={guardando}
-              >
-
-                <option value="true">
-                  Activo
-                </option>
-
-                <option value="false">
-                  Inactivo
-                </option>
-
-              </select>
-
-            </div>
-
-          </div>
-
-
-          {/* ===============================
-              BUSCADOR
-          =============================== */}
-
-          <div className="clientes-search-bar">
-
-            <div className="clientes-search-box">
-
-              <img
-                src={buscarIcon}
-                alt=""
-                className="clientes-search-icon"
-              />
-
-              <input
-                type="text"
-                value={filtro}
-                onChange={(e) => {
-                  setFiltro(e.target.value);
-                  setPaginaActual(1);
-                }}
-                placeholder="Buscar por documento, nombre, teléfono, barrio, zona..."
-              />
-
-              {filtro && (
-
-                <button
-                  type="button"
-                  className="clientes-clear-search"
-                  onClick={() => {
-                    setFiltro("");
-                    setPaginaActual(1);
-                  }}
-                  title="Limpiar búsqueda"
-                >
-                  ×
-                </button>
-
-              )}
-
-            </div>
-
-
-            <div className="clientes-counter">
-
-              <strong>
-                {clientesFiltrados.length}
-              </strong>
-
-              <span>
-                {clientesFiltrados.length === 1
-                  ? "cliente"
-                  : "clientes"}
-              </span>
-
-            </div>
-
-          </div>
-
-
-          {/* ===============================
-              TABLA
-          =============================== */}
-
-          <div className="clientes-table-wrap">
-
-            <table className="clientes-table">
-
-              <thead>
-
-                <tr>
-
-                  <th>
-                    <button
-                      type="button"
-                      className="clientes-sort-btn"
-                      onClick={() =>
-                        cambiarOrden("documento")
-                      }
-                    >
-                      Documento
-
-                      {orden.campo === "documento" && (
-                        <span>
-                          {orden.direccion === "asc"
-                            ? " ↑"
-                            : " ↓"}
-                        </span>
-                      )}
-                    </button>
-                  </th>
-
-                  <th>
-                    <button
-                      type="button"
-                      className="clientes-sort-btn"
-                      onClick={() =>
-                        cambiarOrden("nombre")
-                      }
-                    >
-                      Cliente
-
-                      {orden.campo === "nombre" && (
-                        <span>
-                          {orden.direccion === "asc"
-                            ? " ↑"
-                            : " ↓"}
-                        </span>
-                      )}
-                    </button>
-                  </th>
-
-                  <th>
-                    Teléfono
-                  </th>
-
-                  <th>
-                    <button
-                      type="button"
-                      className="clientes-sort-btn"
-                      onClick={() =>
-                        cambiarOrden("barrio")
-                      }
-                    >
-                      Barrio
-
-                      {orden.campo === "barrio" && (
-                        <span>
-                          {orden.direccion === "asc"
-                            ? " ↑"
-                            : " ↓"}
-                        </span>
-                      )}
-                    </button>
-                  </th>
-
-                  <th>
-                    <button
-                      type="button"
-                      className="clientes-sort-btn"
-                      onClick={() =>
-                        cambiarOrden("zona")
-                      }
-                    >
-                      Zona
-
-                      {orden.campo === "zona" && (
-                        <span>
-                          {orden.direccion === "asc"
-                            ? " ↑"
-                            : " ↓"}
-                        </span>
-                      )}
-                    </button>
-                  </th>
-
-                  <th>
-                    Tipo
-                  </th>
-
-                  <th>
-                    <button
-                      type="button"
-                      className="clientes-sort-btn"
-                      onClick={() =>
-                        cambiarOrden("estado")
-                      }
-                    >
-                      Estado
-
-                      {orden.campo === "estado" && (
-                        <span>
-                          {orden.direccion === "asc"
-                            ? " ↑"
-                            : " ↓"}
-                        </span>
-                      )}
-                    </button>
-                  </th>
-
-                </tr>
-
-              </thead>
-
-
-              <tbody>
-
-                {cargando ? (
-
-                  <tr>
-
-                    <td
-                      colSpan="7"
-                      className="clientes-table-message"
-                    >
-                      Cargando clientes...
-                    </td>
-
-                  </tr>
-
-                ) : clientesPaginados.length > 0 ? (
-
-                  clientesPaginados.map(
-                    (cliente) => (
-
-                      <tr
-                        key={cliente._id}
-                        className={
-                          clienteSeleccionado?._id ===
-                          cliente._id
-                            ? "clientes-row-selected"
-                            : ""
-                        }
-                        onClick={() =>
-                          seleccionarCliente(cliente)
-                        }
-                      >
-
-
-                        {/* DOCUMENTO */}
-
-                        <td>
-
-                          <div className="clientes-document-cell">
-
-                            <span className="clientes-document-type">
-                              {cliente.tipoDocumento || "-"}
-                            </span>
-
-                            <strong>
-                              {cliente.documento}
-                            </strong>
-
-                          </div>
-
-                        </td>
-
-
-                        {/* CLIENTE */}
-
-                        <td>
-
-                          <div className="clientes-name-cell">
-
-                            <strong>
-                              {cliente.nombre}
-                            </strong>
-
-                            {cliente.razonSocial && (
-
-                              <small>
-                                {cliente.razonSocial}
-                              </small>
-
-                            )}
-
-                          </div>
-
-                        </td>
-
-
-                        {/* TELÉFONO */}
-
-                        <td>
-                          {cliente.telefono || "-"}
-                        </td>
-
-
-                        {/* BARRIO */}
-
-                        <td>
-                          {cliente.barrio || "-"}
-                        </td>
-
-
-                        {/* ZONA */}
-
-                        <td>
-
-                          <span className="clientes-zone-badge">
-
-                            {obtenerNombreZona(cliente)}
-
-                          </span>
-
-                        </td>
-
-
-                        {/* TIPO */}
-
-                        <td>
-                          {cliente.tipoCliente || "-"}
-                        </td>
-
-
-                        {/* ESTADO */}
-
-                        <td>
-
-                          <span
-                            className={
-                              cliente.estado
-                                ? "clientes-status clientes-status--active"
-                                : "clientes-status clientes-status--inactive"
-                            }
-                          >
-
-                            <i></i>
-
-                            {cliente.estado
-                              ? "Activo"
-                              : "Inactivo"}
-
-                          </span>
-
-                        </td>
-
-                      </tr>
-
-                    )
-                  )
-
-                ) : (
-
-                  <tr>
-
-                    <td
-                      colSpan="7"
-                      className="clientes-empty"
-                    >
-
-                      <div>
-
-                        <strong>
-                          No hay clientes
-                        </strong>
-
-                        <span>
-                          {filtro
-                            ? "No encontramos clientes que coincidan con la búsqueda."
-                            : "Todavía no hay clientes registrados."}
-                        </span>
-
-                      </div>
-
-                    </td>
-
-                  </tr>
-
-                )}
-
-              </tbody>
-
-            </table>
-
-          </div>
-
-
-          {/* ===============================
-              PAGINACIÓN
-          =============================== */}
-
-          {clientesFiltrados.length > 0 && (
-
-            <div className="clientes-pagination">
-
-              <div className="clientes-pagination-info">
-
-                Mostrando{" "}
-                <strong>
-                  {indiceInicial + 1}
-                </strong>
-                {" - "}
-                <strong>
-                  {Math.min(
-                    indiceFinal,
-                    clientesFiltrados.length
-                  )}
-                </strong>
-                {" de "}
-                <strong>
-                  {clientesFiltrados.length}
-                </strong>
-                {" clientes"}
-
-              </div>
-
-
-              <div className="clientes-pagination-controls">
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setPaginaActual(
-                      (pagina) =>
-                        Math.max(1, pagina - 1)
-                    )
-                  }
-                  disabled={paginaActual === 1}
-                  title="Página anterior"
-                >
-                  ‹
-                </button>
-
-
-                <span>
-                  Página{" "}
-                  <strong>{paginaActual}</strong>
-                  {" de "}
-                  <strong>{totalPaginas}</strong>
-                </span>
-
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setPaginaActual(
-                      (pagina) =>
-                        Math.min(
-                          totalPaginas,
-                          pagina + 1
-                        )
-                    )
-                  }
-                  disabled={
-                    paginaActual === totalPaginas
-                  }
-                  title="Página siguiente"
-                >
-                  ›
-                </button>
-
-              </div>
-
-            </div>
-
-          )}
-
-        </section>
+            <img
+              src={nuevoClienteIcon}
+              alt=""
+            />
+          </button>
+
+          {/* EDITAR */}
+
+          <button
+            type="button"
+            className="clientes-icon-btn clientes-icon-btn-edit"
+            onClick={editarClienteSeleccionado}
+            data-tooltip="Editar cliente"
+            aria-label="Editar cliente"
+            disabled={
+              guardando ||
+              !clienteSeleccionado
+            }
+          >
+            <img
+              src={editarClienteIcon}
+              alt=""
+            />
+          </button>
+
+          {/* ACTIVAR / DESACTIVAR */}
+
+          <button
+            type="button"
+            className="clientes-icon-btn"
+            onClick={cambiarEstadoClienteSeleccionado}
+            data-tooltip={
+              clienteSeleccionado?.estado
+                ? "Desactivar cliente"
+                : "Activar cliente"
+            }
+            aria-label={
+              clienteSeleccionado?.estado
+                ? "Desactivar cliente"
+                : "Activar cliente"
+            }
+            disabled={
+              guardando ||
+              !clienteSeleccionado
+            }
+          >
+            <img
+              src={
+                clienteSeleccionado?.estado
+                  ? bloquearIcon
+                  : desbloquearIcon
+              }
+              alt=""
+            />
+          </button>
+
+          {/* ELIMINAR */}
+
+          <button
+            type="button"
+            className="clientes-icon-btn clientes-icon-btn-delete"
+            onClick={eliminarClienteSeleccionado}
+            data-tooltip="Eliminar cliente"
+            aria-label="Eliminar cliente"
+            disabled={
+              guardando ||
+              !clienteSeleccionado
+            }
+          >
+            <img
+              src={eliminarClienteIcon}
+              alt=""
+            />
+          </button>
+
+          {/* BUSCAR CLIENTE */}
+
+          <button
+            type="button"
+            className="clientes-icon-btn"
+            onClick={() => {
+              setFiltroBuscarCliente("");
+              setCampoBuscarCliente("todos");
+              setModalBuscarClientes(true);
+            }}
+            data-tooltip="Buscar cliente"
+            aria-label="Buscar cliente"
+          >
+            <img
+              src={buscarIcon}
+              alt=""
+            />
+          </button>
+
+          {/* IMPRIMIR */}
+
+          <button
+            type="button"
+            className="clientes-icon-btn"
+            onClick={imprimirClientes}
+            data-tooltip="Imprimir clientes"
+            aria-label="Imprimir clientes"
+            disabled={
+              guardando ||
+              clientes.length === 0
+            }
+          >
+            <img
+              src={imprimirIcon}
+              alt=""
+            />
+          </button>
+
+          {/* GUARDAR */}
+
+          <button
+            type="button"
+            className="clientes-icon-btn"
+            onClick={guardarCliente}
+            data-tooltip={
+              modoEdicion
+                ? "Guardar cambios"
+                : "Guardar cliente"
+            }
+            aria-label={
+              modoEdicion
+                ? "Guardar cambios"
+                : "Guardar cliente"
+            }
+            disabled={guardando}
+          >
+            <img
+              src={guardarIcon}
+              alt=""
+            />
+          </button>
+
+        </div>
 
       </div>
 
-    </AppLayout>
+      {/* ===============================
+          FORMULARIO
+      =============================== */}
+
+      <div className="clientes-main-form">
+
+        {/* TIPO DOCUMENTO */}
+
+        <div className="clientes-field clientes-field-tipo">
+
+          <label>
+            Tipo
+          </label>
+
+          <select
+            name="tipoDocumento"
+            value={form.tipoDocumento}
+            onChange={cambiar}
+            disabled={guardando}
+          >
+            <option value="CC">
+              CC
+            </option>
+
+            <option value="NIT">
+              NIT
+            </option>
+          </select>
+
+        </div>
+
+        {/* DOCUMENTO */}
+
+        <div className="clientes-field">
+
+          <label>
+            Documento *
+          </label>
+
+          <input
+            type="text"
+            name="documento"
+            value={form.documento}
+            onChange={cambiar}
+            placeholder={
+              form.tipoDocumento === "NIT"
+                ? "900123456-7"
+                : "Número de cédula"
+            }
+            disabled={guardando}
+          />
+
+        </div>
+
+        {/* NOMBRE */}
+
+        <div className="clientes-field">
+
+          <label>
+            Nombre *
+          </label>
+
+          <input
+            type="text"
+            name="nombre"
+            value={form.nombre}
+            onChange={cambiar}
+            placeholder="Nombre del cliente"
+            disabled={guardando}
+          />
+
+        </div>
+
+        {/* RAZÓN SOCIAL */}
+
+        <div className="clientes-field">
+
+          <label>
+            Razón social
+          </label>
+
+          <input
+            type="text"
+            name="razonSocial"
+            value={form.razonSocial}
+            onChange={cambiar}
+            placeholder="Razón social"
+            disabled={guardando}
+          />
+
+        </div>
+
+        {/* TELÉFONO */}
+
+        <div className="clientes-field">
+
+          <label>
+            Teléfono
+          </label>
+
+          <input
+            type="text"
+            name="telefono"
+            value={form.telefono}
+            onChange={cambiar}
+            placeholder="Teléfono"
+            disabled={guardando}
+          />
+
+        </div>
+
+        {/* DIRECCIÓN */}
+
+        <div className="clientes-field">
+
+          <label>
+            Dirección
+          </label>
+
+          <input
+            type="text"
+            name="direccion"
+            value={form.direccion}
+            onChange={cambiar}
+            placeholder="Dirección"
+            disabled={guardando}
+          />
+
+        </div>
+
+        {/* BARRIO */}
+
+        <div className="clientes-field">
+
+          <label>
+            Barrio
+          </label>
+
+          <input
+            type="text"
+            name="barrio"
+            value={form.barrio}
+            onChange={cambiar}
+            placeholder="Barrio"
+            disabled={guardando}
+          />
+
+        </div>
+
+        {/* ZONA */}
+
+        <div className="clientes-field">
+
+          <label>
+            Zona de despacho
+          </label>
+
+          <select
+            name="zonaDespacho"
+            value={form.zonaDespacho}
+            onChange={cambiar}
+            disabled={guardando}
+          >
+
+            <option value="">
+              Seleccione una zona
+            </option>
+
+            {zonas
+              .filter(
+                (zona) =>
+                  zona.estado === "Activa" ||
+                  zona.estado === true
+              )
+              .map((zona) => (
+
+                <option
+                  key={zona._id}
+                  value={zona._id}
+                >
+                  {zona.nombre}
+                </option>
+
+              ))}
+
+          </select>
+
+        </div>
+
+        {/* CIUDAD */}
+
+        <div className="clientes-field">
+
+          <label>
+            Ciudad
+          </label>
+
+          <input
+            type="text"
+            name="ciudad"
+            value={form.ciudad}
+            onChange={cambiar}
+            placeholder="Ciudad"
+            disabled={guardando}
+          />
+
+        </div>
+
+        {/* TIPO CLIENTE */}
+
+        <div className="clientes-field">
+
+          <label>
+            Tipo de cliente
+          </label>
+
+          <select
+            name="tipoCliente"
+            value={form.tipoCliente}
+            onChange={cambiar}
+            disabled={guardando}
+          >
+
+            <option value="Tienda">
+              Tienda
+            </option>
+
+            <option value="Restaurante">
+              Restaurante
+            </option>
+
+            <option value="Supermercado">
+              Supermercado
+            </option>
+
+            <option value="Persona Natural">
+              Persona Natural
+            </option>
+
+            <option value="Otro">
+              Otro
+            </option>
+
+          </select>
+
+        </div>
+
+        {/* ESTADO */}
+
+        <div className="clientes-field clientes-field-estado">
+
+          <label>
+            Estado
+          </label>
+
+          <select
+            name="estado"
+            value={
+              form.estado
+                ? "true"
+                : "false"
+            }
+            onChange={cambiar}
+            disabled={guardando}
+          >
+
+            <option value="true">
+              Activo
+            </option>
+
+            <option value="false">
+              Inactivo
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+      {/* ===============================
+          MODAL BÚSQUEDA DE CLIENTES
+      =============================== */}
+
+      {modalBuscarClientes && (
+        <div
+          className="clientes-search-modal-overlay"
+          onMouseDown={(event) => {
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
+              setModalBuscarClientes(false);
+            }
+          }}
+        >
+          <div className="clientes-search-modal">
+
+            <div className="clientes-search-modal-header">
+
+              <h3>
+                Buscar clientes
+              </h3>
+
+              <button
+                type="button"
+                className="clientes-search-modal-close"
+                onClick={() =>
+                  setModalBuscarClientes(false)
+                }
+                aria-label="Cerrar"
+                data-tooltip="Cerrar"
+              >
+                <img
+                  src={cerrarIcon}
+                  alt=""
+                />
+              </button>
+
+            </div>
+
+            <div className="clientes-search-modal-filters">
+
+              <select
+                value={campoBuscarCliente}
+                onChange={(event) =>
+                  setCampoBuscarCliente(
+                    event.target.value
+                  )
+                }
+              >
+                <option value="todos">
+                  Todos
+                </option>
+
+                <option value="documento">
+                  Documento
+                </option>
+
+                <option value="nombre">
+                  Nombre
+                </option>
+
+                <option value="razonSocial">
+                  Razón social
+                </option>
+
+                <option value="telefono">
+                  Teléfono
+                </option>
+
+                <option value="barrio">
+                  Barrio
+                </option>
+
+                <option value="zona">
+                  Zona
+                </option>
+              </select>
+
+              <div className="clientes-search-modal-input">
+
+                <img
+                  src={buscarIcon}
+                  alt=""
+                />
+
+                <input
+                  type="search"
+                  value={filtroBuscarCliente}
+                  onChange={(event) =>
+                    setFiltroBuscarCliente(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Buscar cliente..."
+                  autoFocus
+                />
+
+              </div>
+
+            </div>
+
+            <div className="clientes-search-modal-table-wrap">
+
+              <table className="clientes-search-modal-table">
+
+                <thead>
+                  <tr>
+                    <th>Documento</th>
+                    <th>Cliente</th>
+                    <th>Teléfono</th>
+                    <th>Barrio</th>
+                    <th>Zona</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+
+                  {clientesBusqueda.length === 0 ? (
+
+                    <tr>
+                      <td
+                        colSpan="6"
+                        className="clientes-search-empty"
+                      >
+                        No se encontraron clientes.
+                      </td>
+                    </tr>
+
+                  ) : (
+
+                    clientesBusqueda.map(
+                      (cliente) => (
+
+                        <tr
+                          key={cliente._id}
+                          onDoubleClick={() =>
+                            seleccionarClienteBusqueda(
+                              cliente
+                            )
+                          }
+                        >
+
+                          <td>
+                            <strong>
+                              {cliente.tipoDocumento || "CC"}
+                            </strong>{" "}
+                            {cliente.documento}
+                          </td>
+
+                          <td>
+                            {cliente.nombre}
+                          </td>
+
+                          <td>
+                            {cliente.telefono || "—"}
+                          </td>
+
+                          <td>
+                            {cliente.barrio || "—"}
+                          </td>
+
+                          <td>
+                            {cliente.zonaDespacho
+                              ?.nombre ||
+                              "Sin zona"}
+                          </td>
+
+                          <td>
+                            {cliente.estado
+                              ? "Activo"
+                              : "Inactivo"}
+                          </td>
+
+                        </tr>
+
+                      )
+                    )
+
+                  )}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
+    </section>
 
   );
 

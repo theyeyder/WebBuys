@@ -1,11 +1,48 @@
+/* =========================================================
+   CABECERA CLIENTES FIJA
+========================================================= */
+
+.clientes-title-bar {
+  position: sticky;
+  top: 0;
+  z-index: 8000;
+
+  width: 100%;
+
+  margin: 0;
+  padding: 8px 16px;
+
+  box-sizing: border-box;
+
+  background:
+    linear-gradient(
+      135deg,
+      #087f69,
+      #20afb2
+    );
+
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.10);
+}
+
+
 /* =========================================
    CLIENTES - CONTENEDOR GENERAL
 ========================================= */
 
 .clientes-page {
+  position: relative;
+
   width: 100%;
   min-height: 100vh;
-  padding: 24px;
+
+  padding:
+    px
+    28px
+    58px;
+
+  box-sizing: border-box;
+
   background:
     radial-gradient(  
       circle at 8% 6%,
@@ -18,6 +55,18 @@
       transparent 24%
     ),
     #f7faf9;
+}
+
+
+/* =========================================
+   MÓDULO PRINCIPAL (SpatialCard)
+========================================= */
+
+.clientes-module {
+  width: 100%;
+  max-width: 1280px;
+
+  margin: 0 auto;
 }
 
 
@@ -125,11 +174,20 @@
 
   border-bottom: 1px solid rgba(255, 255, 255, 0.22);
 }
-
 .clientes-title-info {
   display: flex;
   align-items: center;
-  gap: 13px;
+
+  /* espacio reservado para el botón Módulos */
+  margin-left: 72px;
+}
+
+.clientes-title-info h2 {
+  margin: 0;
+
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 900;
 }
 
 .clientes-title-icon {
@@ -166,8 +224,6 @@
   font-size: 24px;
   font-weight: 800;
 }
-
-
 
 
 /* =========================================
@@ -235,6 +291,8 @@
 
   pointer-events: none;
 }
+
+
 /* =========================================
    TOOLTIP DE ACCIONES - DEBAJO
 ========================================= */
@@ -309,10 +367,7 @@
     visibility 0.18s ease;
 }
 
-
-
 /* MOSTRAR */
-
 .clientes-icon-btn:hover::after,
 .clientes-icon-btn:hover::before {
   opacity: 1;
@@ -324,8 +379,6 @@
     translateX(-50%)
     translateY(0);
 }
-
-
 
 
 /* =========================================
@@ -412,9 +465,7 @@
   background: #f2f4f7;
 }
 
-
 /* Tipo CC / NIT pequeño */
-
 .clientes-field-tipo {
   max-width: 100px;
 }
@@ -426,79 +477,209 @@
   font-weight: 900;
 }
 
-
 /* Estado un poco más corto */
-
 .clientes-field-estado {
   max-width: 180px;
 }
 
 
-/* =========================================
-   BUSCADOR
-========================================= */
+/* =========================================================
+   MODAL BUSCAR CLIENTES
+========================================================= */
 
-.clientes-search-bar {
-  padding: 12px 18px;
+.clientes-search-modal-close img {
+  width: 22px;
+  height: 22px;
+
+  object-fit: contain;
+
+  pointer-events: none;
+}
+.clientes-search-modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  z-index: 100000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(15, 23, 42, 0.20);
+
+  backdrop-filter: blur(3px);
+}
+
+
+.clientes-search-modal {
+  width: min(980px, 95vw);
+  max-height: 82vh;
+
+  overflow: hidden;
+
+  border: 1px solid #d8e5df;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 24px 65px rgba(15, 23, 42, 0.28);
+}
+
+
+/* =========================================================
+   CABECERA
+========================================================= */
+
+.clientes-search-modal-header {
+  min-height: 52px;
+
+  padding: 9px 12px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  gap: 18px;
-
-  border-top: 1px solid #e4ebe8;
-  border-bottom: 1px solid #e4ebe8;
-
   background:
     linear-gradient(
-      90deg,
-      #f7fbf9,
-      #ffffff
+      135deg,
+      #087f69,
+      #20afb2
     );
+
+  color: #ffffff;
 }
 
-.clientes-search-box {
-  position: relative;
 
-  width: 100%;
-  max-width: 620px;
+.clientes-search-modal-header h3 {
+  margin: 0;
+
+  font-size: 18px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   BOTÓN CERRAR
+========================================================= */
+
+.clientes-search-modal-close {
+  width: 34px;
+  height: 34px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #344054;
+
+  font-size: 21px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+
+.clientes-search-modal-close:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 6px 12px rgba(15, 23, 42, 0.16);
+}
+
+
+/* =========================================================
+   FILTROS
+========================================================= */
+
+.clientes-search-modal-filters {
+  padding: 13px 14px;
+
+  display: grid;
+
+  grid-template-columns:
+    155px 1fr;
+
+  gap: 10px;
+
+  border-bottom: 1px solid #e4ebe8;
+
+  background: #f8fbfa;
+}
+
+
+.clientes-search-modal-filters select {
+  height: 40px;
+
+  padding: 0 10px;
+
+  border: 1px solid #d0d9d5;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  outline: none;
+
+  color: #172033;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   CAJA DE BÚSQUEDA
+========================================================= */
+
+.clientes-search-modal-input {
+  position: relative;
 
   display: flex;
   align-items: center;
 
-  border: 1px solid #cfd9d5;
-  border-radius: 10px;
+  border: 1px solid #d0d9d5;
+  border-radius: 8px;
 
   background: #ffffff;
-
-  box-shadow:
-    0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
-.clientes-search-box:focus-within {
+
+.clientes-search-modal-input:focus-within {
   border-color: #20afb2;
 
   box-shadow:
-    0 0 0 3px rgba(32, 175, 178, 0.11);
+    0 0 0 3px rgba(32, 175, 178, 0.12);
 }
 
-.clientes-search-icon {
-  width: 23px;
-  height: 23px;
 
-  margin-left: 12px;
+.clientes-search-modal-input img {
+  width: 22px;
+  height: 22px;
+
+  margin-left: 10px;
 
   object-fit: contain;
 
   pointer-events: none;
 }
 
-.clientes-search-box input {
-  width: 100%;
-  height: 40px;
 
-  padding: 7px 42px 7px 10px;
+.clientes-search-modal-input input {
+  width: 100%;
+  height: 38px;
+
+  padding: 0 10px;
 
   border: none;
   outline: none;
@@ -508,308 +689,202 @@
   color: #172033;
 
   font-size: 13px;
-}
-
-.clientes-search-box input::-webkit-search-cancel-button {
-  display: none;
-}
-
-.clientes-clear-search {
-  position: absolute;
-  right: 8px;
-
-  width: 28px;
-  height: 28px;
-
-  padding: 0;
-
-  border: none;
-  border-radius: 7px;
-
-  background: #f2f4f7;
-  color: #667085;
-
-  font-size: 19px;
-
-  cursor: pointer;
-}
-
-.clientes-clear-search:hover {
-  background: #fef3f2;
-  color: #b42318;
+  font-weight: 600;
 }
 
 
-/* =========================================
-   CONTADOR
-========================================= */
-
-.clientes-counter {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-
-  color: #667085;
-
-  white-space: nowrap;
-}
-
-.clientes-counter strong {
-  color: #087443;
-
-  font-size: 17px;
-  font-weight: 900;
-}
-
-.clientes-counter span {
-  font-size: 12px;
-  font-weight: 700;
-}
-
-
-/* =========================================
+/* =========================================================
    TABLA
-========================================= */
+========================================================= */
 
-.clientes-table-wrap {
-  width: 100%;
-
-  max-height: 520px;
+.clientes-search-modal-table-wrap {
+  max-height: 430px;
 
   overflow: auto;
 
   background: #ffffff;
-
-  scrollbar-width: thin;
 }
 
-.clientes-table {
-  width: 100%;
 
-  min-width: 1080px;
+.clientes-search-modal-table {
+  width: 100%;
 
   border-collapse: collapse;
 }
 
 
-/* CABECERA */
+/* CABECERA FIJA */
 
-
-.clientes-table thead {
+.clientes-search-modal-table thead {
   position: sticky;
+
   top: 0;
 
-  z-index: 20;
+  z-index: 5;
 }
 
-.clientes-table th {
-  padding: 11px 12px;
 
-  text-align: left;
+.clientes-search-modal-table th {
+  padding: 10px 12px;
 
   background:
     linear-gradient(
       135deg,
       #0e7a71,
-      #159a75
+      #0e7a71
     );
 
   color: #ffffff;
 
-  font-size: 12px;
-  font-weight: 800;
+  text-align: center;
+
+  font-size: 11px;
+  font-weight: 900;
 
   text-transform: uppercase;
   letter-spacing: 0.035em;
 
-  border-right:
-    1px solid rgba(255, 255, 255, 0.12);
-
   white-space: nowrap;
 }
 
-.clientes-table th:last-child {
-  border-right: none;
-}
 
-.clientes-th-actions {
-  text-align: center !important;
+/* CELDAS */
+
+.clientes-search-modal-table td {
+  padding: 10px 12px;
+
+  border-bottom: 1px solid #e7eeea;
+
+  color: #25333d;
+
+  font-size: 12px;
+
+  text-align: center;
+  vertical-align: middle;
 }
 
 
 /* FILAS */
 
-.clientes-table td {
-  padding: 10px 12px;
-
-  color: #25333d;
-
-  font-size: 13px;
-
-  border-bottom: 1px solid #e8eeeb;
-
-  vertical-align: middle;
-}
-
-.clientes-table tbody tr {
-  background: #ffffff;
+.clientes-search-modal-table tbody tr {
+  cursor: pointer;
 
   transition:
     background 0.15s ease,
-    box-shadow 0.15s ease;
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 }
 
-.clientes-table tbody tr:nth-child(even) {
+
+.clientes-search-modal-table tbody tr:nth-child(even) {
   background: #f5faf8;
 }
 
-.clientes-table tbody tr:hover {
-  background: #e9f7f2;
-}
 
-.clientes-row-selected {
-  background: #dff5eb !important;
+.clientes-search-modal-table tbody tr:hover {
+  background: #ddf5ea;
 
   box-shadow:
     inset 4px 0 0 #12b76a;
 }
 
 
-/* =========================================
+/* =========================================================
    DOCUMENTO
-========================================= */
+========================================================= */
 
-.clientes-document-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.clientes-document-type {
-  min-width: 34px;
-
-  padding: 4px 6px;
-
-  border-radius: 6px;
-
-  background: #e8f5f0;
-
+.clientes-search-modal-table td:first-child strong {
   color: #087443;
 
-  font-size: 10px;
   font-weight: 900;
-
-  text-align: center;
-}
-
-.clientes-document-cell strong {
-  color: #172033;
-  font-weight: 800;
 }
 
 
-/* =========================================
-   CLIENTE
-========================================= */
-
-.clientes-name-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.clientes-name-cell strong {
-  color: #172033;
-
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.clientes-name-cell small {
-  color: #667085;
-
-  font-size: 11px;
-}
-
-
-/* =========================================
-   ZONA
-========================================= */
-
-.clientes-zone-badge {
-  display: inline-flex;
-  align-items: center;
-
-  padding: 5px 9px;
-
-  border-radius: 7px;
-
-  background: #eefbf6;
-
-  border: 1px solid #ccebdd;
-
-  color: #087443;
-
-  font-size: 11px;
-  font-weight: 800;
-
-  white-space: nowrap;
-}
-
-
-/* =========================================
+/* =========================================================
    ESTADO
-========================================= */
+========================================================= */
 
-.clientes-status {
+.clientes-search-status {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
 
-  min-width: 78px;
+  min-width: 72px;
 
   padding: 5px 9px;
 
   border-radius: 999px;
 
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
 }
 
-.clientes-status i {
-  width: 7px;
-  height: 7px;
 
-  border-radius: 50%;
-}
-
-.clientes-status--active {
-  background: #ecfdf3;
+.clientes-search-status.active {
   color: #067647;
+
+  background: #ecfdf3;
 
   border: 1px solid #abefc6;
 }
 
-.clientes-status--active i {
-  background: #12b76a;
-}
 
-.clientes-status--inactive {
-  background: #fef3f2;
+.clientes-search-status.inactive {
   color: #b42318;
+
+  background: #fef3f2;
 
   border: 1px solid #fecdca;
 }
 
-.clientes-status--inactive i {
-  background: #f04438;
+
+/* =========================================================
+   SIN RESULTADOS
+========================================================= */
+
+.clientes-search-empty {
+  padding: 30px !important;
+
+  color: #98a2b3 !important;
+
+  text-align: center !important;
+
+  font-size: 12px;
+  font-weight: 700;
 }
 
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .clientes-search-modal {
+    width: 96vw;
+  }
+
+  .clientes-search-modal-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .clientes-search-modal-table {
+    min-width: 760px;
+  }
+
+}
 
 /* =========================================
    BOTONES TABLA
 ========================================= */
+.clientes-search-modal-close img {
+  width: 22px;
+  height: 22px;
 
+  object-fit: contain;
+
+  pointer-events: none;
+}
 .clientes-table-actions {
   display: flex;
   align-items: center;
@@ -1003,77 +1078,6 @@
 
 
 /* =========================================
-   RESPONSIVE
-========================================= */
-
-@media (max-width: 1200px) {
-
-  .clientes-form-grid {
-    grid-template-columns:
-      100px
-      repeat(2, minmax(180px, 1fr));
-  }
-
-}
-
-
-@media (max-width: 850px) {
-
-  .clientes-page {
-    padding: 16px;
-  }
-
-  .clientes-title-bar {
-    align-items: flex-start;
-  }
-
-  .clientes-form-grid {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-  }
-
-  .clientes-field-tipo {
-    max-width: none;
-  }
-
-  .clientes-search-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .clientes-search-box {
-    max-width: none;
-  }
-
-  .clientes-counter {
-    justify-content: flex-end;
-  }
-
-}
-
-
-@media (max-width: 600px) {
-
-  .clientes-title-bar {
-    flex-direction: column;
-  }
-
-  .clientes-title-actions {
-    align-self: flex-end;
-  }
-
-  .clientes-form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .clientes-field-tipo,
-  .clientes-field-estado {
-    max-width: none;
-  }
-
-}
-
-/* =========================================
    PAGINACIÓN CLIENTES
 ========================================= */
 
@@ -1161,6 +1165,8 @@
   opacity: 0.35;
   cursor: not-allowed;
 }
+
+
 /* =========================================
    ORDENAMIENTO DE TABLA
 ========================================= */
@@ -1197,4 +1203,170 @@
 .clientes-sort-btn span {
   font-size: 14px;
   font-weight: 900;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1200px) {
+
+  .clientes-form-grid {
+    grid-template-columns:
+      100px
+      repeat(2, minmax(180px, 1fr));
+  }
+
+}
+
+
+@media (max-width: 850px) {
+
+  .clientes-page {
+    padding: 70px 16px 58px;
+  }
+
+  .clientes-title-bar {
+    align-items: flex-start;
+  }
+
+  .clientes-form-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .clientes-field-tipo {
+    max-width: none;
+  }
+
+  .clientes-search-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .clientes-search-box {
+    max-width: none;
+  }
+
+  .clientes-counter {
+    justify-content: flex-end;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .clientes-page {
+    padding: 70px 12px 58px;
+  }
+
+  .clientes-title-bar {
+    flex-direction: column;
+  }
+
+  .clientes-title-actions {
+    align-self: flex-end;
+  }
+
+  .clientes-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .clientes-field-tipo,
+  .clientes-field-estado {
+    max-width: none;
+  }
+
+}
+
+/* =========================================================
+   FORMULARIO CLIENTES COMPACTO
+========================================================= */
+
+.clientes-main-form {
+  width: min(1050px, calc(100% - 40px));
+
+  margin: 22px auto 70px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 14px 18px;
+
+  align-items: end;
+}
+
+
+/* CAMPOS */
+
+.clientes-main-form label {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+
+  margin: 0;
+
+  color: #172033;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+
+/* INPUT / SELECT */
+
+.clientes-main-form input,
+.clientes-main-form select {
+  width: 100%;
+  height: 38px;
+
+  padding: 0 11px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #d0d9d5;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #172033;
+
+  font-size: 12px;
+
+  outline: none;
+}
+
+
+/* FOCUS */
+
+.clientes-main-form input:focus,
+.clientes-main-form select:focus {
+  border-color: #20afb2;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(32, 175, 178, 0.10);
+}
+@media (max-width: 900px) {
+
+  .clientes-main-form {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .clientes-main-form {
+    width: calc(100% - 24px);
+
+    grid-template-columns: 1fr;
+  }
+
 }

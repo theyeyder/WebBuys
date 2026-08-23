@@ -21,13 +21,19 @@ export function AuthProvider({ children }) {
   function cargarSesionGuardada() {
     try {
       const token = localStorage.getItem("token");
-      const usuarioGuardado = localStorage.getItem("user");
+      const usuarioGuardado =
+        localStorage.getItem("user");
 
       if (token && usuarioGuardado) {
-        setUsuario(JSON.parse(usuarioGuardado));
+        setUsuario(
+          JSON.parse(usuarioGuardado)
+        );
       }
     } catch (error) {
-      console.error("Error recuperando la sesión:", error);
+      console.error(
+        "Error recuperando la sesión:",
+        error
+      );
 
       localStorage.removeItem("token");
       localStorage.removeItem("user");
@@ -36,29 +42,51 @@ export function AuthProvider({ children }) {
     }
   }
 
-  async function login({ usuario, password }) {
-    const nombreUsuario = usuario?.trim().toLowerCase();
+  async function login({
+    usuario,
+    password,
+  }) {
+    const nombreUsuario =
+      usuario?.trim().toLowerCase();
 
     if (!nombreUsuario || !password) {
-      throw new Error("Usuario y contraseña son obligatorios.");
+      throw new Error(
+        "Usuario y contraseña son obligatorios."
+      );
     }
 
-    const response = await api.post("/auth/login", {
-      usuario: nombreUsuario,
-      password,
-    });
+    const response = await api.post(
+      "/auth/login",
+      {
+        usuario: nombreUsuario,
+        password,
+      }
+    );
 
-    const { token, user } = response.data;
+    const {
+      token,
+      user,
+    } = response.data;
 
     if (!token || !user) {
-      throw new Error("La respuesta del servidor no es válida.");
+      throw new Error(
+        "La respuesta del servidor no es válida."
+      );
     }
 
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem(
+      "token",
+      token
+    );
 
-    /* Elimina el almacenamiento antiguo del modo demo */
-    localStorage.removeItem("webbuys_user");
+    localStorage.setItem(
+      "user",
+      JSON.stringify(user)
+    );
+
+    localStorage.removeItem(
+      "webbuys_user"
+    );
 
     setUsuario(user);
 
@@ -70,7 +98,9 @@ export function AuthProvider({ children }) {
 
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    localStorage.removeItem("webbuys_user");
+    localStorage.removeItem(
+      "webbuys_user"
+    );
 
     window.location.href = "/login";
   }
@@ -79,27 +109,35 @@ export function AuthProvider({ children }) {
     () => ({
       usuario,
 
-      /* Alias temporal para componentes que todavía usan user */
       user: usuario,
 
       login,
       logout,
+
       cargando,
-      isAuthenticated: Boolean(usuario),
-      esAdministrador: usuario?.rol === "Administrador",
+
+      isAuthenticated:
+        Boolean(usuario),
+
+      esAdministrador:
+        usuario?.rol ===
+        "Administrador",
     }),
     [usuario, cargando]
   );
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={value}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
+  const context =
+    useContext(AuthContext);
 
   if (!context) {
     throw new Error(

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   listarZonasDespacho,
@@ -19,7 +19,7 @@ import cerrarIcon from "../assets/icons/cerrar.png";
 import guardarIcon from "../assets/icons/guardar.png";
 import cancelarIcon from "../assets/icons/cancelar.png";
 import eliminarIcon from "../assets/icons/Eliminar ruta.png";
-import nuevaZonaIcon from "../assets/icons/zonas-despacho.png";
+import nuevaZonaIcon from "../assets/icons/nueva-zona.png";
 
 import "../styles/zonas-despacho.css";
 
@@ -31,13 +31,24 @@ const FORM_INICIAL = {
 
 export default function ZonasDespacho() {
   const [zonas, setZonas] = useState([]);
-  const [busqueda, setBusqueda] = useState("");
+  const [zonaSeleccionada, setZonaSeleccionada] = useState(null);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [modalBuscarAbierto, setModalBuscarAbierto] = useState(false);
+  const [filtroBuscar, setFiltroBuscar] = useState("");
+  const [campoBuscar, setCampoBuscar] = useState("todos");
+  const modalBuscarRef = useRef(null);
+  const [posicionModal, setPosicionModal] = useState({
+    x: 0,
+    y: 0,
+  });
+  const arrastreRef = useRef({
+    activo: false,
+    offsetX: 0,
+    offsetY: 0,
+  });
 
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
-
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [zonaEditando, setZonaEditando] = useState(null);
 
   const [form, setForm] = useState(FORM_INICIAL);
 
@@ -80,23 +91,6 @@ export default function ZonasDespacho() {
     return () => clearTimeout(timer);
   }, [mensaje, error]);
 
-  const zonasFiltradas = useMemo(() => {
-    const texto = busqueda.trim().toLowerCase();
-
-    if (!texto) return zonas;
-
-    return zonas.filter((zona) =>
-      [
-        zona.nombre,
-        zona.descripcion,
-        zona.estado,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(texto)
-    );
-  }, [zonas, busqueda]);
-
   function cambiar(event) {
     const { name, value } = event.target;
 
@@ -106,15 +100,18 @@ export default function ZonasDespacho() {
     }));
   }
 
-  function abrirNuevaZona() {
-    setZonaEditando(null);
+  function nuevaZona() {
+    setZonaSeleccionada(null);
+    setModoEdicion(false);
+
     setForm(FORM_INICIAL);
+
+    setMensaje("");
     setError("");
-    setModalAbierto(true);
   }
 
-  function abrirEditarZona(zona) {
-    setZonaEditando(zona);
+  function cargarZonaSeleccionada(zona) {
+    setZonaSeleccionada(zona);
 
     setForm({
       nombre: zona.nombre || "",
@@ -122,26 +119,26 @@ export default function ZonasDespacho() {
       estado: zona.estado || "Activa",
     });
 
+    setModoEdicion(true);
+
+    setModalBuscarAbierto(false);
+    setFiltroBuscar("");
+
+    setMensaje(
+      `Zona ${zona.nombre} cargada correctamente.`
+    );
+
     setError("");
-    setModalAbierto(true);
   }
 
-  function cerrarModal() {
-    if (guardando) return;
-
-    setModalAbierto(false);
-    setZonaEditando(null);
-    setForm(FORM_INICIAL);
-  }
-
-  async function guardarZona(event) {
-    event.preventDefault();
-
+  async function guardarZona() {
     setMensaje("");
     setError("");
 
     if (!form.nombre.trim()) {
-      setError("El nombre de la zona es obligatorio.");
+      setError(
+        "El nombre de la zona es obligatorio."
+      );
       return;
     }
 
@@ -154,21 +151,32 @@ export default function ZonasDespacho() {
         estado: form.estado,
       };
 
-      if (zonaEditando) {
+      if (
+        modoEdicion &&
+        zonaSeleccionada?._id
+      ) {
         await actualizarZonaDespacho(
-          zonaEditando._id,
+          zonaSeleccionada._id,
           datos
         );
 
-        setMensaje("Zona actualizada correctamente.");
+        setMensaje(
+          "Zona actualizada correctamente."
+        );
       } else {
         await crearZonaDespacho(datos);
 
-        setMensaje("Zona creada correctamente.");
+        setMensaje(
+          "Zona creada correctamente."
+        );
       }
 
-      cerrarModal();
       await cargarZonas();
+
+      setZonaSeleccionada(null);
+      setModoEdicion(false);
+      setForm(FORM_INICIAL);
+
     } catch (err) {
       setError(
         err?.response?.data?.mensaje ||
@@ -177,6 +185,40 @@ export default function ZonasDespacho() {
     } finally {
       setGuardando(false);
     }
+  }
+
+  async function cambiarEstadoSeleccionada() {
+    if (!zonaSeleccionada) {
+      setError(
+        "Seleccione primero una zona."
+      );
+      return;
+    }
+
+    await cambiarEstado(
+      zonaSeleccionada
+    );
+
+    setZonaSeleccionada(null);
+    setModoEdicion(false);
+    setForm(FORM_INICIAL);
+  }
+
+  async function eliminarZonaSeleccionada() {
+    if (!zonaSeleccionada) {
+      setError(
+        "Seleccione primero una zona."
+      );
+      return;
+    }
+
+    await eliminar(
+      zonaSeleccionada
+    );
+
+    setZonaSeleccionada(null);
+    setModoEdicion(false);
+    setForm(FORM_INICIAL);
   }
 
   async function cambiarEstado(zona) {
@@ -225,289 +267,436 @@ export default function ZonasDespacho() {
     }
   }
 
+  const zonasBusqueda = useMemo(() => {
+    const texto =
+      filtroBuscar
+        .trim()
+        .toLowerCase();
+
+    if (!texto) {
+      return zonas;
+    }
+
+    return zonas.filter((zona) => {
+      const nombre =
+        String(
+          zona.nombre || ""
+        ).toLowerCase();
+
+      const descripcion =
+        String(
+          zona.descripcion || ""
+        ).toLowerCase();
+
+      const estado =
+        String(
+          zona.estado || ""
+        ).toLowerCase();
+
+      switch (campoBuscar) {
+        case "nombre":
+          return nombre.includes(texto);
+
+        case "descripcion":
+          return descripcion.includes(texto);
+
+        case "estado":
+          return estado.includes(texto);
+
+        default:
+          return (
+            nombre.includes(texto) ||
+            descripcion.includes(texto) ||
+            estado.includes(texto)
+          );
+      }
+    });
+  }, [
+    zonas,
+    filtroBuscar,
+    campoBuscar,
+  ]);
+
+  function abrirBuscarZonas() {
+    setFiltroBuscar("");
+    setCampoBuscar("todos");
+
+    setPosicionModal({
+      x: Math.max(
+        20,
+        (window.innerWidth - 760) / 2
+      ),
+
+      y: Math.max(
+        20,
+        (window.innerHeight - 500) / 2
+      ),
+    });
+
+    setModalBuscarAbierto(true);
+  }
+
+  function iniciarArrastreModal(event) {
+    if (!modalBuscarRef.current) return;
+
+    const rect =
+      modalBuscarRef.current
+        .getBoundingClientRect();
+
+    arrastreRef.current = {
+      activo: true,
+      offsetX:
+        event.clientX - rect.left,
+      offsetY:
+        event.clientY - rect.top,
+    };
+
+    document.addEventListener(
+      "mousemove",
+      moverModal
+    );
+
+    document.addEventListener(
+      "mouseup",
+      terminarArrastreModal
+    );
+  }
+
+  function moverModal(event) {
+    if (!arrastreRef.current.activo) {
+      return;
+    }
+
+    const modal =
+      modalBuscarRef.current;
+
+    if (!modal) return;
+
+    const ancho = modal.offsetWidth;
+    const alto = modal.offsetHeight;
+
+    let x =
+      event.clientX -
+      arrastreRef.current.offsetX;
+
+    let y =
+      event.clientY -
+      arrastreRef.current.offsetY;
+
+    x = Math.max(
+      10,
+      Math.min(
+        window.innerWidth - ancho - 10,
+        x
+      )
+    );
+
+    y = Math.max(
+      10,
+      Math.min(
+        window.innerHeight - alto - 10,
+        y
+      )
+    );
+
+    setPosicionModal({
+      x,
+      y,
+    });
+  }
+
+  function terminarArrastreModal() {
+    arrastreRef.current.activo = false;
+
+    document.removeEventListener(
+      "mousemove",
+      moverModal
+    );
+
+    document.removeEventListener(
+      "mouseup",
+      terminarArrastreModal
+    );
+  }
+
   return (
-    <section className="rutas-module">
+    <section className="zonas-module">
       <Toast mensaje={mensaje} error={error} />
 
       <ModulosMenu />
 
-      <div className="zonas-header">
-        
-        <div className="zonas-header-actions">
-          <div className="zonas-search-box">
-            <img
-              src={buscarIcon}
-              alt=""
-              className="zonas-search-icon"
-            />
+      <div className="zonas-title-bar">
+        <div className="zonas-title-info">
+          <h2>
+            {modoEdicion
+              ? "Editar Zona"
+              : "Zonas de despacho"}
+          </h2>
+        </div>
 
-            <input
-              type="search"
-              value={busqueda}
-              onChange={(e) =>
-                setBusqueda(e.target.value)
-              }
-              placeholder="Buscar por nombre, descripción, estado..."
-            />
-
-            {busqueda && (
-              <button
-                type="button"
-                className="zonas-search-clear"
-                onClick={() => setBusqueda("")}
-                aria-label="Limpiar búsqueda"
-              >
-                ×
-              </button>
-            )}
-          </div>
-
+        <div className="zonas-title-actions">
+          {/* NUEVA */}
           <button
             type="button"
-            className="zonas-icon-main"
+            className="zonas-top-icon-btn"
+            onClick={nuevaZona}
             data-tooltip="Nueva zona"
             aria-label="Nueva zona"
-            onClick={abrirNuevaZona}
           >
             <img
               src={nuevaZonaIcon}
               alt=""
-              className="zonas-icon-main-image"
+            />
+          </button>
+
+          {/* ACTIVAR / DESACTIVAR */}
+          <button
+            type="button"
+            className="zonas-top-icon-btn"
+            onClick={cambiarEstadoSeleccionada}
+            data-tooltip={
+              zonaSeleccionada?.estado === "Activa"
+                ? "Desactivar zona"
+                : "Activar zona"
+            }
+            disabled={!zonaSeleccionada}
+          >
+            <img
+              src={
+                zonaSeleccionada?.estado === "Activa"
+                  ? bloquearIcon
+                  : desbloquearIcon
+              }
+              alt=""
+            />
+          </button>
+
+          {/* ELIMINAR */}
+          <button
+            type="button"
+            className="zonas-top-icon-btn"
+            onClick={eliminarZonaSeleccionada}
+            data-tooltip="Eliminar zona"
+            disabled={!zonaSeleccionada}
+          >
+            <img
+              src={eliminarIcon}
+              alt=""
+            />
+          </button>
+
+          {/* BUSCAR */}
+          <button
+            type="button"
+            className="zonas-top-icon-btn"
+            onClick={abrirBuscarZonas}
+            data-tooltip="Buscar zona"
+          >
+            <img
+              src={buscarIcon}
+              alt=""
+            />
+          </button>
+
+          {/* GUARDAR */}
+          <button
+            type="button"
+            className="zonas-top-icon-btn"
+            onClick={guardarZona}
+            data-tooltip={
+              modoEdicion
+                ? "Guardar cambios"
+                : "Guardar zona"
+            }
+            disabled={guardando}
+          >
+            <img
+              src={guardarIcon}
+              alt=""
             />
           </button>
         </div>
       </div>
 
-      <div className="zonas-results-row">
-        <span className="zonas-search-results">
-          {zonasFiltradas.length}{" "}
-          {zonasFiltradas.length === 1
-            ? "zona"
-            : "zonas"}
-        </span>
+      <div className="zonas-main-form">
+        <label>
+          Nombre
+          <input
+            name="nombre"
+            value={form.nombre}
+            onChange={cambiar}
+            placeholder="Ejemplo: Picaleña"
+          />
+        </label>
+
+        <label>
+          Descripción
+          <textarea
+            name="descripcion"
+            value={form.descripcion}
+            onChange={cambiar}
+            placeholder="Descripción opcional..."
+          />
+        </label>
+
+        <label>
+          Estado
+          <select
+            name="estado"
+            value={form.estado}
+            onChange={cambiar}
+          >
+            <option value="Activa">
+              Activa
+            </option>
+
+            <option value="Inactiva">
+              Inactiva
+            </option>
+          </select>
+        </label>
       </div>
 
-      {cargando ? (
-        <div className="zonas-loading">
-          Cargando zonas...
-        </div>
-      ) : (
-        <div className="zonas-table-responsive">
-          <table className="zonas-table">
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Descripción</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {zonasFiltradas.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="4"
-                    className="zonas-empty"
-                  >
-                    No hay zonas de despacho.
-                  </td>
-                </tr>
-              ) : (
-                zonasFiltradas.map((zona) => (
-                  <tr key={zona._id}>
-                    <td>
-                      <strong>{zona.nombre}</strong>
-                    </td>
-
-                    <td>
-                      {zona.descripcion ||
-                        "Sin descripción"}
-                    </td>
-
-                    <td>
-                      <span
-                        className={`zonas-status ${
-                          zona.estado === "Activa"
-                            ? "active"
-                            : "inactive"
-                        }`}
-                      >
-                        {zona.estado}
-                      </span>
-                    </td>
-
-                    <td>
-                      <div className="zonas-actions">
-                        <button
-                          type="button"
-                          className="zonas-icon-btn"
-                          data-tooltip="Editar zona"
-                          onClick={() =>
-                            abrirEditarZona(zona)
-                          }
-                        >
-                          <img
-                            src={editarIcon}
-                            alt=""
-                          />
-                        </button>
-
-                        <button
-                          type="button"
-                          className="zonas-icon-btn"
-                          data-tooltip={
-                            zona.estado === "Activa"
-                              ? "Desactivar"
-                              : "Activar"
-                          }
-                          onClick={() =>
-                            cambiarEstado(zona)
-                          }
-                        >
-                          <img
-                            src={
-                              zona.estado === "Activa"
-                                ? bloquearIcon
-                                : desbloquearIcon
-                            }
-                            alt=""
-                          />
-                        </button>
-
-                        <button
-                          type="button"
-                          className="zonas-icon-btn"
-                          data-tooltip="Eliminar zona"
-                          onClick={() =>
-                            eliminar(zona)
-                          }
-                        >
-                          <img
-                            src={eliminarIcon}
-                            alt=""
-                          />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {modalAbierto && (
-        <div
-          className="zonas-modal-overlay"
-          onMouseDown={(event) => {
-            if (
-              event.target ===
-              event.currentTarget
-            ) {
-              cerrarModal();
-            }
-          }}
-        >
-          <form
-            className="zonas-modal"
-            onSubmit={guardarZona}
+      {modalBuscarAbierto && (
+        <div className="zonas-search-modal-overlay">
+          <div
+            ref={modalBuscarRef}
+            className="zonas-search-modal"
+            style={{
+              left: posicionModal.x,
+              top: posicionModal.y,
+            }}
           >
-            <div className="zonas-modal-header">
-              <div>
-                <span className="zonas-eyebrow">
-                  {zonaEditando
-                    ? "Editar zona"
-                    : "Nueva zona"}
-                </span>
-              </div>
+            <div
+              className="zonas-search-modal-header"
+              onMouseDown={iniciarArrastreModal}
+            >
+              <h3>
+                Buscar zonas de despacho
+              </h3>
 
               <button
                 type="button"
-                className="zonas-modal-icon-btn zonas-tooltip-bottom"
-                data-tooltip="Cerrar"
-                onClick={cerrarModal}
+                className="zonas-search-modal-close"
+                onMouseDown={(event) =>
+                  event.stopPropagation()
+                }
+                onClick={() =>
+                  setModalBuscarAbierto(false)
+                }
               >
                 <img
                   src={cerrarIcon}
                   alt=""
-                  className="zonas-modal-icon-image"
                 />
               </button>
             </div>
 
-            <div className="zonas-form-grid">
-              <label>
-                Nombre
-                <input
-                  name="nombre"
-                  value={form.nombre}
-                  onChange={cambiar}
-                  placeholder="Ejemplo: Picaleña"
-                />
-              </label>
-
-              <label>
-                Estado
-                <select
-                  name="estado"
-                  value={form.estado}
-                  onChange={cambiar}
-                >
-                  <option value="Activa">
-                    Activa
-                  </option>
-                  <option value="Inactiva">
-                    Inactiva
-                  </option>
-                </select>
-              </label>
-
-              <label className="zonas-field-full">
-                Descripción
-                <textarea
-                  name="descripcion"
-                  value={form.descripcion}
-                  onChange={cambiar}
-                  placeholder="Descripción opcional..."
-                />
-              </label>
-            </div>
-
-            <div className="zonas-modal-footer">
-              <button
-                type="button"
-                className="zonas-modal-icon-btn"
-                data-tooltip="Cancelar"
-                onClick={cerrarModal}
-                disabled={guardando}
-              >
-                <img
-                  src={cancelarIcon}
-                  alt=""
-                  className="zonas-modal-icon-image"
-                />
-              </button>
-
-              <button
-                type="submit"
-                className="zonas-modal-icon-btn zonas-modal-save-btn"
-                data-tooltip={
-                  zonaEditando
-                    ? "Guardar cambios"
-                    : "Crear zona"
+            <div className="zonas-search-modal-filters">
+              <select
+                value={campoBuscar}
+                onChange={(event) =>
+                  setCampoBuscar(
+                    event.target.value
+                  )
                 }
-                disabled={guardando}
               >
+                <option value="todos">
+                  Todos
+                </option>
+
+                <option value="nombre">
+                  Nombre
+                </option>
+
+                <option value="descripcion">
+                  Descripción
+                </option>
+
+                <option value="estado">
+                  Estado
+                </option>
+              </select>
+
+              <div className="zonas-search-modal-input">
                 <img
-                  src={guardarIcon}
+                  src={buscarIcon}
                   alt=""
-                  className="zonas-modal-icon-image"
                 />
-              </button>
+
+                <input
+                  type="search"
+                  value={filtroBuscar}
+                  onChange={(event) =>
+                    setFiltroBuscar(
+                      event.target.value
+                    )
+                  }
+                  placeholder="Buscar zona..."
+                  autoFocus
+                />
+              </div>
             </div>
-          </form>
+
+            <div className="zonas-search-modal-table-wrap">
+              <table className="zonas-search-modal-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {zonasBusqueda.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan="3"
+                        className="zonas-search-empty"
+                      >
+                        No se encontraron zonas.
+                      </td>
+                    </tr>
+                  ) : (
+                    zonasBusqueda.map((zona) => (
+                      <tr
+                        key={zona._id}
+                        onDoubleClick={() =>
+                          cargarZonaSeleccionada(
+                            zona
+                          )
+                        }
+                      >
+                        <td>
+                          <strong>
+                            {zona.nombre}
+                          </strong>
+                        </td>
+
+                        <td>
+                          {zona.descripcion ||
+                            "Sin descripción"}
+                        </td>
+
+                        <td>
+                          <span
+                            className={
+                              zona.estado === "Activa"
+                                ? "zonas-search-status active"
+                                : "zonas-search-status inactive"
+                            }
+                          >
+                            {zona.estado}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </section>

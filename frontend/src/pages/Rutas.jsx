@@ -1,4 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import {
   listarRutas,
@@ -55,9 +60,26 @@ export default function Rutas() {
   const [empleados, setEmpleados] = useState([]);
   const [zonas, setZonas] = useState([]);
 
-  const [busqueda, setBusqueda] = useState("");
-  const [modalAbierto, setModalAbierto] = useState(false);
-  const [rutaEditando, setRutaEditando] = useState(null);
+  const [rutaSeleccionada, setRutaSeleccionada] = useState(null);
+  const [modoEdicion, setModoEdicion] = useState(false);
+
+  const [modalBuscarAbierto, setModalBuscarAbierto] = useState(false);
+  const [filtroBuscar, setFiltroBuscar] = useState("");
+  const [campoBuscar, setCampoBuscar] = useState("todos");
+
+  const modalBuscarRef = useRef(null);
+
+  const [posicionModal, setPosicionModal] = useState({
+    x: 0,
+    y: 0,
+  });
+
+  const arrastreRef = useRef({
+    activo: false,
+    offsetX: 0,
+    offsetY: 0,
+  });
+
   const [form, setForm] = useState(FORM_INICIAL);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -116,6 +138,7 @@ export default function Rutas() {
     cargarRutas();
     cargarEmpleados();
     cargarZonas();
+    nuevaRuta();
   }, []);
 
   /* ===========================
@@ -132,30 +155,54 @@ export default function Rutas() {
   }, [mensaje, error]);
 
   /* ===========================
-     BUSCADOR - RUTAS
+     FILTRAR RUTAS - MODAL
   =========================== */
 
-  const rutasFiltradas = useMemo(() => {
-    const texto = busqueda.trim().toLowerCase();
-    if (!texto) return rutas;
+  const rutasBusqueda = useMemo(() => {
+    const texto = filtroBuscar.trim().toLowerCase();
+
+    if (!texto) {
+      return rutas;
+    }
+
     return rutas.filter((ruta) => {
-      const empleado = ruta.empleado?.nombre || "";
-      const dias = Array.isArray(ruta.diasAtencion)
-        ? ruta.diasAtencion.join(" ")
+      const codigo = String(ruta.codigo || "").toLowerCase();
+      const nombre = String(ruta.nombre || "").toLowerCase();
+      const empleado = String(
+        ruta.empleado?.nombre ||
+        ruta.empleado?.usuario ||
+        ""
+      ).toLowerCase();
+      const zonas = Array.isArray(ruta.zonasDespacho)
+        ? ruta.zonasDespacho
+            .map((zona) =>
+              typeof zona === "object"
+                ? zona.nombre
+                : ""
+            )
+            .join(" ")
+            .toLowerCase()
         : "";
-      return [
-        ruta.codigo,
-        ruta.nombre,
-        ruta.descripcion,
-        ruta.estado,
-        empleado,
-        dias,
-      ]
-        .join(" ")
-        .toLowerCase()
-        .includes(texto);
+
+      switch (campoBuscar) {
+        case "codigo":
+          return codigo.includes(texto);
+        case "nombre":
+          return nombre.includes(texto);
+        case "empleado":
+          return empleado.includes(texto);
+        case "zona":
+          return zonas.includes(texto);
+        default:
+          return (
+            codigo.includes(texto) ||
+            nombre.includes(texto) ||
+            empleado.includes(texto) ||
+            zonas.includes(texto)
+          );
+      }
     });
-  }, [rutas, busqueda]);
+  }, [rutas, filtroBuscar, campoBuscar]);
 
   /* ===========================
      FORMULARIO - RUTAS
@@ -181,16 +228,20 @@ export default function Rutas() {
     });
   }
 
-  async function abrirNuevaRuta() {
+  async function nuevaRuta() {
     try {
-      setRutaEditando(null);
       setError("");
+      setMensaje("");
+
+      setRutaSeleccionada(null);
+      setModoEdicion(false);
+
       const data = await obtenerSiguienteCodigoRuta();
+
       setForm({
         ...FORM_INICIAL,
         codigo: data.codigo || "",
       });
-      setModalAbierto(true);
     } catch (err) {
       setError(
         err?.response?.data?.mensaje ||
@@ -199,8 +250,9 @@ export default function Rutas() {
     }
   }
 
-  function abrirEditarRuta(ruta) {
-    setRutaEditando(ruta);
+  function seleccionarRutaBusqueda(ruta) {
+    setRutaSeleccionada(ruta);
+
     setForm({
       codigo: ruta.codigo || "",
       nombre: ruta.nombre || "",
@@ -214,23 +266,123 @@ export default function Rutas() {
       diasAtencion: ruta.diasAtencion || [],
       estado: ruta.estado || "Activa",
     });
-    setError("");
-    setModalAbierto(true);
+
+    setModoEdicion(true);
+
+    setModalBuscarAbierto(false);
+    setFiltroBuscar("");
+
+    setMensaje(`Ruta ${ruta.codigo} cargada correctamente.`);
   }
 
-  function cerrarModal() {
-    if (guardando) return;
-    setModalAbierto(false);
-    setRutaEditando(null);
-    setForm(FORM_INICIAL);
+  /* ===========================
+     ACCIONES SUPERIORES
+  =========================== */
+
+  function editarRutaSeleccionada() {
+    if (!rutaSeleccionada) {
+      setError("Seleccione primero una ruta desde Buscar.");
+      return;
+    }
+
+    setModoEdicion(true);
+  }
+
+  async function cambiarEstadoSeleccionado() {
+    if (!rutaSeleccionada) {
+      setError("Seleccione primero una ruta.");
+      return;
+    }
+
+    await cambiarEstado(rutaSeleccionada);
+
+    setRutaSeleccionada(null);
+    setModoEdicion(false);
+
+    await nuevaRuta();
+  }
+
+  async function eliminarRutaSeleccionada() {
+    if (!rutaSeleccionada) {
+      setError("Seleccione primero una ruta.");
+      return;
+    }
+
+    await eliminar(rutaSeleccionada);
+
+    setRutaSeleccionada(null);
+    setModoEdicion(false);
+
+    await nuevaRuta();
+  }
+
+  /* ===========================
+     ABRIR BUSCAR RUTAS
+  =========================== */
+
+  function abrirBuscarRutas() {
+    setFiltroBuscar("");
+    setCampoBuscar("todos");
+
+    setPosicionModal({
+      x: Math.max(20, (window.innerWidth - 950) / 2),
+      y: Math.max(20, (window.innerHeight - 560) / 2),
+    });
+
+    setModalBuscarAbierto(true);
+  }
+
+  function iniciarArrastreModal(event) {
+    if (!modalBuscarRef.current) return;
+
+    const rect = modalBuscarRef.current.getBoundingClientRect();
+
+    arrastreRef.current = {
+      activo: true,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+    };
+
+    document.addEventListener("mousemove", moverModal);
+    document.addEventListener("mouseup", terminarArrastreModal);
+  }
+
+  function moverModal(event) {
+    if (!arrastreRef.current.activo) {
+      return;
+    }
+
+    const modal = modalBuscarRef.current;
+
+    if (!modal) return;
+
+    const ancho = modal.offsetWidth;
+    const alto = modal.offsetHeight;
+
+    let x = event.clientX - arrastreRef.current.offsetX;
+    let y = event.clientY - arrastreRef.current.offsetY;
+
+    x = Math.max(10, Math.min(window.innerWidth - ancho - 10, x));
+    y = Math.max(10, Math.min(window.innerHeight - alto - 10, y));
+
+    setPosicionModal({
+      x,
+      y,
+    });
+  }
+
+  function terminarArrastreModal() {
+    arrastreRef.current.activo = false;
+
+    document.removeEventListener("mousemove", moverModal);
+    document.removeEventListener("mouseup", terminarArrastreModal);
   }
 
   /* ===========================
      GUARDAR - RUTAS
   =========================== */
 
-  async function guardarRuta(event) {
-    event.preventDefault();
+  async function guardarRuta() {
     setMensaje("");
     setError("");
 
@@ -256,18 +408,25 @@ export default function Rutas() {
         estado: form.estado,
       };
 
-      if (rutaEditando) {
-        await actualizarRuta(rutaEditando._id, datos);
+      if (modoEdicion && rutaSeleccionada?._id) {
+        await actualizarRuta(rutaSeleccionada._id, datos);
         setMensaje("Ruta actualizada correctamente.");
       } else {
         await crearRuta(datos);
         setMensaje("Ruta creada correctamente.");
       }
 
-      setModalAbierto(false);
-      setRutaEditando(null);
-      setForm(FORM_INICIAL);
       await cargarRutas();
+
+      setRutaSeleccionada(null);
+      setModoEdicion(false);
+
+      const siguiente = await obtenerSiguienteCodigoRuta();
+
+      setForm({
+        ...FORM_INICIAL,
+        codigo: siguiente.codigo || "",
+      });
     } catch (err) {
       setError(
         err?.response?.data?.mensaje || "No fue posible guardar la ruta."
@@ -329,371 +488,352 @@ export default function Rutas() {
       {/* MENÚ DE MÓDULOS */}
       <ModulosMenu />
 
-      {/* CABECERA */}
-      <div className="rutas-header">
-        <div className="rutas-header-title">
+      {/* BARRA SUPERIOR */}
+      <div className="rutas-title-bar">
+        <div className="rutas-title-info">
           <h2>
-            <span className="rutas-eyebrow"></span>
+            {modoEdicion ? "Editar Ruta" : "Rutas"}
           </h2>
         </div>
 
-        <div className="rutas-header-actions">
-          {/* BUSCADOR */}
-          <div className="rutas-search-box">
-            <img src={buscarIcon} alt="" className="rutas-search-icon" />
-
-            <input
-              type="search"
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              placeholder="Buscar por código, ruta, empleado, día..."
-            />
-
-            {busqueda && (
-              <button
-                type="button"
-                className="rutas-search-clear"
-                onClick={() => setBusqueda("")}
-                aria-label="Limpiar búsqueda"
-              >
-                ×
-              </button>
-            )}
-          </div>
-
-          {/* NUEVA RUTA */}
+        <div className="rutas-title-actions">
+          {/* NUEVA */}
           <button
             type="button"
-            className="rutas-icon-main"
+            className="rutas-top-icon-btn"
+            onClick={nuevaRuta}
             data-tooltip="Nueva ruta"
             aria-label="Nueva ruta"
-            onClick={abrirNuevaRuta}
+          >
+            <img src={nuevaRutaIcon} alt="" />
+          </button>
+
+          {/* EDITAR */}
+          <button
+            type="button"
+            className="rutas-top-icon-btn"
+            onClick={editarRutaSeleccionada}
+            data-tooltip="Editar ruta"
+            disabled={!rutaSeleccionada}
+          >
+            <img src={editarIcon} alt="" />
+          </button>
+
+          {/* ACTIVAR / DESACTIVAR */}
+          <button
+            type="button"
+            className="rutas-top-icon-btn"
+            onClick={cambiarEstadoSeleccionado}
+            data-tooltip={
+              rutaSeleccionada?.estado === "Activa"
+                ? "Desactivar ruta"
+                : "Activar ruta"
+            }
+            disabled={!rutaSeleccionada}
           >
             <img
-              src={nuevaRutaIcon}
+              src={
+                rutaSeleccionada?.estado === "Activa"
+                  ? bloquearIcon
+                  : desbloquearIcon
+              }
               alt=""
-              className="rutas-icon-main-image"
             />
+          </button>
+
+          {/* ELIMINAR */}
+          <button
+            type="button"
+            className="rutas-top-icon-btn"
+            onClick={eliminarRutaSeleccionada}
+            data-tooltip="Eliminar ruta"
+            disabled={!rutaSeleccionada}
+          >
+            <img src={EliminarRutaIcon} alt="" />
+          </button>
+
+          {/* BUSCAR */}
+          <button
+            type="button"
+            className="rutas-top-icon-btn"
+            onClick={abrirBuscarRutas}
+            data-tooltip="Buscar ruta"
+          >
+            <img src={buscarIcon} alt="" />
+          </button>
+
+          {/* GUARDAR */}
+          <button
+            type="button"
+            className="rutas-top-icon-btn"
+            onClick={guardarRuta}
+            data-tooltip={
+              modoEdicion
+                ? "Guardar cambios"
+                : "Guardar ruta"
+            }
+            disabled={guardando}
+          >
+            <img src={guardarIcon} alt="" />
           </button>
         </div>
       </div>
 
-      {/* CONTADOR */}
-      <div className="rutas-search-container">
-        <div className="rutas-tools">
-          <span className="rutas-search-results">
-            {rutasFiltradas.length}{" "}
-            {rutasFiltradas.length === 1 ? "ruta" : "rutas"}
+      {/* FORMULARIO */}
+      <div className="rutas-main-form">
+        <label>
+          Código
+          <input
+            name="codigo"
+            value={form.codigo}
+            readOnly
+            placeholder="Código automático"
+          />
+        </label>
+
+        <label>
+          Nombre de la ruta
+          <input
+            name="nombre"
+            value={form.nombre}
+            onChange={cambiar}
+            placeholder="Ruta Centro"
+          />
+        </label>
+
+        <label>
+          Descripción
+          <textarea
+            name="descripcion"
+            value={form.descripcion}
+            onChange={cambiar}
+            placeholder="Descripción de la ruta..."
+          />
+        </label>
+
+        <label>
+          Empleado asignado
+          <select
+            name="empleado"
+            value={form.empleado}
+            onChange={cambiar}
+          >
+            <option value="">Sin asignar</option>
+            {empleados.map((empleado) => (
+              <option key={empleado._id} value={empleado._id}>
+                {empleado.nombres
+                  ? `${empleado.nombres} ${empleado.apellidos || ""}`
+                  : empleado.usuario}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="rutas-main-field">
+          <span className="rutas-field-label">
+            Zonas de despacho
           </span>
+
+          <div className="rutas-zonas-selector">
+            {zonas
+              .filter((zona) => zona.estado === "Activa")
+              .map((zona) => {
+                const seleccionada = form.zonasDespacho.includes(zona._id);
+
+                return (
+                  <button
+                    key={zona._id}
+                    type="button"
+                    className={seleccionada ? "selected" : ""}
+                    onClick={() => {
+                      setForm((actual) => ({
+                        ...actual,
+                        zonasDespacho: seleccionada
+                          ? actual.zonasDespacho.filter(
+                              (id) => id !== zona._id
+                            )
+                          : [...actual.zonasDespacho, zona._id],
+                      }));
+                    }}
+                  >
+                    {zona.nombre}
+                  </button>
+                );
+              })}
+          </div>
+        </div>
+
+        <label>
+          Estado
+          <select
+            name="estado"
+            value={form.estado}
+            onChange={cambiar}
+          >
+            <option value="Activa">Activa</option>
+            <option value="Inactiva">Inactiva</option>
+          </select>
+        </label>
+
+        <div className="rutas-main-field">
+          <span className="rutas-field-label">
+            Días de atención
+          </span>
+
+          <div className="rutas-days-selector">
+            {DIAS.map((dia) => {
+              const activo = form.diasAtencion.includes(dia);
+
+              return (
+                <button
+                  key={dia}
+                  type="button"
+                  className={activo ? "selected" : ""}
+                  onClick={() => cambiarDia(dia)}
+                >
+                  {dia.slice(0, 3)}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* TABLA DE RUTAS */}
-      {cargando ? (
-        <div className="rutas-loading">Cargando rutas...</div>
-      ) : (
-        <div className="rutas-table-responsive">
-          <table className="rutas-table">
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Ruta</th>
-                <th>Empleado</th>
-                <th>Zonas</th>
-                <th>Días de atención</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {rutasFiltradas.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="rutas-empty">
-                    No hay rutas para mostrar.
-                  </td>
-                </tr>
-              ) : (
-                rutasFiltradas.map((ruta) => (
-                  <tr key={ruta._id}>
-                    <td>
-                      <strong>{ruta.codigo}</strong>
-                    </td>
-
-                    <td>
-                      <div className="ruta-info">
-                        <strong>{ruta.nombre}</strong>
-                        {ruta.descripcion && (
-                          <small>{ruta.descripcion}</small>
-                        )}
-                      </div>
-                    </td>
-
-                    <td>{ruta.empleado?.nombre || "Sin asignar"}</td>
-
-                    <td>
-                      <div className="rutas-zonas-list">
-                        {ruta.zonasDespacho?.length ? (
-                          ruta.zonasDespacho.map((zona) => (
-                            <span key={zona._id} className="rutas-zona-tag">
-                              {zona.nombre}
-                            </span>
-                          ))
-                        ) : (
-                          <span className="rutas-sin-zonas">Sin zonas</span>
-                        )}
-                      </div>
-                    </td>
-
-                    <td>
-                      <div className="rutas-dias-list">
-                        {ruta.diasAtencion?.length
-                          ? ruta.diasAtencion.map((dia) => (
-                              <span key={dia}>{dia.slice(0, 3)}</span>
-                            ))
-                          : "Sin días"}
-                      </div>
-                    </td>
-
-                    <td>
-                      <span
-                        className={`rutas-status ${
-                          ruta.estado === "Activa" ? "active" : "inactive"
-                        }`}
-                      >
-                        {ruta.estado}
-                      </span>
-                    </td>
-
-                    <td>
-                      <div className="rutas-actions">
-                        <button
-                          type="button"
-                          className="rutas-icon-btn"
-                          data-tooltip="Editar Ruta"
-                          onClick={() => abrirEditarRuta(ruta)}
-                        >
-                          <img src={editarIcon} alt="Editar-ruta" />
-                        </button>
-
-                        <button
-                          type="button"
-                          className="rutas-icon-btn"
-                          data-tooltip={
-                            ruta.estado === "Activa" ? "Desactivar" : "Activar"
-                          }
-                          onClick={() => cambiarEstado(ruta)}
-                        >
-                          <img
-                            src={
-                              ruta.estado === "Activa"
-                                ? bloquearIcon
-                                : desbloquearIcon
-                            }
-                            alt=""
-                          />
-                        </button>
-
-                        <button
-                          type="button"
-                          className="rutas-icon-btn rutas-delete-btn"
-                          data-tooltip="Eliminar"
-                          onClick={() => eliminar(ruta)}
-                        >
-                          <img src={EliminarRutaIcon} alt="Eliminar ruta" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <Toast mensaje={mensaje} error={error} />
 
       {/* ===========================
-          MODAL - RUTAS
+          MODAL BUSCAR RUTAS
       =========================== */}
-      {modalAbierto && (
-        <div
-          className="rutas-modal-overlay"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              cerrarModal();
-            }
-          }}
-        >
-          <form className="rutas-modal" onSubmit={guardarRuta}>
-            <div className="rutas-modal-header">
-              <div>
-                <span className="rutas-eyebrow">
-                  {rutaEditando ? "Editar Ruta" : "Crear Ruta"}
-                </span>
-              </div>
+      {modalBuscarAbierto && (
+        <div className="rutas-search-modal-overlay">
+          <div
+            ref={modalBuscarRef}
+            className="rutas-search-modal"
+            style={{
+              left: posicionModal.x,
+              top: posicionModal.y,
+            }}
+          >
+            <div
+              className="rutas-search-modal-header"
+              onMouseDown={iniciarArrastreModal}
+            >
+              <h3>Buscar rutas</h3>
 
               <button
                 type="button"
-                className="rutas-modal-icon-btn rutas-tooltip-bottom"
-                data-tooltip="Cerrar"
-                aria-label="Cerrar"
-                onClick={cerrarModal}
+                className="rutas-search-modal-close"
+                onMouseDown={(event) => event.stopPropagation()}
+                onClick={() => setModalBuscarAbierto(false)}
               >
-                <img src={cerrarIcon} alt="" className="rutas-modal-icon-image" />
+                <img src={cerrarIcon} alt="" />
               </button>
             </div>
 
-            <div className="rutas-form-grid">
-              {/* Código */}
-              <label>
-                Código
+            <div className="rutas-search-modal-filters">
+              <select
+                value={campoBuscar}
+                onChange={(event) => setCampoBuscar(event.target.value)}
+              >
+                <option value="todos">Todos</option>
+                <option value="codigo">Código</option>
+                <option value="nombre">Ruta</option>
+                <option value="empleado">Empleado</option>
+                <option value="zona">Zona</option>
+              </select>
+
+              <div className="rutas-search-modal-input">
+                <img src={buscarIcon} alt="" />
                 <input
-                  name="codigo"
-                  value={form.codigo}
-                  readOnly
-                  placeholder="Código automático"
-                  autoComplete="off"
+                  type="search"
+                  value={filtroBuscar}
+                  onChange={(event) => setFiltroBuscar(event.target.value)}
+                  placeholder="Buscar ruta..."
+                  autoFocus
                 />
-              </label>
-
-              {/* Nombre */}
-              <label>
-                Nombre de la ruta
-                <input
-                  name="nombre"
-                  value={form.nombre}
-                  onChange={cambiar}
-                  placeholder="Ruta Centro"
-                  autoComplete="off"
-                />
-              </label>
-
-              {/* Descripción */}
-              <label className="rutas-field-full">
-                Descripción
-                <textarea
-                  name="descripcion"
-                  value={form.descripcion}
-                  onChange={cambiar}
-                  placeholder="Descripción de la ruta..."
-                />
-              </label>
-
-              {/* Empleado asignado */}
-              <label>
-                Empleado asignado
-                <select name="empleado" value={form.empleado} onChange={cambiar}>
-                  <option value="">Sin asignar</option>
-                  {empleados.map((empleado) => (
-                    <option key={empleado._id} value={empleado._id}>
-                      {empleado.nombre}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              {/* ZONAS DE DESPACHO */}
-              <div className="rutas-field-full">
-                <span className="rutas-field-label">Zonas de despacho</span>
-
-                <div className="rutas-zonas-selector">
-                  {zonas
-                    .filter((zona) => zona.estado === "Activa")
-                    .map((zona) => {
-                      const seleccionada =
-                        form.zonasDespacho.includes(zona._id);
-
-                      return (
-                        <button
-                          key={zona._id}
-                          type="button"
-                          className={seleccionada ? "selected" : ""}
-                          onClick={() => {
-                            setForm((actual) => ({
-                              ...actual,
-                              zonasDespacho: seleccionada
-                                ? actual.zonasDespacho.filter(
-                                    (id) => id !== zona._id
-                                  )
-                                : [...actual.zonasDespacho, zona._id],
-                            }));
-                          }}
-                        >
-                          {zona.nombre}
-                        </button>
-                      );
-                    })}
-                </div>
               </div>
+            </div>
 
-              {/* Estado */}
-              <label>
-                Estado
-                <select name="estado" value={form.estado} onChange={cambiar}>
-                  <option value="Activa">Activa</option>
-                  <option value="Inactiva">Inactiva</option>
-                </select>
-              </label>
+            <div className="rutas-search-modal-table-wrap">
+              <table className="rutas-search-modal-table">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Ruta</th>
+                    <th>Empleado</th>
+                    <th>Zonas</th>
+                    <th>Días</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
 
-              {/* Días de atención */}
-              <div className="rutas-field-full">
-                <span className="rutas-field-label">Días de atención</span>
-
-                <div className="rutas-days-selector">
-                  {DIAS.map((dia) => {
-                    const activo = form.diasAtencion.includes(dia);
-                    return (
-                      <button
-                        key={dia}
-                        type="button"
-                        className={activo ? "selected" : ""}
-                        onClick={() => cambiarDia(dia)}
+                <tbody>
+                  {rutasBusqueda.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="rutas-search-empty">
+                        No se encontraron rutas.
+                      </td>
+                    </tr>
+                  ) : (
+                    rutasBusqueda.map((ruta) => (
+                      <tr
+                        key={ruta._id}
+                        onDoubleClick={() => seleccionarRutaBusqueda(ruta)}
                       >
-                        {dia.slice(0, 3)}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+                        <td>
+                          <strong>{ruta.codigo}</strong>
+                        </td>
 
-            <div className="rutas-modal-footer">
-              <button
-                type="button"
-                className="rutas-modal-icon-btn"
-                title="Cancelar"
-                data-tooltip="Cancelar"
-                aria-label="Cancelar"
-                onClick={cerrarModal}
-                disabled={guardando}
-              >
-                <img src={cancelarIcon} alt="" className="rutas-modal-icon-image" />
-              </button>
+                        <td>{ruta.nombre}</td>
 
-              <button
-                type="submit"
-                className="rutas-modal-icon-btn rutas-modal-save-btn"
-                title={
-                  guardando
-                    ? "Guardando..."
-                    : rutaEditando
-                    ? "Guardar cambios"
-                    : "Crear ruta"
-                }
-                data-tooltip={
-                  guardando
-                    ? "Guardando..."
-                    : rutaEditando
-                    ? "Guardar cambios"
-                    : "Crear ruta"
-                }
-                aria-label={rutaEditando ? "Guardar cambios" : "Crear ruta"}
-                disabled={guardando}
-              >
-                <img src={guardarIcon} alt="" className="rutas-modal-icon-image" />
-              </button>
+                        <td>
+                          {ruta.empleado?.nombre ||
+                            ruta.empleado?.usuario ||
+                            "Sin asignar"}
+                        </td>
+
+                        <td>
+                          <div className="rutas-search-zonas">
+                            {ruta.zonasDespacho?.length
+                              ? ruta.zonasDespacho.map((zona) => (
+                                  <span key={zona._id}>
+                                    {zona.nombre}
+                                  </span>
+                                ))
+                              : "Sin zonas"}
+                          </div>
+                        </td>
+
+                        <td>
+                          <div className="rutas-search-dias">
+                            {ruta.diasAtencion?.length
+                              ? ruta.diasAtencion.map((dia) => (
+                                  <span key={dia}>
+                                    {dia.slice(0, 3)}
+                                  </span>
+                                ))
+                              : "Sin días"}
+                          </div>
+                        </td>
+
+                        <td>
+                          <span
+                            className={
+                              ruta.estado === "Activa"
+                                ? "rutas-search-status active"
+                                : "rutas-search-status inactive"
+                            }
+                          >
+                            {ruta.estado}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
-          </form>
+          </div>
         </div>
       )}
     </section>

@@ -33,7 +33,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/usuarios", usuarioRoutes);
 app.use("/api/configuracion", configuracionRoutes);
 app.use("/api/rutas", rutaRoutes);
-app.use( "/api/zonas-despacho",zonaDespachoRoutes);
+app.use("/api/zonas-despacho", zonaDespachoRoutes);
 app.use("/api/clientes", clienteRoutes);
 
 export default app;

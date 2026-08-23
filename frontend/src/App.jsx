@@ -1,6 +1,15 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 
-import { AuthProvider } from "./context/AuthContext.jsx";
+import {
+  AuthProvider,
+  useAuth,
+} from "./context/AuthContext.jsx";
 
 import PrivateRoute from "./routes/PrivateRoute.jsx";
 import RoleRoute from "./components/RoleRoute.jsx";
@@ -24,77 +33,92 @@ import Configuracion from "./pages/Configuracion.jsx";
 import Usuarios from "./pages/Usuarios.jsx";
 import ZonasDespacho from "./pages/ZonasDespacho.jsx";
 
-export default function App() {
-  return (
-    <BrowserRouter>
-      <AuthProvider>
+import UserFooter from "./components/UserFooter.jsx";
+import ModuleSearch from "./components/ModuleSearch.jsx";
 
-        <Routes>
+function AppContent() {
+  const location = useLocation();
+
+  const {
+    isAuthenticated,
+    cargando,
+  } = useAuth();
+
+  const mostrarFooter =
+    !cargando &&
+    isAuthenticated &&
+    location.pathname !== "/login";
+
+  return (
+    <>
+      <Routes>
+        <Route
+          path="/login"
+          element={<Login />}
+        />
+
+        <Route element={<PrivateRoute />}>
           <Route
-            path="/login"
-            element={<Login />}
+            path="/"
+            element={<Dashboard />}
           />
 
-          <Route element={<PrivateRoute />}>
+          <Route
+            path="/clientes"
+            element={<Clientes />}
+          />
 
-            <Route
-              path="/"
-              element={<Dashboard />}
-            />
+          <Route
+            path="/productos"
+            element={<Productos />}
+          />
 
-            <Route
-              path="/clientes"
-              element={<Clientes />}
-            />
+          <Route
+            path="/categorias"
+            element={<Categorias />}
+          />
 
-            <Route
-              path="/productos"
-              element={<Productos />}
-            />
+          <Route
+            path="/pedidos"
+            element={<Pedidos />}
+          />
 
-            <Route
-              path="/categorias"
-              element={<Categorias />}
-            />
+          <Route
+            path="/facturacion"
+            element={<Facturacion />}
+          />
 
-            <Route
-              path="/pedidos"
-              element={<Pedidos />}
-            />
+          <Route
+            path="/empleados"
+            element={<Empleados />}
+          />
 
-            <Route
-              path="/facturacion"
-              element={<Facturacion />}
-            />
+          <Route
+            path="/configuracion"
+            element={<Configuracion />}
+          />
 
-            <Route
-              path="/empleados"
-              element={<Empleados />}
-            />
+          {/* =========================
+              SOLO ADMINISTRADOR
+          ========================= */}
 
-            <Route
-              path="/configuracion"
-              element={<Configuracion />}
-            />
+          <Route
+            path="/configuracion/usuarios"
+            element={
+              <RoleRoute
+                roles={["Administrador"]}
+              >
+                <Usuarios />
+              </RoleRoute>
+            }
+          />
 
-            {/* SOLO ADMINISTRADOR */}
-
-            <Route
-              path="/configuracion/usuarios"
-              element={
-                <RoleRoute
-                  roles={["Administrador"]}
-                >
-                  <Usuarios />
-                </RoleRoute>
-              }
-            />
-
-          </Route>
           <Route
             path="/configuracion/empresa"
             element={
-              <RoleRoute roles={["Administrador"]}>
+              <RoleRoute
+                roles={["Administrador"]}
+              >
                 <Empresa />
               </RoleRoute>
             }
@@ -103,19 +127,31 @@ export default function App() {
           <Route
             path="/configuracion/rutas"
             element={
-              <RoleRoute roles={["Administrador"]}>
+              <RoleRoute
+                roles={["Administrador"]}
+              >
                 <Rutas />
               </RoleRoute>
             }
           />
+
           <Route
             path="/configuracion/zonas-despacho"
-            element={<ZonasDespacho />}
+            element={
+              <RoleRoute
+                roles={["Administrador"]}
+              >
+                <ZonasDespacho />
+              </RoleRoute>
+            }
           />
+
           <Route
             path="/configuracion/numeracion"
             element={
-              <RoleRoute roles={["Administrador"]}>
+              <RoleRoute
+                roles={["Administrador"]}
+              >
                 <Numeracion />
               </RoleRoute>
             }
@@ -124,7 +160,9 @@ export default function App() {
           <Route
             path="/configuracion/auditoria"
             element={
-              <RoleRoute roles={["Administrador"]}>
+              <RoleRoute
+                roles={["Administrador"]}
+              >
                 <Auditoria />
               </RoleRoute>
             }
@@ -133,18 +171,45 @@ export default function App() {
           <Route
             path="/configuracion/preferencias"
             element={
-              <RoleRoute roles={["Administrador"]}>
+              <RoleRoute
+                roles={["Administrador"]}
+              >
                 <Preferencias />
               </RoleRoute>
             }
           />
-          <Route
-            path="*"
-            element={<Navigate to="/" replace />}
-          />
+        </Route>
 
-        </Routes>
+        <Route
+          path="*"
+          element={
+            <Navigate
+              to="/"
+              replace
+            />
+          }
+        />
+      </Routes>
 
+      {/* =========================
+          PIE GLOBAL DEL USUARIO
+      ========================= */}
+
+      {mostrarFooter && (
+        <>
+          <ModuleSearch />
+          <UserFooter />
+        </>
+      )} 
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContent />
       </AuthProvider>
     </BrowserRouter>
   );

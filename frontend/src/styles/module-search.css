@@ -1,0 +1,326 @@
+/* =========================================================
+   BUSCADOR GLOBAL DE MÓDULOS
+========================================================= */
+
+.module-search-global {
+  position: fixed;
+
+  top: 12px;
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  z-index: 8000;
+
+  width: min(
+    560px,
+    calc(100vw - 180px)
+  );
+}
+
+
+/* =========================================================
+   BARRA DE BÚSQUEDA
+========================================================= */
+
+.module-search-global-box {
+  position: relative;
+
+  width: 100%;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+
+  border:
+    1px solid rgba(
+      32,
+      175,
+      178,
+      0.28
+    );
+
+  border-radius: 10px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.97
+    );
+
+  box-shadow:
+    0 6px 18px
+    rgba(
+      15,
+      23,
+      42,
+      0.10
+    );
+
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+
+  backdrop-filter:
+    blur(8px);
+}
+
+
+.module-search-global-box.active {
+  border-color:
+    #20afb2;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      32,
+      175,
+      178,
+      0.12
+    ),
+    0 9px 22px
+    rgba(
+      15,
+      23,
+      42,
+      0.12
+    );
+}
+
+
+/* =========================================================
+   ICONO
+========================================================= */
+
+.module-search-global-icon {
+  width: 22px;
+  height: 22px;
+
+  margin-left: 11px;
+
+  object-fit: contain;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+.module-search-global-box input {
+  width: 100%;
+  height: 40px;
+
+  padding:
+    0 40px
+    0 9px;
+
+  border: none;
+  outline: none;
+
+  background:
+    transparent;
+
+  color: #172033;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+.module-search-global-box input::placeholder {
+  color:
+    #98a2b3;
+
+  font-weight: 500;
+}
+
+
+.module-search-global-box
+input::-webkit-search-cancel-button {
+  display: none;
+}
+
+
+/* =========================================================
+   LIMPIAR
+========================================================= */
+
+.module-search-global-clear {
+  position: absolute;
+
+  right: 7px;
+
+  width: 27px;
+  height: 27px;
+
+  border: none;
+  border-radius: 7px;
+
+  background:
+    #f2f4f7;
+
+  color: #667085;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 19px;
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   RESULTADOS
+========================================================= */
+
+.module-search-dropdown {
+  position: absolute;
+
+  top: calc(100% + 6px);
+  left: 0;
+
+  width: 100%;
+
+  max-height: 330px;
+
+  overflow-y: auto;
+
+  padding: 6px;
+
+  border:
+    1px solid #dce7e2;
+
+  border-radius: 10px;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 18px 45px
+    rgba(
+      15,
+      23,
+      42,
+      0.20
+    );
+}
+
+
+/* =========================================================
+   RESULTADO
+========================================================= */
+
+.module-search-result {
+  width: 100%;
+
+  min-height: 48px;
+
+  padding:
+    7px 10px;
+
+  border: none;
+  border-radius: 8px;
+
+  background:
+    transparent;
+
+  display: flex;
+  align-items: center;
+  justify-content:
+    space-between;
+
+  gap: 12px;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.module-search-result:hover {
+  background:
+    linear-gradient(
+      90deg,
+      #e9faf3,
+      #eefafa
+    );
+
+  transform:
+    translateX(2px);
+}
+
+
+.module-search-result-text {
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+
+.module-search-result-text strong {
+  color: #172033;
+
+  font-size: 13px;
+  font-weight: 900;
+}
+
+
+.module-search-result-text span {
+  color: #667085;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+.module-search-arrow {
+  color: #12b76a;
+
+  font-size: 20px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   SIN RESULTADOS
+========================================================= */
+
+.module-search-no-results {
+  padding: 18px;
+
+  color: #98a2b3;
+
+  text-align: center;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .module-search-global {
+    top: 8px;
+
+    width:
+      calc(100vw - 100px);
+  }
+
+}
