@@ -1,32 +1,44 @@
 import mongoose from "mongoose";
 
-const zonaDespachoSchema = new mongoose.Schema(
-  {
-    nombre: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
+const zonaDespachoSchema =
+  new mongoose.Schema(
+    {
+      codigo: {
+        type: String,
+        unique: true,
+        sparse: true,
+        trim: true,
+        uppercase: true,
+      },
 
-    descripcion: {
-      type: String,
-      default: "",
-      trim: true,
-    },
+      nombre: {
+        type: String,
+        required: true,
+        unique: true,
+        trim: true,
+      },
 
-    estado: {
-      type: String,
-      enum: ["Activa", "Inactiva"],
-      default: "Activa",
+      descripcion: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+      estado: {
+        type: String,
+        enum: [
+          "Activa",
+          "Inactiva",
+        ],
+        default: "Activa",
+      },
     },
-  },
-  {
-    timestamps: true,
-  }
-);
+    {
+      timestamps: true,
+    }
+  );
 
 export default mongoose.model(
   "ZonaDespacho",
   zonaDespachoSchema
-);  
+);

@@ -6,10 +6,10 @@ import {
 
 import { useAuth } from "../context/AuthContext.jsx";
 
-import AppLayout from "../layouts/AppLayout.jsx";
 import SpatialCard from "../components/cards/SpatialCard.jsx";
 import CambiarPasswordModal from "../components/CambiarPasswordModal.jsx";
 import Toast from "../components/Toast.jsx";
+import ModulosMenu from "../components/ModulosMenu.jsx";
 
 import editarIcon from "../assets/icons/editar.png";
 import resetearIcon from "../assets/icons/resetear.png";
@@ -30,9 +30,11 @@ import {
   resetearPassword,
   cambiarPassword,
   cambiarEstadoUsuario,
+  obtenerSiguienteCodigoUsuario,
 } from "../services/usuario.service.js";
 
 const FORM_INICIAL = {
+  codigo: "",
   documento: "",
   nombres: "",
   apellidos: "",
@@ -74,8 +76,30 @@ export default function Usuarios() {
     offsetY: 0,
   });
 
+  // =========================================================
+  // CARGAR USUARIOS Y OBTENER SIGUIENTE CÓDIGO
+  // =========================================================
   useEffect(() => {
-    cargarUsuarios();
+    async function iniciar() {
+      await cargarUsuarios();
+
+      try {
+        const data =
+          await obtenerSiguienteCodigoUsuario();
+
+        setForm({
+          ...FORM_INICIAL,
+          codigo: data?.codigo || "",
+        });
+      } catch (err) {
+        console.error(
+          "No fue posible cargar el siguiente código:",
+          err
+        );
+      }
+    }
+
+    iniciar();
   }, []);
 
   useEffect(() => {
@@ -106,7 +130,7 @@ export default function Usuarios() {
     }
   }
 
-  function cambiarCampo(event) {
+  function handleChange(event) {
     const { name, value } = event.target;
 
     setForm((actual) => ({
@@ -115,12 +139,33 @@ export default function Usuarios() {
     }));
   }
 
-  function nuevoUsuario() {
-    setUsuarioSeleccionado(null);
-    setModoEdicion(false);
-    setForm(FORM_INICIAL);
-    setMensaje("");
-    setError("");
+  // =========================================================
+  // NUEVO USUARIO - CON CÓDIGO
+  // =========================================================
+  async function nuevoUsuario() {
+    try {
+      setUsuarioSeleccionado(null);
+      setModoEdicion(false);
+      setMensaje("");
+      setError("");
+
+      const data =
+        await obtenerSiguienteCodigoUsuario();
+
+      setForm({
+        ...FORM_INICIAL,
+        codigo: data?.codigo || "",
+      });
+    } catch (err) {
+      console.error(err);
+
+      setForm(FORM_INICIAL);
+
+      setError(
+        err.response?.data?.mensaje ||
+          "No fue posible obtener el código del usuario."
+      );
+    }
   }
 
   function seleccionarUsuario(usuario) {
@@ -129,10 +174,14 @@ export default function Usuarios() {
     setError("");
   }
 
+  // =========================================================
+  // SELECCIONAR DESDE BÚSQUEDA - CON CÓDIGO
+  // =========================================================
   function seleccionarDesdeBusqueda(usuario) {
     setUsuarioSeleccionado(usuario);
 
     setForm({
+      codigo: usuario.codigo || "",
       documento: usuario.documento || "",
       nombres: usuario.nombres || "",
       apellidos: usuario.apellidos || "",
@@ -151,6 +200,9 @@ export default function Usuarios() {
     setError("");
   }
 
+  // =========================================================
+  // EDITAR USUARIO SELECCIONADO - CON CÓDIGO
+  // =========================================================
   function editarUsuarioSeleccionado() {
     if (!usuarioSeleccionado) {
       setError("Seleccione primero un usuario.");
@@ -158,6 +210,7 @@ export default function Usuarios() {
     }
 
     setForm({
+      codigo: usuarioSeleccionado.codigo || "",
       documento: usuarioSeleccionado.documento || "",
       nombres: usuarioSeleccionado.nombres || "",
       apellidos: usuarioSeleccionado.apellidos || "",
@@ -324,7 +377,29 @@ export default function Usuarios() {
 
       await cargarUsuarios();
 
-      setForm(FORM_INICIAL);
+      // =========================================================
+      // OBTENER SIGUIENTE CÓDIGO DESPUÉS DE GUARDAR
+      // =========================================================
+      let siguienteCodigo = "";
+
+      try {
+        const data =
+          await obtenerSiguienteCodigoUsuario();
+
+        siguienteCodigo =
+          data?.codigo || "";
+      } catch (err) {
+        console.error(
+          "No fue posible obtener el siguiente código:",
+          err
+        );
+      }
+
+      setForm({
+        ...FORM_INICIAL,
+        codigo: siguienteCodigo,
+      });
+
       setUsuarioSeleccionado(null);
       setModoEdicion(false);
     } catch (err) {
@@ -427,6 +502,9 @@ export default function Usuarios() {
     }
   }
 
+  // =========================================================
+  // BÚSQUEDA - INCLUYE CÓDIGO
+  // =========================================================
   const usuariosBusqueda = usuarios.filter((usuario) => {
     const texto = filtroBuscar.trim().toLowerCase();
 
@@ -434,22 +512,45 @@ export default function Usuarios() {
       return true;
     }
 
-    const documento = String(usuario.documento || "").toLowerCase();
-    const username = String(usuario.usuario || "").toLowerCase();
-    const nombres = String(usuario.nombres || "").toLowerCase();
-    const apellidos = String(usuario.apellidos || "").toLowerCase();
+    const codigo =
+      String(usuario.codigo || "")
+        .toLowerCase();
+
+    const documento =
+      String(usuario.documento || "")
+        .toLowerCase();
+
+    const username =
+      String(usuario.usuario || "")
+        .toLowerCase();
+
+    const nombres =
+      String(usuario.nombres || "")
+        .toLowerCase();
+
+    const apellidos =
+      String(usuario.apellidos || "")
+        .toLowerCase();
 
     switch (campoBuscar) {
+      case "codigo":
+        return codigo.includes(texto);
+
       case "documento":
         return documento.includes(texto);
+
       case "usuario":
         return username.includes(texto);
+
       case "nombres":
         return nombres.includes(texto);
+
       case "apellidos":
         return apellidos.includes(texto);
+
       default:
         return (
+          codigo.includes(texto) ||
           documento.includes(texto) ||
           username.includes(texto) ||
           nombres.includes(texto) ||
@@ -459,58 +560,108 @@ export default function Usuarios() {
   });
 
   return (
-    <AppLayout title="Usuarios">
-      <SpatialCard className="usuarios-module">
-        <div className="usuarios-title-bar">
+    <section className="usuarios-module">
+
+      {/* =========================================
+          CABECERA USUARIOS - CON MODULOS MENU
+      ========================================= */}
+
+      <div className="usuarios-title-bar">
+
+        <div className="usuarios-title-left">
+
+          <ModulosMenu />
+
           <div className="usuarios-title-info">
-            <h2>
-              {modoEdicion ? "Editar Usuario" : "Usuarios"}
-            </h2>
+            <h2>Usuarios</h2>
           </div>
 
-          <div className="usuarios-title-actions">
+        </div>
+
+      </div>
+
+      {/* =========================================
+          PANEL DE TRABAJO
+      ========================================= */}
+
+      <div className="usuarios-work-panel">
+
+        {/* =========================================
+            CABECERA DE ACCIONES
+        ========================================= */}
+
+        <div className="usuarios-actions-header">
+
+          <div className="usuarios-actions-title">
+            
+          </div>
+
+          <div className="usuarios-work-actions">
+
+            {/* NUEVO */}
+
             <button
               type="button"
-              className="usuarios-icon-btn"
+              className="usuarios-work-btn"
               onClick={nuevoUsuario}
               data-tooltip="Nuevo usuario"
             >
-              <img src={nuevoUsuarioIcon} alt="" />
+              <img
+                src={nuevoUsuarioIcon}
+                alt=""
+              />
             </button>
+
+            {/* EDITAR */}
 
             <button
               type="button"
-              className="usuarios-icon-btn"
+              className="usuarios-work-btn"
               onClick={editarUsuarioSeleccionado}
               data-tooltip="Editar usuario"
               disabled={!usuarioSeleccionado}
             >
-              <img src={editarIcon} alt="" />
+              <img
+                src={editarIcon}
+                alt=""
+              />
             </button>
+
+            {/* RESETEAR CONTRASEÑA */}
 
             <button
               type="button"
-              className="usuarios-icon-btn"
+              className="usuarios-work-btn"
               onClick={resetearUsuarioSeleccionado}
               data-tooltip="Resetear contraseña"
               disabled={!usuarioSeleccionado}
             >
-              <img src={resetearIcon} alt="" />
+              <img
+                src={resetearIcon}
+                alt=""
+              />
             </button>
+
+            {/* CAMBIAR CONTRASEÑA */}
 
             <button
               type="button"
-              className="usuarios-icon-btn"
+              className="usuarios-work-btn"
               onClick={cambiarPasswordSeleccionado}
               data-tooltip="Cambiar contraseña"
               disabled={!usuarioSeleccionado}
             >
-              <img src={cambiarPasswordIcon} alt="" />
+              <img
+                src={cambiarPasswordIcon}
+                alt=""
+              />
             </button>
+
+            {/* BLOQUEAR / DESBLOQUEAR */}
 
             <button
               type="button"
-              className="usuarios-icon-btn"
+              className="usuarios-work-btn"
               onClick={cambiarEstadoSeleccionado}
               data-tooltip={
                 usuarioSeleccionado?.estado === "Activo"
@@ -519,7 +670,8 @@ export default function Usuarios() {
               }
               disabled={
                 !usuarioSeleccionado ||
-                usuarioSesion?._id === usuarioSeleccionado?._id
+                usuarioSesion?._id ===
+                  usuarioSeleccionado?._id
               }
             >
               <img
@@ -532,19 +684,25 @@ export default function Usuarios() {
               />
             </button>
 
-            <button
-              type="button"
-              className="usuarios-icon-btn"
-              onClick={abrirBuscarUsuarios}
-              data-tooltip="Buscar usuario"
-              aria-label="Buscar usuario"
-            >
-              <img src={buscarIcon} alt="" />
-            </button>
+            {/* BUSCAR */}
 
             <button
               type="button"
-              className="usuarios-icon-btn"
+              className="usuarios-work-btn"
+              onClick={abrirBuscarUsuarios}
+              data-tooltip="Buscar usuario"
+            >
+              <img
+                src={buscarIcon}
+                alt=""
+              />
+            </button>
+
+            {/* GUARDAR */}
+
+            <button
+              type="button"
+              className="usuarios-work-btn"
               onClick={guardarUsuario}
               data-tooltip={
                 modoEdicion
@@ -552,94 +710,157 @@ export default function Usuarios() {
                   : "Guardar usuario"
               }
             >
-              <img src={guardarIcon} alt="" />
+              <img
+                src={guardarIcon}
+                alt=""
+              />
             </button>
+
           </div>
+
         </div>
 
+        {/* =========================================
+            CAMPOS DEL FORMULARIO
+        ========================================= */}
+
         <div className="usuarios-form-grid">
-          <div className="usuarios-field">
+
+          {/* =========================================
+              CÓDIGO - CAMPO (readonly)
+          ========================================= */}
+
+          <div className="usuarios-field usuarios-field-codigo">
+            <label>Código</label>
+
+            <input
+              type="text"
+              name="codigo"
+              value={form.codigo}
+              readOnly
+              placeholder=""
+            />
+          </div>
+
+          {/* =========================================
+              DOCUMENTO
+          ========================================= */}
+
+          <div className="usuarios-field usuarios-field-documento">
             <label>Documento *</label>
+
             <input
               type="text"
               name="documento"
               value={form.documento}
-              onChange={cambiarCampo}
-              placeholder="Número de documento"
+              onChange={handleChange}
+              placeholder=""
             />
           </div>
 
-          <div className="usuarios-field">
+          {/* =========================================
+              NOMBRES
+          ========================================= */}
+
+          <div className="usuarios-field usuarios-field-nombres">
             <label>Nombres *</label>
+
             <input
               name="nombres"
               value={form.nombres}
-              onChange={cambiarCampo}
-              placeholder="Nombres"
+              onChange={handleChange}
+              placeholder=""
             />
           </div>
 
-          <div className="usuarios-field">
+          {/* =========================================
+              APELLIDOS
+          ========================================= */}
+
+          <div className="usuarios-field usuarios-field-apellidos">
             <label>Apellidos *</label>
+
             <input
               name="apellidos"
               value={form.apellidos}
-              onChange={cambiarCampo}
-              placeholder="Apellidos"
+              onChange={handleChange}
+              placeholder=""
             />
           </div>
 
-          <div className="usuarios-field">
+          {/* =========================================
+              USUARIO
+          ========================================= */}
+
+          <div className="usuarios-field usuarios-field-usuario">
             <label>Usuario *</label>
+
             <input
               name="usuario"
               value={form.usuario}
-              onChange={cambiarCampo}
-              placeholder="Nombre de usuario"
+              onChange={handleChange}
+              placeholder=""
             />
           </div>
 
-          <div className="usuarios-field">
+          {/* =========================================
+              ROL
+          ========================================= */}
+
+          <div className="usuarios-field usuarios-field-rol">
             <label>Rol</label>
+
             <select
               name="rol"
               value={form.rol}
-              onChange={cambiarCampo}
+              onChange={handleChange}
             >
-              <option value="Administrador">Administrador</option>
-              <option value="Empleado">Empleado</option>
+              <option value="Administrador">
+                Administrador
+              </option>
+
+              <option value="Empleado">
+                Empleado
+              </option>
             </select>
           </div>
 
+          {/* =========================================
+              CONTRASEÑAS - SOLO EN MODO NUEVO
+          ========================================= */}
+
           {!modoEdicion && (
             <>
-              <div className="usuarios-field">
+              <div className="usuarios-field usuarios-field-password">
                 <label>Contraseña *</label>
+
                 <input
                   type="password"
                   name="password"
                   value={form.password}
-                  onChange={cambiarCampo}
-                  placeholder="Contraseña"
+                  onChange={handleChange}
+                  placeholder=""
                 />
               </div>
 
-              <div className="usuarios-field">
+              <div className="usuarios-field usuarios-field-password">
                 <label>Repetir contraseña *</label>
+
                 <input
                   type="password"
                   name="repetirPassword"
                   value={form.repetirPassword}
-                  onChange={cambiarCampo}
-                  placeholder="Repetir contraseña"
+                  onChange={handleChange}
+                  placeholder=""
                 />
               </div>
             </>
           )}
+
         </div>
 
         {/* =========================================
-            ÚLTIMO ACCESO
+            ÚLTIMO ACCESO - DENTRO DEL PANEL
         ========================================= */}
 
         {modoEdicion && usuarioSeleccionado && (
@@ -673,8 +894,13 @@ export default function Usuarios() {
           </div>
         )}
 
-        <Toast mensaje={mensaje} error={error} />
-      </SpatialCard>
+      </div>
+
+      <Toast mensaje={mensaje} error={error} />
+
+      {/* =========================================
+          MODAL BUSCAR USUARIOS
+      ========================================= */}
 
       {modalBuscarAbierto && (
         <div
@@ -718,6 +944,7 @@ export default function Usuarios() {
                 onChange={(event) => setCampoBuscar(event.target.value)}
               >
                 <option value="todos">Todos</option>
+                <option value="codigo">Código</option>
                 <option value="documento">Documento</option>
                 <option value="usuario">Usuario</option>
                 <option value="nombres">Nombres</option>
@@ -749,6 +976,7 @@ export default function Usuarios() {
               <table className="usuarios-search-modal-table">
                 <thead>
                   <tr>
+                    <th>Código</th>
                     <th>Documento</th>
                     <th>Usuario</th>
                     <th>Nombre completo</th>
@@ -760,7 +988,7 @@ export default function Usuarios() {
                 <tbody>
                   {usuariosBusqueda.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="usuarios-search-empty">
+                      <td colSpan="6" className="usuarios-search-empty">
                         No se encontraron usuarios.
                       </td>
                     </tr>
@@ -770,6 +998,12 @@ export default function Usuarios() {
                         key={usuario._id}
                         onDoubleClick={() => seleccionarDesdeBusqueda(usuario)}
                       >
+                        <td>
+                          <strong className="usuarios-modal-codigo">
+                            {usuario.codigo || "Sin código"}
+                          </strong>
+                        </td>
+
                         <td>
                           <span className="usuarios-modal-documento">
                             {usuario.documento || "-"}
@@ -823,6 +1057,7 @@ export default function Usuarios() {
         onClose={cerrarCambiarPassword}
         onGuardar={guardarNuevaPassword}
       />
-    </AppLayout>
+
+    </section>
   );
 }

@@ -11,7 +11,7 @@
   transform:
     translateX(-50%);
 
-  z-index: 8000;
+  z-index: 20000;
 
   width: min(
     560px,
@@ -211,6 +211,8 @@ input::-webkit-search-cancel-button {
       42,
       0.20
     );
+
+  z-index: 20001;
 }
 
 

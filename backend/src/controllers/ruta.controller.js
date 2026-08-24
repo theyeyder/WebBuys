@@ -1,7 +1,11 @@
 import Ruta from "../models/Rutas.js";
 import Usuario from "../models/Usuario.js";
-import Configuracion from "../models/Configuracion.js";
-import ZonaDespacho from "../models/ZonaDespacho.js"; 
+import ZonaDespacho from "../models/ZonaDespacho.js";
+import Consecutivo from "../models/Consecutivo.js";
+
+import {
+  generarConsecutivo,
+} from "../utils/generarConsecutivo.js";
 
 /* ===========================
    LISTAR RUTAS
@@ -59,25 +63,12 @@ export const crearRuta = async (req, res) => {
        OBTENER CONSECUTIVO
     ========================= */
 
-    let configuracion = await Configuracion.findOne();
-
-    if (!configuracion) {
-      configuracion = await Configuracion.create({
-        consecutivoRuta: 0,
-      });
-    }
-
-    configuracion.consecutivoRuta =
-      (configuracion.consecutivoRuta || 0) + 1;
-
-    await configuracion.save();
-
-    const numeroRuta =
-      configuracion.consecutivoRuta;
-
-    const codigo = `RUTA-${String(
-      numeroRuta
-    ).padStart(2, "0")}`;
+    const codigo =
+      await generarConsecutivo(
+        "rutas",
+        "RUTA",
+        2
+      );
 
     /* =========================
        CREAR RUTA
@@ -172,7 +163,6 @@ export const actualizarRuta = async (req, res) => {
       ruta.empleado = empleado || null;
     }
 
-   
     if (zonasDespacho !== undefined) {
       ruta.zonasDespacho = Array.isArray(zonasDespacho)
         ? zonasDespacho
@@ -245,7 +235,7 @@ export const cambiarEstadoRuta = async (req, res) => {
         select: "nombre usuario rol estado bloqueado",
       })
       .populate({
-        path: "zonasDespacho", // ✅ NUEVO
+        path: "zonasDespacho",
         model: ZonaDespacho,
         select: "nombre estado",
       });
@@ -288,32 +278,43 @@ export const eliminarRuta = async (req, res) => {
 };
 
 /* ===========================
-  CONSECUTIVO RUTA-CARGUE AUTOMÁTICO
+   SIGUIENTE CÓDIGO RUTA
 =========================== */
 
-export const obtenerSiguienteCodigoRuta = async (req, res) => {
-  try {
-    let configuracion = await Configuracion.findOne();
+export const obtenerSiguienteCodigoRuta =
+  async (req, res) => {
 
-    if (!configuracion) {
-      configuracion = await Configuracion.create({
-        consecutivoRuta: 0,
+    try {
+
+      const consecutivo =
+        await Consecutivo.findOne({
+          clave: "rutas",
+        });
+
+      const siguiente =
+        (consecutivo?.ultimoNumero || 0) + 1;
+
+      const codigo =
+        `RUTA-${String(
+          siguiente
+        ).padStart(2, "0")}`;
+
+      return res.json({
+        codigo,
       });
+
+    } catch (error) {
+
+      console.error(
+        "Error obteniendo consecutivo de ruta:",
+        error
+      );
+
+      return res.status(500).json({
+        mensaje:
+          "No fue posible obtener el siguiente código de ruta.",
+      });
+
     }
 
-    const siguiente =
-      (configuracion.consecutivoRuta || 0) + 1;
-
-    const codigo = `RUTA-${String(
-      siguiente
-    ).padStart(2, "0")}`;
-
-    return res.json({
-      codigo,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      mensaje: error.message,
-    });
-  }
-};
+  };

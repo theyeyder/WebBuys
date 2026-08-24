@@ -6,6 +6,7 @@ import {
   actualizarZonaDespacho,
   cambiarEstadoZonaDespacho,
   eliminarZonaDespacho,
+  obtenerSiguienteCodigoZona,
 } from "../services/zonaDespacho.service.js";
 
 import Toast from "../components/Toast.jsx";
@@ -24,6 +25,7 @@ import nuevaZonaIcon from "../assets/icons/nueva-zona.png";
 import "../styles/zonas-despacho.css";
 
 const FORM_INICIAL = {
+  codigo: "",
   nombre: "",
   descripcion: "",
   estado: "Activa",
@@ -33,9 +35,12 @@ export default function ZonasDespacho() {
   const [zonas, setZonas] = useState([]);
   const [zonaSeleccionada, setZonaSeleccionada] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
+  
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [modalBuscarAbierto, setModalBuscarAbierto] = useState(false);
   const [filtroBuscar, setFiltroBuscar] = useState("");
   const [campoBuscar, setCampoBuscar] = useState("todos");
+  
   const modalBuscarRef = useRef(null);
   const [posicionModal, setPosicionModal] = useState({
     x: 0,
@@ -100,34 +105,50 @@ export default function ZonasDespacho() {
     }));
   }
 
-  function nuevaZona() {
-    setZonaSeleccionada(null);
-    setModoEdicion(false);
+  // =========================================================
+  // NUEVA ZONA - Ahora obtiene el código automáticamente
+  // =========================================================
+  async function nuevaZona() {
+    try {
+      setZonaSeleccionada(null);
+      setModoEdicion(false);
 
-    setForm(FORM_INICIAL);
+      const data =
+        await obtenerSiguienteCodigoZona();
 
-    setMensaje("");
-    setError("");
+      setForm({
+        ...FORM_INICIAL,
+        codigo: data.codigo || "",
+      });
+
+      setMensaje("");
+      setError("");
+    } catch (err) {
+      setError(
+        err?.response?.data?.mensaje ||
+          "No fue posible obtener el siguiente código."
+      );
+    }
   }
 
+  // =========================================================
+  // CARGAR ZONA SELECCIONADA - Actualizada con código y cierre de modal
+  // =========================================================
   function cargarZonaSeleccionada(zona) {
     setZonaSeleccionada(zona);
 
     setForm({
+      codigo: zona.codigo || "",
       nombre: zona.nombre || "",
       descripcion: zona.descripcion || "",
       estado: zona.estado || "Activa",
     });
 
     setModoEdicion(true);
-
     setModalBuscarAbierto(false);
     setFiltroBuscar("");
 
-    setMensaje(
-      `Zona ${zona.nombre} cargada correctamente.`
-    );
-
+    setMensaje("");
     setError("");
   }
 
@@ -175,6 +196,8 @@ export default function ZonasDespacho() {
 
       setZonaSeleccionada(null);
       setModoEdicion(false);
+      setMostrarFormulario(false);
+
       setForm(FORM_INICIAL);
 
     } catch (err) {
@@ -267,6 +290,9 @@ export default function ZonasDespacho() {
     }
   }
 
+  // =========================================================
+  // BUSQUEDA - Ahora incluye código, nombre, descripción y estado
+  // =========================================================
   const zonasBusqueda = useMemo(() => {
     const texto =
       filtroBuscar
@@ -278,6 +304,11 @@ export default function ZonasDespacho() {
     }
 
     return zonas.filter((zona) => {
+      const codigo =
+        String(
+          zona.codigo || ""
+        ).toLowerCase();
+
       const nombre =
         String(
           zona.nombre || ""
@@ -305,6 +336,7 @@ export default function ZonasDespacho() {
 
         default:
           return (
+            codigo.includes(texto) ||
             nombre.includes(texto) ||
             descripcion.includes(texto) ||
             estado.includes(texto)
@@ -421,27 +453,117 @@ export default function ZonasDespacho() {
 
   return (
     <section className="zonas-module">
-      <Toast mensaje={mensaje} error={error} />
 
-      <ModulosMenu />
+      <Toast
+        mensaje={mensaje}
+        error={error}
+      />
+
+
+      {/* =====================================
+          CABECERA
+      ====================================== */}
 
       <div className="zonas-title-bar">
-        <div className="zonas-title-info">
-          <h2>
-            {modoEdicion
-              ? "Editar Zona"
-              : "Zonas de despacho"}
-          </h2>
+
+        <div className="zonas-title-left">
+
+          <ModulosMenu />
+
+          <div className="zonas-title-info">
+            <h2>
+              Zonas de despacho
+            </h2>
+          </div>
+
         </div>
 
-        <div className="zonas-title-actions">
+      </div>
+
+
+      {/* =====================================
+          PANEL DE TRABAJO
+      ====================================== */}
+
+      <div className="zonas-work-panel">
+
+        {/* CAMPOS DEL FORMULARIO */}
+
+        <div className="zonas-work-fields">
+
+          {/* =====================================
+              CÓDIGO - Nuevo campo (readonly)
+          ====================================== */}
+
+          <label>
+            Código
+
+            <input
+              name="codigo"
+              value={form.codigo}
+              readOnly
+              placeholder="Código automático"
+            />
+          </label>
+
+
+          <label>
+            Nombre
+
+            <input
+              name="nombre"
+              value={form.nombre}
+              onChange={cambiar}
+              placeholder="Ejemplo: Picaleña"
+            />
+          </label>
+
+
+          <label className="zonas-work-description">
+            Descripción
+
+            <input
+              name="descripcion"
+              value={form.descripcion}
+              onChange={cambiar}
+              placeholder="Descripción de la zona"
+            />
+          </label>
+
+
+          <label>
+            Estado
+
+            <select
+              name="estado"
+              value={form.estado}
+              onChange={cambiar}
+            >
+              <option value="Activa">
+                Activa
+              </option>
+
+              <option value="Inactiva">
+                Inactiva
+              </option>
+            </select>
+
+          </label>
+
+        </div>
+
+
+        {/* BOTONES DE ACCIÓN */}
+
+        <div className="zonas-work-actions">
+
           {/* NUEVA */}
+
           <button
             type="button"
-            className="zonas-top-icon-btn"
+            className="zonas-work-btn"
             onClick={nuevaZona}
             data-tooltip="Nueva zona"
-            aria-label="Nueva zona"
           >
             <img
               src={nuevaZonaIcon}
@@ -449,17 +571,44 @@ export default function ZonasDespacho() {
             />
           </button>
 
-          {/* ACTIVAR / DESACTIVAR */}
+
+          {/* EDITAR */}
+
           <button
             type="button"
-            className="zonas-top-icon-btn"
+            className="zonas-work-btn"
+            onClick={() => {
+              if (!zonaSeleccionada) {
+                setError(
+                  "Seleccione primero una zona desde Buscar."
+                );
+                return;
+              }
+
+              setModoEdicion(true);
+            }}
+            disabled={!zonaSeleccionada}
+            data-tooltip="Editar zona"
+          >
+            <img
+              src={editarIcon}
+              alt=""
+            />
+          </button>
+
+
+          {/* ACTIVAR / DESACTIVAR */}
+
+          <button
+            type="button"
+            className="zonas-work-btn"
             onClick={cambiarEstadoSeleccionada}
+            disabled={!zonaSeleccionada}
             data-tooltip={
               zonaSeleccionada?.estado === "Activa"
                 ? "Desactivar zona"
                 : "Activar zona"
             }
-            disabled={!zonaSeleccionada}
           >
             <img
               src={
@@ -471,13 +620,15 @@ export default function ZonasDespacho() {
             />
           </button>
 
+
           {/* ELIMINAR */}
+
           <button
             type="button"
-            className="zonas-top-icon-btn"
+            className="zonas-work-btn"
             onClick={eliminarZonaSeleccionada}
-            data-tooltip="Eliminar zona"
             disabled={!zonaSeleccionada}
+            data-tooltip="Eliminar zona"
           >
             <img
               src={eliminarIcon}
@@ -485,10 +636,12 @@ export default function ZonasDespacho() {
             />
           </button>
 
+
           {/* BUSCAR */}
+
           <button
             type="button"
-            className="zonas-top-icon-btn"
+            className="zonas-work-btn"
             onClick={abrirBuscarZonas}
             data-tooltip="Buscar zona"
           >
@@ -498,64 +651,34 @@ export default function ZonasDespacho() {
             />
           </button>
 
+
           {/* GUARDAR */}
+
           <button
             type="button"
-            className="zonas-top-icon-btn"
+            className="zonas-work-btn"
             onClick={guardarZona}
+            disabled={guardando}
             data-tooltip={
               modoEdicion
                 ? "Guardar cambios"
                 : "Guardar zona"
             }
-            disabled={guardando}
           >
             <img
               src={guardarIcon}
               alt=""
             />
           </button>
+
         </div>
+
       </div>
 
-      <div className="zonas-main-form">
-        <label>
-          Nombre
-          <input
-            name="nombre"
-            value={form.nombre}
-            onChange={cambiar}
-            placeholder="Ejemplo: Picaleña"
-          />
-        </label>
 
-        <label>
-          Descripción
-          <textarea
-            name="descripcion"
-            value={form.descripcion}
-            onChange={cambiar}
-            placeholder="Descripción opcional..."
-          />
-        </label>
-
-        <label>
-          Estado
-          <select
-            name="estado"
-            value={form.estado}
-            onChange={cambiar}
-          >
-            <option value="Activa">
-              Activa
-            </option>
-
-            <option value="Inactiva">
-              Inactiva
-            </option>
-          </select>
-        </label>
-      </div>
+      {/* =====================================
+          MODAL BUSCAR ZONAS
+      ====================================== */}
 
       {modalBuscarAbierto && (
         <div className="zonas-search-modal-overlay">
@@ -578,12 +701,12 @@ export default function ZonasDespacho() {
               <button
                 type="button"
                 className="zonas-search-modal-close"
-                onMouseDown={(event) =>
-                  event.stopPropagation()
-                }
-                onClick={() =>
-                  setModalBuscarAbierto(false)
-                }
+                onClick={() => {
+                  setModalBuscarAbierto(false);
+                  setFiltroBuscar("");
+                }}
+                data-tooltip="Cerrar"
+                aria-label="Cerrar"
               >
                 <img
                   src={cerrarIcon}
@@ -642,6 +765,10 @@ export default function ZonasDespacho() {
               <table className="zonas-search-modal-table">
                 <thead>
                   <tr>
+                    {/* =====================================
+                        1. AGREGADO: Columna Código
+                    ====================================== */}
+                    <th>Código</th>
                     <th>Nombre</th>
                     <th>Descripción</th>
                     <th>Estado</th>
@@ -651,8 +778,11 @@ export default function ZonasDespacho() {
                 <tbody>
                   {zonasBusqueda.length === 0 ? (
                     <tr>
+                      {/* =====================================
+                          2. CORREGIDO: colSpan de 3 a 4
+                      ====================================== */}
                       <td
-                        colSpan="3"
+                        colSpan="4"
                         className="zonas-search-empty"
                       >
                         No se encontraron zonas.
@@ -662,16 +792,22 @@ export default function ZonasDespacho() {
                     zonasBusqueda.map((zona) => (
                       <tr
                         key={zona._id}
-                        onDoubleClick={() =>
-                          cargarZonaSeleccionada(
-                            zona
-                          )
-                        }
+                        onDoubleClick={() => {
+                          cargarZonaSeleccionada(zona);
+                          setModalBuscarAbierto(false);
+                        }}
                       >
+                        {/* =====================================
+                            3. AGREGADO: Código en cada fila
+                        ====================================== */}
                         <td>
                           <strong>
-                            {zona.nombre}
+                            {zona.codigo || "Sin código"}
                           </strong>
+                        </td>
+
+                        <td>
+                          {zona.nombre}
                         </td>
 
                         <td>
@@ -699,6 +835,7 @@ export default function ZonasDespacho() {
           </div>
         </div>
       )}
+
     </section>
   );
 }

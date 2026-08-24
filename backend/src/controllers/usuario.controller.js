@@ -1,5 +1,11 @@
 import bcrypt from "bcryptjs";
+
 import Usuario from "../models/Usuario.js";
+import Consecutivo from "../models/Consecutivo.js";
+
+import {
+  generarConsecutivo,
+} from "../utils/generarConsecutivo.js";
 
 /* ===========================
    LISTAR USUARIOS
@@ -20,7 +26,49 @@ export const listarUsuarios = async (req, res) => {
 };
 
 /* ===========================
-   CREAR USUARIO
+   SIGUIENTE CÓDIGO USUARIO
+=========================== */
+
+export const obtenerSiguienteCodigoUsuario =
+  async (req, res) => {
+
+    try {
+
+      const consecutivo =
+        await Consecutivo.findOne({
+          clave: "usuarios",
+        });
+
+      const siguiente =
+        (consecutivo?.ultimoNumero || 0) + 1;
+
+      const codigo =
+        `USER-${String(
+          siguiente
+        ).padStart(4, "0")}`;
+
+      return res.json({
+        codigo,
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Error obteniendo consecutivo de usuario:",
+        error
+      );
+
+      return res.status(500).json({
+        mensaje:
+          "No fue posible obtener el siguiente código de usuario.",
+      });
+
+    }
+
+  };
+
+/* ===========================
+   CREAR USUARIO - CON CÓDIGO
 =========================== */
 
 export const crearUsuario = async (req, res) => {
@@ -81,27 +129,67 @@ export const crearUsuario = async (req, res) => {
       });
     }
 
+    /* =========================
+       GENERAR CÓDIGO
+    ========================= */
+
+    const codigo =
+      await generarConsecutivo(
+        "usuarios",
+        "USER"
+      );
+
     const nuevoUsuario = await Usuario.create({
+      codigo,
+
       documento: documentoNormalizado,
+
       nombres: nombres.trim(),
+
       apellidos: apellidos.trim(),
+
       usuario: usuarioNormalizado,
+
       rol,
-      password: await bcrypt.hash(password, 10),
+
+      password:
+        await bcrypt.hash(
+          password,
+          10
+        ),
+
       estado: "Activo",
-      creadoPor: req.usuario._id,
+
+      creadoPor:
+        req.usuario._id,
     });
 
     res.status(201).json({
       mensaje: "Usuario creado correctamente.",
+
       usuario: {
         id: nuevoUsuario._id,
-        documento: nuevoUsuario.documento,
-        nombres: nuevoUsuario.nombres,
-        apellidos: nuevoUsuario.apellidos,
-        usuario: nuevoUsuario.usuario,
-        rol: nuevoUsuario.rol,
-        estado: nuevoUsuario.estado,
+
+        codigo:
+          nuevoUsuario.codigo,
+
+        documento:
+          nuevoUsuario.documento,
+
+        nombres:
+          nuevoUsuario.nombres,
+
+        apellidos:
+          nuevoUsuario.apellidos,
+
+        usuario:
+          nuevoUsuario.usuario,
+
+        rol:
+          nuevoUsuario.rol,
+
+        estado:
+          nuevoUsuario.estado,
       },
     });
   } catch (error) {
@@ -137,7 +225,7 @@ export const actualizarUsuario = async (req, res) => {
       });
     }
 
-    const usuarioNormalizado = usuario.trim().toLowerCase();
+    const usuarioNormalizado = usuario.trim().toUpperCase();
 
     const existe = await Usuario.findOne({
       usuario: usuarioNormalizado,

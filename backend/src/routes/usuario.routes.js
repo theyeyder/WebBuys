@@ -7,6 +7,7 @@ import {
   resetearPassword,
   cambiarEstadoUsuario,
   cambiarPassword,
+  obtenerSiguienteCodigoUsuario,
 } from "../controllers/usuario.controller.js";
 
 import { proteger } from "../middlewares/auth.middleware.js";
@@ -20,6 +21,7 @@ router.use(soloAdmin);
 
 /* Listar usuarios */
 router.get("/", listarUsuarios);
+router.get("/siguiente-codigo",obtenerSiguienteCodigoUsuario);
 
 /* Crear usuario */
 router.post("/", crearUsuario);
@@ -35,5 +37,6 @@ router.patch("/:id/cambiar-password", cambiarPassword);
 
 /* Bloquear o desbloquear usuario */
 router.patch("/:id/estado", cambiarEstadoUsuario);
+
 
 export default router;

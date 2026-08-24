@@ -1,4 +1,6 @@
 import ZonaDespacho from "../models/ZonaDespacho.js";
+import { generarConsecutivo } from "../utils/generarConsecutivo.js";
+import Consecutivo from "../models/Consecutivo.js";
 
 /* ===========================
    LISTAR ZONAS
@@ -7,7 +9,10 @@ import ZonaDespacho from "../models/ZonaDespacho.js";
 export const listarZonasDespacho = async (req, res) => {
   try {
     const zonas = await ZonaDespacho.find()
-      .sort({ nombre: 1 });
+      .sort({
+        codigo: 1,
+        nombre: 1,
+      });
 
     return res.json(zonas);
   } catch (error) {
@@ -48,11 +53,27 @@ export const crearZonaDespacho = async (req, res) => {
       });
     }
 
-    const zona = await ZonaDespacho.create({
-      nombre: nombre.trim(),
-      descripcion: descripcion?.trim() || "",
-      estado: estado || "Activa",
-    });
+    // =========================================================
+    // GENERAR CÓDIGO CONSECUTIVO
+    // =========================================================
+    const codigo =
+      await generarConsecutivo(
+        "zonas-despacho",
+        "ZN"
+      );
+
+    const zona =
+      await ZonaDespacho.create({
+        codigo,
+
+        nombre: nombre.trim(),
+
+        descripcion:
+          descripcion?.trim() || "",
+
+        estado:
+          estado || "Activa",
+      });
 
     return res.status(201).json({
       mensaje: "Zona creada correctamente.",
@@ -192,6 +213,32 @@ export const eliminarZonaDespacho = async (
 
     return res.json({
       mensaje: "Zona eliminada correctamente.",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      mensaje: error.message,
+    });
+  }
+};
+
+/* ===========================
+   OBTENER SIGUIENTE CÓDIGO DE ZONA
+=========================== */
+
+export const obtenerSiguienteCodigoZona = async (req, res) => {
+  try {
+    const consecutivo = await Consecutivo.findOne({
+      clave: "zonas-despacho",
+    });
+
+    const siguienteNumero =
+      (consecutivo?.ultimoNumero || 0) + 1;
+
+    const codigo =
+      `ZN-${String(siguienteNumero).padStart(4, "0")}`;
+
+    return res.json({
+      codigo,
     });
   } catch (error) {
     return res.status(500).json({

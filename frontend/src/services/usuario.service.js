@@ -45,3 +45,12 @@ export const cambiarEstadoUsuario = async (id) => {
 
   return response.data;
 };
+
+/* Obtener siguiente código de usuario */
+export const obtenerSiguienteCodigoUsuario = async () => {
+  const response = await api.get(
+    "/usuarios/siguiente-codigo"
+  );
+
+  return response.data;
+};

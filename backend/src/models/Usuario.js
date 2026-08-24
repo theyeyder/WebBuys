@@ -2,6 +2,15 @@
 
   const usuarioSchema = new mongoose.Schema(
     {
+
+
+      codigo: {
+        type: String,
+        unique: true,
+        sparse: true,
+        trim: true,
+        uppercase: true,
+      },
       nombres: {
         type: String,
         required: true,
@@ -26,7 +35,7 @@
         required: true,
         unique: true,
         trim: true,
-        lowercase: true,
+        uppercase: true,
       },
 
       password: {

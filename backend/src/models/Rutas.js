@@ -28,7 +28,6 @@ const rutaSchema = new mongoose.Schema(
       default: null,
     },
 
-   
     zonasDespacho: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -62,7 +61,7 @@ const rutaSchema = new mongoose.Schema(
 );
 
 // Índices para mejorar el rendimiento
-rutaSchema.index({ codigo: 1 });
+// NOTA: codigo ya tiene unique: true en el esquema, no es necesario indexarlo nuevamente
 rutaSchema.index({ nombre: 1 });
 rutaSchema.index({ empleado: 1 });
 rutaSchema.index({ estado: 1 });

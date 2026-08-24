@@ -6,6 +6,7 @@ import {
   actualizarZonaDespacho,
   cambiarEstadoZonaDespacho,
   eliminarZonaDespacho,
+  obtenerSiguienteCodigoZona,
 } from "../controllers/zonaDespacho.controller.js";
 
 import { proteger } from "../middlewares/auth.middleware.js";
@@ -22,6 +23,15 @@ router.use(proteger);
 router.get(
   "/",
   listarZonasDespacho
+);
+
+/* =========================================================
+   OBTENER SIGUIENTE CÓDIGO DE ZONA
+   Puede hacerlo cualquier usuario autenticado
+========================================================= */
+router.get(
+  "/siguiente-codigo",
+  obtenerSiguienteCodigoZona
 );
 
 /* ADMINISTRAR ZONAS

@@ -165,8 +165,10 @@ export default function ModuleSearch() {
   }
 
 
+  // =========================================================
+  // 1. CAMBIO: mostrarResultados solo depende de busqueda
+  // =========================================================
   const mostrarResultados =
-    enFoco &&
     busqueda.trim().length > 0;
 
 
@@ -194,12 +196,19 @@ export default function ModuleSearch() {
           onFocus={() =>
             setEnFoco(true)
           }
-          onChange={(event) =>
-            setBusqueda(
-              event.target.value
-            )
-          }
-          placeholder="Buscar módulo o submódulo..."
+          // =========================================================
+          // 2. CAMBIO: onChange refuerza el foco al escribir
+          // =========================================================
+          onChange={(event) => {
+            const valor = event.target.value;
+
+            setBusqueda(valor);
+
+            if (valor.trim()) {
+              setEnFoco(true);
+            }
+          }}
+          placeholder=""
           aria-label="Buscar módulo o submódulo"
         />
 
@@ -208,9 +217,13 @@ export default function ModuleSearch() {
           <button
             type="button"
             className="module-search-global-clear"
-            onClick={() =>
-              setBusqueda("")
-            }
+            // =========================================================
+            // 3. CAMBIO: botón limpiar mantiene el foco
+            // =========================================================
+            onClick={() => {
+              setBusqueda("");
+              setEnFoco(true);
+            }}
             aria-label="Limpiar búsqueda"
           >
             ×

@@ -13,6 +13,18 @@ export async function listarZonasDespacho() {
 }
 
 /* ===========================
+   OBTENER SIGUIENTE CÓDIGO DE ZONA
+=========================== */
+
+export async function obtenerSiguienteCodigoZona() {
+  const response = await api.get(
+    "/zonas-despacho/siguiente-codigo"
+  );
+
+  return response.data;
+}
+
+/* ===========================
    CREAR ZONA
 =========================== */
 
@@ -63,4 +75,4 @@ export async function eliminarZonaDespacho(id) {
   );
 
   return response.data;
-}   
+}

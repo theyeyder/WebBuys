@@ -10,6 +10,8 @@ import rutaRoutes from "./routes/ruta.routes.js";
 import zonaDespachoRoutes from "./routes/zonaDespacho.routes.js";
 import clienteRoutes from "./routes/cliente.routes.js";
 
+
+
 const app = express();
 
 app.use(cors());

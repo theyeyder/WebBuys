@@ -1,10 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import {
   listarClientes,
   crearCliente,
   actualizarCliente,
   eliminarCliente,
+  obtenerSiguienteCodigoCliente,
 } from "../services/cliente.service.js";
 
 import {
@@ -14,8 +19,6 @@ import {
 import "../styles/clientes.css";
 import clientesPrintCss from "../styles/clientes-print.css?inline";
 
-// Importar Toast y ModulosMenu
-import Toast from "../components/Toast.jsx";
 import ModulosMenu from "../components/ModulosMenu.jsx";
 
 // Iconos
@@ -29,11 +32,13 @@ import desbloquearIcon from "../assets/icons/desbloquear.png";
 import imprimirIcon from "../assets/icons/imprimir.png";
 import cerrarIcon from "../assets/icons/cerrar.png";
 
+
 /* =========================================
    FORMULARIO INICIAL
 ========================================= */
 
 const FORM_INICIAL = {
+  codigo: "",
   tipoDocumento: "CC",
   documento: "",
   nombre: "",
@@ -43,7 +48,7 @@ const FORM_INICIAL = {
   barrio: "",
   zonaDespacho: "",
   ciudad: "",
-  tipoCliente: "",
+  tipoCliente: "Tienda",
   estado: true,
 };
 
@@ -54,33 +59,54 @@ const FORM_INICIAL = {
 
 export default function Clientes() {
 
-  const [clientes, setClientes] = useState([]);
-  const [zonas, setZonas] = useState([]);
+  const [clientes, setClientes] =
+    useState([]);
 
-  const [form, setForm] = useState(FORM_INICIAL);
+  const [zonas, setZonas] =
+    useState([]);
 
-  const [clienteSeleccionado, setClienteSeleccionado] =
-    useState(null);
+  const [form, setForm] =
+    useState(FORM_INICIAL);
 
-  const [modoEdicion, setModoEdicion] = useState(false);
+  const [
+    clienteSeleccionado,
+    setClienteSeleccionado,
+  ] = useState(null);
 
-  const [filtro, setFiltro] = useState("");
-
-  const [cargando, setCargando] = useState(true);
-  const [guardando, setGuardando] = useState(false);
-
-  const [mensaje, setMensaje] = useState("");
-  const [tipoMensaje, setTipoMensaje] = useState("info");
-
-  // Estados para el modal de búsqueda de clientes
-  const [modalBuscarClientes, setModalBuscarClientes] =
+  const [modoEdicion, setModoEdicion] =
     useState(false);
 
-  const [filtroBuscarCliente, setFiltroBuscarCliente] =
+  const [cargando, setCargando] =
+    useState(true);
+
+  const [guardando, setGuardando] =
+    useState(false);
+
+  const [mensaje, setMensaje] =
     useState("");
 
-  const [campoBuscarCliente, setCampoBuscarCliente] =
-    useState("todos");
+  const [tipoMensaje, setTipoMensaje] =
+    useState("info");
+
+
+  /* =========================================
+     MODAL BUSCAR CLIENTES
+  ========================================= */
+
+  const [
+    modalBuscarClientes,
+    setModalBuscarClientes,
+  ] = useState(false);
+
+  const [
+    filtroBuscarCliente,
+    setFiltroBuscarCliente,
+  ] = useState("");
+
+  const [
+    campoBuscarCliente,
+    setCampoBuscarCliente,
+  ] = useState("todos");
 
 
   /* =========================================
@@ -88,12 +114,14 @@ export default function Clientes() {
   ========================================= */
 
   function escaparHtml(valor) {
+
     return String(valor ?? "")
       .replaceAll("&", "&amp;")
       .replaceAll("<", "&lt;")
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
+
   }
 
 
@@ -107,12 +135,15 @@ export default function Clientes() {
 
       setCargando(true);
 
-      const data = await listarClientes();
+      const data =
+        await listarClientes();
 
       setClientes(
         Array.isArray(data)
           ? data
-          : data?.clientes || data?.data || []
+          : data?.clientes ||
+            data?.data ||
+            []
       );
 
     } catch (error) {
@@ -136,19 +167,22 @@ export default function Clientes() {
 
 
   /* =========================================
-     CARGAR ZONAS DE DESPACHO
+     CARGAR ZONAS
   ========================================= */
 
   async function cargarZonas() {
 
     try {
 
-      const data = await listarZonasDespacho();
+      const data =
+        await listarZonasDespacho();
 
       setZonas(
         Array.isArray(data)
           ? data
-          : data?.zonas || data?.data || []
+          : data?.zonas ||
+            data?.data ||
+            []
       );
 
     } catch (error) {
@@ -167,28 +201,78 @@ export default function Clientes() {
   }
 
 
+  /* =========================================
+     CARGAR SIGUIENTE CÓDIGO
+  ========================================= */
+
+  async function cargarSiguienteCodigoCliente() {
+
+    try {
+
+      const data =
+        await obtenerSiguienteCodigoCliente();
+
+      return data?.codigo || "";
+
+    } catch (error) {
+
+      console.error(
+        "Error obteniendo código cliente:",
+        error
+      );
+
+      return "";
+
+    }
+
+  }
+
+
+  /* =========================================
+     CARGA INICIAL
+  ========================================= */
+
   useEffect(() => {
 
-    cargarClientes();
-    cargarZonas();
+    async function iniciar() {
+
+      await Promise.all([
+        cargarClientes(),
+        cargarZonas(),
+      ]);
+
+      const codigo =
+        await cargarSiguienteCodigoCliente();
+
+      setForm({
+        ...FORM_INICIAL,
+        codigo,
+      });
+
+    }
+
+    iniciar();
 
   }, []);
 
 
   /* =========================================
-     OCULTAR NOTIFICACIONES
-     DESPUÉS DE 3 SEGUNDOS
+     OCULTAR MENSAJE 3 SEGUNDOS
   ========================================= */
 
   useEffect(() => {
 
     if (!mensaje) return;
 
-    const timer = setTimeout(() => {
-      setMensaje("");
-    }, 3000);
+    const timer =
+      setTimeout(() => {
 
-    return () => clearTimeout(timer);
+        setMensaje("");
+
+      }, 3000);
+
+    return () =>
+      clearTimeout(timer);
 
   }, [mensaje]);
 
@@ -220,30 +304,42 @@ export default function Clientes() {
      NUEVO CLIENTE
   ========================================= */
 
-  function nuevoCliente() {
+  async function nuevoCliente() {
 
-    setClienteSeleccionado(null);
+    try {
 
-    setModoEdicion(false);
+      setClienteSeleccionado(null);
 
-    setForm(FORM_INICIAL);
+      setModoEdicion(false);
 
-    setMensaje("");
+      setMensaje("");
 
-    setTipoMensaje("info");
+      setTipoMensaje("info");
 
-  }
+      const data =
+        await obtenerSiguienteCodigoCliente();
 
+      setForm({
+        ...FORM_INICIAL,
 
-  /* =========================================
-     SELECCIONAR CLIENTE
-  ========================================= */
+        codigo:
+          data?.codigo || "",
+      });
 
-  function seleccionarCliente(cliente) {
+    } catch (error) {
 
-    setClienteSeleccionado(cliente);
+      console.error(error);
 
-    setMensaje("");
+      setForm(FORM_INICIAL);
+
+      setMensaje(
+        error?.response?.data?.mensaje ||
+        "No fue posible obtener el código del cliente."
+      );
+
+      setTipoMensaje("error");
+
+    }
 
   }
 
@@ -256,7 +352,9 @@ export default function Clientes() {
 
     if (!clienteSeleccionado) {
 
-      setMensaje("Seleccione primero un cliente.");
+      setMensaje(
+        "Seleccione primero un cliente."
+      );
 
       setTipoMensaje("info");
 
@@ -264,9 +362,13 @@ export default function Clientes() {
 
     }
 
-    const cliente = clienteSeleccionado;
+    const cliente =
+      clienteSeleccionado;
 
     setForm({
+
+      codigo:
+        cliente.codigo || "",
 
       tipoDocumento:
         cliente.tipoDocumento || "CC",
@@ -298,7 +400,8 @@ export default function Clientes() {
         cliente.ciudad || "Ibagué",
 
       tipoCliente:
-        cliente.tipoCliente || "Tienda",
+        cliente.tipoCliente ||
+        "Tienda",
 
       estado:
         cliente.estado ?? true,
@@ -316,16 +419,25 @@ export default function Clientes() {
 
 
   /* =========================================
-     SELECCIONAR CLIENTE DESDE BÚSQUEDA
+     SELECCIONAR DESDE BUSCAR
   ========================================= */
 
-  function seleccionarClienteBusqueda(cliente) {
+  function seleccionarClienteBusqueda(
+    cliente
+  ) {
 
-    setClienteSeleccionado(cliente);
+    setClienteSeleccionado(
+      cliente
+    );
 
     setForm({
+
+      codigo:
+        cliente.codigo || "",
+
       tipoDocumento:
-        cliente.tipoDocumento || "CC",
+        cliente.tipoDocumento ||
+        "CC",
 
       documento:
         cliente.documento || "",
@@ -351,18 +463,22 @@ export default function Clientes() {
         "",
 
       ciudad:
-        cliente.ciudad || "Ibagué",
+        cliente.ciudad ||
+        "Ibagué",
 
       tipoCliente:
-        cliente.tipoCliente || "Tienda",
+        cliente.tipoCliente ||
+        "Tienda",
 
       estado:
         cliente.estado ?? true,
+
     });
 
     setModoEdicion(true);
 
     setModalBuscarClientes(false);
+
     setFiltroBuscarCliente("");
 
     setMensaje(
@@ -370,18 +486,23 @@ export default function Clientes() {
     );
 
     setTipoMensaje("success");
+
   }
 
 
   /* =========================================
-     ACTIVAR / DESACTIVAR CLIENTE SELECCIONADO
+     ACTIVAR / DESACTIVAR
   ========================================= */
 
   async function cambiarEstadoClienteSeleccionado() {
 
-    if (!clienteSeleccionado?._id) {
+    if (
+      !clienteSeleccionado?._id
+    ) {
 
-      setMensaje("Seleccione primero un cliente.");
+      setMensaje(
+        "Seleccione primero un cliente."
+      );
 
       setTipoMensaje("info");
 
@@ -397,7 +518,8 @@ export default function Clientes() {
       await actualizarCliente(
         clienteSeleccionado._id,
         {
-          estado: nuevoEstado,
+          estado:
+            nuevoEstado,
         }
       );
 
@@ -409,14 +531,20 @@ export default function Clientes() {
 
       setTipoMensaje("success");
 
-      setClienteSeleccionado((actual) => ({
-        ...actual,
-        estado: nuevoEstado,
-      }));
+      setClienteSeleccionado(
+        (actual) => ({
+          ...actual,
+
+          estado:
+            nuevoEstado,
+        })
+      );
 
       setForm((actual) => ({
         ...actual,
-        estado: nuevoEstado,
+
+        estado:
+          nuevoEstado,
       }));
 
       await cargarClientes();
@@ -436,14 +564,18 @@ export default function Clientes() {
 
 
   /* =========================================
-     ELIMINAR CLIENTE SELECCIONADO
+     ELIMINAR CLIENTE
   ========================================= */
 
   async function eliminarClienteSeleccionado() {
 
-    if (!clienteSeleccionado?._id) {
+    if (
+      !clienteSeleccionado?._id
+    ) {
 
-      setMensaje("Seleccione primero un cliente.");
+      setMensaje(
+        "Seleccione primero un cliente."
+      );
 
       setTipoMensaje("info");
 
@@ -451,9 +583,10 @@ export default function Clientes() {
 
     }
 
-    const confirmar = window.confirm(
-      `¿Deseas eliminar al cliente "${clienteSeleccionado.nombre}"?`
-    );
+    const confirmar =
+      window.confirm(
+        `¿Deseas eliminar al cliente "${clienteSeleccionado.nombre}"?`
+      );
 
     if (!confirmar) return;
 
@@ -473,9 +606,15 @@ export default function Clientes() {
 
       setModoEdicion(false);
 
-      setForm(FORM_INICIAL);
-
       await cargarClientes();
+
+      const codigo =
+        await cargarSiguienteCodigoCliente();
+
+      setForm({
+        ...FORM_INICIAL,
+        codigo,
+      });
 
     } catch (error) {
 
@@ -497,9 +636,15 @@ export default function Clientes() {
 
   function validarFormulario() {
 
-    const documento = form.documento.trim();
-    const nombre = form.nombre.trim();
-    const telefono = form.telefono.trim();
+    const documento =
+      form.documento.trim();
+
+    const nombre =
+      form.nombre.trim();
+
+    const telefono =
+      form.telefono.trim();
+
 
     if (!documento) {
 
@@ -513,6 +658,7 @@ export default function Clientes() {
 
     }
 
+
     if (!nombre) {
 
       setMensaje(
@@ -525,9 +671,8 @@ export default function Clientes() {
 
     }
 
-    /* =========================
-       VALIDAR CC
-    ========================= */
+
+    /* CC */
 
     if (
       form.tipoDocumento === "CC" &&
@@ -544,13 +689,14 @@ export default function Clientes() {
 
     }
 
-    /* =========================
-       VALIDAR NIT
-    ========================= */
+
+    /* NIT */
 
     if (
       form.tipoDocumento === "NIT" &&
-      !/^\d{8,10}-?\d?$/.test(documento)
+      !/^\d{8,10}-?\d?$/.test(
+        documento
+      )
     ) {
 
       setMensaje(
@@ -563,13 +709,14 @@ export default function Clientes() {
 
     }
 
-    /* =========================
-       VALIDAR TELÉFONO
-    ========================= */
+
+    /* TELÉFONO */
 
     if (
       telefono &&
-      !/^\d{7,10}$/.test(telefono)
+      !/^\d{7,10}$/.test(
+        telefono
+      )
     ) {
 
       setMensaje(
@@ -582,19 +729,19 @@ export default function Clientes() {
 
     }
 
-    /* =========================
-       DOCUMENTO DUPLICADO
-    ========================= */
 
-    const documentoExiste = clientes.some(
-      (cliente) =>
-        cliente.documento
-          ?.trim()
-          .toLowerCase() ===
-          documento.toLowerCase() &&
-        cliente._id !==
-          clienteSeleccionado?._id
-    );
+    /* DOCUMENTO DUPLICADO */
+
+    const documentoExiste =
+      clientes.some(
+        (cliente) =>
+          cliente.documento
+            ?.trim()
+            .toLowerCase() ===
+            documento.toLowerCase() &&
+          cliente._id !==
+            clienteSeleccionado?._id
+      );
 
     if (documentoExiste) {
 
@@ -626,7 +773,14 @@ export default function Clientes() {
     try {
 
       setGuardando(true);
+
       setMensaje("");
+
+
+      /* IMPORTANTE:
+         NO enviamos codigo.
+         Lo controla el backend.
+      */
 
       const datos = {
 
@@ -652,18 +806,22 @@ export default function Clientes() {
           form.barrio.trim(),
 
         zonaDespacho:
-          form.zonaDespacho || null,
+          form.zonaDespacho ||
+          null,
 
         ciudad:
-          form.ciudad.trim() || "Ibagué",
+          form.ciudad.trim() ||
+          "Ibagué",
 
         tipoCliente:
-          form.tipoCliente,
+          form.tipoCliente ||
+          "Tienda",
 
         estado:
           form.estado,
 
       };
+
 
       /* EDITAR */
 
@@ -683,11 +841,14 @@ export default function Clientes() {
 
       }
 
+
       /* CREAR */
 
       else {
 
-        await crearCliente(datos);
+        await crearCliente(
+          datos
+        );
 
         setMensaje(
           "Cliente creado correctamente."
@@ -696,13 +857,27 @@ export default function Clientes() {
       }
 
 
-      setTipoMensaje("success");
+      setTipoMensaje(
+        "success"
+      );
 
       await cargarClientes();
 
-      setForm(FORM_INICIAL);
 
-      setClienteSeleccionado(null);
+      /* SIGUIENTE CÓDIGO */
+
+      const codigo =
+        await cargarSiguienteCodigoCliente();
+
+      setForm({
+        ...FORM_INICIAL,
+        codigo,
+      });
+
+
+      setClienteSeleccionado(
+        null
+      );
 
       setModoEdicion(false);
 
@@ -715,9 +890,12 @@ export default function Clientes() {
         error?.response?.data?.mensaje ||
         error?.response?.data?.message;
 
+
       if (
-        error?.response?.status === 409 ||
-        error?.response?.status === 11000
+        error?.response?.status ===
+          409 ||
+        error?.response?.status ===
+          11000
       ) {
 
         setMensaje(
@@ -746,69 +924,18 @@ export default function Clientes() {
 
 
   /* =========================================
-     CAMBIAR ESTADO DESDE LA TABLA
-  ========================================= */
-
-  async function cambiarEstadoCliente(cliente) {
-
-    try {
-
-      const nuevoEstado = !cliente.estado;
-
-      await actualizarCliente(
-        cliente._id,
-        {
-          estado: nuevoEstado,
-        }
-      );
-
-      setMensaje(
-        nuevoEstado
-          ? "Cliente activado correctamente."
-          : "Cliente desactivado correctamente."
-      );
-
-      setTipoMensaje("success");
-
-      if (
-        clienteSeleccionado?._id === cliente._id
-      ) {
-
-        setForm((actual) => ({
-          ...actual,
-          estado: nuevoEstado,
-        }));
-
-      }
-
-      await cargarClientes();
-
-
-    } catch (error) {
-
-      console.error(error);
-
-      setMensaje(
-        error?.response?.data?.mensaje ||
-        "No fue posible cambiar el estado del cliente."
-      );
-
-      setTipoMensaje("error");
-
-    }
-
-  }
-
-
-  /* =========================================
      IMPRIMIR CLIENTES
   ========================================= */
 
   function imprimirClientes() {
 
-    if (clientes.length === 0) {
+    if (
+      clientes.length === 0
+    ) {
 
-      setMensaje("No hay clientes para imprimir.");
+      setMensaje(
+        "No hay clientes para imprimir."
+      );
 
       setTipoMensaje("info");
 
@@ -816,82 +943,107 @@ export default function Clientes() {
 
     }
 
-    const filas = clientes
-      .map((cliente) => {
 
-        const tipoDocumento =
-          cliente.tipoDocumento || "-";
+    const filas =
+      clientes
+        .map((cliente) => {
 
-        const documento =
-          cliente.documento || "-";
+          const codigo =
+            cliente.codigo ||
+            "-";
 
-        const nombre =
-          cliente.nombre || "-";
+          const tipoDocumento =
+            cliente.tipoDocumento ||
+            "-";
 
-        const telefono =
-          cliente.telefono || "-";
+          const documento =
+            cliente.documento ||
+            "-";
 
-        const direccion =
-          cliente.direccion || "-";
+          const nombre =
+            cliente.nombre ||
+            "-";
 
-        const barrio =
-          cliente.barrio || "-";
+          const telefono =
+            cliente.telefono ||
+            "-";
 
-        const zona =
-          obtenerNombreZona(cliente);
+          const direccion =
+            cliente.direccion ||
+            "-";
 
-        const tipoCliente =
-          cliente.tipoCliente || "-";
+          const barrio =
+            cliente.barrio ||
+            "-";
 
-        const estado =
-          cliente.estado
-            ? "Activo"
-            : "Inactivo";
+          const zona =
+            obtenerNombreZona(
+              cliente
+            );
 
-        return `
-          <tr>
+          const tipoCliente =
+            cliente.tipoCliente ||
+            "-";
 
-            <td class="clientes-print-document">
-              <strong>
-                ${escaparHtml(tipoDocumento)}
-              </strong>
+          const estado =
+            cliente.estado
+              ? "Activo"
+              : "Inactivo";
 
-              ${escaparHtml(documento)}
-            </td>
 
-            <td>
-              ${escaparHtml(nombre)}
-            </td>
+          return `
+            <tr>
 
-            <td>
-              ${escaparHtml(telefono)}
-            </td>
+              <td>
+                <strong>
+                  ${escaparHtml(codigo)}
+                </strong>
+              </td>
 
-            <td>
-              ${escaparHtml(direccion)}
-            </td>
+              <td class="clientes-print-document">
 
-            <td>
-              ${escaparHtml(barrio)}
-            </td>
+                <strong>
+                  ${escaparHtml(tipoDocumento)}
+                </strong>
 
-            <td>
-              ${escaparHtml(zona)}
-            </td>
+                ${escaparHtml(documento)}
 
-            <td>
-              ${escaparHtml(tipoCliente)}
-            </td>
+              </td>
 
-            <td class="clientes-print-status">
-              ${estado}
-            </td>
+              <td>
+                ${escaparHtml(nombre)}
+              </td>
 
-          </tr>
-        `;
+              <td>
+                ${escaparHtml(telefono)}
+              </td>
 
-      })
-      .join("");
+              <td>
+                ${escaparHtml(direccion)}
+              </td>
+
+              <td>
+                ${escaparHtml(barrio)}
+              </td>
+
+              <td>
+                ${escaparHtml(zona)}
+              </td>
+
+              <td>
+                ${escaparHtml(tipoCliente)}
+              </td>
+
+              <td class="clientes-print-status">
+                ${estado}
+              </td>
+
+            </tr>
+          `;
+
+        })
+        .join("");
+
 
     const ventanaImpresion =
       window.open(
@@ -899,6 +1051,7 @@ export default function Clientes() {
         "_blank",
         "width=1200,height=800"
       );
+
 
     if (!ventanaImpresion) {
 
@@ -911,6 +1064,7 @@ export default function Clientes() {
       return;
 
     }
+
 
     ventanaImpresion.document.write(`
       <!DOCTYPE html>
@@ -936,9 +1090,11 @@ export default function Clientes() {
 
         </head>
 
+
         <body>
 
           <main class="clientes-print-page">
+
 
             <header class="clientes-print-header">
 
@@ -958,6 +1114,7 @@ export default function Clientes() {
               <thead>
 
                 <tr>
+                  <th>Código</th>
                   <th>Documento</th>
                   <th>Cliente</th>
                   <th>Teléfono</th>
@@ -969,6 +1126,7 @@ export default function Clientes() {
                 </tr>
 
               </thead>
+
 
               <tbody>
                 ${filas}
@@ -999,12 +1157,16 @@ export default function Clientes() {
       </html>
     `);
 
+
     ventanaImpresion.document.close();
 
     ventanaImpresion.focus();
 
+
     setTimeout(() => {
+
       ventanaImpresion.print();
+
     }, 300);
 
   }
@@ -1014,103 +1176,163 @@ export default function Clientes() {
      OBTENER NOMBRE ZONA
   ========================================= */
 
-  function obtenerNombreZona(cliente) {
+  function obtenerNombreZona(
+    cliente
+  ) {
 
     if (
       cliente.zonaDespacho &&
-      typeof cliente.zonaDespacho === "object"
+      typeof cliente.zonaDespacho ===
+        "object"
     ) {
 
-      return cliente.zonaDespacho.nombre || "-";
+      return (
+        cliente.zonaDespacho
+          .nombre ||
+        "-"
+      );
 
     }
 
     const zonaEncontrada =
       zonas.find(
         (zona) =>
-          zona._id === cliente.zonaDespacho
+          zona._id ===
+          cliente.zonaDespacho
       );
 
-    return zonaEncontrada?.nombre || "-";
+    return (
+      zonaEncontrada?.nombre ||
+      "-"
+    );
 
   }
 
 
   /* =========================================
-     FILTRADO PARA BÚSQUEDA EMERGENTE
+     FILTRADO BUSCAR CLIENTES
   ========================================= */
 
-  const clientesBusqueda = useMemo(() => {
-    const texto =
-      filtroBuscarCliente
-        .trim()
-        .toLowerCase();
+  const clientesBusqueda =
+    useMemo(() => {
 
-    if (!texto) {
-      return clientes;
-    }
-
-    return clientes.filter((cliente) => {
-      const documento =
-        String(cliente.documento || "")
+      const texto =
+        filtroBuscarCliente
+          .trim()
           .toLowerCase();
 
-      const nombre =
-        String(cliente.nombre || "")
-          .toLowerCase();
-
-      const razonSocial =
-        String(cliente.razonSocial || "")
-          .toLowerCase();
-
-      const telefono =
-        String(cliente.telefono || "")
-          .toLowerCase();
-
-      const barrio =
-        String(cliente.barrio || "")
-          .toLowerCase();
-
-      const zona =
-        String(
-          cliente.zonaDespacho?.nombre || ""
-        ).toLowerCase();
-
-      switch (campoBuscarCliente) {
-        case "documento":
-          return documento.includes(texto);
-
-        case "nombre":
-          return nombre.includes(texto);
-
-        case "razonSocial":
-          return razonSocial.includes(texto);
-
-        case "telefono":
-          return telefono.includes(texto);
-
-        case "barrio":
-          return barrio.includes(texto);
-
-        case "zona":
-          return zona.includes(texto);
-
-        default:
-          return (
-            documento.includes(texto) ||
-            nombre.includes(texto) ||
-            razonSocial.includes(texto) ||
-            telefono.includes(texto) ||
-            barrio.includes(texto) ||
-            zona.includes(texto)
-          );
+      if (!texto) {
+        return clientes;
       }
-    });
-  }, [
-    clientes,
-    filtroBuscarCliente,
-    campoBuscarCliente,
-  ]);
+
+
+      return clientes.filter(
+        (cliente) => {
+
+          const codigo =
+            String(
+              cliente.codigo ||
+              ""
+            ).toLowerCase();
+
+          const documento =
+            String(
+              cliente.documento ||
+              ""
+            ).toLowerCase();
+
+          const nombre =
+            String(
+              cliente.nombre ||
+              ""
+            ).toLowerCase();
+
+          const razonSocial =
+            String(
+              cliente.razonSocial ||
+              ""
+            ).toLowerCase();
+
+          const telefono =
+            String(
+              cliente.telefono ||
+              ""
+            ).toLowerCase();
+
+          const barrio =
+            String(
+              cliente.barrio ||
+              ""
+            ).toLowerCase();
+
+          const zona =
+            String(
+              cliente.zonaDespacho
+                ?.nombre ||
+              ""
+            ).toLowerCase();
+
+
+          switch (
+            campoBuscarCliente
+          ) {
+
+            case "codigo":
+              return codigo.includes(
+                texto
+              );
+
+            case "documento":
+              return documento.includes(
+                texto
+              );
+
+            case "nombre":
+              return nombre.includes(
+                texto
+              );
+
+            case "razonSocial":
+              return razonSocial.includes(
+                texto
+              );
+
+            case "telefono":
+              return telefono.includes(
+                texto
+              );
+
+            case "barrio":
+              return barrio.includes(
+                texto
+              );
+
+            case "zona":
+              return zona.includes(
+                texto
+              );
+
+            default:
+              return (
+                codigo.includes(texto) ||
+                documento.includes(texto) ||
+                nombre.includes(texto) ||
+                razonSocial.includes(texto) ||
+                telefono.includes(texto) ||
+                barrio.includes(texto) ||
+                zona.includes(texto)
+              );
+
+          }
+
+        }
+      );
+
+    }, [
+      clientes,
+      filtroBuscarCliente,
+      campoBuscarCliente,
+    ]);
 
 
   /* =========================================
@@ -1121,46 +1343,46 @@ export default function Clientes() {
 
     <section className="clientes-page">
 
-      {/* ===============================
-          MENSAJES
-      =============================== */}
+
+      {/* MENSAJES */}
 
       {mensaje && (
 
         <div
-          className={`clientes-alert clientes-alert--${tipoMensaje}`}
+          className={
+            `clientes-alert clientes-alert--${tipoMensaje}`
+          }
         >
           {mensaje}
         </div>
 
       )}
 
-      {/* ===============================
-          MODULOS MENU
-      =============================== */}
+
+      {/* MÓDULOS */}
 
       <ModulosMenu />
 
-      {/* ===============================
-          CABECERA CLIENTES
-      =============================== */}
+
+      {/* =====================================
+          CABECERA
+      ====================================== */}
 
       <div className="clientes-title-bar">
 
         <div className="clientes-title-info">
 
           <h2>
-            {clienteSeleccionado
-              ? "Editar Cliente"
-              : "Clientes"}
+            Clientes
           </h2>
 
         </div>
 
+
         <div className="clientes-title-actions">
 
+
           {/* NUEVO */}
-          
 
           <button
             type="button"
@@ -1176,12 +1398,15 @@ export default function Clientes() {
             />
           </button>
 
+
           {/* EDITAR */}
 
           <button
             type="button"
             className="clientes-icon-btn clientes-icon-btn-edit"
-            onClick={editarClienteSeleccionado}
+            onClick={
+              editarClienteSeleccionado
+            }
             data-tooltip="Editar cliente"
             aria-label="Editar cliente"
             disabled={
@@ -1195,18 +1420,16 @@ export default function Clientes() {
             />
           </button>
 
+
           {/* ACTIVAR / DESACTIVAR */}
 
           <button
             type="button"
             className="clientes-icon-btn"
-            onClick={cambiarEstadoClienteSeleccionado}
-            data-tooltip={
-              clienteSeleccionado?.estado
-                ? "Desactivar cliente"
-                : "Activar cliente"
+            onClick={
+              cambiarEstadoClienteSeleccionado
             }
-            aria-label={
+            data-tooltip={
               clienteSeleccionado?.estado
                 ? "Desactivar cliente"
                 : "Activar cliente"
@@ -1218,7 +1441,8 @@ export default function Clientes() {
           >
             <img
               src={
-                clienteSeleccionado?.estado
+                clienteSeleccionado
+                  ?.estado
                   ? bloquearIcon
                   : desbloquearIcon
               }
@@ -1226,14 +1450,16 @@ export default function Clientes() {
             />
           </button>
 
+
           {/* ELIMINAR */}
 
           <button
             type="button"
             className="clientes-icon-btn clientes-icon-btn-delete"
-            onClick={eliminarClienteSeleccionado}
+            onClick={
+              eliminarClienteSeleccionado
+            }
             data-tooltip="Eliminar cliente"
-            aria-label="Eliminar cliente"
             disabled={
               guardando ||
               !clienteSeleccionado
@@ -1245,18 +1471,28 @@ export default function Clientes() {
             />
           </button>
 
-          {/* BUSCAR CLIENTE */}
+
+          {/* BUSCAR */}
 
           <button
             type="button"
             className="clientes-icon-btn"
             onClick={() => {
-              setFiltroBuscarCliente("");
-              setCampoBuscarCliente("todos");
-              setModalBuscarClientes(true);
+
+              setFiltroBuscarCliente(
+                ""
+              );
+
+              setCampoBuscarCliente(
+                "todos"
+              );
+
+              setModalBuscarClientes(
+                true
+              );
+
             }}
             data-tooltip="Buscar cliente"
-            aria-label="Buscar cliente"
           >
             <img
               src={buscarIcon}
@@ -1264,14 +1500,16 @@ export default function Clientes() {
             />
           </button>
 
+
           {/* IMPRIMIR */}
 
           <button
             type="button"
             className="clientes-icon-btn"
-            onClick={imprimirClientes}
+            onClick={
+              imprimirClientes
+            }
             data-tooltip="Imprimir clientes"
-            aria-label="Imprimir clientes"
             disabled={
               guardando ||
               clientes.length === 0
@@ -1283,18 +1521,16 @@ export default function Clientes() {
             />
           </button>
 
+
           {/* GUARDAR */}
 
           <button
             type="button"
             className="clientes-icon-btn"
-            onClick={guardarCliente}
-            data-tooltip={
-              modoEdicion
-                ? "Guardar cambios"
-                : "Guardar cliente"
+            onClick={
+              guardarCliente
             }
-            aria-label={
+            data-tooltip={
               modoEdicion
                 ? "Guardar cambios"
                 : "Guardar cliente"
@@ -1311,13 +1547,36 @@ export default function Clientes() {
 
       </div>
 
-      {/* ===============================
+
+      {/* =====================================
           FORMULARIO
-      =============================== */}
+      ====================================== */}
 
       <div className="clientes-main-form">
 
-        {/* TIPO DOCUMENTO */}
+
+        {/* CÓDIGO */}
+
+        <div className="clientes-field clientes-field-codigo">
+
+          <label>
+            Código
+          </label>
+
+          <input
+            type="text"
+            name="codigo"
+            value={
+              form.codigo
+            }
+            readOnly
+            placeholder="Código automático"
+          />
+
+        </div>
+
+
+        {/* TIPO */}
 
         <div className="clientes-field clientes-field-tipo">
 
@@ -1327,7 +1586,9 @@ export default function Clientes() {
 
           <select
             name="tipoDocumento"
-            value={form.tipoDocumento}
+            value={
+              form.tipoDocumento
+            }
             onChange={cambiar}
             disabled={guardando}
           >
@@ -1342,6 +1603,7 @@ export default function Clientes() {
 
         </div>
 
+
         {/* DOCUMENTO */}
 
         <div className="clientes-field">
@@ -1353,10 +1615,13 @@ export default function Clientes() {
           <input
             type="text"
             name="documento"
-            value={form.documento}
+            value={
+              form.documento
+            }
             onChange={cambiar}
             placeholder={
-              form.tipoDocumento === "NIT"
+              form.tipoDocumento ===
+              "NIT"
                 ? "900123456-7"
                 : "Número de cédula"
             }
@@ -1364,6 +1629,7 @@ export default function Clientes() {
           />
 
         </div>
+
 
         {/* NOMBRE */}
 
@@ -1376,13 +1642,16 @@ export default function Clientes() {
           <input
             type="text"
             name="nombre"
-            value={form.nombre}
+            value={
+              form.nombre
+            }
             onChange={cambiar}
             placeholder="Nombre del cliente"
             disabled={guardando}
           />
 
         </div>
+
 
         {/* RAZÓN SOCIAL */}
 
@@ -1395,13 +1664,16 @@ export default function Clientes() {
           <input
             type="text"
             name="razonSocial"
-            value={form.razonSocial}
+            value={
+              form.razonSocial
+            }
             onChange={cambiar}
             placeholder="Razón social"
             disabled={guardando}
           />
 
         </div>
+
 
         {/* TELÉFONO */}
 
@@ -1414,13 +1686,16 @@ export default function Clientes() {
           <input
             type="text"
             name="telefono"
-            value={form.telefono}
+            value={
+              form.telefono
+            }
             onChange={cambiar}
             placeholder="Teléfono"
             disabled={guardando}
           />
 
         </div>
+
 
         {/* DIRECCIÓN */}
 
@@ -1433,13 +1708,16 @@ export default function Clientes() {
           <input
             type="text"
             name="direccion"
-            value={form.direccion}
+            value={
+              form.direccion
+            }
             onChange={cambiar}
             placeholder="Dirección"
             disabled={guardando}
           />
 
         </div>
+
 
         {/* BARRIO */}
 
@@ -1452,13 +1730,16 @@ export default function Clientes() {
           <input
             type="text"
             name="barrio"
-            value={form.barrio}
+            value={
+              form.barrio
+            }
             onChange={cambiar}
             placeholder="Barrio"
             disabled={guardando}
           />
 
         </div>
+
 
         {/* ZONA */}
 
@@ -1470,7 +1751,9 @@ export default function Clientes() {
 
           <select
             name="zonaDespacho"
-            value={form.zonaDespacho}
+            value={
+              form.zonaDespacho
+            }
             onChange={cambiar}
             disabled={guardando}
           >
@@ -1479,26 +1762,36 @@ export default function Clientes() {
               Seleccione una zona
             </option>
 
+
             {zonas
               .filter(
                 (zona) =>
-                  zona.estado === "Activa" ||
-                  zona.estado === true
+                  zona.estado ===
+                    "Activa" ||
+                  zona.estado ===
+                    true
               )
-              .map((zona) => (
+              .map(
+                (zona) => (
 
-                <option
-                  key={zona._id}
-                  value={zona._id}
-                >
-                  {zona.nombre}
-                </option>
+                  <option
+                    key={
+                      zona._id
+                    }
+                    value={
+                      zona._id
+                    }
+                  >
+                    {zona.nombre}
+                  </option>
 
-              ))}
+                )
+              )}
 
           </select>
 
         </div>
+
 
         {/* CIUDAD */}
 
@@ -1511,13 +1804,16 @@ export default function Clientes() {
           <input
             type="text"
             name="ciudad"
-            value={form.ciudad}
+            value={
+              form.ciudad
+            }
             onChange={cambiar}
             placeholder="Ciudad"
             disabled={guardando}
           />
 
         </div>
+
 
         {/* TIPO CLIENTE */}
 
@@ -1529,7 +1825,9 @@ export default function Clientes() {
 
           <select
             name="tipoCliente"
-            value={form.tipoCliente}
+            value={
+              form.tipoCliente
+            }
             onChange={cambiar}
             disabled={guardando}
           >
@@ -1557,6 +1855,7 @@ export default function Clientes() {
           </select>
 
         </div>
+
 
         {/* ESTADO */}
 
@@ -1591,23 +1890,35 @@ export default function Clientes() {
 
       </div>
 
-      {/* ===============================
-          MODAL BÚSQUEDA DE CLIENTES
-      =============================== */}
+
+      {/* =====================================
+          MODAL BUSCAR CLIENTES
+      ====================================== */}
 
       {modalBuscarClientes && (
+
         <div
           className="clientes-search-modal-overlay"
           onMouseDown={(event) => {
+
             if (
               event.target ===
               event.currentTarget
             ) {
-              setModalBuscarClientes(false);
+
+              setModalBuscarClientes(
+                false
+              );
+
             }
+
           }}
         >
+
           <div className="clientes-search-modal">
+
+
+            {/* CABECERA */}
 
             <div className="clientes-search-modal-header">
 
@@ -1619,10 +1930,11 @@ export default function Clientes() {
                 type="button"
                 className="clientes-search-modal-close"
                 onClick={() =>
-                  setModalBuscarClientes(false)
+                  setModalBuscarClientes(
+                    false
+                  )
                 }
                 aria-label="Cerrar"
-                data-tooltip="Cerrar"
               >
                 <img
                   src={cerrarIcon}
@@ -1632,18 +1944,28 @@ export default function Clientes() {
 
             </div>
 
+
+            {/* FILTROS */}
+
             <div className="clientes-search-modal-filters">
 
               <select
-                value={campoBuscarCliente}
+                value={
+                  campoBuscarCliente
+                }
                 onChange={(event) =>
                   setCampoBuscarCliente(
                     event.target.value
                   )
                 }
               >
+
                 <option value="todos">
                   Todos
+                </option>
+
+                <option value="codigo">
+                  Código
                 </option>
 
                 <option value="documento">
@@ -1669,7 +1991,9 @@ export default function Clientes() {
                 <option value="zona">
                   Zona
                 </option>
+
               </select>
+
 
               <div className="clientes-search-modal-input">
 
@@ -1680,7 +2004,9 @@ export default function Clientes() {
 
                 <input
                   type="search"
-                  value={filtroBuscarCliente}
+                  value={
+                    filtroBuscarCliente
+                  }
                   onChange={(event) =>
                     setFiltroBuscarCliente(
                       event.target.value
@@ -1694,12 +2020,17 @@ export default function Clientes() {
 
             </div>
 
+
+            {/* TABLA */}
+
             <div className="clientes-search-modal-table-wrap">
 
               <table className="clientes-search-modal-table">
 
                 <thead>
+
                   <tr>
+                    <th>Código</th>
                     <th>Documento</th>
                     <th>Cliente</th>
                     <th>Teléfono</th>
@@ -1707,19 +2038,36 @@ export default function Clientes() {
                     <th>Zona</th>
                     <th>Estado</th>
                   </tr>
+
                 </thead>
+
 
                 <tbody>
 
-                  {clientesBusqueda.length === 0 ? (
+                  {cargando ? (
 
                     <tr>
+
                       <td
-                        colSpan="6"
+                        colSpan="7"
+                        className="clientes-search-empty"
+                      >
+                        Cargando clientes...
+                      </td>
+
+                    </tr>
+
+                  ) : clientesBusqueda.length === 0 ? (
+
+                    <tr>
+
+                      <td
+                        colSpan="7"
                         className="clientes-search-empty"
                       >
                         No se encontraron clientes.
                       </td>
+
                     </tr>
 
                   ) : (
@@ -1728,7 +2076,9 @@ export default function Clientes() {
                       (cliente) => (
 
                         <tr
-                          key={cliente._id}
+                          key={
+                            cliente._id
+                          }
                           onDoubleClick={() =>
                             seleccionarClienteBusqueda(
                               cliente
@@ -1736,24 +2086,56 @@ export default function Clientes() {
                           }
                         >
 
+                          {/* CÓDIGO */}
+
                           <td>
                             <strong>
-                              {cliente.tipoDocumento || "CC"}
-                            </strong>{" "}
-                            {cliente.documento}
+                              {cliente.codigo ||
+                                "Sin código"}
+                            </strong>
                           </td>
+
+
+                          {/* DOCUMENTO */}
+
+                          <td>
+
+                            <strong>
+                              {cliente.tipoDocumento ||
+                                "CC"}
+                            </strong>
+
+                            {" "}
+
+                            {cliente.documento}
+
+                          </td>
+
+
+                          {/* CLIENTE */}
 
                           <td>
                             {cliente.nombre}
                           </td>
 
-                          <td>
-                            {cliente.telefono || "—"}
-                          </td>
+
+                          {/* TELÉFONO */}
 
                           <td>
-                            {cliente.barrio || "—"}
+                            {cliente.telefono ||
+                              "—"}
                           </td>
+
+
+                          {/* BARRIO */}
+
+                          <td>
+                            {cliente.barrio ||
+                              "—"}
+                          </td>
+
+
+                          {/* ZONA */}
 
                           <td>
                             {cliente.zonaDespacho
@@ -1761,10 +2143,23 @@ export default function Clientes() {
                               "Sin zona"}
                           </td>
 
+
+                          {/* ESTADO */}
+
                           <td>
-                            {cliente.estado
-                              ? "Activo"
-                              : "Inactivo"}
+
+                            <span
+                              className={
+                                cliente.estado
+                                  ? "clientes-search-status active"
+                                  : "clientes-search-status inactive"
+                              }
+                            >
+                              {cliente.estado
+                                ? "Activo"
+                                : "Inactivo"}
+                            </span>
+
                           </td>
 
                         </tr>
@@ -1781,7 +2176,9 @@ export default function Clientes() {
             </div>
 
           </div>
+
         </div>
+
       )}
 
     </section>

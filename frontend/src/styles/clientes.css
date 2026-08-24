@@ -30,31 +30,34 @@
    CLIENTES - CONTENEDOR GENERAL
 ========================================= */
 
-.clientes-page {
+
+.clientes-module {
   position: relative;
 
   width: 100%;
   min-height: 100vh;
 
-  padding:
-    px
-    28px
-    58px;
+  padding: 0;
 
   box-sizing: border-box;
 
   background:
-    radial-gradient(  
-      circle at 8% 6%,
-      rgba(18, 183, 106, 0.08),
-      transparent 26%
+    radial-gradient(
+      circle at 12% 8%,
+      rgb(241, 255, 241),
+      transparent 30%
     ),
     radial-gradient(
-      circle at 92% 12%,
-      rgba(32, 175, 178, 0.08),
-      transparent 24%
+      circle at 88% 16%,
+      rgba(69, 123, 157, 0.12),
+      transparent 28%
     ),
-    #f7faf9;
+    linear-gradient(
+      135deg,
+      #a8f7e3 0%,
+      #b1cdb7 55%,
+      #99a89b 100%
+    );
 }
 
 
@@ -1369,4 +1372,19 @@
     grid-template-columns: 1fr;
   }
 
+}
+
+.clientes-field-codigo {
+  max-width: 150px;
+}
+
+.clientes-field-codigo input {
+  background: #eef5f2;
+  color: #0a1510;
+
+  font-weight: 900;
+
+  letter-spacing: 0.4px;
+
+  cursor: default;
 }

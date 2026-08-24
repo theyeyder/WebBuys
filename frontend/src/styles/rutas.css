@@ -4,9 +4,13 @@
 
 .rutas-module {
   position: relative;
+
   width: 100%;
   min-height: 100vh;
-  padding: 12px;
+
+  padding: 0;
+
+  box-sizing: border-box;
 
   background:
     radial-gradient(
@@ -27,57 +31,78 @@
     );
 }
 
+
 /* =========================================================
-   CABECERA SUPERIOR - VERSIÓN COMPACTA Y CENTRADA (STICKY)
+   CABECERA RUTAS FIJA
 ========================================================= */
 
 .rutas-title-bar {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 8000;
+
   width: 100%;
-  max-width: 590px;
+  max-width: none;
 
-  min-height: 46px;
+  min-height: 72px;
 
-  margin: 0 auto 18px;
+  margin: 0;
 
-  padding: 6px 10px;
+  padding: 12px 12px 18px;
+
+  box-sizing: border-box;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  gap: 10px;
-
-  border-radius: 9px;
+  gap: 20px;
 
   background:
     linear-gradient(
       135deg,
-      #087f69,
-      #20afb2
+      #0f766e 0%,
+      #159a75 52%,
+      #20afb2 100%
     );
-
-  /* FIJA AL HACER SCROLL */
-  position: sticky;
-  top: 62px;
-  z-index: 6000;
-
-  overflow: visible;
-
-  box-shadow:
-    0 5px 14px rgba(15, 23, 42, 0.10);
-}
-
-.rutas-title-info h2 {
-  margin: 0;
 
   color: #ffffff;
 
-  font-size: 16px;
-  font-weight: 900;
+  border-bottom:
+    1px solid rgba(255, 255, 255, 0.22);
+
+  box-shadow:
+    0 4px 12px rgba(15, 23, 42, 0.10);
+
+  overflow: visible;
 }
 
+
 /* =========================================================
-   BOTONES SUPERIORES - VERSIÓN COMPACTA
+   TITULO
+========================================================= */
+
+.rutas-title-info {
+  display: flex;
+  align-items: center;
+
+  margin-left: 72px;
+}
+
+.rutas-title-info h2 {
+  margin: 0 0 2px;
+
+  color: #ffffff;
+
+  font-size: 24px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   BOTONES SUPERIORES
 ========================================================= */
 
 .rutas-title-actions {
@@ -85,7 +110,7 @@
   align-items: center;
   justify-content: flex-end;
 
-  gap: 4px;
+  gap: 9px;
 
   overflow: visible;
 }
@@ -93,17 +118,20 @@
 .rutas-top-icon-btn {
   position: relative;
 
-  width: 30px;
-  height: 30px;
+  width: 42px;
+  height: 42px;
 
-  padding: 3px;
+  padding: 6px;
 
-  border: none;
-  border-radius: 7px;
+  border:
+    1px solid rgba(255, 255, 255, 0.35);
 
-  background: #ffffff;
+  border-radius: 11px;
 
-  display: flex;
+  background:
+    rgba(255, 255, 255, 0.94);
+
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 
@@ -112,17 +140,39 @@
   overflow: visible;
 
   box-shadow:
-    0 2px 6px rgba(15, 23, 42, 0.08);
+    0 6px 16px rgba(15, 23, 42, 0.14);
 
   transition:
-    transform 0.18s ease,
-    box-shadow 0.18s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
     opacity 0.18s ease;
 }
 
+.rutas-top-icon-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+
+  background: #ffffff;
+
+  box-shadow:
+    0 10px 22px rgba(15, 23, 42, 0.18);
+}
+
+.rutas-top-icon-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.rutas-top-icon-btn:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
 .rutas-top-icon-btn img {
-  width: 21px;
-  height: 21px;
+  width: 27px;
+  height: 27px;
 
   object-fit: contain;
 
@@ -131,28 +181,9 @@
   pointer-events: none;
 }
 
-.rutas-top-icon-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-
-  box-shadow:
-    0 6px 12px
-    rgba(15, 23, 42, 0.15);
-}
-
-.rutas-top-icon-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.rutas-top-icon-btn:disabled {
-  opacity: 0.42;
-
-  cursor: not-allowed;
-
-  transform: none;
-}
 
 /* =========================================================
-   TOOLTIP DEBAJO - VERSIÓN COMPACTA
+   TOOLTIP DE BOTONES
 ========================================================= */
 
 .rutas-top-icon-btn::after {
@@ -167,14 +198,14 @@
     translateX(-50%)
     translateY(-4px);
 
-  padding: 4px 8px;
-
-  border-radius: 6px;
+  padding: 6px 10px;
 
   background: #172033;
   color: #ffffff;
 
-  font-size: 10px;
+  border-radius: 7px;
+
+  font-size: 11px;
   font-weight: 700;
 
   white-space: nowrap;
@@ -202,9 +233,9 @@
 
   transform: translateX(-50%);
 
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-bottom: 4px solid #172033;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid #172033;
 
   opacity: 0;
   visibility: hidden;

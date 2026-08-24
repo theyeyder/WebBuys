@@ -33,3 +33,11 @@ export async function eliminarCliente(id) {
 
   return response.data;
 }
+
+export async function obtenerSiguienteCodigoCliente() {
+  const response = await api.get(
+    "/clientes/siguiente-codigo"
+  );
+
+  return response.data;
+}
