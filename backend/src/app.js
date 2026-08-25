@@ -9,7 +9,7 @@ import configuracionRoutes from "./routes/configuracion.routes.js";
 import rutaRoutes from "./routes/ruta.routes.js";
 import zonaDespachoRoutes from "./routes/zonaDespacho.routes.js";
 import clienteRoutes from "./routes/cliente.routes.js";
-
+import numeracionRoutes from "./routes/numeracion.routes.js";
 
 
 const app = express();
@@ -37,5 +37,6 @@ app.use("/api/configuracion", configuracionRoutes);
 app.use("/api/rutas", rutaRoutes);
 app.use("/api/zonas-despacho", zonaDespachoRoutes);
 app.use("/api/clientes", clienteRoutes);
+app.use("/api/numeracion",numeracionRoutes);
 
 export default app;
