@@ -502,7 +502,7 @@ export default function ZonasDespacho() {
               name="codigo"
               value={form.codigo}
               readOnly
-              placeholder="Código automático"
+              placeholder=""
             />
           </label>
 
@@ -514,7 +514,7 @@ export default function ZonasDespacho() {
               name="nombre"
               value={form.nombre}
               onChange={cambiar}
-              placeholder="Ejemplo: Picaleña"
+              placeholder="Zona uno"
             />
           </label>
 

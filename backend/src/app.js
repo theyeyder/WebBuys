@@ -11,6 +11,7 @@ import zonaDespachoRoutes from "./routes/zonaDespacho.routes.js";
 import clienteRoutes from "./routes/cliente.routes.js";
 import numeracionRoutes from "./routes/numeracion.routes.js";
 import preferenciaRoutes from "./routes/preferencia.routes.js";
+import auditoriaRoutes from "./routes/auditoria.routes.js";
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use("/api/zonas-despacho", zonaDespachoRoutes);
 app.use("/api/clientes", clienteRoutes);
 app.use("/api/numeracion",numeracionRoutes);
 app.use("/api/preferencias",preferenciaRoutes);
+app.use("/api/auditoria",auditoriaRoutes);
 
 
 export default app;

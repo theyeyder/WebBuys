@@ -115,10 +115,7 @@ export default function Numeracion() {
                 Consecutivos del sistema
               </h2>
 
-              <p>
-                Consulta la numeración actual
-                utilizada por cada módulo.
-              </p>
+              
             </div>
 
           </div>

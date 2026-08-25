@@ -2,6 +2,10 @@ import ZonaDespacho from "../models/ZonaDespacho.js";
 import { generarConsecutivo } from "../utils/generarConsecutivo.js";
 import Consecutivo from "../models/Consecutivo.js";
 
+import {
+  registrarAuditoria,
+} from "../utils/registrarAuditoria.js";
+
 /* ===========================
    LISTAR ZONAS
 =========================== */
@@ -75,6 +79,29 @@ export const crearZonaDespacho = async (req, res) => {
           estado || "Activa",
       });
 
+    // =========================
+    // AUDITORÍA - CREAR
+    // =========================
+
+    await registrarAuditoria({
+      req,
+      modulo: "Zonas de despacho",
+      accion: "CREAR",
+
+      registroId: zona._id,
+      codigoRegistro: zona.codigo,
+
+      descripcion:
+        `Se creó la zona de despacho ${zona.nombre}.`,
+
+      datosNuevos: {
+        codigo: zona.codigo,
+        nombre: zona.nombre,
+        descripcion: zona.descripcion,
+        estado: zona.estado,
+      },
+    });
+
     return res.status(201).json({
       mensaje: "Zona creada correctamente.",
       zona,
@@ -101,6 +128,17 @@ export const actualizarZonaDespacho = async (req, res) => {
         mensaje: "Zona no encontrada.",
       });
     }
+
+    // =========================
+    // GUARDAR DATOS ANTERIORES
+    // =========================
+
+    const datosAnteriores = {
+      codigo: zona.codigo,
+      nombre: zona.nombre,
+      descripcion: zona.descripcion,
+      estado: zona.estado,
+    };
 
     const {
       nombre,
@@ -142,6 +180,31 @@ export const actualizarZonaDespacho = async (req, res) => {
 
     await zona.save();
 
+    // =========================
+    // AUDITORÍA - ACTUALIZAR
+    // =========================
+
+    await registrarAuditoria({
+      req,
+      modulo: "Zonas de despacho",
+      accion: "ACTUALIZAR",
+
+      registroId: zona._id,
+      codigoRegistro: zona.codigo,
+
+      descripcion:
+        `Se actualizó la zona de despacho ${zona.nombre}.`,
+
+      datosAnteriores,
+
+      datosNuevos: {
+        codigo: zona.codigo,
+        nombre: zona.nombre,
+        descripcion: zona.descripcion,
+        estado: zona.estado,
+      },
+    });
+
     return res.json({
       mensaje: "Zona actualizada correctamente.",
       zona,
@@ -172,12 +235,49 @@ export const cambiarEstadoZonaDespacho = async (
       });
     }
 
+    // =========================
+    // GUARDAR ESTADO ANTERIOR
+    // =========================
+
+    const estadoAnterior =
+      zona.estado;
+
     zona.estado =
       zona.estado === "Activa"
         ? "Inactiva"
         : "Activa";
 
     await zona.save();
+
+    // =========================
+    // AUDITORÍA - ACTIVAR / DESACTIVAR
+    // =========================
+
+    await registrarAuditoria({
+      req,
+      modulo: "Zonas de despacho",
+
+      accion:
+        zona.estado === "Activa"
+          ? "ACTIVAR"
+          : "DESACTIVAR",
+
+      registroId: zona._id,
+      codigoRegistro: zona.codigo,
+
+      descripcion:
+        zona.estado === "Activa"
+          ? `Se activó la zona de despacho ${zona.nombre}.`
+          : `Se desactivó la zona de despacho ${zona.nombre}.`,
+
+      datosAnteriores: {
+        estado: estadoAnterior,
+      },
+
+      datosNuevos: {
+        estado: zona.estado,
+      },
+    });
 
     return res.json({
       mensaje: "Estado de la zona actualizado.",
@@ -208,6 +308,29 @@ export const eliminarZonaDespacho = async (
         mensaje: "Zona no encontrada.",
       });
     }
+
+    // =========================
+    // AUDITORÍA - ELIMINAR (ANTES DE ELIMINAR)
+    // =========================
+
+    await registrarAuditoria({
+      req,
+      modulo: "Zonas de despacho",
+      accion: "ELIMINAR",
+
+      registroId: zona._id,
+      codigoRegistro: zona.codigo,
+
+      descripcion:
+        `Se eliminó la zona de despacho ${zona.nombre}.`,
+
+      datosAnteriores: {
+        codigo: zona.codigo,
+        nombre: zona.nombre,
+        descripcion: zona.descripcion,
+        estado: zona.estado,
+      },
+    });
 
     await zona.deleteOne();
 

@@ -7,6 +7,10 @@ import {
   generarConsecutivo,
 } from "../utils/generarConsecutivo.js";
 
+import {
+  registrarAuditoria,
+} from "../utils/registrarAuditoria.js";
+
 /* ===========================
    LISTAR USUARIOS
 =========================== */
@@ -105,7 +109,7 @@ export const crearUsuario = async (req, res) => {
 
     const usuarioNormalizado = usuario
       .trim()
-      .toLowerCase();
+      .toUpperCase();
 
     const existe = await Usuario.findOne({
       usuario: usuarioNormalizado,
@@ -162,6 +166,50 @@ export const crearUsuario = async (req, res) => {
 
       creadoPor:
         req.usuario._id,
+    });
+
+    // =========================
+    // AUDITORÍA - CREAR
+    // =========================
+
+    await registrarAuditoria({
+      req,
+
+      modulo: "Usuarios",
+
+      accion: "CREAR",
+
+      registroId:
+        nuevoUsuario._id,
+
+      codigoRegistro:
+        nuevoUsuario.codigo,
+
+      descripcion:
+        `Se creó el usuario ${nuevoUsuario.usuario}.`,
+
+      datosNuevos: {
+        codigo:
+          nuevoUsuario.codigo,
+
+        documento:
+          nuevoUsuario.documento,
+
+        nombres:
+          nuevoUsuario.nombres,
+
+        apellidos:
+          nuevoUsuario.apellidos,
+
+        usuario:
+          nuevoUsuario.usuario,
+
+        rol:
+          nuevoUsuario.rol,
+
+        estado:
+          nuevoUsuario.estado,
+      },
     });
 
     res.status(201).json({
@@ -225,6 +273,24 @@ export const actualizarUsuario = async (req, res) => {
       });
     }
 
+    // =========================
+    // OBTENER DATOS ANTERIORES
+    // =========================
+
+    const anterior =
+      await Usuario.findById(
+        req.params.id
+      )
+        .select("-password")
+        .lean();
+
+    if (!anterior) {
+      return res.status(404).json({
+        mensaje:
+          "Usuario no encontrado.",
+      });
+    }
+
     const usuarioNormalizado = usuario.trim().toUpperCase();
 
     const existe = await Usuario.findOne({
@@ -263,6 +329,73 @@ export const actualizarUsuario = async (req, res) => {
       { new: true }
     ).select("-password");
 
+    // =========================
+    // AUDITORÍA - ACTUALIZAR
+    // =========================
+
+    await registrarAuditoria({
+      req,
+
+      modulo: "Usuarios",
+
+      accion: "ACTUALIZAR",
+
+      registroId:
+        actualizado._id,
+
+      codigoRegistro:
+        actualizado.codigo,
+
+      descripcion:
+        `Se actualizó el usuario ${actualizado.usuario}.`,
+
+      datosAnteriores: {
+        codigo:
+          anterior.codigo,
+
+        documento:
+          anterior.documento,
+
+        nombres:
+          anterior.nombres,
+
+        apellidos:
+          anterior.apellidos,
+
+        usuario:
+          anterior.usuario,
+
+        rol:
+          anterior.rol,
+
+        estado:
+          anterior.estado,
+      },
+
+      datosNuevos: {
+        codigo:
+          actualizado.codigo,
+
+        documento:
+          actualizado.documento,
+
+        nombres:
+          actualizado.nombres,
+
+        apellidos:
+          actualizado.apellidos,
+
+        usuario:
+          actualizado.usuario,
+
+        rol:
+          actualizado.rol,
+
+        estado:
+          actualizado.estado,
+      },
+    });
+
     res.json(actualizado);
   } catch (error) {
     res.status(500).json({
@@ -289,6 +422,27 @@ export const resetearPassword = async (req, res) => {
     usuario.debeCambiarPassword = true;
 
     await usuario.save();
+
+    // =========================
+    // AUDITORÍA - RESET_PASSWORD
+    // =========================
+
+    await registrarAuditoria({
+      req,
+
+      modulo: "Usuarios",
+
+      accion: "RESET_PASSWORD",
+
+      registroId:
+        usuario._id,
+
+      codigoRegistro:
+        usuario.codigo,
+
+      descripcion:
+        `Se restableció la contraseña del usuario ${usuario.usuario}.`,
+    });
 
     res.json({
       mensaje: "Contraseña restablecida a 123456.",
@@ -339,6 +493,27 @@ export const cambiarPassword = async (req, res) => {
 
     await usuario.save();
 
+    // =========================
+    // AUDITORÍA - CAMBIAR_PASSWORD
+    // =========================
+
+    await registrarAuditoria({
+      req,
+
+      modulo: "Usuarios",
+
+      accion: "CAMBIAR_PASSWORD",
+
+      registroId:
+        usuario._id,
+
+      codigoRegistro:
+        usuario.codigo,
+
+      descripcion:
+        `Se cambió la contraseña del usuario ${usuario.usuario}.`,
+    });
+
     res.json({
       mensaje: "Contraseña actualizada correctamente.",
     });
@@ -369,11 +544,26 @@ export const cambiarEstadoUsuario = async (req, res) => {
       });
     }
 
-    if (usuario.usuario === "admin") {
+    // =========================
+    // COMPROBACIÓN ADMIN - MAYÚSCULAS
+    // =========================
+
+    if (
+      usuario.usuario
+        ?.toUpperCase() === "ADMIN"
+    ) {
       return res.status(400).json({
-        mensaje: "No se puede bloquear el administrador principal.",
+        mensaje:
+          "No se puede bloquear el administrador principal.",
       });
     }
+
+    // =========================
+    // GUARDAR ESTADO ANTERIOR
+    // =========================
+
+    const estadoAnterior =
+      usuario.estado;
 
     usuario.estado =
       usuario.estado === "Activo"
@@ -381,6 +571,45 @@ export const cambiarEstadoUsuario = async (req, res) => {
         : "Activo";
 
     await usuario.save();
+
+    // =========================
+    // AUDITORÍA - BLOQUEAR / DESBLOQUEAR
+    // =========================
+
+    const accionAuditoria =
+      usuario.estado === "Bloqueado"
+        ? "BLOQUEAR"
+        : "DESBLOQUEAR";
+
+    await registrarAuditoria({
+      req,
+
+      modulo: "Usuarios",
+
+      accion:
+        accionAuditoria,
+
+      registroId:
+        usuario._id,
+
+      codigoRegistro:
+        usuario.codigo,
+
+      descripcion:
+        usuario.estado === "Bloqueado"
+          ? `Se bloqueó el usuario ${usuario.usuario}.`
+          : `Se desbloqueó el usuario ${usuario.usuario}.`,
+
+      datosAnteriores: {
+        estado:
+          estadoAnterior,
+      },
+
+      datosNuevos: {
+        estado:
+          usuario.estado,
+      },
+    });
 
     res.json({
       mensaje: "Estado actualizado.",

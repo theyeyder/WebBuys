@@ -7,6 +7,10 @@ import {
   generarConsecutivo,
 } from "../utils/generarConsecutivo.js";
 
+import {
+  registrarAuditoria,
+} from "../utils/registrarAuditoria.js";
+
 /* ===========================
    LISTAR RUTAS
 =========================== */
@@ -106,6 +110,60 @@ export const crearRuta = async (req, res) => {
         select: "nombre estado",
       });
 
+    // =========================
+    // AUDITORÍA - CREAR
+    // =========================
+
+    await registrarAuditoria({
+      req,
+
+      modulo: "Rutas",
+
+      accion: "CREAR",
+
+      registroId:
+        rutaCreada._id,
+
+      codigoRegistro:
+        rutaCreada.codigo,
+
+      descripcion:
+        `Se creó la ruta ${rutaCreada.nombre}.`,
+
+      datosNuevos: {
+        codigo:
+          rutaCreada.codigo,
+
+        nombre:
+          rutaCreada.nombre,
+
+        descripcion:
+          rutaCreada.descripcion,
+
+        empleado:
+          rutaCreada.empleado?._id ||
+          rutaCreada.empleado ||
+          null,
+
+        zonasDespacho:
+          Array.isArray(
+            rutaCreada.zonasDespacho
+          )
+            ? rutaCreada.zonasDespacho.map(
+                (zona) =>
+                  zona?._id ||
+                  zona
+              )
+            : [],
+
+        diasAtencion:
+          rutaCreada.diasAtencion,
+
+        estado:
+          rutaCreada.estado,
+      },
+    });
+
     return res.status(201).json({
       mensaje: "Ruta creada correctamente.",
       ruta: rutaCreada,
@@ -135,6 +193,33 @@ export const actualizarRuta = async (req, res) => {
         mensaje: "Ruta no encontrada.",
       });
     }
+
+    // =========================
+    // GUARDAR DATOS ANTERIORES
+    // =========================
+
+    const datosAnteriores = {
+      codigo:
+        ruta.codigo,
+
+      nombre:
+        ruta.nombre,
+
+      descripcion:
+        ruta.descripcion,
+
+      empleado:
+        ruta.empleado,
+
+      zonasDespacho:
+        [...ruta.zonasDespacho],
+
+      diasAtencion:
+        [...ruta.diasAtencion],
+
+      estado:
+        ruta.estado,
+    };
 
     const {
       nombre,
@@ -195,6 +280,62 @@ export const actualizarRuta = async (req, res) => {
         select: "nombre estado",
       });
 
+    // =========================
+    // AUDITORÍA - ACTUALIZAR
+    // =========================
+
+    await registrarAuditoria({
+      req,
+
+      modulo: "Rutas",
+
+      accion: "ACTUALIZAR",
+
+      registroId:
+        rutaActualizada._id,
+
+      codigoRegistro:
+        rutaActualizada.codigo,
+
+      descripcion:
+        `Se actualizó la ruta ${rutaActualizada.nombre}.`,
+
+      datosAnteriores,
+
+      datosNuevos: {
+        codigo:
+          rutaActualizada.codigo,
+
+        nombre:
+          rutaActualizada.nombre,
+
+        descripcion:
+          rutaActualizada.descripcion,
+
+        empleado:
+          rutaActualizada.empleado?._id ||
+          rutaActualizada.empleado ||
+          null,
+
+        zonasDespacho:
+          Array.isArray(
+            rutaActualizada.zonasDespacho
+          )
+            ? rutaActualizada.zonasDespacho.map(
+                (zona) =>
+                  zona?._id ||
+                  zona
+              )
+            : [],
+
+        diasAtencion:
+          rutaActualizada.diasAtencion,
+
+        estado:
+          rutaActualizada.estado,
+      },
+    });
+
     res.json({
       mensaje: "Ruta actualizada correctamente.",
       ruta: rutaActualizada,
@@ -220,6 +361,13 @@ export const cambiarEstadoRuta = async (req, res) => {
       });
     }
 
+    // =========================
+    // GUARDAR ESTADO ANTERIOR
+    // =========================
+
+    const estadoAnterior =
+      ruta.estado;
+
     ruta.estado =
       ruta.estado === "Activa"
         ? "Inactiva"
@@ -239,6 +387,42 @@ export const cambiarEstadoRuta = async (req, res) => {
         model: ZonaDespacho,
         select: "nombre estado",
       });
+
+    // =========================
+    // AUDITORÍA - ACTIVAR / DESACTIVAR
+    // =========================
+
+    await registrarAuditoria({
+      req,
+
+      modulo: "Rutas",
+
+      accion:
+        rutaActualizada.estado === "Activa"
+          ? "ACTIVAR"
+          : "DESACTIVAR",
+
+      registroId:
+        rutaActualizada._id,
+
+      codigoRegistro:
+        rutaActualizada.codigo,
+
+      descripcion:
+        rutaActualizada.estado === "Activa"
+          ? `Se activó la ruta ${rutaActualizada.nombre}.`
+          : `Se desactivó la ruta ${rutaActualizada.nombre}.`,
+
+      datosAnteriores: {
+        estado:
+          estadoAnterior,
+      },
+
+      datosNuevos: {
+        estado:
+          rutaActualizada.estado,
+      },
+    });
 
     res.json({
       mensaje: "Estado de la ruta actualizado.",
@@ -264,6 +448,50 @@ export const eliminarRuta = async (req, res) => {
         mensaje: "Ruta no encontrada.",
       });
     }
+
+    // =========================
+    // AUDITORÍA - ELIMINAR (ANTES DE ELIMINAR)
+    // =========================
+
+    await registrarAuditoria({
+      req,
+
+      modulo: "Rutas",
+
+      accion: "ELIMINAR",
+
+      registroId:
+        ruta._id,
+
+      codigoRegistro:
+        ruta.codigo,
+
+      descripcion:
+        `Se eliminó la ruta ${ruta.nombre}.`,
+
+      datosAnteriores: {
+        codigo:
+          ruta.codigo,
+
+        nombre:
+          ruta.nombre,
+
+        descripcion:
+          ruta.descripcion,
+
+        empleado:
+          ruta.empleado,
+
+        zonasDespacho:
+          ruta.zonasDespacho,
+
+        diasAtencion:
+          ruta.diasAtencion,
+
+        estado:
+          ruta.estado,
+      },
+    });
 
     await ruta.deleteOne();
 
