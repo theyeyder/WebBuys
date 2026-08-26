@@ -1,0 +1,174 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+
+  background: #ffffff;
+
+  color: #101828;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.categorias-print-page {
+  width: 100%;
+
+  padding: 5px;
+}
+
+.categorias-print-header {
+  margin-bottom: 28px;
+
+  padding-bottom: 14px;
+
+  border-bottom:
+    2px solid #078348;
+}
+
+.categorias-print-header h1 {
+  margin: 0 0 7px;
+
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.categorias-print-header p {
+  margin: 0 0 10px;
+
+  color: #667085;
+
+  font-size: 13px;
+}
+
+.categorias-print-info {
+  display: flex;
+  align-items: center;
+
+  gap: 32px;
+
+  flex-wrap: wrap;
+
+  color: #667085;
+
+  font-size: 11px;
+}
+
+.categorias-print-info strong {
+  color: #344054;
+}
+
+.categorias-print-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  font-size: 11px;
+}
+
+.categorias-print-table th {
+  padding: 10px 9px;
+
+  border:
+    1px solid #087f4c;
+
+  background: #087f4c;
+
+  color: #ffffff;
+
+  text-align: left;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+.categorias-print-table td {
+  padding: 9px;
+
+  border:
+    1px solid #d7dfdb;
+}
+
+.categorias-print-table
+tbody
+tr:nth-child(even) {
+  background: #f3f7f5;
+}
+
+.categorias-print-table
+td:first-child {
+  color: #087443;
+
+  font-weight: 800;
+}
+
+.categorias-print-total {
+  margin-top: 20px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.categorias-print-total strong {
+  margin-left: 4px;
+
+  color: #087443;
+
+  font-size: 14px;
+}
+
+.categorias-print-footer {
+  margin-top: 28px;
+
+  padding-top: 12px;
+
+  border-top:
+    1px solid #d7dfdb;
+
+  color: #98a2b3;
+
+  text-align: center;
+
+  font-size: 10px;
+}
+
+@media print {
+
+  @page {
+    size: landscape;
+    margin: 10mm;
+  }
+
+  .categorias-print-table thead {
+    display: table-header-group;
+  }
+
+  .categorias-print-table tr {
+    page-break-inside: avoid;
+
+    break-inside: avoid;
+  }
+
+  .categorias-print-table th {
+    background:
+      #087f4c !important;
+
+    color:
+      #ffffff !important;
+
+    -webkit-print-color-adjust:
+      exact !important;
+
+    print-color-adjust:
+      exact !important;
+  }
+
+}

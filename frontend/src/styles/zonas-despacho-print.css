@@ -1,0 +1,251 @@
+/* =========================================
+   ZONAS DE DESPACHO - IMPRESIÓN
+========================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+
+  background: #ffffff;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  color: #101828;
+}
+
+
+.zonas-print-page {
+  width: 100%;
+
+  padding: 5px;
+}
+
+
+/* =========================================
+   CABECERA
+========================================= */
+
+.zonas-print-header {
+  padding-bottom: 14px;
+
+  margin-bottom: 28px;
+
+  border-bottom:
+    2px solid #078348;
+}
+
+
+.zonas-print-header h1 {
+  margin: 0 0 7px;
+
+  color: #101828;
+
+  font-size: 28px;
+  font-weight: 800;
+}
+
+
+.zonas-print-header p {
+  margin: 0 0 10px;
+
+  color: #667085;
+
+  font-size: 13px;
+}
+
+
+/* =========================================
+   FECHA / USUARIO
+========================================= */
+
+.zonas-print-info {
+  display: flex;
+  align-items: center;
+
+  gap: 32px;
+
+  flex-wrap: wrap;
+
+  color: #667085;
+
+  font-size: 11px;
+}
+
+
+.zonas-print-info strong {
+  color: #344054;
+
+  font-weight: 800;
+}
+
+
+/* =========================================
+   TABLA
+========================================= */
+
+.zonas-print-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  font-size: 11px;
+}
+
+
+.zonas-print-table thead th {
+  padding: 10px 9px;
+
+  border:
+    1px solid #087f4c;
+
+  background: #087f4c;
+
+  color: #ffffff;
+
+  text-align: left;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+
+.zonas-print-table tbody td {
+  padding: 9px;
+
+  border:
+    1px solid #d7dfdb;
+
+  color: #101828;
+
+  vertical-align: middle;
+}
+
+
+.zonas-print-table
+tbody
+tr:nth-child(even) {
+  background: #f3f7f5;
+}
+
+
+.zonas-print-table
+tbody
+td:first-child {
+  color: #087443;
+
+  font-weight: 800;
+}
+
+
+.zonas-print-status {
+  font-weight: 800;
+}
+
+
+/* =========================================
+   TOTAL
+========================================= */
+
+.zonas-print-total {
+  margin-top: 20px;
+
+  color: #101828;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+.zonas-print-total strong {
+  margin-left: 4px;
+
+  color: #087443;
+
+  font-size: 14px;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.zonas-print-footer {
+  margin-top: 28px;
+
+  padding-top: 12px;
+
+  border-top:
+    1px solid #d7dfdb;
+
+  color: #98a2b3;
+
+  text-align: center;
+
+  font-size: 10px;
+}
+
+
+/* =========================================
+   IMPRESIÓN
+========================================= */
+
+@media print {
+
+  @page {
+    size: landscape;
+    margin: 10mm;
+  }
+
+
+  .zonas-print-table thead {
+    display: table-header-group;
+  }
+
+
+  .zonas-print-table tr {
+    break-inside: avoid;
+
+    page-break-inside: avoid;
+  }
+
+
+  .zonas-print-table thead th {
+    background:
+      #087f4c !important;
+
+    color:
+      #ffffff !important;
+
+    -webkit-print-color-adjust:
+      exact !important;
+
+    print-color-adjust:
+      exact !important;
+  }
+
+
+  .zonas-print-table
+  tbody
+  tr:nth-child(even) {
+
+    background:
+      #f3f7f5 !important;
+
+    -webkit-print-color-adjust:
+      exact !important;
+
+    print-color-adjust:
+      exact !important;
+  }
+
+}

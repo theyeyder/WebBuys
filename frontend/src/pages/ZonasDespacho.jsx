@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { useAuth } from "../context/AuthContext.jsx";
+
 import {
   listarZonasDespacho,
   crearZonaDespacho,
@@ -21,6 +23,9 @@ import guardarIcon from "../assets/icons/guardar.png";
 import cancelarIcon from "../assets/icons/cancelar.png";
 import eliminarIcon from "../assets/icons/Eliminar ruta.png";
 import nuevaZonaIcon from "../assets/icons/nueva-zona.png";
+import imprimirIcon from "../assets/icons/imprimir.png";
+
+import zonasPrintCss from "../styles/zonas-despacho-print.css?inline";
 
 import "../styles/zonas-despacho.css";
 
@@ -32,6 +37,9 @@ const FORM_INICIAL = {
 };
 
 export default function ZonasDespacho() {
+
+  const { usuario } = useAuth();
+
   const [zonas, setZonas] = useState([]);
   const [zonaSeleccionada, setZonaSeleccionada] = useState(null);
   const [modoEdicion, setModoEdicion] = useState(false);
@@ -59,6 +67,241 @@ export default function ZonasDespacho() {
 
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
+
+  /* =========================================
+     ESCAPAR HTML
+  ========================================= */
+
+  function escaparHtml(valor) {
+    return String(valor ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  /* =========================================
+     IMPRIMIR ZONAS
+  ========================================= */
+
+  function imprimirZonas() {
+
+    if (zonas.length === 0) {
+      setError(
+        "No hay zonas de despacho para imprimir."
+      );
+      return;
+    }
+
+    /* FECHA Y HORA */
+
+    const fechaHoraImpresion =
+      new Date().toLocaleString(
+        "es-CO",
+        {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }
+      );
+
+    /* USUARIO */
+
+    const usuarioImpresion =
+      usuario?.nombres ||
+      usuario?.apellidos
+        ? `${usuario?.nombres || ""} ${
+            usuario?.apellidos || ""
+          }`.trim()
+        : usuario?.usuario ||
+          "Usuario";
+
+    /* FILAS */
+
+    const filas =
+      zonas
+        .map((zona) => {
+
+          return `
+            <tr>
+
+              <td>
+                <strong>
+                  ${escaparHtml(
+                    zona.codigo || "-"
+                  )}
+                </strong>
+              </td>
+
+              <td>
+                ${escaparHtml(
+                  zona.nombre || "-"
+                )}
+              </td>
+
+              <td>
+                ${escaparHtml(
+                  zona.descripcion ||
+                  "Sin descripción"
+                )}
+              </td>
+
+              <td class="zonas-print-status">
+                ${escaparHtml(
+                  zona.estado || "-"
+                )}
+              </td>
+
+            </tr>
+          `;
+
+        })
+        .join("");
+
+    /* VENTANA EMERGENTE */
+
+    const ventanaImpresion =
+      window.open(
+        "",
+        "_blank",
+        "width=1200,height=800"
+      );
+
+    if (!ventanaImpresion) {
+      setError(
+        "El navegador bloqueó la ventana de impresión."
+      );
+      return;
+    }
+
+    ventanaImpresion.document.write(`
+      <!DOCTYPE html>
+
+      <html lang="es">
+
+        <head>
+
+          <meta charset="UTF-8" />
+
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1"
+          />
+
+          <title>
+            Zonas de despacho - WebBuys
+          </title>
+
+          <style>
+            ${zonasPrintCss}
+          </style>
+
+        </head>
+
+        <body>
+
+          <main class="zonas-print-page">
+
+            <header class="zonas-print-header">
+
+              <h1>
+                Zonas de despacho
+              </h1>
+
+              <p>
+                WebBuys - Listado de zonas de despacho
+              </p>
+
+              <div class="zonas-print-info">
+
+                <span>
+                  <strong>
+                    Fecha y hora de impresión:
+                  </strong>
+
+                  ${escaparHtml(
+                    fechaHoraImpresion
+                  )}
+                </span>
+
+                <span>
+                  <strong>
+                    Usuario:
+                  </strong>
+
+                  ${escaparHtml(
+                    usuarioImpresion
+                  )}
+                </span>
+
+              </div>
+
+            </header>
+
+            <table class="zonas-print-table">
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    Código
+                  </th>
+
+                  <th>
+                    Nombre
+                  </th>
+
+                  <th>
+                    Descripción
+                  </th>
+
+                  <th>
+                    Estado
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+                ${filas}
+              </tbody>
+
+            </table>
+
+            <div class="zonas-print-total">
+
+              Total zonas:
+
+              <strong>
+                ${zonas.length}
+              </strong>
+
+            </div>
+
+            <footer class="zonas-print-footer">
+              WebBuys
+            </footer>
+
+          </main>
+
+        </body>
+
+      </html>
+    `);
+
+    ventanaImpresion.document.close();
+    ventanaImpresion.focus();
+
+    setTimeout(() => {
+      ventanaImpresion.print();
+    }, 300);
+  }
 
   async function cargarZonas() {
     try {
@@ -652,6 +895,26 @@ export default function ZonasDespacho() {
           </button>
 
 
+          {/* IMPRIMIR */}
+
+          <button
+            type="button"
+            className="zonas-work-btn"
+            onClick={imprimirZonas}
+            data-tooltip="Imprimir zonas"
+            aria-label="Imprimir zonas"
+            disabled={
+              guardando ||
+              zonas.length === 0
+            }
+          >
+            <img
+              src={imprimirIcon}
+              alt=""
+            />
+          </button>
+
+
           {/* GUARDAR */}
 
           <button
@@ -765,9 +1028,6 @@ export default function ZonasDespacho() {
               <table className="zonas-search-modal-table">
                 <thead>
                   <tr>
-                    {/* =====================================
-                        1. AGREGADO: Columna Código
-                    ====================================== */}
                     <th>Código</th>
                     <th>Nombre</th>
                     <th>Descripción</th>
@@ -778,9 +1038,6 @@ export default function ZonasDespacho() {
                 <tbody>
                   {zonasBusqueda.length === 0 ? (
                     <tr>
-                      {/* =====================================
-                          2. CORREGIDO: colSpan de 3 a 4
-                      ====================================== */}
                       <td
                         colSpan="4"
                         className="zonas-search-empty"
@@ -797,9 +1054,6 @@ export default function ZonasDespacho() {
                           setModalBuscarAbierto(false);
                         }}
                       >
-                        {/* =====================================
-                            3. AGREGADO: Código en cada fila
-                        ====================================== */}
                         <td>
                           <strong>
                             {zona.codigo || "Sin código"}
