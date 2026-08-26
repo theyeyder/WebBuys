@@ -1,0 +1,259 @@
+/* =========================================
+   RUTAS - IMPRESIÓN
+========================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+
+  background: #ffffff;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  color: #101828;
+}
+
+
+.rutas-print-page {
+  width: 100%;
+
+  padding: 5px;
+}
+
+
+/* =========================================
+   CABECERA
+========================================= */
+
+.rutas-print-header {
+  padding-bottom: 14px;
+
+  margin-bottom: 28px;
+
+  border-bottom:
+    2px solid #078348;
+}
+
+
+.rutas-print-header h1 {
+  margin:
+    0
+    0
+    7px;
+
+  color: #101828;
+
+  font-size: 28px;
+  font-weight: 800;
+}
+
+
+.rutas-print-header p {
+  margin:
+    0
+    0
+    10px;
+
+  color: #667085;
+
+  font-size: 13px;
+}
+
+
+/* =========================================
+   FECHA / USUARIO
+========================================= */
+
+.rutas-print-info {
+  display: flex;
+  align-items: center;
+
+  gap: 32px;
+
+  flex-wrap: wrap;
+
+  color: #667085;
+
+  font-size: 11px;
+}
+
+
+.rutas-print-info strong {
+  color: #344054;
+
+  font-weight: 800;
+}
+
+
+/* =========================================
+   TABLA
+========================================= */
+
+.rutas-print-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  font-size: 11px;
+}
+
+
+.rutas-print-table thead th {
+  padding:
+    10px
+    9px;
+
+  border:
+    1px solid #087f4c;
+
+  background: #087f4c;
+
+  color: #ffffff;
+
+  text-align: left;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+
+.rutas-print-table tbody td {
+  padding:
+    9px
+    9px;
+
+  border:
+    1px solid #d7dfdb;
+
+  color: #101828;
+
+  vertical-align: middle;
+}
+
+
+.rutas-print-table tbody tr:nth-child(even) {
+  background: #f3f7f5;
+}
+
+
+.rutas-print-table tbody td:first-child {
+  color: #087443;
+
+  font-weight: 800;
+}
+
+
+.rutas-print-status {
+  font-weight: 800;
+}
+
+
+/* =========================================
+   TOTAL
+========================================= */
+
+.rutas-print-total {
+  margin-top: 20px;
+
+  color: #101828;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+.rutas-print-total strong {
+  margin-left: 4px;
+
+  color: #087443;
+
+  font-size: 14px;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.rutas-print-footer {
+  margin-top: 28px;
+
+  padding-top: 12px;
+
+  border-top:
+    1px solid #d7dfdb;
+
+  color: #98a2b3;
+
+  text-align: center;
+
+  font-size: 10px;
+}
+
+
+/* =========================================
+   IMPRESIÓN
+========================================= */
+
+@media print {
+
+  @page {
+    size: landscape;
+
+    margin: 10mm;
+  }
+
+
+  .rutas-print-table thead {
+    display: table-header-group;
+  }
+
+
+  .rutas-print-table tr {
+    break-inside: avoid;
+
+    page-break-inside: avoid;
+  }
+
+
+  .rutas-print-table thead th {
+    background:
+      #087f4c !important;
+
+    color:
+      #ffffff !important;
+
+    -webkit-print-color-adjust:
+      exact !important;
+
+    print-color-adjust:
+      exact !important;
+  }
+
+
+  .rutas-print-table
+  tbody
+  tr:nth-child(even) {
+
+    background:
+      #f3f7f5 !important;
+
+    -webkit-print-color-adjust:
+      exact !important;
+
+    print-color-adjust:
+      exact !important;
+  }
+
+}

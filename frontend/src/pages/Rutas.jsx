@@ -5,6 +5,8 @@ import {
   useState,
 } from "react";
 
+import { useAuth } from "../context/AuthContext.jsx";
+
 import {
   listarRutas,
   crearRuta,
@@ -34,6 +36,8 @@ import cancelarIcon from "../assets/icons/cancelar.png";
 import EliminarRutaIcon from "../assets/icons/Eliminar ruta.png";
 import imprimirIcon from "../assets/icons/imprimir.png";
 
+import rutasPrintCss from "../styles/rutas-print.css?inline";
+
 import "../styles/rutas.css";
 
 const DIAS = [
@@ -57,6 +61,9 @@ const FORM_INICIAL = {
 };
 
 export default function Rutas() {
+
+  const { usuario } = useAuth();
+
   const [rutas, setRutas] = useState([]);
   const [empleados, setEmpleados] = useState([]);
   const [zonas, setZonas] = useState([]);
@@ -86,6 +93,19 @@ export default function Rutas() {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
+
+  /* ===========================
+     ESCAPAR HTML
+  =========================== */
+
+  function escaparHtml(valor) {
+    return String(valor ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
 
   /* ===========================
      CARGAR DATOS
@@ -379,654 +399,291 @@ export default function Rutas() {
     document.removeEventListener("mouseup", terminarArrastreModal);
   }
 
-  /* ===========================
-   IMPRIMIR RUTAS
-=========================== */
+  /* =========================================
+     IMPRIMIR RUTAS
+  ========================================= */
 
-function imprimirRutas() {
+  function imprimirRutas() {
 
-  if (!rutas.length) {
-    setError(
-      "No hay rutas registradas para imprimir."
-    );
-    return;
+    if (rutas.length === 0) {
+      setError(
+        "No hay rutas para imprimir."
+      );
+      return;
+    }
+
+    /* FECHA Y HORA */
+
+    const fechaHoraImpresion =
+      new Date().toLocaleString(
+        "es-CO",
+        {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }
+      );
+
+    /* USUARIO */
+
+    const usuarioImpresion =
+      usuario?.nombres ||
+      usuario?.apellidos
+        ? `${usuario?.nombres || ""} ${
+            usuario?.apellidos || ""
+          }`.trim()
+        : usuario?.usuario ||
+          "Usuario";
+
+    /* FILAS */
+
+    const filas =
+      rutas
+        .map((ruta) => {
+
+          const codigo =
+            ruta.codigo || "-";
+
+          const nombre =
+            ruta.nombre || "-";
+
+          const empleado =
+            ruta.empleado?.nombre ||
+            (
+              ruta.empleado?.nombres
+                ? `${ruta.empleado.nombres} ${
+                    ruta.empleado.apellidos || ""
+                  }`.trim()
+                : ""
+            ) ||
+            ruta.empleado?.usuario ||
+            "Sin asignar";
+
+          const zonas =
+            Array.isArray(
+              ruta.zonasDespacho
+            ) &&
+            ruta.zonasDespacho.length
+              ? ruta.zonasDespacho
+                  .map(
+                    (zona) =>
+                      zona?.nombre ||
+                      "-"
+                  )
+                  .join(", ")
+              : "Sin zonas";
+
+          const dias =
+            Array.isArray(
+              ruta.diasAtencion
+            ) &&
+            ruta.diasAtencion.length
+              ? ruta.diasAtencion
+                  .map(
+                    (dia) =>
+                      dia.slice(0, 3)
+                  )
+                  .join(", ")
+              : "Sin días";
+
+          const estado =
+            ruta.estado || "-";
+
+          return `
+            <tr>
+
+              <td>
+                <strong>
+                  ${escaparHtml(codigo)}
+                </strong>
+              </td>
+
+              <td>
+                ${escaparHtml(nombre)}
+              </td>
+
+              <td>
+                ${escaparHtml(empleado)}
+              </td>
+
+              <td>
+                ${escaparHtml(zonas)}
+              </td>
+
+              <td>
+                ${escaparHtml(dias)}
+              </td>
+
+              <td class="rutas-print-status">
+                ${escaparHtml(estado)}
+              </td>
+
+            </tr>
+          `;
+
+        })
+        .join("");
+
+    /* VENTANA */
+
+    const ventanaImpresion =
+      window.open(
+        "",
+        "_blank",
+        "width=1200,height=800"
+      );
+
+    if (!ventanaImpresion) {
+      setError(
+        "El navegador bloqueó la ventana de impresión."
+      );
+      return;
+    }
+
+    ventanaImpresion.document.write(`
+      <!DOCTYPE html>
+
+      <html lang="es">
+
+        <head>
+
+          <meta charset="UTF-8" />
+
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1"
+          />
+
+          <title>
+            Rutas registradas - WebBuys
+          </title>
+
+          <style>
+            ${rutasPrintCss}
+          </style>
+
+        </head>
+
+        <body>
+
+          <main class="rutas-print-page">
+
+            <!-- CABECERA -->
+
+            <header class="rutas-print-header">
+
+              <h1>
+                Rutas registradas
+              </h1>
+
+              <p>
+                WebBuys - Listado de rutas
+              </p>
+
+              <div class="rutas-print-info">
+
+                <span>
+                  <strong>
+                    Fecha y hora de impresión:
+                  </strong>
+
+                  ${escaparHtml(
+                    fechaHoraImpresion
+                  )}
+                </span>
+
+                <span>
+                  <strong>
+                    Usuario:
+                  </strong>
+
+                  ${escaparHtml(
+                    usuarioImpresion
+                  )}
+                </span>
+
+              </div>
+
+            </header>
+
+            <!-- TABLA -->
+
+            <table class="rutas-print-table">
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    Código
+                  </th>
+
+                  <th>
+                    Ruta
+                  </th>
+
+                  <th>
+                    Empleado
+                  </th>
+
+                  <th>
+                    Zonas
+                  </th>
+
+                  <th>
+                    Días
+                  </th>
+
+                  <th>
+                    Estado
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody>
+                ${filas}
+              </tbody>
+
+            </table>
+
+            <!-- TOTAL -->
+
+            <div class="rutas-print-total">
+
+              Total rutas:
+
+              <strong>
+                ${rutas.length}
+              </strong>
+
+            </div>
+
+            <!-- FOOTER -->
+
+            <footer class="rutas-print-footer">
+              WebBuys
+            </footer>
+
+          </main>
+
+        </body>
+
+      </html>
+    `);
+
+    ventanaImpresion.document.close();
+    ventanaImpresion.focus();
+
+    setTimeout(() => {
+      ventanaImpresion.print();
+    }, 300);
   }
 
-
-  const fecha =
-    new Date().toLocaleString(
-      "es-CO",
-      {
-        dateStyle: "long",
-        timeStyle: "short",
-      }
-    );
-
-
-  const filas =
-    rutas
-      .map((ruta) => {
-
-        const empleado =
-          ruta.empleado?.nombre ||
-          ruta.empleado?.nombres ||
-          ruta.empleado?.usuario ||
-          "Sin asignar";
-
-
-        const zonas =
-          ruta.zonasDespacho?.length
-            ? ruta.zonasDespacho
-                .map(
-                  (zona) =>
-                    zona?.nombre ||
-                    "—"
-                )
-                .join(", ")
-            : "Sin zonas";
-
-
-        const dias =
-          ruta.diasAtencion?.length
-            ? ruta.diasAtencion
-                .map(
-                  (dia) =>
-                    dia.slice(0, 3)
-                )
-                .join(", ")
-            : "Sin días";
-
-
-        return `
-          <tr>
-
-            <td class="codigo">
-              ${ruta.codigo || "—"}
-            </td>
-
-            <td>
-              ${ruta.nombre || "—"}
-            </td>
-
-            <td>
-              ${empleado}
-            </td>
-
-            <td>
-              ${zonas}
-            </td>
-
-            <td>
-              ${dias}
-            </td>
-
-            <td>
-              <span class="${
-                ruta.estado === "Activa"
-                  ? "estado activo"
-                  : "estado inactivo"
-              }">
-                ${ruta.estado || "—"}
-              </span>
-            </td>
-
-          </tr>
-        `;
-
-      })
-      .join("");
-
-
-  const ventana =
-    window.open(
-      "",
-      "ImprimirRutas",
-      "width=1150,height=750,left=100,top=50"
-    );
-
-
-  if (!ventana) {
-
-    setError(
-      "El navegador bloqueó la ventana de impresión."
-    );
-
-    return;
-
-  }
-
-
-  ventana.document.write(`
-    <!DOCTYPE html>
-
-    <html lang="es">
-
-    <head>
-
-      <meta charset="UTF-8" />
-
-      <title>
-        Listado de Rutas
-      </title>
-
-      <style>
-
-        * {
-          box-sizing: border-box;
-        }
-
-
-        body {
-          margin: 0;
-
-          padding: 28px;
-
-          background: #f4f8f6;
-
-          color: #25333d;
-
-          font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
-        }
-
-
-        /* ==========================
-           DOCUMENTO
-        ========================== */
-
-        .documento {
-          width: 100%;
-          max-width: 1100px;
-
-          margin: 0 auto;
-
-          overflow: hidden;
-
-          border-radius: 14px;
-
-          background: #ffffff;
-
-          box-shadow:
-            0 12px 35px
-            rgba(15, 23, 42, 0.10);
-        }
-
-
-        /* ==========================
-           CABECERA VERDE
-        ========================== */
-
-        .cabecera {
-          padding: 24px 30px;
-
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-
-          gap: 20px;
-
-          background:
-            linear-gradient(
-              135deg,
-              #087443 0%,
-              #159a75 55%,
-              #20afb2 100%
-            );
-
-          color: #ffffff;
-        }
-
-
-        .cabecera h1 {
-          margin: 0 0 5px;
-
-          font-size: 24px;
-          font-weight: 800;
-        }
-
-
-        .cabecera p {
-          margin: 0;
-
-          font-size: 12px;
-
-          opacity: 0.88;
-        }
-
-
-        .cabecera-marca {
-          padding: 7px 13px;
-
-          border:
-            1px solid
-            rgba(255,255,255,0.30);
-
-          border-radius: 8px;
-
-          background:
-            rgba(255,255,255,0.12);
-
-          font-size: 12px;
-          font-weight: 800;
-        }
-
-
-        /* ==========================
-           INFORMACIÓN
-        ========================== */
-
-        .informacion {
-          padding: 16px 24px;
-
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-
-          gap: 15px;
-
-          border-bottom:
-            1px solid #e6ece9;
-
-          background: #f8fbfa;
-        }
-
-
-        .informacion span {
-          color: #667085;
-
-          font-size: 11px;
-        }
-
-
-        .informacion strong {
-          color: #087443;
-        }
-
-
-        /* ==========================
-           TABLA
-        ========================== */
-
-        .tabla-contenedor {
-          padding: 20px 24px 24px;
-        }
-
-
-        table {
-          width: 100%;
-
-          border-spacing: 0;
-          border-collapse: separate;
-
-          border:
-            1px solid #d9e4df;
-
-          border-radius: 9px;
-
-          overflow: hidden;
-        }
-
-
-        thead th {
-          padding: 11px 9px;
-
-          background: #16856f;
-
-          color: #ffffff;
-
-          border-right:
-            1px solid
-            rgba(255,255,255,0.16);
-
-          font-size: 10px;
-          font-weight: 800;
-
-          text-align: center;
-
-          text-transform: uppercase;
-        }
-
-
-        thead th:last-child {
-          border-right: none;
-        }
-
-
-        tbody td {
-          padding: 10px 8px;
-
-          border-right:
-            1px solid #e3ebe7;
-
-          border-bottom:
-            1px solid #e3ebe7;
-
-          color: #344054;
-
-          font-size: 10px;
-
-          text-align: center;
-
-          vertical-align: middle;
-        }
-
-
-        tbody td:last-child {
-          border-right: none;
-        }
-
-
-        tbody tr:last-child td {
-          border-bottom: none;
-        }
-
-
-        tbody tr:nth-child(even) {
-          background: #f5faf8;
-        }
-
-
-        .codigo {
-          color: #087443;
-
-          font-weight: 800;
-        }
-
-
-        /* ==========================
-           ESTADO
-        ========================== */
-
-        .estado {
-          display: inline-block;
-
-          min-width: 62px;
-
-          padding: 4px 7px;
-
-          border-radius: 999px;
-
-          font-size: 9px;
-          font-weight: 800;
-        }
-
-
-        .activo {
-          background: #dcfae6;
-
-          color: #067647;
-        }
-
-
-        .inactivo {
-          background: #fef3f2;
-
-          color: #b42318;
-        }
-
-
-        /* ==========================
-           PIE
-        ========================== */
-
-        .pie {
-          padding: 14px 24px;
-
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-
-          border-top:
-            1px solid #e6ece9;
-
-          color: #667085;
-
-          font-size: 10px;
-        }
-
-
-        /* ==========================
-           BOTONES
-        ========================== */
-
-        .acciones {
-          max-width: 1100px;
-
-          margin: 18px auto 0;
-
-          display: flex;
-          justify-content: flex-end;
-
-          gap: 10px;
-        }
-
-
-        .acciones button {
-          height: 40px;
-
-          padding: 0 20px;
-
-          border: none;
-          border-radius: 8px;
-
-          font-size: 12px;
-          font-weight: 800;
-
-          cursor: pointer;
-        }
-
-
-        .cerrar {
-          background: #ffffff;
-
-          color: #475467;
-
-          border:
-            1px solid #d0d5dd !important;
-        }
-
-
-        .imprimir {
-          background: #087443;
-
-          color: #ffffff;
-        }
-
-
-        .imprimir:hover {
-          background: #05603a;
-        }
-
-
-        /* ==========================
-           IMPRESIÓN
-        ========================== */
-
-        @media print {
-
-          @page {
-            size: landscape;
-            margin: 10mm;
-          }
-
-
-          body {
-            padding: 0;
-
-            background: #ffffff;
-          }
-
-
-          .documento {
-            max-width: none;
-
-            border-radius: 0;
-
-            box-shadow: none;
-          }
-
-
-          .acciones {
-            display: none;
-          }
-
-
-          .cabecera,
-          thead th,
-          .activo,
-          .inactivo {
-            -webkit-print-color-adjust:
-              exact !important;
-
-            print-color-adjust:
-              exact !important;
-          }
-
-
-          thead {
-            display:
-              table-header-group;
-          }
-
-
-          tr {
-            break-inside: avoid;
-
-            page-break-inside: avoid;
-          }
-
-        }
-
-      </style>
-
-    </head>
-
-
-    <body>
-
-
-      <div class="documento">
-
-
-        <header class="cabecera">
-
-          <div>
-
-            <h1>
-              Listado de Rutas
-            </h1>
-
-            <p>
-              Reporte general de rutas
-              registradas en el sistema
-            </p>
-
-          </div>
-
-
-          <div class="cabecera-marca">
-            WebBuys
-          </div>
-
-        </header>
-
-
-        <section class="informacion">
-
-          <span>
-            Generado:
-            <strong>
-              ${fecha}
-            </strong>
-          </span>
-
-
-          <span>
-            Total de rutas:
-            <strong>
-              ${rutas.length}
-            </strong>
-          </span>
-
-        </section>
-
-
-        <div class="tabla-contenedor">
-
-          <table>
-
-            <thead>
-
-              <tr>
-                <th>Código</th>
-                <th>Ruta</th>
-                <th>Empleado</th>
-                <th>Zonas de despacho</th>
-                <th>Días de atención</th>
-                <th>Estado</th>
-              </tr>
-
-            </thead>
-
-
-            <tbody>
-              ${filas}
-            </tbody>
-
-          </table>
-
-        </div>
-
-
-        <footer class="pie">
-
-          <span>
-            WebBuys
-          </span>
-
-          <span>
-            Reporte de Rutas
-          </span>
-
-        </footer>
-
-      </div>
-
-
-      <div class="acciones">
-
-        <button
-          type="button"
-          class="cerrar"
-          onclick="window.close()"
-        >
-          Cerrar
-        </button>
-
-
-        <button
-          type="button"
-          class="imprimir"
-          onclick="window.print()"
-        >
-          Imprimir
-        </button>
-
-      </div>
-
-
-    </body>
-
-    </html>
-  `);
-
-
-  ventana.document.close();
-
-  ventana.focus();
-}
   /* ===========================
      GUARDAR - RUTAS
   =========================== */
@@ -1159,7 +816,6 @@ function imprimirRutas() {
 
         </div>
 
-
         <table className="rutas-print-table">
 
           <thead>
@@ -1174,7 +830,6 @@ function imprimirRutas() {
             </tr>
 
           </thead>
-
 
           <tbody>
 
@@ -1226,7 +881,6 @@ function imprimirRutas() {
           </tbody>
 
         </table>
-
 
         <div className="rutas-print-footer">
 
@@ -1329,6 +983,10 @@ function imprimirRutas() {
             onClick={imprimirRutas}
             data-tooltip="Imprimir rutas"
             aria-label="Imprimir rutas"
+            disabled={
+              guardando ||
+              rutas.length === 0
+            }
           >
             <img
               src={imprimirIcon}
