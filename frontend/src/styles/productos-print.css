@@ -1,0 +1,169 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+
+  background: #ffffff;
+
+  color: #101828;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.productos-print-page {
+  width: 100%;
+  padding: 5px;
+}
+
+.productos-print-header {
+  margin-bottom: 28px;
+
+  padding-bottom: 14px;
+
+  border-bottom:
+    2px solid #078348;
+}
+
+.productos-print-header h1 {
+  margin: 0 0 7px;
+
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.productos-print-header p {
+  margin: 0 0 10px;
+
+  color: #667085;
+
+  font-size: 13px;
+}
+
+.productos-print-info {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+
+  color: #667085;
+
+  font-size: 11px;
+}
+
+.productos-print-info strong {
+  color: #344054;
+}
+
+.productos-print-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  font-size: 11px;
+}
+
+.productos-print-table th {
+  padding: 10px 9px;
+
+  border:
+    1px solid #087f4c;
+
+  background: #087f4c;
+
+  color: #ffffff;
+
+  text-align: left;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+}
+
+.productos-print-table td {
+  padding: 9px;
+
+  border:
+    1px solid #d7dfdb;
+}
+
+.productos-print-table
+tbody
+tr:nth-child(even) {
+  background: #f3f7f5;
+}
+
+.productos-print-table
+td:first-child {
+  color: #087443;
+
+  font-weight: 800;
+}
+
+.productos-print-total {
+  margin-top: 20px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.productos-print-total strong {
+  margin-left: 4px;
+
+  color: #087443;
+
+  font-size: 14px;
+}
+
+.productos-print-footer {
+  margin-top: 28px;
+
+  padding-top: 12px;
+
+  border-top:
+    1px solid #d7dfdb;
+
+  color: #98a2b3;
+
+  text-align: center;
+
+  font-size: 10px;
+}
+
+@media print {
+
+  @page {
+    size: landscape;
+    margin: 10mm;
+  }
+
+  .productos-print-table thead {
+    display: table-header-group;
+  }
+
+  .productos-print-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .productos-print-table th {
+    background:
+      #087f4c !important;
+
+    color:
+      #ffffff !important;
+
+    -webkit-print-color-adjust:
+      exact !important;
+
+    print-color-adjust:
+      exact !important;
+  }
+
+}

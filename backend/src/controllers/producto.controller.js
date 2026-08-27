@@ -96,15 +96,193 @@ export const obtenerSiguienteCodigoProducto =
 
 
 /* =========================================
-   VALIDAR PRESENTACIONES
+   NORMALIZAR REGLAS DE PRECIO
 ========================================= */
 
-function validarPresentaciones(
-  presentaciones
+function normalizarReglasPrecio(
+  reglas = []
+) {
+
+  if (!Array.isArray(reglas)) {
+    return [];
+  }
+
+  return reglas
+    .map((regla) => ({
+      desde:
+        Number(
+          regla.desde || 0
+        ),
+
+      precio:
+        Number(
+          regla.precio || 0
+        ),
+    }))
+    .filter(
+      (regla) =>
+        Number.isFinite(
+          regla.desde
+        ) &&
+        Number.isFinite(
+          regla.precio
+        ) &&
+        regla.desde > 0 &&
+        regla.precio >= 0
+    )
+    .sort(
+      (a, b) =>
+        a.desde - b.desde
+    );
+
+}
+
+
+/* =========================================
+   VALIDAR REGLAS
+========================================= */
+
+function validarReglasPrecio(
+  reglas = []
+) {
+
+  if (!Array.isArray(reglas)) {
+    return "Las reglas de precio no son válidas.";
+  }
+
+  const cantidades =
+    new Set();
+
+  for (const regla of reglas) {
+
+    const desde =
+      Number(regla.desde);
+
+    const precio =
+      Number(regla.precio);
+
+
+    if (
+      !Number.isFinite(desde) ||
+      desde <= 0
+    ) {
+      return "La cantidad mínima de una regla debe ser mayor que cero.";
+    }
+
+
+    if (
+      !Number.isFinite(precio) ||
+      precio < 0
+    ) {
+      return "El precio de una regla no es válido.";
+    }
+
+
+    if (
+      cantidades.has(desde)
+    ) {
+      return `Ya existe una regla desde ${desde}.`;
+    }
+
+
+    cantidades.add(
+      desde
+    );
+
+  }
+
+  return null;
+}
+
+
+/* =========================================
+   PRESENTACIONES ADICIONALES
+========================================= */
+
+function normalizarPresentacionesAdicionales(
+  presentaciones = []
 ) {
 
   if (!Array.isArray(presentaciones)) {
-    return "Las presentaciones no son válidas.";
+    return [];
+  }
+
+  return presentaciones
+    .filter(
+      (presentacion) =>
+        presentacion.nombre
+          ?.trim()
+    )
+    .map(
+      (presentacion) => ({
+
+        nombre:
+          presentacion.nombre
+            .trim(),
+
+        tipoVenta:
+          presentacion.tipoVenta ===
+          "Peso"
+            ? "Peso"
+            : "Unidad",
+
+        unidad:
+          presentacion.unidad
+            ?.trim() ||
+          "Unidad",
+
+        precioCompra:
+          Number(
+            presentacion.precioCompra ||
+            0
+          ),
+
+        precioVenta:
+          Number(
+            presentacion.precioVenta ||
+            0
+          ),
+
+        stock:
+          Number(
+            presentacion.stock ||
+            0
+          ),
+
+        stockMinimo:
+          Number(
+            presentacion.stockMinimo ||
+            0
+          ),
+
+        reglasPrecio:
+          normalizarReglasPrecio(
+            presentacion.reglasPrecio ||
+            []
+          ),
+
+        estado:
+          presentacion.estado ===
+          "Inactiva"
+            ? "Inactiva"
+            : "Activa",
+
+      })
+    );
+
+}
+
+
+/* =========================================
+   VALIDAR PRESENTACIONES ADICIONALES
+========================================= */
+
+function validarPresentacionesAdicionales(
+  presentaciones = []
+) {
+
+  if (!Array.isArray(presentaciones)) {
+    return "Las presentaciones adicionales no son válidas.";
   }
 
 
@@ -116,20 +294,21 @@ function validarPresentaciones(
     if (
       !presentacion.nombre?.trim()
     ) {
-      return "Toda presentación debe tener un nombre.";
+      return "Toda presentación adicional debe tener nombre.";
     }
 
 
     if (
       !presentacion.unidad?.trim()
     ) {
-      return "Toda presentación debe tener una unidad.";
+      return "Toda presentación adicional debe tener unidad.";
     }
 
 
     const precioCompra =
       Number(
-        presentacion.precioCompra || 0
+        presentacion.precioCompra ||
+        0
       );
 
     const precioVenta =
@@ -139,28 +318,34 @@ function validarPresentaciones(
 
     const stock =
       Number(
-        presentacion.stock || 0
+        presentacion.stock ||
+        0
       );
 
     const stockMinimo =
       Number(
-        presentacion.stockMinimo || 0
+        presentacion.stockMinimo ||
+        0
       );
 
 
     if (
-      !Number.isFinite(precioVenta) ||
-      precioVenta < 0
+      !Number.isFinite(
+        precioCompra
+      ) ||
+      precioCompra < 0
     ) {
-      return "El precio de venta no es válido.";
+      return "El valor unitario de una presentación no es válido.";
     }
 
 
     if (
-      !Number.isFinite(precioCompra) ||
-      precioCompra < 0
+      !Number.isFinite(
+        precioVenta
+      ) ||
+      precioVenta < 0
     ) {
-      return "El precio de compra no es válido.";
+      return "El precio de venta de una presentación no es válido.";
     }
 
 
@@ -168,72 +353,35 @@ function validarPresentaciones(
       !Number.isFinite(stock) ||
       stock < 0
     ) {
-      return "El stock no es válido.";
+      return "El stock de una presentación no es válido.";
     }
 
 
     if (
-      !Number.isFinite(stockMinimo) ||
+      !Number.isFinite(
+        stockMinimo
+      ) ||
       stockMinimo < 0
     ) {
-      return "El stock mínimo no es válido.";
+      return "El stock mínimo de una presentación no es válido.";
+    }
+
+
+    const errorReglas =
+      validarReglasPrecio(
+        presentacion.reglasPrecio ||
+        []
+      );
+
+
+    if (errorReglas) {
+      return errorReglas;
     }
 
   }
 
 
   return null;
-}
-
-
-/* =========================================
-   NORMALIZAR PRESENTACIONES
-========================================= */
-
-function normalizarPresentaciones(
-  presentaciones = []
-) {
-
-  return presentaciones.map(
-    (presentacion) => ({
-      nombre:
-        presentacion.nombre.trim(),
-
-      unidad:
-        presentacion.unidad.trim(),
-
-      precioCompra:
-        Number(
-          presentacion.precioCompra ||
-          0
-        ),
-
-      precioVenta:
-        Number(
-          presentacion.precioVenta ||
-          0
-        ),
-
-      stock:
-        Number(
-          presentacion.stock ||
-          0
-        ),
-
-      stockMinimo:
-        Number(
-          presentacion.stockMinimo ||
-          0
-        ),
-
-      estado:
-        presentacion.estado ===
-        "Inactiva"
-          ? "Inactiva"
-          : "Activa",
-    })
-  );
-
 }
 
 
@@ -248,7 +396,6 @@ function normalizarSabores(
   if (!Array.isArray(sabores)) {
     return [];
   }
-
 
   return [
     ...new Set(
@@ -279,11 +426,27 @@ export const crearProducto =
         categoria,
         marca,
         descripcion,
-        presentaciones = [],
+
+        tipoVenta,
+        unidad,
+
+        precioCompra,
+        precioVenta,
+
+        stock,
+        stockMinimo,
+
+        reglasPrecio = [],
+
+        presentacionesAdicionales = [],
+
         sabores = [],
+
         imagen = "",
       } = req.body;
 
+
+      /* DATOS OBLIGATORIOS */
 
       if (!nombre?.trim()) {
 
@@ -304,6 +467,99 @@ export const crearProducto =
 
       }
 
+
+      if (!unidad?.trim()) {
+
+        return res.status(400).json({
+          mensaje:
+            "Debes seleccionar una unidad.",
+        });
+
+      }
+
+
+      const precioCompraNumero =
+        Number(
+          precioCompra || 0
+        );
+
+      const precioVentaNumero =
+        Number(
+          precioVenta
+        );
+
+      const stockNumero =
+        Number(
+          stock || 0
+        );
+
+      const stockMinimoNumero =
+        Number(
+          stockMinimo || 0
+        );
+
+
+      if (
+        !Number.isFinite(
+          precioCompraNumero
+        ) ||
+        precioCompraNumero < 0
+      ) {
+
+        return res.status(400).json({
+          mensaje:
+            "El valor unitario no es válido.",
+        });
+
+      }
+
+
+      if (
+        !Number.isFinite(
+          precioVentaNumero
+        ) ||
+        precioVentaNumero < 0
+      ) {
+
+        return res.status(400).json({
+          mensaje:
+            "El precio de venta no es válido.",
+        });
+
+      }
+
+
+      if (
+        !Number.isFinite(
+          stockNumero
+        ) ||
+        stockNumero < 0
+      ) {
+
+        return res.status(400).json({
+          mensaje:
+            "El stock inicial no es válido.",
+        });
+
+      }
+
+
+      if (
+        !Number.isFinite(
+          stockMinimoNumero
+        ) ||
+        stockMinimoNumero < 0
+      ) {
+
+        return res.status(400).json({
+          mensaje:
+            "El stock mínimo no es válido.",
+        });
+
+      }
+
+
+      /* CATEGORÍA */
 
       const categoriaExiste =
         await Categoria.findById(
@@ -328,11 +584,13 @@ export const crearProducto =
 
         return res.status(400).json({
           mensaje:
-            "No puedes asignar el producto a una categoría inactiva.",
+            "No puedes crear productos en una categoría inactiva.",
         });
 
       }
 
+
+      /* DUPLICADO */
 
       const nombreNormalizado =
         nombre.trim();
@@ -346,6 +604,7 @@ export const crearProducto =
                 /[.*+?^${}()|[\]\\]/g,
                 "\\$&"
               )}$`,
+
             $options: "i",
           },
 
@@ -358,15 +617,35 @@ export const crearProducto =
 
         return res.status(400).json({
           mensaje:
-            "Ya existe un producto con ese nombre en esta categoría.",
+            "Ya existe un producto con ese nombre dentro de esta categoría.",
         });
 
       }
 
 
+      /* REGLAS */
+
+      const errorReglas =
+        validarReglasPrecio(
+          reglasPrecio
+        );
+
+
+      if (errorReglas) {
+
+        return res.status(400).json({
+          mensaje:
+            errorReglas,
+        });
+
+      }
+
+
+      /* PRESENTACIONES ADICIONALES */
+
       const errorPresentaciones =
-        validarPresentaciones(
-          presentaciones
+        validarPresentacionesAdicionales(
+          presentacionesAdicionales
         );
 
 
@@ -380,6 +659,8 @@ export const crearProducto =
       }
 
 
+      /* CONSECUTIVO */
+
       const codigo =
         await generarConsecutivo(
           "productos",
@@ -389,6 +670,7 @@ export const crearProducto =
 
       const producto =
         await Producto.create({
+
           codigo,
 
           nombre:
@@ -398,30 +680,77 @@ export const crearProducto =
             categoriaExiste._id,
 
           marca:
-            marca?.trim() || "",
+            marca?.trim() ||
+            "",
 
           descripcion:
-            descripcion?.trim() || "",
+            descripcion?.trim() ||
+            "",
 
-          presentaciones:
-            normalizarPresentaciones(
-              presentaciones
+
+          /* VENTA PRINCIPAL */
+
+          tipoVenta:
+            tipoVenta === "Peso"
+              ? "Peso"
+              : "Unidad",
+
+          unidad:
+            unidad.trim(),
+
+
+          /* PRECIOS */
+
+          precioCompra:
+            precioCompraNumero,
+
+          precioVenta:
+            precioVentaNumero,
+
+
+          /* INVENTARIO */
+
+          stock:
+            stockNumero,
+
+          stockMinimo:
+            stockMinimoNumero,
+
+
+          /* REGLAS */
+
+          reglasPrecio:
+            normalizarReglasPrecio(
+              reglasPrecio
             ),
+
+
+          /* PRESENTACIONES */
+
+          presentacionesAdicionales:
+            normalizarPresentacionesAdicionales(
+              presentacionesAdicionales
+            ),
+
 
           sabores:
             normalizarSabores(
               sabores
             ),
 
+
           imagen:
             imagen || "",
+
 
           estado:
             "Activo",
 
+
           creadoPor:
             req.usuario?._id ||
             null,
+
         });
 
 
@@ -434,10 +763,12 @@ export const crearProducto =
       return res
         .status(201)
         .json({
+
           mensaje:
             "Producto creado correctamente.",
 
           producto,
+
         });
 
     } catch (error) {
@@ -446,6 +777,7 @@ export const crearProducto =
         "Error creando producto:",
         error
       );
+
 
       return res.status(500).json({
         mensaje:
@@ -467,17 +799,6 @@ export const actualizarProducto =
 
     try {
 
-      const {
-        nombre,
-        categoria,
-        marca,
-        descripcion,
-        presentaciones = [],
-        sabores = [],
-        imagen = "",
-      } = req.body;
-
-
       const producto =
         await Producto.findById(
           req.params.id
@@ -492,6 +813,31 @@ export const actualizarProducto =
         });
 
       }
+
+
+      const {
+        nombre,
+        categoria,
+        marca,
+        descripcion,
+
+        tipoVenta,
+        unidad,
+
+        precioCompra,
+        precioVenta,
+
+        stock,
+        stockMinimo,
+
+        reglasPrecio = [],
+
+        presentacionesAdicionales = [],
+
+        sabores = [],
+
+        imagen = "",
+      } = req.body;
 
 
       if (!nombre?.trim()) {
@@ -509,6 +855,16 @@ export const actualizarProducto =
         return res.status(400).json({
           mensaje:
             "Debes seleccionar una categoría.",
+        });
+
+      }
+
+
+      if (!unidad?.trim()) {
+
+        return res.status(400).json({
+          mensaje:
+            "Debes seleccionar una unidad.",
         });
 
       }
@@ -549,8 +905,10 @@ export const actualizarProducto =
 
       const duplicado =
         await Producto.findOne({
+
           _id: {
-            $ne: producto._id,
+            $ne:
+              producto._id,
           },
 
           nombre: {
@@ -559,11 +917,13 @@ export const actualizarProducto =
                 /[.*+?^${}()|[\]\\]/g,
                 "\\$&"
               )}$`,
+
             $options: "i",
           },
 
           categoria:
             categoriaExiste._id,
+
         });
 
 
@@ -571,15 +931,82 @@ export const actualizarProducto =
 
         return res.status(400).json({
           mensaje:
-            "Ya existe otro producto con ese nombre en esta categoría.",
+            "Ya existe otro producto con ese nombre dentro de esta categoría.",
+        });
+
+      }
+
+
+      const precioCompraNumero =
+        Number(
+          precioCompra || 0
+        );
+
+      const precioVentaNumero =
+        Number(
+          precioVenta
+        );
+
+      const stockNumero =
+        Number(
+          stock || 0
+        );
+
+      const stockMinimoNumero =
+        Number(
+          stockMinimo || 0
+        );
+
+
+      if (
+        !Number.isFinite(
+          precioCompraNumero
+        ) ||
+        precioCompraNumero < 0
+      ) {
+
+        return res.status(400).json({
+          mensaje:
+            "El valor unitario no es válido.",
+        });
+
+      }
+
+
+      if (
+        !Number.isFinite(
+          precioVentaNumero
+        ) ||
+        precioVentaNumero < 0
+      ) {
+
+        return res.status(400).json({
+          mensaje:
+            "El precio de venta no es válido.",
+        });
+
+      }
+
+
+      const errorReglas =
+        validarReglasPrecio(
+          reglasPrecio
+        );
+
+
+      if (errorReglas) {
+
+        return res.status(400).json({
+          mensaje:
+            errorReglas,
         });
 
       }
 
 
       const errorPresentaciones =
-        validarPresentaciones(
-          presentaciones
+        validarPresentacionesAdicionales(
+          presentacionesAdicionales
         );
 
 
@@ -600,14 +1027,41 @@ export const actualizarProducto =
         categoriaExiste._id;
 
       producto.marca =
-        marca?.trim() || "";
+        marca?.trim() ||
+        "";
 
       producto.descripcion =
-        descripcion?.trim() || "";
+        descripcion?.trim() ||
+        "";
 
-      producto.presentaciones =
-        normalizarPresentaciones(
-          presentaciones
+      producto.tipoVenta =
+        tipoVenta === "Peso"
+          ? "Peso"
+          : "Unidad";
+
+      producto.unidad =
+        unidad.trim();
+
+      producto.precioCompra =
+        precioCompraNumero;
+
+      producto.precioVenta =
+        precioVentaNumero;
+
+      producto.stock =
+        stockNumero;
+
+      producto.stockMinimo =
+        stockMinimoNumero;
+
+      producto.reglasPrecio =
+        normalizarReglasPrecio(
+          reglasPrecio
+        );
+
+      producto.presentacionesAdicionales =
+        normalizarPresentacionesAdicionales(
+          presentacionesAdicionales
         );
 
       producto.sabores =
@@ -629,10 +1083,12 @@ export const actualizarProducto =
 
 
       return res.json({
+
         mensaje:
           "Producto actualizado correctamente.",
 
         producto,
+
       });
 
     } catch (error) {
@@ -641,6 +1097,7 @@ export const actualizarProducto =
         "Error actualizando producto:",
         error
       );
+
 
       return res.status(500).json({
         mensaje:
@@ -654,7 +1111,7 @@ export const actualizarProducto =
 
 
 /* =========================================
-   ACTIVAR / DESACTIVAR PRODUCTO
+   ACTIVAR / DESACTIVAR
 ========================================= */
 
 export const cambiarEstadoProducto =
@@ -688,6 +1145,7 @@ export const cambiarEstadoProducto =
 
 
       return res.json({
+
         mensaje:
           producto.estado === "Activo"
             ? "Producto activado correctamente."
@@ -695,6 +1153,7 @@ export const cambiarEstadoProducto =
 
         estado:
           producto.estado,
+
       });
 
     } catch (error) {
@@ -703,6 +1162,7 @@ export const cambiarEstadoProducto =
         "Error cambiando estado:",
         error
       );
+
 
       return res.status(500).json({
         mensaje:
@@ -715,7 +1175,7 @@ export const cambiarEstadoProducto =
 
 
 /* =========================================
-   ELIMINAR PRODUCTO
+   ELIMINAR
 ========================================= */
 
 export const eliminarProducto =
@@ -739,14 +1199,6 @@ export const eliminarProducto =
       }
 
 
-      /*
-       * Más adelante, cuando Pedidos y
-       * Facturación estén implementados,
-       * aquí validaremos que el producto
-       * no tenga movimientos históricos.
-       */
-
-
       await producto.deleteOne();
 
 
@@ -761,6 +1213,7 @@ export const eliminarProducto =
         "Error eliminando producto:",
         error
       );
+
 
       return res.status(500).json({
         mensaje:

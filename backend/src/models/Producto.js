@@ -2,10 +2,36 @@ import mongoose from "mongoose";
 
 
 /* =========================================
-   PRESENTACIONES
+   REGLA DE PRECIO POR CANTIDAD
 ========================================= */
 
-const presentacionSchema =
+const reglaPrecioSchema =
+  new mongoose.Schema(
+    {
+      desde: {
+        type: Number,
+        required: true,
+        min: 0,
+      },
+
+      precio: {
+        type: Number,
+        required: true,
+        min: 0,
+      },
+    },
+    {
+      _id: true,
+    }
+  );
+
+
+/* =========================================
+   PRESENTACIÓN ADICIONAL
+   OPCIONAL
+========================================= */
+
+const presentacionAdicionalSchema =
   new mongoose.Schema(
     {
       nombre: {
@@ -14,11 +40,21 @@ const presentacionSchema =
         trim: true,
       },
 
+      tipoVenta: {
+        type: String,
+
+        enum: [
+          "Unidad",
+          "Peso",
+        ],
+
+        default: "Unidad",
+      },
+
       unidad: {
         type: String,
         required: true,
         trim: true,
-        default: "Unidad",
       },
 
       precioCompra: {
@@ -45,12 +81,22 @@ const presentacionSchema =
         min: 0,
       },
 
+      reglasPrecio: {
+        type: [
+          reglaPrecioSchema
+        ],
+
+        default: [],
+      },
+
       estado: {
         type: String,
+
         enum: [
           "Activa",
           "Inactiva",
         ],
+
         default: "Activa",
       },
     },
@@ -102,13 +148,94 @@ const productoSchema =
         trim: true,
       },
 
-      presentaciones: {
+
+      /* =====================================
+         FORMA PRINCIPAL DE VENTA
+      ===================================== */
+
+      tipoVenta: {
+        type: String,
+
+        enum: [
+          "Unidad",
+          "Peso",
+        ],
+
+        default: "Unidad",
+      },
+
+      unidad: {
+        type: String,
+        required: true,
+        trim: true,
+        default: "Unidad",
+      },
+
+
+      /* =====================================
+         PRECIOS
+      ===================================== */
+
+      precioCompra: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+      precioVenta: {
+        type: Number,
+        required: true,
+        min: 0,
+      },
+
+
+      /* =====================================
+         INVENTARIO
+      ===================================== */
+
+      stock: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+      stockMinimo: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+
+      /* =====================================
+         PRECIO AUTOMÁTICO POR CANTIDAD
+      ===================================== */
+
+      reglasPrecio: {
         type: [
-          presentacionSchema
+          reglaPrecioSchema
         ],
 
         default: [],
       },
+
+
+      /* =====================================
+         PRESENTACIONES ESPECIALES
+         OPCIONALES
+      ===================================== */
+
+      presentacionesAdicionales: {
+        type: [
+          presentacionAdicionalSchema
+        ],
+
+        default: [],
+      },
+
+
+      /* =====================================
+         SABORES / VARIANTES
+      ===================================== */
 
       sabores: {
         type: [
@@ -121,10 +248,12 @@ const productoSchema =
         default: [],
       },
 
+
       imagen: {
         type: String,
         default: "",
       },
+
 
       estado: {
         type: String,
@@ -136,6 +265,7 @@ const productoSchema =
 
         default: "Activo",
       },
+
 
       creadoPor: {
         type:
@@ -151,10 +281,6 @@ const productoSchema =
     }
   );
 
-
-/* =========================================
-   ÍNDICES
-========================================= */
 
 productoSchema.index({
   categoria: 1,
