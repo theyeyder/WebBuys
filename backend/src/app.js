@@ -14,6 +14,7 @@ import preferenciaRoutes from "./routes/preferencia.routes.js";
 import auditoriaRoutes from "./routes/auditoria.routes.js";
 import categoriaRoutes from "./routes/categoria.routes.js";
 import productoRoutes from "./routes/producto.routes.js";
+import pedidoRoutes from "./routes/pedido.routes.js";
 
 const app = express();
 
@@ -45,5 +46,6 @@ app.use("/api/preferencias", preferenciaRoutes);
 app.use("/api/auditoria", auditoriaRoutes);
 app.use("/api/categorias", categoriaRoutes);
 app.use("/api/productos", productoRoutes);
+app.use("/api/pedidos", pedidoRoutes);
 
 export default app;

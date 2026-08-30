@@ -1,6 +1,85 @@
-import api from './api';
-const url = '/pedidos';
-export const listar = () => api.get(url);
-export const crear = (data) => api.post(url, data);
-export const actualizar = (id, data) => api.put(url + '/' + id, data);
-export const eliminar = (id) => api.delete(url + '/' + id);
+import api
+  from "./api.js";
+
+
+const url =
+  "/pedidos";
+
+
+export async function listarPedidos() {
+
+  const respuesta =
+    await api.get(url);
+
+  return respuesta.data;
+}
+
+
+export async function obtenerSiguienteCodigoPedido() {
+
+  const respuesta =
+    await api.get(
+      `${url}/siguiente-codigo`
+    );
+
+  return respuesta.data;
+}
+
+
+export async function crearPedido(
+  datos
+) {
+
+  const respuesta =
+    await api.post(
+      url,
+      datos
+    );
+
+  return respuesta.data;
+}
+
+
+export async function actualizarPedido(
+  id,
+  datos
+) {
+
+  const respuesta =
+    await api.put(
+      `${url}/${id}`,
+      datos
+    );
+
+  return respuesta.data;
+}
+
+
+export async function cambiarEstadoPedido(
+  id,
+  estado
+) {
+
+  const respuesta =
+    await api.patch(
+      `${url}/${id}/estado`,
+      {
+        estado,
+      }
+    );
+
+  return respuesta.data;
+}
+
+
+export async function eliminarPedido(
+  id
+) {
+
+  const respuesta =
+    await api.delete(
+      `${url}/${id}`
+    );
+
+  return respuesta.data;
+}
