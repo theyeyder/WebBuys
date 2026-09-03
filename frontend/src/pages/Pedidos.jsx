@@ -1,6 +1,7 @@
 import {
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -37,7 +38,7 @@ import "../styles/pedidos.css";
 
 
 import pedidosIcon
-  from "../assets/icons/pedidos.png";
+  from "../assets/icons/nuevo-pedido.png";
 
 import buscarIcon
   from "../assets/icons/buscar.png";
@@ -53,6 +54,9 @@ import eliminarIcon
 
 import imprimirIcon
   from "../assets/icons/imprimir.png";
+
+import imprimirPedidoIcon
+  from "../assets/icons/imprimir-pedido.png";
 
 import cerrarIcon
   from "../assets/icons/cerrar.png";
@@ -228,6 +232,18 @@ export default function Pedidos() {
 
 
   const [
+    fechaDesdeBusqueda,
+    setFechaDesdeBusqueda,
+  ] = useState("");
+
+
+  const [
+    fechaHastaBusqueda,
+    setFechaHastaBusqueda,
+  ] = useState("");
+
+
+  const [
     buscarCliente,
     setBuscarCliente,
   ] = useState("");
@@ -242,6 +258,12 @@ export default function Pedidos() {
   const [
     productoSeleccionado,
     setProductoSeleccionado,
+  ] = useState("");
+
+
+  const [
+    productoTexto,
+    setProductoTexto,
   ] = useState("");
 
 
@@ -279,6 +301,312 @@ export default function Pedidos() {
     tipoMensaje,
     setTipoMensaje,
   ] = useState("info");
+
+
+  /* =========================================
+     VISTA DE PEDIDOS
+     TARJETAS / LISTA
+  ========================================= */
+
+  const [
+    vistaPedidos,
+    setVistaPedidos,
+  ] = useState(
+    () =>
+      localStorage.getItem(
+        "webbuys-vista-pedidos"
+      ) || "tarjetas"
+  );
+
+
+  /* =========================================
+     CAMBIAR VISTA
+  ========================================= */
+
+  function cambiarVistaPedidos(
+    vista
+  ) {
+
+    setVistaPedidos(
+      vista
+    );
+
+    localStorage.setItem(
+      "webbuys-vista-pedidos",
+      vista
+    );
+
+    setPedidoSeleccionado(
+      null
+    );
+
+  }
+
+
+  /* =========================================
+     MOVER VENTANA NUEVO PEDIDO
+  ========================================= */
+
+  const modalPedidoRef = useRef(null);
+
+  const [posicionModalPedido, setPosicionModalPedido] = useState({
+    x: 0,
+    y: 0,
+  });
+
+  const arrastrePedidoRef = useRef({
+    activo: false,
+    offsetX: 0,
+    offsetY: 0,
+  });
+
+
+  /* =========================================
+     ARRASTRAR VENTANA NUEVO PEDIDO
+  ========================================= */
+
+  function iniciarArrastrePedido(event) {
+
+    // No arrastrar si se presiona un botón
+    if (event.target.closest("button")) {
+      return;
+    }
+
+    const modal = modalPedidoRef.current;
+
+    if (!modal) {
+      return;
+    }
+
+    const rect =
+      modal.getBoundingClientRect();
+
+    arrastrePedidoRef.current = {
+      activo: true,
+      offsetX:
+        event.clientX -
+        rect.left,
+      offsetY:
+        event.clientY -
+        rect.top,
+    };
+
+    setPosicionModalPedido({
+      x: rect.left,
+      y: rect.top,
+    });
+
+    document.addEventListener(
+      "mousemove",
+      moverModalPedido
+    );
+
+    document.addEventListener(
+      "mouseup",
+      terminarArrastrePedido
+    );
+  }
+
+
+  function moverModalPedido(event) {
+
+    if (
+      !arrastrePedidoRef
+        .current
+        .activo
+    ) {
+      return;
+    }
+
+    const modal =
+      modalPedidoRef.current;
+
+    if (!modal) {
+      return;
+    }
+
+    const ancho =
+      modal.offsetWidth;
+
+    const alto =
+      modal.offsetHeight;
+
+    let x =
+      event.clientX -
+      arrastrePedidoRef
+        .current
+        .offsetX;
+
+    let y =
+      event.clientY -
+      arrastrePedidoRef
+        .current
+        .offsetY;
+
+
+    /* NO DEJAR QUE SE PIERDA
+       FUERA DE LA PANTALLA */
+
+    x = Math.max(
+      8,
+      Math.min(
+        window.innerWidth -
+          ancho -
+          8,
+        x
+      )
+    );
+
+    y = Math.max(
+      8,
+      Math.min(
+        window.innerHeight -
+          alto -
+          8,
+        y
+      )
+    );
+
+
+    setPosicionModalPedido({
+      x,
+      y,
+    });
+  }
+
+
+  function terminarArrastrePedido() {
+
+    arrastrePedidoRef.current.activo =
+      false;
+
+    document.removeEventListener(
+      "mousemove",
+      moverModalPedido
+    );
+
+    document.removeEventListener(
+      "mouseup",
+      terminarArrastrePedido
+    );
+  }
+
+
+  /* =========================================
+     CARGAR PRODUCTOS PARA NUEVO PEDIDO
+  ========================================= */
+
+  async function cargarProductosPedido() {
+
+    try {
+
+      const data =
+        await listarProductos();
+
+
+      console.log(
+        "PRODUCTOS RECIBIDOS:",
+        data
+      );
+
+
+      let lista = [];
+
+
+      if (Array.isArray(data)) {
+
+        lista = data;
+
+      } else if (
+        Array.isArray(data?.productos)
+      ) {
+
+        lista =
+          data.productos;
+
+      } else if (
+        Array.isArray(data?.data)
+      ) {
+
+        lista =
+          data.data;
+
+      } else if (
+        Array.isArray(
+          data?.data?.productos
+        )
+      ) {
+
+        lista =
+          data.data.productos;
+
+      }
+
+
+      console.log(
+        "LISTA PRODUCTOS:",
+        lista
+      );
+
+
+      const activos =
+        lista.filter(
+          (producto) => {
+
+            const estado =
+              String(
+                producto.estado ?? ""
+              )
+                .trim()
+                .toLowerCase();
+
+
+            return (
+              estado !== "inactivo" &&
+              estado !== "false"
+            );
+
+          }
+        );
+
+
+      setProductos(
+        activos
+      );
+
+
+      return activos;
+
+
+    } catch (error) {
+
+      console.error(
+        "ERROR CARGANDO PRODUCTOS:",
+        error
+      );
+
+
+      setProductos(
+        []
+      );
+
+
+      setMensaje(
+        error?.response?.data?.mensaje ||
+        "No fue posible cargar los productos."
+      );
+
+
+      setTipoMensaje(
+        "error"
+      );
+
+
+      return [];
+
+    }
+
+  }
 
 
   /* =========================================
@@ -335,23 +663,19 @@ export default function Pedidos() {
       );
 
 
-     
+      const listaProductos =
+        Array.isArray(dataProductos)
+          ? dataProductos
+          : dataProductos?.productos ||
+            dataProductos?.data ||
+            [];
 
 
       setProductos(
-        (
-          Array.isArray(
-            dataProductos
-          )
-            ? dataProductos
-            : dataProductos?.productos ||
-            dataProductos?.data ||
-            []
-        ).filter(
+        listaProductos.filter(
           (producto) =>
-            producto.estado ===
-            "Activo" ||
-            producto.estado === true
+            producto.estado !== "Inactivo" &&
+            producto.estado !== false
         )
       );
 
@@ -483,12 +807,17 @@ export default function Pedidos() {
       const texto =
         buscarProducto
           .trim()
-          .toLowerCase();
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(
+            /[\u0300-\u036f]/g,
+            ""
+          );
 
 
       if (!texto) {
 
-        return productos;
+        return [];
 
       }
 
@@ -497,25 +826,68 @@ export default function Pedidos() {
         (producto) => {
 
           const categoria =
-            producto.categoria
-              ?.nombre ||
-            "";
+            typeof producto.categoria ===
+              "object"
+              ? producto.categoria
+                ?.nombre
+              : producto.categoria;
 
 
-          return [
+          const valores = [
+
             producto.codigo,
+
             producto.nombre,
+
             producto.marca,
+
             categoria,
-          ].some(
-            (valor) =>
-              String(
-                valor || ""
+
+            producto.descripcion,
+
+            producto.unidad,
+
+            producto.tipoVenta,
+
+          ];
+
+
+          const presentaciones =
+            (
+              producto
+                .presentacionesAdicionales ||
+              []
+            )
+              .map(
+                (presentacion) =>
+                  presentacion.nombre
+              );
+
+
+          const contenido =
+            [
+              ...valores,
+              ...presentaciones,
+            ]
+              .map(
+                (valor) =>
+                  String(
+                    valor || ""
+                  )
+                    .toLowerCase()
+                    .normalize(
+                      "NFD"
+                    )
+                    .replace(
+                      /[\u0300-\u036f]/g,
+                      ""
+                    )
               )
-                .toLowerCase()
-                .includes(
-                  texto
-                )
+              .join(" ");
+
+
+          return contenido.includes(
+            texto
           );
 
         }
@@ -525,6 +897,109 @@ export default function Pedidos() {
       productos,
       buscarProducto,
     ]);
+
+
+  /* =========================================
+     SELECCIONAR PRODUCTO BUSCADO
+  ========================================= */
+
+  function seleccionarProductoBuscado(
+    producto
+  ) {
+
+    setProductoSeleccionado(
+      producto._id
+    );
+
+    setProductoTexto(
+      producto.nombre || ""
+    );
+
+    setBuscarProducto(
+      ""
+    );
+
+    setPresentacionSeleccionada(
+      ""
+    );
+
+    setCantidad(
+      "1"
+    );
+
+  }
+
+
+  /* =========================================
+     ESCRIBIR PRODUCTO MANUALMENTE
+  ========================================= */
+
+  function escribirProductoManual(
+    event
+  ) {
+
+    const valor =
+      event.target.value;
+
+    setProductoTexto(
+      valor
+    );
+
+    setPresentacionSeleccionada(
+      ""
+    );
+
+    setCantidad(
+      "1"
+    );
+
+    const texto =
+      valor
+        .trim()
+        .toLowerCase();
+
+    if (!texto) {
+
+      setProductoSeleccionado(
+        ""
+      );
+
+      return;
+
+    }
+
+    const productoEncontrado =
+      productos.find(
+        (producto) => {
+
+          const nombre =
+            String(
+              producto.nombre || ""
+            )
+              .trim()
+              .toLowerCase();
+
+          const codigo =
+            String(
+              producto.codigo || ""
+            )
+              .trim()
+              .toLowerCase();
+
+          return (
+            nombre === texto ||
+            codigo === texto
+          );
+
+        }
+      );
+
+    setProductoSeleccionado(
+      productoEncontrado?._id ||
+      ""
+    );
+
+  }
 
 
   /* =========================================
@@ -663,37 +1138,85 @@ export default function Pedidos() {
      NUEVO PEDIDO
   ========================================= */
 
-  function nuevoPedido() {
+  async function nuevoPedido() {
 
-    setModoEdicion(false);
+    setModoEdicion(
+      false
+    );
+
 
     setPedidoSeleccionado(
       null
     );
 
+
     setForm(
       FORM_INICIAL
     );
+
 
     setProductoSeleccionado(
       ""
     );
 
+
+    setProductoTexto(
+      ""
+    );
+
+
     setPresentacionSeleccionada(
       ""
     );
+
 
     setCantidad(
       "1"
     );
 
+
     setBuscarCliente(
       ""
     );
 
+
     setBuscarProducto(
       ""
     );
+
+
+    /* =============================
+       VOLVER A CARGAR PRODUCTOS
+    ============================= */
+
+    const productosCargados =
+      await cargarProductosPedido();
+
+
+    console.log(
+      "PRODUCTOS DISPONIBLES EN PEDIDO:",
+      productosCargados.length
+    );
+
+
+    setPosicionModalPedido({
+
+      x: Math.max(
+        10,
+        (
+          window.innerWidth -
+          900
+        ) / 2
+      ),
+
+      y: Math.max(
+        10,
+        window.innerHeight *
+        0.07
+      ),
+
+    });
+
 
     setModalPedido(
       true
@@ -737,29 +1260,6 @@ export default function Pedidos() {
 
     setBuscarCliente(
       cliente.nombre
-    );
-
-  }
-
-
-  /* =========================================
-     CAMBIAR PRODUCTO
-  ========================================= */
-
-  function cambiarProducto(
-    event
-  ) {
-
-    setProductoSeleccionado(
-      event.target.value
-    );
-
-    setPresentacionSeleccionada(
-      ""
-    );
-
-    setCantidad(
-      "1"
     );
 
   }
@@ -916,6 +1416,10 @@ export default function Pedidos() {
 
 
     setProductoSeleccionado(
+      ""
+    );
+
+    setProductoTexto(
       ""
     );
 
@@ -1174,6 +1678,206 @@ export default function Pedidos() {
 
 
   /* =========================================
+     ABRIR PEDIDO DESDE TARJETA
+  ========================================= */
+
+  function abrirPedido(
+    pedido
+  ) {
+
+    if (!pedido) {
+      return;
+    }
+
+
+    setPedidoSeleccionado(
+      pedido
+    );
+
+
+    /* PEDIDOS CERRADOS:
+       SOLO LOS SELECCIONAMOS */
+
+    if (
+      [
+        "Entregado",
+        "Cancelado",
+      ].includes(
+        pedido.estado
+      )
+    ) {
+
+      setMensaje(
+        `El pedido ${pedido.codigo} está ${pedido.estado.toLowerCase()} y no se puede editar.`
+      );
+
+      setTipoMensaje(
+        "info"
+      );
+
+      return;
+
+    }
+
+
+    const cliente =
+      pedido.cliente;
+
+
+    setForm({
+
+      cliente:
+        cliente?._id ||
+        cliente ||
+        "",
+
+      fechaEntrega:
+        pedido.fechaEntrega
+          ? String(
+              pedido.fechaEntrega
+            ).slice(
+              0,
+              10
+            )
+          : "",
+
+      descuento:
+        pedido.descuento ||
+        "",
+
+      observaciones:
+        pedido.observaciones ||
+        "",
+
+      items:
+        (
+          pedido.items ||
+          []
+        ).map(
+          (
+            item,
+            index
+          ) => ({
+
+            temporalId:
+              item._id ||
+              `${Date.now()}-${index}`,
+
+            producto:
+              item.producto?._id ||
+              item.producto,
+
+            codigo:
+              item.codigoProducto ||
+              item.producto?.codigo ||
+              "",
+
+            nombre:
+              item.nombre,
+
+            presentacionId:
+              item.presentacionId ||
+              null,
+
+            presentacionNombre:
+              item.presentacionNombre ||
+              "",
+
+            tipoVenta:
+              item.tipoVenta,
+
+            unidad:
+              item.unidad,
+
+            cantidad:
+              item.cantidad,
+
+            precioNormal:
+              item.precioNormal,
+
+            precioAplicado:
+              item.precioAplicado,
+
+            reglaAplicadaDesde:
+              item.reglaAplicadaDesde,
+
+            subtotal:
+              item.subtotal,
+
+          })
+        ),
+
+    });
+
+
+    setBuscarCliente(
+      cliente?.nombre ||
+      ""
+    );
+
+
+    setProductoSeleccionado(
+      ""
+    );
+
+    setProductoTexto(
+      ""
+    );
+
+    setBuscarProducto(
+      ""
+    );
+
+    setPresentacionSeleccionada(
+      ""
+    );
+
+    setCantidad(
+      "1"
+    );
+
+
+    setModoEdicion(
+      true
+    );
+
+
+    /* CENTRAR VENTANA */
+
+    const anchoEstimado =
+      Math.min(
+        900,
+        window.innerWidth - 16
+      );
+
+
+    setPosicionModalPedido({
+
+      x: Math.max(
+        8,
+        (
+          window.innerWidth -
+          anchoEstimado
+        ) / 2
+      ),
+
+      y: Math.max(
+        8,
+        window.innerHeight *
+        0.05
+      ),
+
+    });
+
+
+    setModalPedido(
+      true
+    );
+
+  }
+
+
+  /* =========================================
      EDITAR PEDIDO
   ========================================= */
 
@@ -1319,6 +2023,25 @@ export default function Pedidos() {
       ""
     );
 
+    setProductoSeleccionado(
+      ""
+    );
+
+    setProductoTexto(
+      ""
+    );
+
+    setBuscarProducto(
+      ""
+    );
+
+    setPresentacionSeleccionada(
+      ""
+    );
+
+    setCantidad(
+      "1"
+    );
 
     setModoEdicion(
       true
@@ -1471,6 +2194,7 @@ export default function Pedidos() {
 
   /* =========================================
      PEDIDOS FILTRADOS
+     TEXTO + RANGO DE FECHAS
   ========================================= */
 
   const pedidosFiltrados =
@@ -1482,37 +2206,108 @@ export default function Pedidos() {
           .toLowerCase();
 
 
-      if (!texto) {
-
-        return pedidos;
-
-      }
-
-
       return pedidos.filter(
         (pedido) => {
+
+          /* =============================
+             FILTRO POR TEXTO
+          ============================= */
 
           const cliente =
             pedido.cliente ||
             {};
 
 
-          return [
-            pedido.codigo,
-            cliente.nombre,
-            cliente.documento,
-            pedido.estado,
-            pedido.total,
-          ].some(
-            (valor) =>
-              String(
-                valor || ""
-              )
-                .toLowerCase()
-                .includes(
-                  texto
+          const coincideTexto =
+            !texto ||
+            [
+              pedido.codigo,
+              cliente.nombre,
+              cliente.documento,
+              cliente.telefono,
+              cliente.barrio,
+              pedido.estado,
+              pedido.total,
+            ].some(
+              (valor) =>
+                String(
+                  valor || ""
                 )
-          );
+                  .toLowerCase()
+                  .includes(
+                    texto
+                  )
+            );
+
+
+          if (!coincideTexto) {
+            return false;
+          }
+
+
+          /* =============================
+             FECHA DEL PEDIDO
+          ============================= */
+
+          if (!pedido.createdAt) {
+            return (
+              !fechaDesdeBusqueda &&
+              !fechaHastaBusqueda
+            );
+          }
+
+
+          const fechaPedido =
+            new Date(
+              pedido.createdAt
+            );
+
+
+          /* =============================
+             DESDE
+          ============================= */
+
+          if (fechaDesdeBusqueda) {
+
+            const desde =
+              new Date(
+                `${fechaDesdeBusqueda}T00:00:00`
+              );
+
+
+            if (
+              fechaPedido <
+              desde
+            ) {
+              return false;
+            }
+
+          }
+
+
+          /* =============================
+             HASTA
+          ============================= */
+
+          if (fechaHastaBusqueda) {
+
+            const hasta =
+              new Date(
+                `${fechaHastaBusqueda}T23:59:59.999`
+              );
+
+
+            if (
+              fechaPedido >
+              hasta
+            ) {
+              return false;
+            }
+
+          }
+
+
+          return true;
 
         }
       );
@@ -1520,18 +2315,46 @@ export default function Pedidos() {
     }, [
       pedidos,
       filtro,
+      fechaDesdeBusqueda,
+      fechaHastaBusqueda,
     ]);
+
+
+  /* =========================================
+     LIMPIAR BÚSQUEDA DE PEDIDOS
+  ========================================= */
+
+  function limpiarBusquedaPedidos() {
+
+    setFiltro(
+      ""
+    );
+
+    setFechaDesdeBusqueda(
+      ""
+    );
+
+    setFechaHastaBusqueda(
+      ""
+    );
+
+  }
 
 
   /* =========================================
      IMPRIMIR PEDIDO
   ========================================= */
 
-  function imprimirPedido() {
+  function imprimirPedido(
+    pedidoDirecto = null
+  ) {
 
-    if (
-      !pedidoSeleccionado
-    ) {
+    const pedido =
+      pedidoDirecto ||
+      pedidoSeleccionado;
+
+
+    if (!pedido) {
 
       setMensaje(
         "Seleccione primero un pedido."
@@ -1544,10 +2367,6 @@ export default function Pedidos() {
       return;
 
     }
-
-
-    const pedido =
-      pedidoSeleccionado;
 
 
     const filas =
@@ -1807,101 +2626,142 @@ export default function Pedidos() {
       <section className="pedidos-page">
 
 
-        {/* CABECERA */}
+        {/* MENÚ DE MÓDULOS */}
+        <ModulosMenu />
 
-        <div className="pedidos-header">
+        {/* CABECERA PEDIDOS */}
+        <div className="pedidos-title-bar">
 
-          <div>
-
-            <span className="pedidos-eyebrow">
-              Gestión comercial
-            </span>
-
-            <h1>
-              Pedidos
-            </h1>
-
-            <p>
-              Registra y administra los pedidos de tus clientes.
-            </p>
-
+          <div className="pedidos-title-info">
+            <h2>Pedidos</h2>
           </div>
 
+          <div className="pedidos-title-actions">
 
-          <div className="pedidos-header-actions">
+            {/* CAMBIAR VISTA */}
 
-            <ModulosMenu />
+            <div className="pedidos-view-switch">
+
+              <button
+                type="button"
+                className={
+                  `pedidos-view-btn ${
+                    vistaPedidos ===
+                    "tarjetas"
+                      ? "pedidos-view-btn-active"
+                      : ""
+                  }`
+                }
+                onClick={() =>
+                  cambiarVistaPedidos(
+                    "tarjetas"
+                  )
+                }
+                title="Ver como tarjetas"
+              >
+
+                <span className="pedidos-view-grid-icon">
+
+                  <i></i>
+                  <i></i>
+                  <i></i>
+                  <i></i>
+
+                </span>
+
+                <span>
+                  Tarjetas
+                </span>
+
+              </button>
 
 
+              <button
+                type="button"
+                className={
+                  `pedidos-view-btn ${
+                    vistaPedidos ===
+                    "lista"
+                      ? "pedidos-view-btn-active"
+                      : ""
+                  }`
+                }
+                onClick={() =>
+                  cambiarVistaPedidos(
+                    "lista"
+                  )
+                }
+                title="Ver como lista"
+              >
+
+                <span className="pedidos-view-list-icon">
+
+                  <i></i>
+                  <i></i>
+                  <i></i>
+
+                </span>
+
+                <span>
+                  Lista
+                </span>
+
+              </button>
+
+            </div>
+
+            {/* NUEVO */}
             <button
               type="button"
-              className="pedidos-action-btn"
+              className="pedidos-top-icon-btn"
+              onClick={nuevoPedido}
               data-tooltip="Nuevo pedido"
-              onClick={
-                nuevoPedido
-              }
+              aria-label="Nuevo pedido"
             >
-              <img
-                src={pedidosIcon}
-                alt=""
-              />
+              <img src={pedidosIcon} alt="" />
             </button>
 
-
+            {/* EDITAR */}
             <button
               type="button"
-              className="pedidos-action-btn"
-              data-tooltip="Buscar pedido"
-              onClick={() =>
-                setModalBuscar(
-                  true
-                )
-              }
-            >
-              <img
-                src={buscarIcon}
-                alt=""
-              />
-            </button>
-
-
-            <button
-              type="button"
-              className="pedidos-action-btn"
+              className="pedidos-top-icon-btn"
+              onClick={editarPedidoSeleccionado}
               data-tooltip="Editar pedido"
-              onClick={
-                editarPedidoSeleccionado
-              }
+              disabled={!pedidoSeleccionado}
             >
-              <img
-                src={editarIcon}
-                alt=""
-              />
+              <img src={editarIcon} alt="" />
             </button>
 
-
+            {/* ELIMINAR */}
             <button
               type="button"
-              className="pedidos-action-btn"
+              className="pedidos-top-icon-btn"
+              onClick={eliminarPedidoSeleccionado}
               data-tooltip="Eliminar pedido"
-              onClick={
-                eliminarPedidoSeleccionado
-              }
+              disabled={!pedidoSeleccionado}
             >
-              <img
-                src={eliminarIcon}
-                alt=""
-              />
+              <img src={eliminarIcon} alt="" />
             </button>
 
-
+            {/* BUSCAR */}
             <button
               type="button"
-              className="pedidos-action-btn"
-              data-tooltip="Imprimir pedido"
-              onClick={
-                imprimirPedido
+              className="pedidos-top-icon-btn"
+              onClick={() => setModalBuscar(true)}
+              data-tooltip="Buscar pedido"
+            >
+              <img src={buscarIcon} alt="" />
+            </button>
+
+            {/* IMPRIMIR */}
+            <button
+              type="button"
+              className="pedidos-top-icon-btn"
+              onClick={() =>
+                imprimirPedido()
               }
+              data-tooltip="Imprimir pedido"
+              disabled={!pedidoSeleccionado}
             >
               <img
                 src={imprimirIcon}
@@ -1914,219 +2774,734 @@ export default function Pedidos() {
         </div>
 
 
-        {/* TABLA */}
+        {/* =====================================
+            VISTA DE PEDIDOS
+            TARJETAS / LISTA
+        ===================================== */}
 
         <section className="pedidos-card">
 
-          <div className="pedidos-table-wrap">
+          {cargando ? (
 
-            <table className="pedidos-table">
+            <div className="pedidos-cards-empty">
 
-              <thead>
+              Cargando pedidos...
 
-                <tr>
-                  <th>Pedido</th>
-                  <th>Cliente</th>
-                  <th>Fecha</th>
-                  <th>Productos</th>
-                  <th>Total</th>
-                  <th>Estado</th>
-                </tr>
+            </div>
 
-              </thead>
+          ) : pedidosFiltrados.length === 0 ? (
+
+            <div className="pedidos-cards-empty">
+
+              No hay pedidos registrados.
+
+            </div>
+
+          ) : vistaPedidos === "tarjetas" ? (
+
+            /* =====================================
+               VISTA TARJETAS
+            ===================================== */
+
+            <div className="pedidos-cards-grid">
+
+              {pedidosFiltrados.map(
+                (pedido) => {
+
+                  const seleccionado =
+                    pedidoSeleccionado
+                      ?._id ===
+                    pedido._id;
 
 
-              <tbody>
+                  const cliente =
+                    pedido.cliente ||
+                    {};
 
-                {cargando ? (
 
-                  <tr>
-                    <td
-                      colSpan="6"
-                      className="pedidos-empty"
-                    >
-                      Cargando pedidos...
-                    </td>
-                  </tr>
+                  const cantidadProductos =
+                    pedido.items?.length ||
+                    0;
 
-                ) : pedidosFiltrados.length === 0 ? (
 
-                  <tr>
-                    <td
-                      colSpan="6"
-                      className="pedidos-empty"
-                    >
-                      No hay pedidos registrados.
-                    </td>
-                  </tr>
+                  const estadoClase =
+                    String(
+                      pedido.estado ||
+                      ""
+                    )
+                      .toLowerCase()
+                      .replaceAll(
+                        " ",
+                        "-"
+                      )
+                      .normalize(
+                        "NFD"
+                      )
+                      .replace(
+                        /[\u0300-\u036f]/g,
+                        ""
+                      );
 
-                ) : (
 
-                  pedidosFiltrados.map(
-                    (pedido) => (
+                  return (
 
-                      <tr
-                        key={
-                          pedido._id
-                        }
-                        className={
-                          pedidoSeleccionado
-                            ?._id ===
-                            pedido._id
-                            ? "pedidos-row-selected"
+                    <article
+                      key={
+                        pedido._id
+                      }
+
+                      className={
+                        `pedidos-client-card ${
+                          seleccionado
+                            ? "pedidos-client-card-selected"
                             : ""
-                        }
-                        onClick={() =>
-                          seleccionarPedido(
-                            pedido
-                          )
-                        }
-                      >
+                        }`
+                      }
 
-                        <td>
-                          <strong>
-                            {pedido.codigo}
-                          </strong>
-                        </td>
+                      onClick={() =>
+                        seleccionarPedido(
+                          pedido
+                        )
+                      }
 
-
-                        <td>
-
-                          <strong>
-                            {pedido.cliente
-                              ?.nombre ||
-                              "Cliente"}
-                          </strong>
-
-                          <small>
-                            {pedido.cliente
-                              ?.documento ||
-                              ""}
-                          </small>
-
-                        </td>
+                      onDoubleClick={() =>
+                        abrirPedido(
+                          pedido
+                        )
+                      }
+                    >
 
 
-                        <td>
+                      {/* CABECERA */}
 
-                          {pedido.createdAt
-                            ? new Date(
-                              pedido.createdAt
-                            ).toLocaleDateString(
-                              "es-CO"
-                            )
-                            : "-"}
+                      <div className="pedidos-client-card-top">
 
-                        </td>
+                        <strong className="pedidos-client-card-code">
 
+                          {pedido.codigo ||
+                            "Pedido"}
 
-                        <td>
-
-                          <span className="pedidos-products-count">
-
-                            {
-                              pedido.items
-                                ?.length ||
-                              0
-                            }
-
-                            {" "}
-
-                            producto(s)
-
-                          </span>
-
-                        </td>
+                        </strong>
 
 
-                        <td>
-
-                          <strong className="pedidos-total">
-
-                            {moneda(
-                              pedido.total
-                            )}
-
-                          </strong>
-
-                        </td>
+                        <div className="pedidos-client-card-top-actions">
 
 
-                        <td>
+                          {/* IMPRIMIR ESTE PEDIDO */}
 
-                          <select
-                            className={`pedidos-status pedidos-status-${String(
-                              pedido.estado
-                            )
-                              .toLowerCase()
-                              .replaceAll(
-                                " ",
-                                "-"
-                              )
-                              .normalize(
-                                "NFD"
-                              )
-                              .replace(
-                                /[\u0300-\u036f]/g,
-                                ""
-                              )}`}
-                            value={
-                              pedido.estado
-                            }
+                          <button
+                            type="button"
+                            className="pedidos-card-print-btn"
+
                             onClick={
-                              (
-                                event
-                              ) =>
+                              (event) => {
+
+                                event.stopPropagation();
+
+                                imprimirPedido(
+                                  pedido
+                                );
+
+                              }
+                            }
+
+                            onDoubleClick={
+                              (event) =>
                                 event.stopPropagation()
                             }
-                            onChange={
-                              (
-                                event
-                              ) =>
-                                cambiarEstado(
-                                  pedido,
-                                  event.target
-                                    .value
-                                )
+
+                            title="Imprimir este pedido"
+                            aria-label={`Imprimir ${pedido.codigo || "pedido"}`}
+                          >
+
+                            <img
+                              src={imprimirPedidoIcon}
+                              alt=""
+                            />
+
+                          </button>
+
+
+                          {/* ESTADO */}
+
+                          <span
+                            className={
+                              `pedidos-client-card-status pedidos-card-status-${estadoClase}`
                             }
                           >
 
-                            <option value="Pendiente">
-                              Pendiente
-                            </option>
+                            {pedido.estado ||
+                              "Pendiente"}
 
-                            <option value="En preparación">
-                              En preparación
-                            </option>
+                          </span>
 
-                            <option value="En ruta">
-                              En ruta
-                            </option>
+                        </div>
 
-                            <option value="Entregado">
-                              Entregado
-                            </option>
+                      </div>
 
-                            <option value="Cancelado">
-                              Cancelado
-                            </option>
 
-                          </select>
+                      {/* CLIENTE */}
 
-                        </td>
+                      <div className="pedidos-client-card-client">
 
-                      </tr>
+                        <span>
+                          Cliente
+                        </span>
 
-                    )
-                  )
+                        <h3>
 
-                )}
+                          {cliente.nombre ||
+                            cliente.razonSocial ||
+                            "Cliente"}
 
-              </tbody>
+                        </h3>
 
-            </table>
 
-          </div>
+                        {cliente.documento && (
+
+                          <small>
+
+                            Documento:{" "}
+
+                            <strong>
+                              {cliente.documento}
+                            </strong>
+
+                          </small>
+
+                        )}
+
+                      </div>
+
+
+                      {/* INFORMACIÓN */}
+
+                      <div className="pedidos-client-card-info">
+
+                        <div>
+
+                          <span>
+                            Fecha pedido
+                          </span>
+
+                          <strong>
+
+                            {pedido.createdAt
+                              ? new Date(
+                                  pedido.createdAt
+                                )
+                                  .toLocaleDateString(
+                                    "es-CO"
+                                  )
+                              : "-"}
+
+                          </strong>
+
+                        </div>
+
+
+                        <div>
+
+                          <span>
+                            Productos
+                          </span>
+
+                          <strong>
+                            {cantidadProductos}
+                          </strong>
+
+                        </div>
+
+
+                        {cliente.barrio && (
+
+                          <div>
+
+                            <span>
+                              Barrio
+                            </span>
+
+                            <strong>
+                              {cliente.barrio}
+                            </strong>
+
+                          </div>
+
+                        )}
+
+
+                        {pedido.fechaEntrega && (
+
+                          <div>
+
+                            <span>
+                              Entrega
+                            </span>
+
+                            <strong>
+
+                              {new Date(
+                                pedido.fechaEntrega
+                              )
+                                .toLocaleDateString(
+                                  "es-CO"
+                                )}
+
+                            </strong>
+
+                          </div>
+
+                        )}
+
+                      </div>
+
+
+                      {/* TOTAL */}
+
+                      <div className="pedidos-client-card-total">
+
+                        <span>
+                          Total
+                        </span>
+
+                        <strong>
+
+                          {moneda(
+                            pedido.total
+                          )}
+
+                        </strong>
+
+                      </div>
+
+
+                      {/* ABRIR */}
+
+                      <div
+                        className="pedidos-client-card-actions"
+                        onClick={
+                          (event) =>
+                            event.stopPropagation()
+                        }
+                      >
+
+                        <button
+                          type="button"
+                          className="pedidos-card-open-btn"
+                          onClick={() =>
+                            abrirPedido(
+                              pedido
+                            )
+                          }
+                        >
+
+                          Abrir
+
+                        </button>
+
+                      </div>
+
+
+                      {/* ESTADO */}
+
+                      <div
+                        className="pedidos-client-card-footer"
+                        onClick={
+                          (event) =>
+                            event.stopPropagation()
+                        }
+                      >
+
+                        <span>
+                          Estado
+                        </span>
+
+
+                        <select
+                          className={
+                            `pedidos-status pedidos-status-${estadoClase}`
+                          }
+
+                          value={
+                            pedido.estado
+                          }
+
+                          onChange={
+                            (event) =>
+                              cambiarEstado(
+                                pedido,
+                                event.target.value
+                              )
+                          }
+                        >
+
+                          <option value="Pendiente">
+                            Pendiente
+                          </option>
+
+                          <option value="En preparación">
+                            En preparación
+                          </option>
+
+                          <option value="En ruta">
+                            En ruta
+                          </option>
+
+                          <option value="Entregado">
+                            Entregado
+                          </option>
+
+                          <option value="Cancelado">
+                            Cancelado
+                          </option>
+
+                        </select>
+
+                      </div>
+
+                    </article>
+
+                  );
+
+                }
+              )}
+
+            </div>
+
+          ) : (
+
+            /* =====================================
+               VISTA LISTA
+            ===================================== */
+
+            <div className="pedidos-list-wrap">
+
+              <table className="pedidos-list-table">
+
+                <thead>
+
+                  <tr>
+
+                    <th>
+                      Pedido
+                    </th>
+
+                    <th>
+                      Cliente
+                    </th>
+
+                    <th>
+                      Documento
+                    </th>
+
+                    <th>
+                      Fecha
+                    </th>
+
+                    <th>
+                      Entrega
+                    </th>
+
+                    <th>
+                      Productos
+                    </th>
+
+                    <th>
+                      Total
+                    </th>
+
+                    <th>
+                      Estado
+                    </th>
+
+                    <th
+                      className="pedidos-list-print-head"
+                      aria-label="Imprimir"
+                    >
+                    </th>
+
+                  </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                  {pedidosFiltrados.map(
+                    (pedido) => {
+
+                      const seleccionado =
+                        pedidoSeleccionado
+                          ?._id ===
+                        pedido._id;
+
+
+                      const cliente =
+                        pedido.cliente ||
+                        {};
+
+
+                      const estadoClase =
+                        String(
+                          pedido.estado ||
+                          ""
+                        )
+                          .toLowerCase()
+                          .replaceAll(
+                            " ",
+                            "-"
+                          )
+                          .normalize(
+                            "NFD"
+                          )
+                          .replace(
+                            /[\u0300-\u036f]/g,
+                            ""
+                          );
+
+
+                      return (
+
+                        <tr
+                          key={
+                            pedido._id
+                          }
+
+                          className={
+                            seleccionado
+                              ? "pedidos-list-row-selected"
+                              : ""
+                          }
+
+                          onClick={() =>
+                            seleccionarPedido(
+                              pedido
+                            )
+                          }
+
+                          onDoubleClick={() =>
+                            abrirPedido(
+                              pedido
+                            )
+                          }
+                        >
+
+
+                          {/* PEDIDO */}
+
+                          <td>
+
+                            <strong className="pedidos-list-code">
+
+                              {pedido.codigo ||
+                                "-"}
+
+                            </strong>
+
+                          </td>
+
+
+                          {/* CLIENTE */}
+
+                          <td>
+
+                            <strong className="pedidos-list-client">
+
+                              {cliente.nombre ||
+                                cliente.razonSocial ||
+                                "Cliente"}
+
+                            </strong>
+
+                          </td>
+
+
+                          {/* DOCUMENTO */}
+
+                          <td>
+
+                            {cliente.documento ||
+                              "-"}
+
+                          </td>
+
+
+                          {/* FECHA */}
+
+                          <td>
+
+                            {pedido.createdAt
+                              ? new Date(
+                                  pedido.createdAt
+                                )
+                                  .toLocaleDateString(
+                                    "es-CO"
+                                  )
+                              : "-"}
+
+                          </td>
+
+
+                          {/* ENTREGA */}
+
+                          <td>
+
+                            {pedido.fechaEntrega
+                              ? new Date(
+                                  pedido.fechaEntrega
+                                )
+                                  .toLocaleDateString(
+                                    "es-CO"
+                                  )
+                              : "-"}
+
+                          </td>
+
+
+                          {/* PRODUCTOS */}
+
+                          <td>
+
+                            <span className="pedidos-list-products">
+
+                              {pedido.items?.length ||
+                                0}
+
+                            </span>
+
+                          </td>
+
+
+                          {/* TOTAL */}
+
+                          <td>
+
+                            <strong className="pedidos-list-total">
+
+                              {moneda(
+                                pedido.total
+                              )}
+
+                            </strong>
+
+                          </td>
+
+
+                          {/* ESTADO */}
+
+                          <td
+                            onClick={
+                              (event) =>
+                                event.stopPropagation()
+                            }
+                          >
+
+                            <select
+                              className={
+                                `pedidos-status pedidos-status-${estadoClase}`
+                              }
+
+                              value={
+                                pedido.estado
+                              }
+
+                              onChange={
+                                (event) =>
+                                  cambiarEstado(
+                                    pedido,
+                                    event.target.value
+                                  )
+                              }
+                            >
+
+                              <option value="Pendiente">
+                                Pendiente
+                              </option>
+
+                              <option value="En preparación">
+                                En preparación
+                              </option>
+
+                              <option value="En ruta">
+                                En ruta
+                              </option>
+
+                              <option value="Entregado">
+                                Entregado
+                              </option>
+
+                              <option value="Cancelado">
+                                Cancelado
+                              </option>
+
+                            </select>
+
+                          </td>
+
+
+                          {/* IMPRIMIR ESTE PEDIDO */}
+
+                          <td
+                            className="pedidos-list-print-cell"
+
+                            onClick={
+                              (event) =>
+                                event.stopPropagation()
+                            }
+
+                            onDoubleClick={
+                              (event) =>
+                                event.stopPropagation()
+                            }
+                          >
+
+                            <button
+                              type="button"
+
+                              className="pedidos-list-print-btn"
+
+                              onClick={
+                                (event) => {
+
+                                  event.stopPropagation();
+
+                                  imprimirPedido(
+                                    pedido
+                                  );
+
+                                }
+                              }
+
+                              title="Imprimir este pedido"
+
+                              aria-label={
+                                `Imprimir ${pedido.codigo || "pedido"}`
+                              }
+                            >
+
+                              <img
+                                src={imprimirPedidoIcon}
+                                alt=""
+                              />
+
+                            </button>
+
+                          </td>
+
+                        </tr>
+
+                      );
+
+                    }
+                  )}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          )}
 
         </section>
 
@@ -2138,14 +3513,21 @@ export default function Pedidos() {
         {modalPedido && (
 
           <div
-            className="pedidos-modal-overlay"
+            className="pedidos-modal-overlay pedidos-modal-overlay-movable"
             onMouseDown={
               cerrarModalPedido
             }
           >
 
             <div
-              className="pedidos-modal"
+              ref={modalPedidoRef}
+              className="pedidos-modal pedidos-modal-movable"
+
+              style={{
+                left: posicionModalPedido.x,
+                top: posicionModalPedido.y,
+              }}
+
               onMouseDown={
                 (event) =>
                   event.stopPropagation()
@@ -2153,13 +3535,14 @@ export default function Pedidos() {
             >
 
 
-              <header className="pedidos-modal-header">
+              <header
+                className="pedidos-modal-header"
+                onMouseDown={iniciarArrastrePedido}
+              >
 
                 <div>
 
-                  <span>
-                    WebBuys
-                  </span>
+                  
 
                   <h2>
                     {modoEdicion
@@ -2220,7 +3603,7 @@ export default function Pedidos() {
                                 .value
                             )
                         }
-                        placeholder="Ej. Tienda Central o 123456..."
+                  
                       />
 
                     </label>
@@ -2341,74 +3724,159 @@ export default function Pedidos() {
 
                   <div className="pedidos-product-builder">
 
+                    {/* BUSCAR PRODUCTO */}
 
-                    <label>
+                    <div className="pedidos-product-search-box">
 
-                      Buscar producto
+                      <label>
 
-                      <input
-                        type="search"
-                        value={
-                          buscarProducto
-                        }
-                        onChange={
-                          (
-                            event
-                          ) =>
-                            setBuscarProducto(
-                              event.target
-                                .value
-                            )
-                        }
-                        placeholder="Buscar por producto, código o categoría..."
-                      />
+                        Buscar producto
 
-                    </label>
+                        <div className="pedidos-product-search-input">
 
+                          <img
+                            src={buscarIcon}
+                            alt=""
+                          />
+
+                          <input
+                            type="search"
+                            value={
+                              buscarProducto
+                            }
+                            onChange={
+                              (event) =>
+                                setBuscarProducto(
+                                  event.target.value
+                                )
+                            }
+                            placeholder="Nombre, código, marca o categoría"
+                            autoComplete="off"
+                          />
+
+                        </div>
+
+                      </label>
+
+
+                      {buscarProducto.trim() && (
+
+                        <div className="pedidos-product-results">
+
+                          {productosFiltrados.length === 0 ? (
+
+                            <div className="pedidos-product-no-results">
+
+                              No se encontraron productos.
+
+                            </div>
+
+                          ) : (
+
+                            productosFiltrados
+                              .slice(0, 8)
+                              .map(
+                                (producto) => (
+
+                                  <div
+                                    key={
+                                      producto._id
+                                    }
+                                    className="pedidos-product-result"
+                                  >
+
+                                    <div className="pedidos-product-result-info">
+
+                                      <strong>
+                                        {producto.nombre}
+                                      </strong>
+
+                                      <span>
+
+                                        {producto.codigo ||
+                                          "Sin código"}
+
+                                        {" · "}
+
+                                        {producto.categoria
+                                          ?.nombre ||
+                                          "Sin categoría"}
+
+                                      </span>
+
+                                    </div>
+
+
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        seleccionarProductoBuscado(
+                                          producto
+                                        )
+                                      }
+                                    >
+                                      Seleccionar
+                                    </button>
+
+                                  </div>
+
+                                )
+                              )
+
+                          )}
+
+                        </div>
+
+                      )}
+
+                    </div>
+
+                    {/* PRODUCTO MANUAL */}
 
                     <label>
 
                       Producto
 
-                      <select
+                      <input
+                        type="text"
                         value={
-                          productoSeleccionado
+                          productoTexto
                         }
                         onChange={
-                          cambiarProducto
+                          escribirProductoManual
                         }
-                      >
+                        list="pedidos-productos-disponibles"
+                        autoComplete="off"
+                        placeholder="Escriba o seleccione un producto"
+                      />
 
-                        <option value="">
-                          Seleccione
-                        </option>
+                      <datalist id="pedidos-productos-disponibles">
 
-                        {productosFiltrados.map(
-                          (
-                            producto
-                          ) => (
+                        {productos.map(
+                          (producto) => (
 
                             <option
                               key={
                                 producto._id
                               }
                               value={
-                                producto._id
+                                producto.nombre
                               }
                             >
+                              {producto.codigo ||
+                                ""}
 
-                              {producto.codigo
-                                ? `${producto.codigo} - `
-                                : ""}
+                              {" "}
 
-                              {producto.nombre}
-
+                              {producto.categoria
+                                ?.nombre ||
+                                ""}
                             </option>
 
                           )
                         )}
 
-                      </select>
+                      </datalist>
 
                     </label>
 
@@ -2930,7 +4398,7 @@ export default function Pedidos() {
 
                   {guardando
                     ? "Guardando..."
-                    : "Guardar pedido"}
+                    : ""}
 
                 </button>
 
@@ -2991,30 +4459,141 @@ export default function Pedidos() {
               </div>
 
 
-              <div className="pedidos-search-input">
+              <div className="pedidos-search-filters">
 
-                <img
-                  src={buscarIcon}
-                  alt=""
-                />
 
-                <input
-                  type="search"
-                  autoFocus
-                  value={
-                    filtro
-                  }
-                  onChange={
-                    (
-                      event
-                    ) =>
-                      setFiltro(
-                        event.target
-                          .value
-                      )
-                  }
-                  placeholder="Código, cliente, documento o estado..."
-                />
+                {/* BUSCAR CLIENTE / PEDIDO */}
+
+                <div className="pedidos-search-input">
+
+                  <img
+                    src={buscarIcon}
+                    alt=""
+                  />
+
+                  <input
+                    type="search"
+                    autoFocus
+                    value={
+                      filtro
+                    }
+                    onChange={
+                      (event) =>
+                        setFiltro(
+                          event.target.value
+                        )
+                    }
+                    placeholder="Cliente, documento, código o estado..."
+                  />
+
+                </div>
+
+
+                {/* RANGO DE FECHAS */}
+
+                <div className="pedidos-search-date-grid">
+
+
+                  <label>
+
+                    Desde
+
+                    <input
+                      type="date"
+                      value={
+                        fechaDesdeBusqueda
+                      }
+                      onChange={
+                        (event) =>
+                          setFechaDesdeBusqueda(
+                            event.target.value
+                          )
+                      }
+                      max={
+                        fechaHastaBusqueda ||
+                        undefined
+                      }
+                    />
+
+                  </label>
+
+
+                  <label>
+
+                    Hasta
+
+                    <input
+                      type="date"
+                      value={
+                        fechaHastaBusqueda
+                      }
+                      onChange={
+                        (event) =>
+                          setFechaHastaBusqueda(
+                            event.target.value
+                          )
+                      }
+                      min={
+                        fechaDesdeBusqueda ||
+                        undefined
+                      }
+                    />
+
+                  </label>
+
+
+                  <button
+                    type="button"
+                    className="pedidos-search-clear"
+                    onClick={
+                      limpiarBusquedaPedidos
+                    }
+                  >
+                    Limpiar
+                  </button>
+
+                </div>
+
+
+                {/* INFORMACIÓN DEL FILTRO */}
+
+                <div className="pedidos-search-filter-info">
+
+                  <span>
+                    {
+                      pedidosFiltrados.length
+                    } pedido(s) encontrado(s)
+                  </span>
+
+
+                  {(fechaDesdeBusqueda ||
+                    fechaHastaBusqueda) && (
+
+                    <span>
+
+                      {fechaDesdeBusqueda
+                        ? `Desde ${new Date(
+                            `${fechaDesdeBusqueda}T00:00:00`
+                          ).toLocaleDateString(
+                            "es-CO"
+                          )}`
+                        : "Desde el inicio"}
+
+                      {" — "}
+
+                      {fechaHastaBusqueda
+                        ? `Hasta ${new Date(
+                            `${fechaHastaBusqueda}T00:00:00`
+                          ).toLocaleDateString(
+                            "es-CO"
+                          )}`
+                        : "Hasta hoy"}
+
+                    </span>
+
+                  )}
+
+                </div>
 
               </div>
 
@@ -3022,16 +4601,14 @@ export default function Pedidos() {
               <div className="pedidos-search-results">
 
                 {pedidosFiltrados.map(
-                  (
-                    pedido
-                  ) => (
+                  (pedido) => (
 
                     <button
                       type="button"
                       key={
                         pedido._id
                       }
-                      onDoubleClick={() => {
+                      onClick={() => {
 
                         setPedidoSeleccionado(
                           pedido
@@ -3047,15 +4624,31 @@ export default function Pedidos() {
                       <span>
 
                         <strong>
-                          {
-                            pedido.codigo
-                          }
+                          {pedido.codigo}
                         </strong>
 
-                        {
-                          pedido.cliente
-                            ?.nombre
-                        }
+                        <b>
+                          {pedido.cliente
+                            ?.nombre ||
+                            "Cliente"}
+                        </b>
+
+                        <small>
+
+                          {pedido.createdAt
+                            ? new Date(
+                                pedido.createdAt
+                              ).toLocaleDateString(
+                                "es-CO"
+                              )
+                            : "Sin fecha"}
+
+                          {pedido.cliente
+                            ?.documento
+                            ? ` · ${pedido.cliente.documento}`
+                            : ""}
+
+                        </small>
 
                       </span>
 

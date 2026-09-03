@@ -1,15 +1,9 @@
-import Sidebar from '../components/layout/Sidebar.jsx';
-import Navbar from '../components/layout/Navbar.jsx';
-
-
-export default function AppLayout({ title, children }) {
+export default function AppLayout({
+  children,
+}) {
   return (
-    <main className="app-shell">
-      <Sidebar />
-      <section className="content-area">
-        <Navbar title={title} />
-        {children}
-      </section>
+    <main className="webbuys-page">
+      {children}
     </main>
   );
 }

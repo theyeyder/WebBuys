@@ -496,3 +496,18 @@
     font-size: 25px;
   }
 }
+/* =====================================================
+   PÁGINAS ACTUALES WEBBUYS
+===================================================== */
+
+.webbuys-page {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+
+  margin: 0;
+  padding: 0;
+
+  overflow-x: hidden;
+}
+
