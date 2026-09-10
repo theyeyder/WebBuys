@@ -1222,4 +1222,4 @@ export const eliminarProducto =
 
     }
 
-  };
+  };  

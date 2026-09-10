@@ -745,7 +745,7 @@ export default function ZonasDespacho() {
               name="codigo"
               value={form.codigo}
               readOnly
-              placeholder=""
+              placeholder="Código automático"
             />
           </label>
 

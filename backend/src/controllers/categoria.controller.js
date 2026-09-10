@@ -1,6 +1,9 @@
 import Categoria
   from "../models/Categoria.js";
 
+import Producto
+  from "../models/Producto.js";
+
 import Consecutivo
   from "../models/Consecutivo.js";
 
@@ -22,10 +25,36 @@ export const listarCategorias =
         await Categoria.find()
           .sort({
             createdAt: -1,
-          });
+          })
+          .lean();
+
+
+      const categoriasConProductos =
+        await Promise.all(
+
+          categorias.map(
+            async (categoria) => {
+
+              const totalProductos =
+                await Producto.countDocuments({
+                  categoria:
+                    categoria._id,
+                });
+
+
+              return {
+                ...categoria,
+                totalProductos,
+              };
+
+            }
+          )
+
+        );
+
 
       return res.json(
-        categorias
+        categoriasConProductos
       );
 
     } catch (error) {
@@ -389,6 +418,35 @@ export const eliminarCategoria =
         return res.status(404).json({
           mensaje:
             "Categoría no encontrada.",
+        });
+
+      }
+
+
+      /* =====================================
+         VALIDAR PRODUCTOS RELACIONADOS
+      ===================================== */
+
+      const totalProductos =
+        await Producto.countDocuments({
+          categoria:
+            categoria._id,
+        });
+
+
+      if (totalProductos > 0) {
+
+        return res.status(400).json({
+          mensaje:
+            `No puedes eliminar esta categoría porque tiene ${totalProductos} producto${
+              totalProductos === 1
+                ? ""
+                : "s"
+            } asociado${
+              totalProductos === 1
+                ? ""
+                : "s"
+            }.`,
         });
 
       }

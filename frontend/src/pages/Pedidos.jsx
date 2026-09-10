@@ -3658,11 +3658,6 @@ export default function Pedidos() {
                       <div className="pedidos-client-selected">
 
                         <div>
-
-                          <span>
-                            Cliente seleccionado
-                          </span>
-
                           <strong>
 
                             {

@@ -16,8 +16,6 @@ import {
   obtenerSiguienteCodigoRuta,
 } from "../services/ruta.service.js";
 
-import { listarUsuarios } from "../services/usuario.service.js";
-
 import {
   listarZonasDespacho,
 } from "../services/zonaDespacho.service.js";
@@ -54,7 +52,6 @@ const FORM_INICIAL = {
   codigo: "",
   nombre: "",
   descripcion: "",
-  empleado: "",
   zonasDespacho: [],
   diasAtencion: [],
   estado: "Activa",
@@ -65,7 +62,6 @@ export default function Rutas() {
   const { usuario } = useAuth();
 
   const [rutas, setRutas] = useState([]);
-  const [empleados, setEmpleados] = useState([]);
   const [zonas, setZonas] = useState([]);
 
   const [rutaSeleccionada, setRutaSeleccionada] = useState(null);
@@ -93,6 +89,16 @@ export default function Rutas() {
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
+
+  const [
+    filtroZona,
+    setFiltroZona,
+  ] = useState("");
+
+  const [
+    mostrarListaZonas,
+    setMostrarListaZonas,
+  ] = useState(false);
 
   /* ===========================
      ESCAPAR HTML
@@ -125,20 +131,6 @@ export default function Rutas() {
     }
   }
 
-  async function cargarEmpleados() {
-    try {
-      const data = await listarUsuarios();
-      const usuarios = Array.isArray(data) ? data : data?.usuarios || [];
-      setEmpleados(
-        usuarios.filter(
-          (usuario) => usuario.rol === "Empleado" && !usuario.bloqueado
-        )
-      );
-    } catch (err) {
-      console.error("Error cargando empleados:", err);
-    }
-  }
-
   async function cargarZonas() {
     try {
       const data = await listarZonasDespacho();
@@ -157,7 +149,6 @@ export default function Rutas() {
 
   useEffect(() => {
     cargarRutas();
-    cargarEmpleados();
     cargarZonas();
     nuevaRuta();
   }, []);
@@ -189,11 +180,6 @@ export default function Rutas() {
     return rutas.filter((ruta) => {
       const codigo = String(ruta.codigo || "").toLowerCase();
       const nombre = String(ruta.nombre || "").toLowerCase();
-      const empleado = String(
-        ruta.empleado?.nombre ||
-        ruta.empleado?.usuario ||
-        ""
-      ).toLowerCase();
       const zonas = Array.isArray(ruta.zonasDespacho)
         ? ruta.zonasDespacho
             .map((zona) =>
@@ -210,20 +196,53 @@ export default function Rutas() {
           return codigo.includes(texto);
         case "nombre":
           return nombre.includes(texto);
-        case "empleado":
-          return empleado.includes(texto);
         case "zona":
           return zonas.includes(texto);
         default:
           return (
             codigo.includes(texto) ||
             nombre.includes(texto) ||
-            empleado.includes(texto) ||
             zonas.includes(texto)
           );
       }
     });
   }, [rutas, filtroBuscar, campoBuscar]);
+
+  /* ===========================
+     FILTRAR ZONAS - COMBOBOX
+  =========================== */
+
+  const zonasFiltradas =
+    useMemo(() => {
+
+      const texto =
+        filtroZona
+          .trim()
+          .toLowerCase();
+
+      const zonasActivas =
+        zonas.filter(
+          (zona) =>
+            zona.estado === "Activa"
+        );
+
+      if (!texto) {
+        return zonasActivas;
+      }
+
+      return zonasActivas.filter(
+        (zona) =>
+          String(
+            zona.nombre || ""
+          )
+            .toLowerCase()
+            .includes(texto)
+      );
+
+    }, [
+      zonas,
+      filtroZona,
+    ]);
 
   /* ===========================
      FORMULARIO - RUTAS
@@ -247,6 +266,33 @@ export default function Rutas() {
           : [...actual.diasAtencion, dia],
       };
     });
+  }
+
+  function cambiarZona(zonaId) {
+
+    setForm((actual) => {
+
+      const seleccionada =
+        actual.zonasDespacho.includes(
+          zonaId
+        );
+
+      return {
+        ...actual,
+
+        zonasDespacho:
+          seleccionada
+            ? actual.zonasDespacho.filter(
+                (id) => id !== zonaId
+              )
+            : [
+                ...actual.zonasDespacho,
+                zonaId,
+              ],
+      };
+
+    });
+
   }
 
   async function nuevaRuta() {
@@ -278,14 +324,20 @@ export default function Rutas() {
       codigo: ruta.codigo || "",
       nombre: ruta.nombre || "",
       descripcion: ruta.descripcion || "",
-      empleado: ruta.empleado?._id || ruta.empleado || "",
+
       zonasDespacho: Array.isArray(ruta.zonasDespacho)
         ? ruta.zonasDespacho.map((zona) =>
-            typeof zona === "object" ? zona._id : zona
+            typeof zona === "object"
+              ? zona._id
+              : zona
           )
         : [],
-      diasAtencion: ruta.diasAtencion || [],
-      estado: ruta.estado || "Activa",
+
+      diasAtencion:
+        ruta.diasAtencion || [],
+
+      estado:
+        ruta.estado || "Activa",
     });
 
     setModoEdicion(true);
@@ -450,18 +502,6 @@ export default function Rutas() {
           const nombre =
             ruta.nombre || "-";
 
-          const empleado =
-            ruta.empleado?.nombre ||
-            (
-              ruta.empleado?.nombres
-                ? `${ruta.empleado.nombres} ${
-                    ruta.empleado.apellidos || ""
-                  }`.trim()
-                : ""
-            ) ||
-            ruta.empleado?.usuario ||
-            "Sin asignar";
-
           const zonas =
             Array.isArray(
               ruta.zonasDespacho
@@ -503,10 +543,6 @@ export default function Rutas() {
 
               <td>
                 ${escaparHtml(nombre)}
-              </td>
-
-              <td>
-                ${escaparHtml(empleado)}
               </td>
 
               <td>
@@ -626,10 +662,6 @@ export default function Rutas() {
                   </th>
 
                   <th>
-                    Empleado
-                  </th>
-
-                  <th>
                     Zonas
                   </th>
 
@@ -705,13 +737,25 @@ export default function Rutas() {
     try {
       setGuardando(true);
       const datos = {
-        codigo: form.codigo.trim().toUpperCase(),
-        nombre: form.nombre.trim(),
-        descripcion: form.descripcion.trim(),
-        empleado: form.empleado || null,
-        zonasDespacho: form.zonasDespacho,
-        diasAtencion: form.diasAtencion,
-        estado: form.estado,
+        codigo:
+          form.codigo
+            .trim()
+            .toUpperCase(),
+
+        nombre:
+          form.nombre.trim(),
+
+        descripcion:
+          form.descripcion.trim(),
+
+        zonasDespacho:
+          form.zonasDespacho,
+
+        diasAtencion:
+          form.diasAtencion,
+
+        estado:
+          form.estado,
       };
 
       if (modoEdicion && rutaSeleccionada?._id) {
@@ -823,7 +867,6 @@ export default function Rutas() {
             <tr>
               <th>Código</th>
               <th>Ruta</th>
-              <th>Empleado</th>
               <th>Zonas de despacho</th>
               <th>Días de atención</th>
               <th>Estado</th>
@@ -843,12 +886,6 @@ export default function Rutas() {
 
                 <td>
                   {ruta.nombre || "—"}
-                </td>
-
-                <td>
-                  {ruta.empleado?.nombre ||
-                    ruta.empleado?.usuario ||
-                    "Sin asignar"}
                 </td>
 
                 <td>
@@ -1043,56 +1080,184 @@ export default function Rutas() {
           />
         </label>
 
-        <label>
-          Empleado asignado
-          <select
-            name="empleado"
-            value={form.empleado}
-            onChange={cambiar}
-          >
-            <option value="">Sin asignar</option>
-            {empleados.map((empleado) => (
-              <option key={empleado._id} value={empleado._id}>
-                {empleado.nombres
-                  ? `${empleado.nombres} ${empleado.apellidos || ""}`
-                  : empleado.usuario}
-              </option>
-            ))}
-          </select>
-        </label>
-
         <div className="rutas-main-field">
+
           <span className="rutas-field-label">
             Zonas de despacho
           </span>
 
-          <div className="rutas-zonas-selector">
-            {zonas
-              .filter((zona) => zona.estado === "Activa")
-              .map((zona) => {
-                const seleccionada = form.zonasDespacho.includes(zona._id);
 
-                return (
-                  <button
-                    key={zona._id}
-                    type="button"
-                    className={seleccionada ? "selected" : ""}
-                    onClick={() => {
-                      setForm((actual) => ({
-                        ...actual,
-                        zonasDespacho: seleccionada
-                          ? actual.zonasDespacho.filter(
-                              (id) => id !== zona._id
+          <div className="rutas-zonas-combobox">
+
+            {/* BUSCADOR */}
+
+            <div
+              className="rutas-zonas-search"
+              onClick={() =>
+                setMostrarListaZonas(true)
+              }
+            >
+
+              <img
+                src={buscarIcon}
+                alt=""
+              />
+
+              <input
+                type="text"
+                value={filtroZona}
+                onChange={(event) => {
+                  setFiltroZona(
+                    event.target.value
+                  );
+
+                  setMostrarListaZonas(true);
+                }}
+                onFocus={() =>
+                  setMostrarListaZonas(true)
+                }
+                placeholder="Buscar zona de despacho..."
+              />
+
+              <button
+                type="button"
+                className="rutas-zonas-toggle"
+                onClick={(event) => {
+
+                  event.stopPropagation();
+
+                  setMostrarListaZonas(
+                    (actual) => !actual
+                  );
+
+                }}
+              >
+                {mostrarListaZonas
+                  ? "▲"
+                  : "▼"}
+              </button>
+
+            </div>
+
+
+            {/* ZONAS SELECCIONADAS */}
+
+            {form.zonasDespacho.length > 0 && (
+
+              <div className="rutas-zonas-selected">
+
+                {form.zonasDespacho.map(
+                  (zonaId) => {
+
+                    const zona =
+                      zonas.find(
+                        (item) =>
+                          item._id === zonaId
+                      );
+
+                    if (!zona) {
+                      return null;
+                    }
+
+                    return (
+
+                      <span
+                        key={zonaId}
+                        className="rutas-zona-chip"
+                      >
+
+                        {zona.nombre}
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            cambiarZona(
+                              zonaId
                             )
-                          : [...actual.zonasDespacho, zona._id],
-                      }));
-                    }}
-                  >
-                    {zona.nombre}
-                  </button>
-                );
-              })}
+                          }
+                          aria-label={`Quitar ${zona.nombre}`}
+                        >
+                          ×
+                        </button>
+
+                      </span>
+
+                    );
+
+                  }
+                )}
+
+              </div>
+
+            )}
+
+
+            {/* LISTA */}
+
+            {mostrarListaZonas && (
+
+              <div className="rutas-zonas-list">
+
+                {zonasFiltradas.length === 0 ? (
+
+                  <div className="rutas-zonas-empty">
+                    No se encontraron zonas.
+                  </div>
+
+                ) : (
+
+                  zonasFiltradas.map(
+                    (zona) => {
+
+                      const seleccionada =
+                        form.zonasDespacho.includes(
+                          zona._id
+                        );
+
+                      return (
+
+                        <button
+                          key={zona._id}
+                          type="button"
+                          className={
+                            seleccionada
+                              ? "rutas-zona-option selected"
+                              : "rutas-zona-option"
+                          }
+                          onClick={() =>
+                            cambiarZona(
+                              zona._id
+                            )
+                          }
+                        >
+
+                          <span
+                            className="rutas-zona-checkbox"
+                          >
+                            {seleccionada
+                              ? "✓"
+                              : ""}
+                          </span>
+
+                          <span>
+                            {zona.nombre}
+                          </span>
+
+                        </button>
+
+                      );
+
+                    }
+                  )
+
+                )}
+
+              </div>
+
+            )}
+
           </div>
+
         </div>
 
         <label>
@@ -1170,7 +1335,6 @@ export default function Rutas() {
                 <option value="todos">Todos</option>
                 <option value="codigo">Código</option>
                 <option value="nombre">Ruta</option>
-                <option value="empleado">Empleado</option>
                 <option value="zona">Zona</option>
               </select>
 
@@ -1192,7 +1356,6 @@ export default function Rutas() {
                   <tr>
                     <th>Código</th>
                     <th>Ruta</th>
-                    <th>Empleado</th>
                     <th>Zonas</th>
                     <th>Días</th>
                     <th>Estado</th>
@@ -1202,7 +1365,7 @@ export default function Rutas() {
                 <tbody>
                   {rutasBusqueda.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="rutas-search-empty">
+                      <td colSpan="5" className="rutas-search-empty">
                         No se encontraron rutas.
                       </td>
                     </tr>
@@ -1217,12 +1380,6 @@ export default function Rutas() {
                         </td>
 
                         <td>{ruta.nombre}</td>
-
-                        <td>
-                          {ruta.empleado?.nombre ||
-                            ruta.empleado?.usuario ||
-                            "Sin asignar"}
-                        </td>
 
                         <td>
                           <div className="rutas-search-zonas">

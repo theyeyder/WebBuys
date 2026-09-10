@@ -98,24 +98,58 @@ const OPCIONES_UNIDAD = [
   "Unidad",
   "Kg",
   "g",
+  "Libra",
   "L",
   "ml",
-  "Libra",
+  "Bandeja",
+  "Paquete",
+  "Botella",
 ];
 
 
+const UNIDADES_POR_TIPO_VENTA = {
+
+  Unidad: [
+    "Unidad",
+    "Bandeja",
+    "Paquete",
+    "Botella",
+    "L",
+    "ml",
+    "g",
+    "Libra",
+  ],
+
+  Peso: [
+    "Kg",
+    "g",
+    "Libra",
+  ],
+
+};
+
+
 const OPCIONES_PRESENTACION = [
+  "Libra tajada",
+  "Libra entera",
+  "Media libra tajada",
+  "Media libra entera",
+  "Cuarto tajado",
+  "Cuarto entero",
+  "Bloque entero",
+  "Bloque tajado",
+  "1/2 bloque entero",
+  "1/2 bloque tajado",
+  "Bloque entero Pizza",
+  "Bloque tajado Pizza",
   "Libra y media al vacío",
-  "Libra",
-  "Media libra",
-  "Cuarto",
-  "Bloque",
   "1 Litro",
   "1/2 Litro",
   "Mini",
   "250 g",
   "400 g",
   "500 g",
+  "Bandeja x12",
 ];
 
 
@@ -530,6 +564,35 @@ export default function Productos() {
   }
 
 
+  function cambiarTipoVenta(
+    event
+  ) {
+
+    const tipoVenta =
+      event.target.value;
+
+    const unidadesDisponibles =
+      UNIDADES_POR_TIPO_VENTA[
+        tipoVenta
+      ] || [];
+
+    setForm(
+      (actual) => ({
+        ...actual,
+        tipoVenta,
+        unidad:
+          unidadesDisponibles.includes(
+            actual.unidad
+          )
+            ? actual.unidad
+            : unidadesDisponibles[0] ||
+              "Unidad",
+      })
+    );
+
+  }
+
+
   function cambiarCampoMoneda(
     campo,
     valor
@@ -666,6 +729,45 @@ export default function Productos() {
               : presentacion
         ),
     }));
+  }
+
+
+  function cambiarTipoVentaPresentacion(
+    index,
+    tipoVenta
+  ) {
+
+    const unidadesDisponibles =
+      UNIDADES_POR_TIPO_VENTA[
+        tipoVenta
+      ] || [];
+
+    setForm(
+      (actual) => ({
+        ...actual,
+        presentacionesAdicionales:
+          actual.presentacionesAdicionales.map(
+            (presentacion, indice) => {
+              if (indice !== index) {
+                return presentacion;
+              }
+
+              return {
+                ...presentacion,
+                tipoVenta,
+                unidad:
+                  unidadesDisponibles.includes(
+                    presentacion.unidad
+                  )
+                    ? presentacion.unidad
+                    : unidadesDisponibles[0] ||
+                      "Unidad",
+              };
+            }
+          ),
+      })
+    );
+
   }
 
 
@@ -2176,7 +2278,7 @@ export default function Productos() {
                     <select
                       name="tipoVenta"
                       value={form.tipoVenta}
-                      onChange={cambiarCampo}
+                      onChange={cambiarTipoVenta}
                     >
 
                       {OPCIONES_TIPO_VENTA.map(
@@ -2206,7 +2308,12 @@ export default function Productos() {
                       onChange={cambiarCampo}
                     >
 
-                      {OPCIONES_UNIDAD.map(
+                      {(
+                        UNIDADES_POR_TIPO_VENTA[
+                          form.tipoVenta
+                        ] ||
+                        OPCIONES_UNIDAD
+                      ).map(
                         (opcion) => (
                           <option
                             key={opcion}
@@ -2535,9 +2642,8 @@ export default function Productos() {
                                   presentacion.tipoVenta
                                 }
                                 onChange={(event) =>
-                                  cambiarPresentacionAdicional(
+                                  cambiarTipoVentaPresentacion(
                                     index,
-                                    "tipoVenta",
                                     event.target.value
                                   )
                                 }
@@ -2572,7 +2678,12 @@ export default function Productos() {
                                 }
                               >
 
-                                {OPCIONES_UNIDAD.map(
+                                {(
+                                  UNIDADES_POR_TIPO_VENTA[
+                                    presentacion.tipoVenta
+                                  ] ||
+                                  OPCIONES_UNIDAD
+                                ).map(
                                   (opcion) => (
                                     <option
                                       key={opcion}

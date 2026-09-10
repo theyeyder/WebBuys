@@ -993,3 +993,440 @@
   }
 
 }
+/* =========================================
+   SELECTOR / BUSCADOR DE ZONAS
+========================================= */
+
+.rutas-zonas-combobox {
+  position: relative;
+  width: 100%;
+}
+
+
+/* =========================================
+   BUSCADOR
+========================================= */
+
+.rutas-zonas-search {
+  width: 100%;
+  min-height: 48px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 0 12px;
+
+  background: #ffffff;
+
+  border: 1px solid
+    rgba(25, 135, 84, 0.32);
+
+  border-radius: 12px;
+
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.rutas-zonas-search:focus-within {
+  border-color:
+    rgba(25, 135, 84, 0.85);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(25, 135, 84, 0.10);
+}
+
+
+.rutas-zonas-search img {
+  width: 20px;
+  height: 20px;
+
+  object-fit: contain;
+
+  opacity: 0.72;
+
+  flex-shrink: 0;
+}
+
+
+.rutas-zonas-search input {
+  flex: 1;
+
+  min-width: 0;
+
+  height: 44px;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  color: #26384a;
+}
+
+
+.rutas-zonas-search input::placeholder {
+  color: #8795a7;
+}
+
+
+/* =========================================
+   BOTÓN ABRIR / CERRAR
+========================================= */
+
+.rutas-zonas-toggle {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #26384a;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  border-radius: 8px;
+
+  flex-shrink: 0;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.rutas-zonas-toggle:hover {
+  background:
+    rgba(25, 135, 84, 0.08);
+}
+
+
+/* =========================================
+   ZONAS SELECCIONADAS
+========================================= */
+
+.rutas-zonas-selected {
+  width: 100%;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  margin-top: 8px;
+
+  padding: 8px 10px;
+
+  background:
+    rgba(255, 255, 255, 0.48);
+
+  border-radius: 10px;
+
+  box-sizing: border-box;
+}
+
+
+.rutas-zona-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  min-height: 32px;
+
+  padding: 6px 9px 6px 11px;
+
+  background:
+    rgba(31, 168, 112, 0.12);
+
+  border:
+    1px solid
+    rgba(31, 168, 112, 0.18);
+
+  border-radius: 10px;
+
+  color: #167957;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  line-height: 1;
+}
+
+
+.rutas-zona-chip button {
+  width: 22px;
+  height: 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: none;
+
+  background:
+    rgba(22, 121, 87, 0.08);
+
+  border-radius: 50%;
+
+  color: #167957;
+
+  font-size: 17px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.rutas-zona-chip button:hover {
+  background:
+    rgba(22, 121, 87, 0.16);
+
+  transform: scale(1.06);
+}
+
+
+/* =========================================
+   LISTA DESPLEGABLE
+========================================= */
+
+.rutas-zonas-list {
+  width: 100%;
+
+  max-height: 245px;
+
+  overflow-y: auto;
+
+  margin-top: 6px;
+
+  padding: 6px;
+
+  background: #ffffff;
+
+  border:
+    1px solid
+    rgba(25, 135, 84, 0.18);
+
+  border-radius: 12px;
+
+  box-shadow:
+    0 12px 30px
+    rgba(20, 55, 40, 0.14);
+
+  box-sizing: border-box;
+
+  z-index: 20;
+}
+
+
+/* =========================================
+   OPCIÓN DE ZONA
+========================================= */
+
+.rutas-zona-option {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 9px 10px;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  border-radius: 8px;
+
+  color: #26384a;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.rutas-zona-option:hover {
+  background:
+    rgba(25, 135, 84, 0.07);
+}
+
+
+.rutas-zona-option.selected {
+  background:
+    rgba(31, 168, 112, 0.10);
+
+  color: #167957;
+}
+
+
+/* =========================================
+   CHECK VISUAL
+========================================= */
+
+.rutas-zona-checkbox {
+  width: 23px;
+  height: 23px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border:
+    2px solid
+    #8a9aaa;
+
+  border-radius: 6px;
+
+  background: #ffffff;
+
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  box-sizing: border-box;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+
+.rutas-zona-option.selected
+.rutas-zona-checkbox {
+  background: #15996b;
+
+  border-color: #15996b;
+
+  box-shadow:
+    0 2px 6px
+    rgba(21, 153, 107, 0.24);
+}
+
+
+/* =========================================
+   SIN RESULTADOS
+========================================= */
+
+.rutas-zonas-empty {
+  padding: 18px 12px;
+
+  text-align: center;
+
+  color: #7d8997;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* =========================================
+   SCROLL
+========================================= */
+
+.rutas-zonas-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+
+.rutas-zonas-list::-webkit-scrollbar-track {
+  background:
+    rgba(0, 0, 0, 0.03);
+
+  border-radius: 20px;
+}
+
+
+.rutas-zonas-list::-webkit-scrollbar-thumb {
+  background:
+    rgba(61, 88, 74, 0.30);
+
+  border-radius: 20px;
+}
+
+
+.rutas-zonas-list::-webkit-scrollbar-thumb:hover {
+  background:
+    rgba(61, 88, 74, 0.45);
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .rutas-zonas-search {
+    min-height: 46px;
+
+    padding:
+      0 10px;
+  }
+
+
+  .rutas-zonas-search input {
+    font-size: 13px;
+  }
+
+
+  .rutas-zonas-selected {
+    gap: 6px;
+
+    padding: 7px;
+  }
+
+
+  .rutas-zona-chip {
+    font-size: 12px;
+  }
+
+
+  .rutas-zonas-list {
+    max-height: 220px;
+  }
+
+
+  .rutas-zona-option {
+    font-size: 13px;
+
+    padding:
+      9px 8px;
+  }
+
+}
