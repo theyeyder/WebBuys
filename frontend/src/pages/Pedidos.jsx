@@ -19,6 +19,10 @@ import {
 } from "../services/cliente.service.js";
 
 import {
+  listarUsuarios,
+} from "../services/usuario.service.js";
+
+import {
   listarProductos,
 } from "../services/producto.service.js";
 
@@ -68,6 +72,7 @@ import cerrarIcon
 
 const FORM_INICIAL = {
   cliente: "",
+  empleado: "",
   fechaEntrega: "",
   descuento: "",
   observaciones: "",
@@ -184,6 +189,12 @@ export default function Pedidos() {
   const [
     clientes,
     setClientes,
+  ] = useState([]);
+
+
+  const [
+    empleados,
+    setEmpleados,
   ] = useState([]);
 
 
@@ -610,6 +621,51 @@ export default function Pedidos() {
 
 
   /* =========================================
+     CARGAR EMPLEADOS
+  ========================================= */
+
+  async function cargarEmpleados() {
+
+    try {
+
+      const data =
+        await listarUsuarios();
+
+      const lista =
+        Array.isArray(data)
+          ? data
+          : data?.usuarios ||
+            data?.data ||
+            [];
+
+
+      const empleadosActivos =
+        lista.filter(
+          (usuario) =>
+            usuario.rol === "Empleado" &&
+            !usuario.bloqueado
+        );
+
+
+      setEmpleados(
+        empleadosActivos
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Error cargando empleados:",
+        error
+      );
+
+      setEmpleados([]);
+
+    }
+
+  }
+
+
+  /* =========================================
      CARGAR TODO
   ========================================= */
 
@@ -708,6 +764,7 @@ export default function Pedidos() {
   useEffect(() => {
 
     cargarTodo();
+    cargarEmpleados();
 
   }, []);
 
@@ -1541,6 +1598,10 @@ export default function Pedidos() {
         cliente:
           form.cliente,
 
+        empleado:
+          form.empleado ||
+          null,
+
         fechaEntrega:
           form.fechaEntrega ||
           null,
@@ -1729,6 +1790,11 @@ export default function Pedidos() {
       cliente:
         cliente?._id ||
         cliente ||
+        "",
+
+      empleado:
+        pedido.empleado?._id ||
+        pedido.empleado ||
         "",
 
       fechaEntrega:
@@ -1931,6 +1997,11 @@ export default function Pedidos() {
       cliente:
         cliente?._id ||
         cliente ||
+        "",
+
+      empleado:
+        pedidoSeleccionado.empleado?._id ||
+        pedidoSeleccionado.empleado ||
         "",
 
       fechaEntrega:
@@ -2529,10 +2600,10 @@ export default function Pedidos() {
           <br>
 
           <strong>
-            Documento:
+            Teléfono:
           </strong>
 
-          ${pedido.cliente?.documento || ""}
+          ${pedido.cliente?.telefono || "Sin teléfono"}
 
           <br>
 
@@ -2541,6 +2612,21 @@ export default function Pedidos() {
           </strong>
 
           ${pedido.estado}
+
+          <br>
+
+          <strong>
+            Empleado:
+          </strong>
+
+          ${
+            pedido.empleado?.nombres
+              ? `${pedido.empleado.nombres} ${
+                  pedido.empleado.apellidos || ""
+                }`.trim()
+              : pedido.empleado?.nombre ||
+                "Sin asignar"
+          }
 
         </div>
 
@@ -4205,6 +4291,62 @@ export default function Pedidos() {
                 <section className="pedidos-form-section">
 
                   <div className="pedidos-final-grid">
+
+                    <label>
+
+                      Empleado asignado
+
+                      <select
+                        value={
+                          form.empleado
+                        }
+                        onChange={
+                          (event) =>
+                            setForm(
+                              (actual) => ({
+                                ...actual,
+
+                                empleado:
+                                  event.target.value,
+
+                              })
+                            )
+                        }
+                      >
+
+                        <option value="">
+                          Sin asignar
+                        </option>
+
+                        {empleados.map(
+                          (empleado) => (
+
+                            <option
+                              key={
+                                empleado._id
+                              }
+                              value={
+                                empleado._id
+                              }
+                            >
+
+                              {empleado.nombres
+                                ? `${empleado.nombres} ${
+                                    empleado.apellidos ||
+                                    ""
+                                  }`.trim()
+                                : empleado.nombre ||
+                                  "Empleado"}
+
+                            </option>
+
+                          )
+                        )}
+
+                      </select>
+
+                    </label>
+
 
                     <label>
 

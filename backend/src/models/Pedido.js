@@ -154,6 +154,20 @@ const pedidoSchema =
       },
 
 
+      /* =====================================
+         EMPLEADO ASIGNADO
+      ===================================== */
+
+      empleado: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "Usuario",
+
+        default: null,
+      },
+
+
       items: {
         type: [itemPedidoSchema],
 
@@ -191,6 +205,19 @@ const pedidoSchema =
         required: true,
         default: 0,
         min: 0,
+      },
+
+
+      metodoPago: {
+        type: String,
+
+        enum: [
+          "Efectivo",
+          "Transferencia",
+          "Crédito",
+        ],
+
+        default: "Efectivo",
       },
 
 
@@ -243,6 +270,12 @@ const pedidoSchema =
 
 pedidoSchema.index({
   cliente: 1,
+  createdAt: -1,
+});
+
+
+pedidoSchema.index({
+  empleado: 1,
   createdAt: -1,
 });
 

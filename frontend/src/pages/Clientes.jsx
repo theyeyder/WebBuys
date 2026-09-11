@@ -1554,337 +1554,358 @@ export default function Clientes() {
 
       <div className="clientes-main-form">
 
+        {/* ===================================
+            IDENTIFICACIÓN
+        ==================================== */}
 
-        {/* CÓDIGO */}
+        <div className="clientes-form-section clientes-form-section--identificacion">
 
-        <div className="clientes-field clientes-field-codigo">
+          <div className="clientes-form-section-header">
+            <h3>Identificación</h3>
+            <span>Datos principales del cliente</span>
+          </div>
 
-          <label>
-            Código
-          </label>
+          <div className="clientes-form-section-grid clientes-form-section-grid--identificacion">
 
-          <input
-            type="text"
-            name="codigo"
-            value={
-              form.codigo
-            }
-            readOnly
-            placeholder="Código automático"
-          />
+            {/* CÓDIGO */}
 
-        </div>
+            <div className="clientes-field clientes-field-codigo">
 
+              <label>
+                Código
+              </label>
 
-        {/* TIPO */}
+              <input
+                type="text"
+                name="codigo"
+                value={form.codigo}
+                readOnly
+                placeholder="Código automático"
+              />
 
-        <div className="clientes-field clientes-field-tipo">
-
-          <label>
-            Tipo
-          </label>
-
-          <select
-            name="tipoDocumento"
-            value={
-              form.tipoDocumento
-            }
-            onChange={cambiar}
-            disabled={guardando}
-          >
-            <option value="CC">
-              CC
-            </option>
-
-            <option value="NIT">
-              NIT
-            </option>
-          </select>
-
-        </div>
+            </div>
 
 
-        {/* DOCUMENTO */}
+            {/* TIPO DOCUMENTO */}
 
-        <div className="clientes-field">
+            <div className="clientes-field clientes-field-tipo">
 
-          <label>
-            Documento *
-          </label>
+              <label>
+                Tipo de documento
+              </label>
 
-          <input
-            type="text"
-            name="documento"
-            value={
-              form.documento
-            }
-            onChange={cambiar}
-            placeholder={
-              form.tipoDocumento ===
-              "NIT"
-                ? "900123456-7"
-                : "Número de cédula"
-            }
-            disabled={guardando}
-          />
+              <select
+                name="tipoDocumento"
+                value={form.tipoDocumento}
+                onChange={cambiar}
+                disabled={guardando}
+              >
+                <option value="CC">
+                  CC
+                </option>
 
-        </div>
+                <option value="NIT">
+                  NIT
+                </option>
+              </select>
 
-
-        {/* NOMBRE */}
-
-        <div className="clientes-field">
-
-          <label>
-            Nombre *
-          </label>
-
-          <input
-            type="text"
-            name="nombre"
-            value={
-              form.nombre
-            }
-            onChange={cambiar}
-            placeholder="Nombre del cliente"
-            disabled={guardando}
-          />
-
-        </div>
+            </div>
 
 
-        {/* RAZÓN SOCIAL */}
+            {/* DOCUMENTO */}
 
-        <div className="clientes-field">
+            <div className="clientes-field clientes-field-documento">
 
-          <label>
-            Razón social
-          </label>
+              <label>
+                Documento *
+              </label>
 
-          <input
-            type="text"
-            name="razonSocial"
-            value={
-              form.razonSocial
-            }
-            onChange={cambiar}
-            placeholder="Razón social"
-            disabled={guardando}
-          />
+              <input
+                type="text"
+                name="documento"
+                value={form.documento}
+                onChange={cambiar}
+                placeholder={
+                  form.tipoDocumento === "NIT"
+                    ? "900123456-7"
+                    : "Número de cédula"
+                }
+                disabled={guardando}
+              />
 
-        </div>
+            </div>
 
 
-        {/* TELÉFONO */}
+            {/* NOMBRE */}
 
-        <div className="clientes-field">
+            <div className="clientes-field clientes-field-nombre">
 
-          <label>
-            Teléfono
-          </label>
+              <label>
+                Nombre *
+              </label>
 
-          <input
-            type="text"
-            name="telefono"
-            value={
-              form.telefono
-            }
-            onChange={cambiar}
-            placeholder="Teléfono"
-            disabled={guardando}
-          />
+              <input
+                type="text"
+                name="nombre"
+                value={form.nombre}
+                onChange={cambiar}
+                placeholder="Nombre del cliente"
+                disabled={guardando}
+              />
+
+            </div>
+
+
+            {/* RAZÓN SOCIAL */}
+
+            <div className="clientes-field clientes-field-razon-social">
+
+              <label>
+                Razón social
+              </label>
+
+              <input
+                type="text"
+                name="razonSocial"
+                value={form.razonSocial}
+                onChange={cambiar}
+                placeholder="Razón social"
+                disabled={guardando}
+              />
+
+            </div>
+
+          </div>
 
         </div>
 
 
-        {/* DIRECCIÓN */}
+        {/* ===================================
+            CONTACTO Y UBICACIÓN
+        ==================================== */}
 
-        <div className="clientes-field">
+        <div className="clientes-form-section clientes-form-section--contacto">
 
-          <label>
-            Dirección
-          </label>
+          <div className="clientes-form-section-header">
+            <h3>Contacto y ubicación</h3>
+            <span>Información para comunicación y despacho</span>
+          </div>
 
-          <input
-            type="text"
-            name="direccion"
-            value={
-              form.direccion
-            }
-            onChange={cambiar}
-            placeholder="Dirección"
-            disabled={guardando}
-          />
+          <div className="clientes-form-section-grid clientes-form-section-grid--contacto">
 
-        </div>
+            {/* TELÉFONO */}
 
+            <div className="clientes-field clientes-field-telefono">
 
-        {/* BARRIO */}
+              <label>
+                Teléfono
+              </label>
 
-        <div className="clientes-field">
+              <input
+                type="text"
+                name="telefono"
+                value={form.telefono}
+                onChange={cambiar}
+                placeholder="Teléfono"
+                disabled={guardando}
+              />
 
-          <label>
-            Barrio
-          </label>
-
-          <input
-            type="text"
-            name="barrio"
-            value={
-              form.barrio
-            }
-            onChange={cambiar}
-            placeholder="Barrio"
-            disabled={guardando}
-          />
-
-        </div>
+            </div>
 
 
-        {/* ZONA */}
+            {/* DIRECCIÓN */}
 
-        <div className="clientes-field">
+            <div className="clientes-field clientes-field-direccion">
 
-          <label>
-            Zona de despacho
-          </label>
+              <label>
+                Dirección
+              </label>
 
-          <select
-            name="zonaDespacho"
-            value={
-              form.zonaDespacho
-            }
-            onChange={cambiar}
-            disabled={guardando}
-          >
+              <input
+                type="text"
+                name="direccion"
+                value={form.direccion}
+                onChange={cambiar}
+                placeholder="Dirección"
+                disabled={guardando}
+              />
 
-            <option value="">
-              Seleccione una zona
-            </option>
+            </div>
 
 
-            {zonas
-              .filter(
-                (zona) =>
-                  zona.estado ===
-                    "Activa" ||
-                  zona.estado ===
-                    true
-              )
-              .map(
-                (zona) => (
+            {/* BARRIO */}
 
-                  <option
-                    key={
-                      zona._id
-                    }
-                    value={
-                      zona._id
-                    }
-                  >
-                    {zona.nombre}
-                  </option>
+            <div className="clientes-field clientes-field-barrio">
 
-                )
-              )}
+              <label>
+                Barrio
+              </label>
 
-          </select>
+              <input
+                type="text"
+                name="barrio"
+                value={form.barrio}
+                onChange={cambiar}
+                placeholder="Barrio"
+                disabled={guardando}
+              />
 
-        </div>
+            </div>
 
 
-        {/* CIUDAD */}
+            {/* CIUDAD */}
 
-        <div className="clientes-field">
+            <div className="clientes-field clientes-field-ciudad">
 
-          <label>
-            Ciudad
-          </label>
+              <label>
+                Ciudad
+              </label>
 
-          <input
-            type="text"
-            name="ciudad"
-            value={
-              form.ciudad
-            }
-            onChange={cambiar}
-            placeholder="Ciudad"
-            disabled={guardando}
-          />
+              <input
+                type="text"
+                name="ciudad"
+                value={form.ciudad}
+                onChange={cambiar}
+                placeholder="Ciudad"
+                disabled={guardando}
+              />
 
-        </div>
+            </div>
 
 
-        {/* TIPO CLIENTE */}
+            {/* ZONA */}
 
-        <div className="clientes-field">
+            <div className="clientes-field clientes-field-zona">
 
-          <label>
-            Tipo de cliente
-          </label>
+              <label>
+                Zona de despacho
+              </label>
 
-          <select
-            name="tipoCliente"
-            value={
-              form.tipoCliente
-            }
-            onChange={cambiar}
-            disabled={guardando}
-          >
+              <select
+                name="zonaDespacho"
+                value={form.zonaDespacho}
+                onChange={cambiar}
+                disabled={guardando}
+              >
 
-            <option value="Tienda">
-              Tienda
-            </option>
+                <option value="">
+                  Seleccione una zona
+                </option>
 
-            <option value="Restaurante">
-              Restaurante
-            </option>
 
-            <option value="Supermercado">
-              Supermercado
-            </option>
+                {zonas
+                  .filter(
+                    (zona) =>
+                      zona.estado === "Activa" ||
+                      zona.estado === true
+                  )
+                  .map(
+                    (zona) => (
 
-            <option value="Persona Natural">
-              Persona Natural
-            </option>
+                      <option
+                        key={zona._id}
+                        value={zona._id}
+                      >
+                        {zona.nombre}
+                      </option>
 
-            <option value="Otro">
-              Otro
-            </option>
+                    )
+                  )}
 
-          </select>
+              </select>
+
+            </div>
+
+          </div>
 
         </div>
 
 
-        {/* ESTADO */}
+        {/* ===================================
+            CONFIGURACIÓN DEL CLIENTE
+        ==================================== */}
 
-        <div className="clientes-field clientes-field-estado">
+        <div className="clientes-form-section clientes-form-section--configuracion">
 
-          <label>
-            Estado
-          </label>
+          <div className="clientes-form-section-header">
+            <h3>Configuración del cliente</h3>
+            <span>Clasificación y estado del registro</span>
+          </div>
 
-          <select
-            name="estado"
-            value={
-              form.estado
-                ? "true"
-                : "false"
-            }
-            onChange={cambiar}
-            disabled={guardando}
-          >
+          <div className="clientes-form-section-grid clientes-form-section-grid--configuracion">
 
-            <option value="true">
-              Activo
-            </option>
+            {/* TIPO CLIENTE */}
 
-            <option value="false">
-              Inactivo
-            </option>
+            <div className="clientes-field clientes-field-tipo-cliente">
 
-          </select>
+              <label>
+                Tipo de cliente
+              </label>
+
+              <select
+                name="tipoCliente"
+                value={form.tipoCliente}
+                onChange={cambiar}
+                disabled={guardando}
+              >
+
+                <option value="Tienda">
+                  Tienda
+                </option>
+
+                <option value="Restaurante">
+                  Restaurante
+                </option>
+
+                <option value="Supermercado">
+                  Supermercado
+                </option>
+
+                <option value="Persona Natural">
+                  Persona Natural
+                </option>
+
+                <option value="Otro">
+                  Otro
+                </option>
+
+              </select>
+
+            </div>
+
+
+            {/* ESTADO */}
+
+            <div className="clientes-field clientes-field-estado">
+
+              <label>
+                Estado
+              </label>
+
+              <select
+                name="estado"
+                value={
+                  form.estado
+                    ? "true"
+                    : "false"
+                }
+                onChange={cambiar}
+                disabled={guardando}
+              >
+
+                <option value="true">
+                  Activo
+                </option>
+
+                <option value="false">
+                  Inactivo
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
 
         </div>
 

@@ -7,6 +7,9 @@ import Producto
 import Cliente
   from "../models/Cliente.js";
 
+import Usuario
+  from "../models/Usuario.js";
+
 import Consecutivo
   from "../models/Consecutivo.js";
 
@@ -20,6 +23,63 @@ import {
 
 
 /* =========================================
+   VALIDAR EMPLEADO
+========================================= */
+
+async function validarEmpleado(
+  empleadoId
+) {
+
+  if (!empleadoId) {
+    return null;
+  }
+
+
+  const empleado =
+    await Usuario.findById(
+      empleadoId
+    );
+
+
+  if (!empleado) {
+
+    throw new Error(
+      "El empleado seleccionado no existe."
+    );
+
+  }
+
+
+  if (
+    empleado.rol !==
+    "Empleado"
+  ) {
+
+    throw new Error(
+      "El usuario seleccionado no corresponde a un empleado."
+    );
+
+  }
+
+
+  if (
+    empleado.estado !==
+    "Activo"
+  ) {
+
+    throw new Error(
+      "El empleado seleccionado no está activo."
+    );
+
+  }
+
+
+  return empleado;
+
+}
+
+
+/* =========================================
    LISTAR PEDIDOS
 ========================================= */
 
@@ -30,21 +90,31 @@ export const listarPedidos =
 
       const pedidos =
         await Pedido.find()
+
           .populate(
             "cliente",
             "codigo documento nombre telefono zonaDespacho"
           )
+
+          .populate(
+            "empleado",
+            "codigo nombres apellidos documento"
+          )
+
           .populate(
             "items.producto",
             "codigo nombre categoria"
           )
+
           .populate(
             "creadoPor",
-            "nombres apellidos usuario"
+            "nombres apellidos"
           )
+
           .sort({
             createdAt: -1,
           });
+
 
       return res.json(
         pedidos
@@ -56,6 +126,7 @@ export const listarPedidos =
         "Error listando pedidos:",
         error
       );
+
 
       return res.status(500).json({
         mensaje:
@@ -81,13 +152,22 @@ export const obtenerSiguienteCodigoPedido =
           clave: "pedidos",
         });
 
+
       const siguiente =
-        (consecutivo?.ultimoNumero || 0) + 1;
+        (
+          consecutivo?.ultimoNumero ||
+          0
+        ) + 1;
+
 
       const codigo =
         `PED-${String(
           siguiente
-        ).padStart(4, "0")}`;
+        ).padStart(
+          4,
+          "0"
+        )}`;
+
 
       return res.json({
         codigo,
@@ -99,6 +179,7 @@ export const obtenerSiguienteCodigoPedido =
         "Error obteniendo código de pedido:",
         error
       );
+
 
       return res.status(500).json({
         mensaje:
@@ -134,7 +215,8 @@ async function calcularItemPedido(
 
 
   if (
-    producto.estado !== "Activo"
+    producto.estado !==
+    "Activo"
   ) {
 
     throw new Error(
@@ -151,7 +233,9 @@ async function calcularItemPedido(
 
 
   if (
-    !Number.isFinite(cantidad) ||
+    !Number.isFinite(
+      cantidad
+    ) ||
     cantidad <= 0
   ) {
 
@@ -168,35 +252,47 @@ async function calcularItemPedido(
 
   let precioNormal =
     Number(
-      producto.precioVenta || 0
+      producto.precioVenta ||
+      0
     );
+
 
   let tipoVenta =
     producto.tipoVenta;
 
+
   let unidad =
     producto.unidad;
 
+
   let reglasPrecio =
-    producto.reglasPrecio || [];
+    producto.reglasPrecio ||
+    [];
+
 
   let presentacionId =
     null;
+
 
   let presentacionNombre =
     "";
 
 
-  if (item.presentacionId) {
+  if (
+    item.presentacionId
+  ) {
 
     const presentacion =
-      producto.presentacionesAdicionales
+      producto
+        .presentacionesAdicionales
         ?.id(
           item.presentacionId
         );
 
 
-    if (!presentacion) {
+    if (
+      !presentacion
+    ) {
 
       throw new Error(
         `La presentación seleccionada de "${producto.nombre}" no existe.`
@@ -223,18 +319,23 @@ async function calcularItemPedido(
         0
       );
 
+
     tipoVenta =
       presentacion.tipoVenta;
 
+
     unidad =
       presentacion.unidad;
+
 
     reglasPrecio =
       presentacion.reglasPrecio ||
       [];
 
+
     presentacionId =
       presentacion._id;
+
 
     presentacionNombre =
       presentacion.nombre;
@@ -248,26 +349,36 @@ async function calcularItemPedido(
 
   const precioAplicado =
     calcularPrecioProducto({
+
       precioVenta:
         precioNormal,
 
       reglasPrecio,
 
       cantidad,
+
     });
 
 
   const reglasCumplidas =
     reglasPrecio
+
       .filter(
         (regla) =>
-          Number(regla.desde) <=
+          Number(
+            regla.desde
+          ) <=
           cantidad
       )
+
       .sort(
         (a, b) =>
-          Number(b.desde) -
-          Number(a.desde)
+          Number(
+            b.desde
+          ) -
+          Number(
+            a.desde
+          )
       );
 
 
@@ -279,8 +390,12 @@ async function calcularItemPedido(
   const aplicoPrecioCantidad =
     Boolean(
       reglaAplicada &&
-      Number(precioAplicado) !==
-      Number(precioNormal)
+      Number(
+        precioAplicado
+      ) !==
+      Number(
+        precioNormal
+      )
     );
 
 
@@ -289,7 +404,9 @@ async function calcularItemPedido(
       (
         cantidad *
         precioAplicado
-      ).toFixed(2)
+      ).toFixed(
+        2
+      )
     );
 
 
@@ -344,20 +461,40 @@ export const crearPedido =
     try {
 
       const {
+
         cliente,
+
+        empleado = null,
+
         items = [],
+
         descuento = 0,
+
+        metodoPago = "Efectivo",
+
         fechaEntrega,
+
         observaciones = "",
+
       } = req.body;
 
 
-      if (!cliente) {
+      /* =====================================
+         VALIDAR CLIENTE
+      ===================================== */
 
-        return res.status(400).json({
-          mensaje:
-            "Debes seleccionar un cliente.",
-        });
+      if (
+        !cliente
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              "Debes seleccionar un cliente.",
+
+          });
 
       }
 
@@ -368,33 +505,116 @@ export const crearPedido =
         );
 
 
-      if (!clienteExiste) {
+      if (
+        !clienteExiste
+      ) {
 
-        return res.status(404).json({
-          mensaje:
-            "El cliente seleccionado no existe.",
-        });
+        return res
+          .status(404)
+          .json({
+
+            mensaje:
+              "El cliente seleccionado no existe.",
+
+          });
 
       }
+
+
+      /* =====================================
+         VALIDAR EMPLEADO
+      ===================================== */
+
+      let empleadoExiste =
+        null;
 
 
       if (
-        !Array.isArray(items) ||
-        items.length === 0
+        empleado
       ) {
 
-        return res.status(400).json({
-          mensaje:
-            "El pedido debe tener al menos un producto.",
-        });
+        try {
+
+          empleadoExiste =
+            await validarEmpleado(
+              empleado
+            );
+
+        } catch (error) {
+
+          return res
+            .status(400)
+            .json({
+
+              mensaje:
+                error.message,
+
+            });
+
+        }
 
       }
 
 
-      /* CALCULAR ITEMS */
+      /* =====================================
+         VALIDAR MÉTODO DE PAGO
+      ===================================== */
+
+      const metodosPagoValidos = [
+        "Efectivo",
+        "Transferencia",
+        "Crédito",
+      ];
+
+
+      if (
+        !metodosPagoValidos.includes(
+          metodoPago
+        )
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              "El tipo de pago seleccionado no es válido.",
+
+          });
+
+      }
+
+
+      /* =====================================
+         VALIDAR ITEMS
+      ===================================== */
+
+      if (
+        !Array.isArray(
+          items
+        ) ||
+        items.length === 0
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              "El pedido debe tener al menos un producto.",
+
+          });
+
+      }
+
+
+      /* =====================================
+         CALCULAR ITEMS
+      ===================================== */
 
       const itemsCalculados =
         [];
+
 
       for (
         const item
@@ -406,6 +626,7 @@ export const crearPedido =
             item
           );
 
+
         itemsCalculados.push(
           calculado
         );
@@ -413,11 +634,14 @@ export const crearPedido =
       }
 
 
-      /* SUBTOTAL */
+      /* =====================================
+         SUBTOTAL
+      ===================================== */
 
       const subtotal =
         Number(
           itemsCalculados
+
             .reduce(
               (
                 acumulado,
@@ -430,15 +654,21 @@ export const crearPedido =
 
               0
             )
-            .toFixed(2)
+
+            .toFixed(
+              2
+            )
         );
 
 
-      /* DESCUENTO */
+      /* =====================================
+         DESCUENTO
+      ===================================== */
 
       const descuentoNumero =
         Number(
-          descuento || 0
+          descuento ||
+          0
         );
 
 
@@ -449,10 +679,14 @@ export const crearPedido =
         descuentoNumero < 0
       ) {
 
-        return res.status(400).json({
-          mensaje:
-            "El descuento no es válido.",
-        });
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              "El descuento no es válido.",
+
+          });
 
       }
 
@@ -462,24 +696,36 @@ export const crearPedido =
         subtotal
       ) {
 
-        return res.status(400).json({
-          mensaje:
-            "El descuento no puede superar el subtotal.",
-        });
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              "El descuento no puede superar el subtotal.",
+
+          });
 
       }
 
+
+      /* =====================================
+         TOTAL
+      ===================================== */
 
       const total =
         Number(
           (
             subtotal -
             descuentoNumero
-          ).toFixed(2)
+          ).toFixed(
+            2
+          )
         );
 
 
-      /* CONSECUTIVO */
+      /* =====================================
+         CONSECUTIVO
+      ===================================== */
 
       const codigo =
         await generarConsecutivo(
@@ -488,33 +734,58 @@ export const crearPedido =
         );
 
 
+      /* =====================================
+         CREAR PEDIDO
+      ===================================== */
+
       const pedido =
         await Pedido.create({
 
           codigo,
 
+
           cliente:
             clienteExiste._id,
+
+
+          empleado:
+            empleadoExiste
+              ? empleadoExiste._id
+              : null,
+
 
           items:
             itemsCalculados,
 
+
           subtotal,
+
 
           descuento:
             descuentoNumero,
 
+
           total,
+
+
+          metodoPago,
+
 
           estado:
             "Pendiente",
+
 
           fechaEntrega:
             fechaEntrega ||
             null,
 
+
           observaciones:
-            observaciones.trim(),
+            String(
+              observaciones ||
+              ""
+            ).trim(),
+
 
           creadoPor:
             req.usuario?._id ||
@@ -523,13 +794,29 @@ export const crearPedido =
         });
 
 
+      /* =====================================
+         POPULATE
+      ===================================== */
+
       await pedido.populate([
+
         {
-          path: "cliente",
+          path:
+            "cliente",
 
           select:
             "codigo documento nombre telefono zonaDespacho",
         },
+
+
+        {
+          path:
+            "empleado",
+
+          select:
+            "codigo nombres apellidos documento",
+        },
+
 
         {
           path:
@@ -539,13 +826,15 @@ export const crearPedido =
             "codigo nombre categoria",
         },
 
+
         {
           path:
             "creadoPor",
 
           select:
-            "nombres apellidos usuario",
+            "nombres apellidos",
         },
+
       ]);
 
 
@@ -568,11 +857,15 @@ export const crearPedido =
       );
 
 
-      return res.status(500).json({
-        mensaje:
-          error.message ||
-          "No fue posible crear el pedido.",
-      });
+      return res
+        .status(500)
+        .json({
+
+          mensaje:
+            error.message ||
+            "No fue posible crear el pedido.",
+
+        });
 
     }
 
@@ -594,12 +887,18 @@ export const actualizarPedido =
         );
 
 
-      if (!pedido) {
+      if (
+        !pedido
+      ) {
 
-        return res.status(404).json({
-          mensaje:
-            "Pedido no encontrado.",
-        });
+        return res
+          .status(404)
+          .json({
+
+            mensaje:
+              "Pedido no encontrado.",
+
+          });
 
       }
 
@@ -613,22 +912,40 @@ export const actualizarPedido =
         )
       ) {
 
-        return res.status(400).json({
-          mensaje:
-            "No puedes modificar un pedido entregado o cancelado.",
-        });
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              "No puedes modificar un pedido entregado o cancelado.",
+
+          });
 
       }
 
 
       const {
+
         cliente,
+
+        empleado = null,
+
         items = [],
+
         descuento = 0,
+
+        metodoPago = "Efectivo",
+
         fechaEntrega,
+
         observaciones = "",
+
       } = req.body;
 
+
+      /* =====================================
+         VALIDAR CLIENTE
+      ===================================== */
 
       const clienteExiste =
         await Cliente.findById(
@@ -636,28 +953,112 @@ export const actualizarPedido =
         );
 
 
-      if (!clienteExiste) {
+      if (
+        !clienteExiste
+      ) {
 
-        return res.status(404).json({
-          mensaje:
-            "El cliente seleccionado no existe.",
-        });
+        return res
+          .status(404)
+          .json({
+
+            mensaje:
+              "El cliente seleccionado no existe.",
+
+          });
 
       }
+
+
+      /* =====================================
+         VALIDAR EMPLEADO
+      ===================================== */
+
+      let empleadoExiste =
+        null;
 
 
       if (
-        !Array.isArray(items) ||
-        items.length === 0
+        empleado
       ) {
 
-        return res.status(400).json({
-          mensaje:
-            "El pedido debe tener al menos un producto.",
-        });
+        try {
+
+          empleadoExiste =
+            await validarEmpleado(
+              empleado
+            );
+
+        } catch (error) {
+
+          return res
+            .status(400)
+            .json({
+
+              mensaje:
+                error.message,
+
+            });
+
+        }
 
       }
 
+
+      /* =====================================
+         VALIDAR MÉTODO DE PAGO
+      ===================================== */
+
+      const metodosPagoValidos = [
+        "Efectivo",
+        "Transferencia",
+        "Crédito",
+      ];
+
+
+      if (
+        !metodosPagoValidos.includes(
+          metodoPago
+        )
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              "El tipo de pago seleccionado no es válido.",
+
+          });
+
+      }
+
+
+      /* =====================================
+         VALIDAR ITEMS
+      ===================================== */
+
+      if (
+        !Array.isArray(
+          items
+        ) ||
+        items.length === 0
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              "El pedido debe tener al menos un producto.",
+
+          });
+
+      }
+
+
+      /* =====================================
+         RECALCULAR ITEMS
+      ===================================== */
 
       const itemsCalculados =
         [];
@@ -669,17 +1070,24 @@ export const actualizarPedido =
       ) {
 
         itemsCalculados.push(
+
           await calcularItemPedido(
             item
           )
+
         );
 
       }
 
 
+      /* =====================================
+         SUBTOTAL
+      ===================================== */
+
       const subtotal =
         Number(
           itemsCalculados
+
             .reduce(
               (
                 acumulado,
@@ -692,68 +1100,124 @@ export const actualizarPedido =
 
               0
             )
-            .toFixed(2)
+
+            .toFixed(
+              2
+            )
         );
 
 
+      /* =====================================
+         DESCUENTO
+      ===================================== */
+
       const descuentoNumero =
         Number(
-          descuento || 0
+          descuento ||
+          0
         );
 
 
       if (
+        !Number.isFinite(
+          descuentoNumero
+        ) ||
         descuentoNumero < 0 ||
         descuentoNumero >
         subtotal
       ) {
 
-        return res.status(400).json({
-          mensaje:
-            "El descuento no es válido.",
-        });
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              "El descuento no es válido.",
+
+          });
 
       }
 
 
+      /* =====================================
+         ACTUALIZAR
+      ===================================== */
+
       pedido.cliente =
         clienteExiste._id;
+
+
+      pedido.empleado =
+        empleadoExiste
+          ? empleadoExiste._id
+          : null;
+
 
       pedido.items =
         itemsCalculados;
 
+
       pedido.subtotal =
         subtotal;
 
+
       pedido.descuento =
         descuentoNumero;
+
 
       pedido.total =
         Number(
           (
             subtotal -
             descuentoNumero
-          ).toFixed(2)
+          ).toFixed(
+            2
+          )
         );
+
+
+      pedido.metodoPago =
+        metodoPago;
+
 
       pedido.fechaEntrega =
         fechaEntrega ||
         null;
 
+
       pedido.observaciones =
-        observaciones.trim();
+        String(
+          observaciones ||
+          ""
+        ).trim();
 
 
       await pedido.save();
 
 
+      /* =====================================
+         POPULATE
+      ===================================== */
+
       await pedido.populate([
+
         {
-          path: "cliente",
+          path:
+            "cliente",
 
           select:
             "codigo documento nombre telefono zonaDespacho",
         },
+
+
+        {
+          path:
+            "empleado",
+
+          select:
+            "codigo nombres apellidos documento",
+        },
+
 
         {
           path:
@@ -762,6 +1226,16 @@ export const actualizarPedido =
           select:
             "codigo nombre categoria",
         },
+
+
+        {
+          path:
+            "creadoPor",
+
+          select:
+            "nombres apellidos",
+        },
+
       ]);
 
 
@@ -782,11 +1256,15 @@ export const actualizarPedido =
       );
 
 
-      return res.status(500).json({
-        mensaje:
-          error.message ||
-          "No fue posible actualizar el pedido.",
-      });
+      return res
+        .status(500)
+        .json({
+
+          mensaje:
+            error.message ||
+            "No fue posible actualizar el pedido.",
+
+        });
 
     }
 
@@ -822,10 +1300,14 @@ export const cambiarEstadoPedido =
         )
       ) {
 
-        return res.status(400).json({
-          mensaje:
-            "El estado indicado no es válido.",
-        });
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              "El estado indicado no es válido.",
+
+          });
 
       }
 
@@ -836,12 +1318,18 @@ export const cambiarEstadoPedido =
         );
 
 
-      if (!pedido) {
+      if (
+        !pedido
+      ) {
 
-        return res.status(404).json({
-          mensaje:
-            "Pedido no encontrado.",
-        });
+        return res
+          .status(404)
+          .json({
+
+            mensaje:
+              "Pedido no encontrado.",
+
+          });
 
       }
 
@@ -871,10 +1359,14 @@ export const cambiarEstadoPedido =
       );
 
 
-      return res.status(500).json({
-        mensaje:
-          "No fue posible cambiar el estado del pedido.",
-      });
+      return res
+        .status(500)
+        .json({
+
+          mensaje:
+            "No fue posible cambiar el estado del pedido.",
+
+        });
 
     }
 
@@ -896,12 +1388,18 @@ export const eliminarPedido =
         );
 
 
-      if (!pedido) {
+      if (
+        !pedido
+      ) {
 
-        return res.status(404).json({
-          mensaje:
-            "Pedido no encontrado.",
-        });
+        return res
+          .status(404)
+          .json({
+
+            mensaje:
+              "Pedido no encontrado.",
+
+          });
 
       }
 
@@ -911,10 +1409,14 @@ export const eliminarPedido =
         "Entregado"
       ) {
 
-        return res.status(400).json({
-          mensaje:
-            "No puedes eliminar un pedido entregado.",
-        });
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              "No puedes eliminar un pedido entregado.",
+
+          });
 
       }
 
@@ -923,8 +1425,10 @@ export const eliminarPedido =
 
 
       return res.json({
+
         mensaje:
           "Pedido eliminado correctamente.",
+
       });
 
     } catch (error) {
@@ -935,10 +1439,14 @@ export const eliminarPedido =
       );
 
 
-      return res.status(500).json({
-        mensaje:
-          "No fue posible eliminar el pedido.",
-      });
+      return res
+        .status(500)
+        .json({
+
+          mensaje:
+            "No fue posible eliminar el pedido.",
+
+        });
 
     }
 
