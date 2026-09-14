@@ -2491,7 +2491,7 @@ export default function Pedidos() {
               </td>
 
               <td>
-                ${item.cantidad} ${item.unidad || ""}
+                ${item.cantidad}
               </td>
 
               <td>
@@ -4293,8 +4293,7 @@ export default function Pedidos() {
 
 
                                 <td>
-                                  {item.cantidad}{" "}
-                                  {item.unidad}
+                                  {item.cantidad}
                                 </td>
 
 
