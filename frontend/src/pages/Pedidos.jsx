@@ -73,6 +73,7 @@ import cerrarIcon
 const FORM_INICIAL = {
   cliente: "",
   empleado: "",
+  metodoPago: "Efectivo",
   fechaEntrega: "",
   descuento: "",
   observaciones: "",
@@ -1427,6 +1428,10 @@ export default function Pedidos() {
       nombre:
         productoActual.nombre,
 
+      marca:
+        productoActual.marca ||
+        "",
+
       presentacionId:
         presentacionSeleccionada ||
         null,
@@ -1601,6 +1606,9 @@ export default function Pedidos() {
         empleado:
           form.empleado ||
           null,
+
+        metodoPago:
+          form.metodoPago,
 
         fechaEntrega:
           form.fechaEntrega ||
@@ -1797,6 +1805,10 @@ export default function Pedidos() {
         pedido.empleado ||
         "",
 
+      metodoPago:
+        pedido.metodoPago ||
+        "Efectivo",
+
       fechaEntrega:
         pedido.fechaEntrega
           ? String(
@@ -1840,6 +1852,11 @@ export default function Pedidos() {
 
             nombre:
               item.nombre,
+
+            marca:
+              item.marca ||
+              item.producto?.marca ||
+              "",
 
             presentacionId:
               item.presentacionId ||
@@ -2004,6 +2021,10 @@ export default function Pedidos() {
         pedidoSeleccionado.empleado ||
         "",
 
+      metodoPago:
+        pedidoSeleccionado.metodoPago ||
+        "Efectivo",
+
       fechaEntrega:
         pedidoSeleccionado
           .fechaEntrega
@@ -2053,6 +2074,11 @@ export default function Pedidos() {
 
             nombre:
               item.nombre,
+
+            marca:
+              item.marca ||
+              item.producto?.marca ||
+              "",
 
             presentacionId:
               item.presentacionId ||
@@ -2461,6 +2487,10 @@ export default function Pedidos() {
               </td>
 
               <td>
+                ${item.marca || item.producto?.marca || "Sin marca"}
+              </td>
+
+              <td>
                 ${item.cantidad} ${item.unidad || ""}
               </td>
 
@@ -2616,6 +2646,14 @@ export default function Pedidos() {
           <br>
 
           <strong>
+            Tipo de pago:
+          </strong>
+
+          ${pedido.metodoPago || "Efectivo"}
+
+          <br>
+
+          <strong>
             Empleado:
           </strong>
 
@@ -2637,6 +2675,7 @@ export default function Pedidos() {
             <tr>
               <th>Código</th>
               <th>Producto</th>
+              <th>Marca</th>
               <th>Cantidad</th>
               <th>Precio</th>
               <th>Subtotal</th>
@@ -3065,6 +3104,28 @@ export default function Pedidos() {
                       <div className="pedidos-client-card-info">
 
                         <div>
+                          <span>Tipo de pago</span>
+                          <strong
+                            className={
+                              `pedidos-payment pedidos-payment-${
+                                String(
+                                  pedido.metodoPago ||
+                                  "Efectivo"
+                                )
+                                  .toLowerCase()
+                                  .normalize("NFD")
+                                  .replace(
+                                    /[\u0300-\u036f]/g,
+                                    ""
+                                  )
+                              }`
+                            }
+                          >
+                            {pedido.metodoPago || "Efectivo"}
+                          </strong>
+                        </div>
+
+                        <div>
 
                           <span>
                             Fecha pedido
@@ -3297,6 +3358,10 @@ export default function Pedidos() {
                     </th>
 
                     <th>
+                      Tipo de pago
+                    </th>
+
+                    <th>
                       Estado
                     </th>
 
@@ -3472,6 +3537,29 @@ export default function Pedidos() {
 
                           </td>
 
+
+                          {/* TIPO DE PAGO */}
+
+                          <td>
+                            <span
+                              className={
+                                `pedidos-payment pedidos-payment-${
+                                  String(
+                                    pedido.metodoPago ||
+                                    "Efectivo"
+                                  )
+                                    .toLowerCase()
+                                    .normalize("NFD")
+                                    .replace(
+                                      /[\u0300-\u036f]/g,
+                                      ""
+                                    )
+                                }`
+                              }
+                            >
+                              {pedido.metodoPago || "Efectivo"}
+                            </span>
+                          </td>
 
                           {/* ESTADO */}
 
@@ -3962,80 +4050,71 @@ export default function Pedidos() {
                     </label>
 
 
-                    {productoActual
-                      ?.presentacionesAdicionales
-                      ?.filter(
-                        (
-                          presentacion
-                        ) =>
-                          presentacion.estado ===
-                          "Activo" ||
-                          presentacion.estado ===
-                          true
-                      )
-                      .length >
-                      0 && (
+                    {productoActual && (
 
-                        <label>
+                      <label>
 
-                          Presentación
+                        Presentación
 
-                          <select
-                            value={
-                              presentacionSeleccionada
-                            }
-                            onChange={
-                              (
-                                event
-                              ) =>
-                                setPresentacionSeleccionada(
-                                  event.target
-                                    .value
-                                )
-                            }
-                          >
-
-                            <option value="">
-                              Presentación principal
-                            </option>
-
-                            {productoActual
-                              .presentacionesAdicionales
-                              .filter(
-                                (
-                                  presentacion
-                                ) =>
-                                  presentacion.estado ===
-                                  "Activo" ||
-                                  presentacion.estado ===
-                                  true
+                        <select
+                          value={
+                            presentacionSeleccionada
+                          }
+                          onChange={
+                            (
+                              event
+                            ) =>
+                              setPresentacionSeleccionada(
+                                event.target.value
                               )
-                              .map(
-                                (
-                                  presentacion
-                                ) => (
+                          }
+                        >
 
-                                  <option
-                                    key={
-                                      presentacion._id
-                                    }
-                                    value={
-                                      presentacion._id
-                                    }
-                                  >
-                                    {
-                                      presentacion.nombre
-                                    }
-                                  </option>
+                          <option value="">
+                            {productoActual.unidad ||
+                              "Principal"}
+                          </option>
 
-                                )
-                              )}
+                          {(
+                            productoActual
+                              .presentacionesAdicionales ||
+                            []
+                          )
+                            .filter(
+                              (
+                                presentacion
+                              ) =>
+                                presentacion.estado ===
+                                "Activo" ||
+                                presentacion.estado ===
+                                true
+                            )
+                            .map(
+                              (
+                                presentacion
+                              ) => (
 
-                          </select>
+                                <option
+                                  key={
+                                    presentacion._id
+                                  }
+                                  value={
+                                    presentacion._id
+                                  }
+                                >
+                                  {
+                                    presentacion.nombre
+                                  }
+                                </option>
 
-                        </label>
+                              )
+                            )}
 
-                      )}
+                        </select>
+
+                      </label>
+
+                    )}
 
 
                     <label>
@@ -4147,6 +4226,7 @@ export default function Pedidos() {
 
                         <tr>
                           <th>Producto</th>
+                          <th>Marca</th>
                           <th>Cantidad</th>
                           <th>Precio</th>
                           <th>Subtotal</th>
@@ -4164,7 +4244,7 @@ export default function Pedidos() {
                           <tr>
 
                             <td
-                              colSpan="5"
+                              colSpan="6"
                               className="pedidos-empty"
                             >
                               Agregue productos al pedido.
@@ -4203,6 +4283,12 @@ export default function Pedidos() {
 
                                   )}
 
+                                </td>
+
+
+                                <td>
+                                  {item.marca ||
+                                    "Sin marca"}
                                 </td>
 
 
@@ -4291,6 +4377,26 @@ export default function Pedidos() {
                 <section className="pedidos-form-section">
 
                   <div className="pedidos-final-grid">
+
+                    <label>
+
+                      Tipo de pago
+
+                      <select
+                        value={form.metodoPago}
+                        onChange={(event) =>
+                          setForm((actual) => ({
+                            ...actual,
+                            metodoPago: event.target.value,
+                          }))
+                        }
+                      >
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Transferencia">Transferencia</option>
+                        <option value="Crédito">Crédito</option>
+                      </select>
+
+                    </label>
 
                     <label>
 

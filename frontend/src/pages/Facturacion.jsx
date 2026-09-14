@@ -285,7 +285,7 @@ export default function Facturacion() {
 
 
   /* =========================================
-     PEDIDOS YA FACTURADOS
+     PEDIDOS BLOQUEADOS PARA FACTURAR
   ========================================= */
 
   const pedidosFacturados =
@@ -293,11 +293,38 @@ export default function Facturacion() {
       () =>
         new Set(
           facturas
+
+            /*
+              BLOQUEAMOS EL PEDIDO CUANDO:
+
+              1. Tiene una factura activa.
+
+              2. Tiene una factura anulada
+                 pero todavía NO se ha
+                 presionado Revertir.
+
+              NO BLOQUEAMOS:
+
+              Factura Anulada +
+              fechaReversion existente.
+
+              Eso significa que el pedido
+              puede volver a facturarse.
+            */
+
+            .filter(
+              (factura) =>
+                factura.estado !==
+                  "Anulada" ||
+                !factura.fechaReversion
+            )
+
             .map(
               (factura) =>
                 factura.pedido?._id ||
                 factura.pedido
             )
+
             .filter(
               Boolean
             )
@@ -641,7 +668,7 @@ export default function Facturacion() {
 
     const confirmar =
       window.confirm(
-        `¿Deseas revertir la anulación de la factura ${factura.codigo}?`
+        `¿Deseas habilitar nuevamente el pedido ${factura.pedido?.codigo || factura.pedidoCodigo || ""} para generar una nueva factura?\n\nLa factura ${factura.codigo} continuará anulada.`
       );
 
 
@@ -663,7 +690,11 @@ export default function Facturacion() {
 
 
       setMensaje(
-        `Factura ${factura.codigo} revertida correctamente.`
+        `El pedido ${
+          factura.pedido?.codigo ||
+          factura.pedidoCodigo ||
+          ""
+        } quedó habilitado para generar una nueva factura.`
       );
 
       setTipoMensaje(
@@ -1488,7 +1519,8 @@ export default function Facturacion() {
                           <div className="facturacion-row-actions">
 
                             {factura.estado ===
-                            "Anulada" ? (
+                              "Anulada" &&
+                            !factura.fechaReversion ? (
 
                               <button
                                 type="button"
@@ -1507,6 +1539,17 @@ export default function Facturacion() {
                               >
                                 ↩️
                               </button>
+
+                            ) : factura.estado ===
+                              "Anulada" ? (
+
+                              <span
+                                className="facturacion-action-placeholder"
+                                title="Factura revertida: el pedido ya puede facturarse nuevamente"
+                                aria-label="Factura revertida"
+                              >
+                                ✔️
+                              </span>
 
                             ) : (
 

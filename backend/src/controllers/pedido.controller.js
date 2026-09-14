@@ -103,7 +103,7 @@ export const listarPedidos =
 
           .populate(
             "items.producto",
-            "codigo nombre categoria"
+            "codigo nombre marca categoria"
           )
 
           .populate(
@@ -301,9 +301,14 @@ async function calcularItemPedido(
     }
 
 
+    const presentacionActiva =
+      presentacion.estado === "Activo" ||
+      presentacion.estado === "Activa" ||
+      presentacion.estado === true;
+
+
     if (
-      presentacion.estado !==
-      "Activa"
+      !presentacionActiva
     ) {
 
       throw new Error(
@@ -420,6 +425,10 @@ async function calcularItemPedido(
 
     nombre:
       producto.nombre,
+
+    marca:
+      producto.marca ||
+      "",
 
     tipoVenta,
 
@@ -823,7 +832,7 @@ export const crearPedido =
             "items.producto",
 
           select:
-            "codigo nombre categoria",
+            "codigo nombre marca categoria",
         },
 
 
@@ -1224,7 +1233,7 @@ export const actualizarPedido =
             "items.producto",
 
           select:
-            "codigo nombre categoria",
+            "codigo nombre marca categoria",
         },
 
 

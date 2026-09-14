@@ -1,5 +1,10 @@
 import Factura from "../models/Factura.js";
 import Pedido from "../models/Pedido.js";
+import Consecutivo from "../models/Consecutivo.js";
+
+import {
+  generarConsecutivo,
+} from "../utils/generarConsecutivo.js";
 
 
 /* =========================================
@@ -8,37 +13,75 @@ import Pedido from "../models/Pedido.js";
 
 async function generarConsecutivoFactura() {
 
-  const ultimaFactura =
-    await Factura.findOne()
-      .sort({
-        consecutivo: -1,
-      })
-      .select(
-        "consecutivo"
-      )
-      .lean();
+  /* =====================================
+     SINCRONIZAR CONTADOR INICIAL
+  ===================================== */
+
+  const contador =
+    await Consecutivo.findOne({
+      clave: "facturas",
+    });
+
+
+  /*
+    Solo hacemos esta sincronización
+    cuando todavía no existe el contador.
+  */
+
+  if (!contador) {
+
+    const ultimaFactura =
+      await Factura.findOne()
+        .sort({
+          consecutivo: -1,
+        })
+        .select(
+          "consecutivo"
+        )
+        .lean();
+
+
+    await Consecutivo.create({
+
+      clave:
+        "facturas",
+
+      ultimoNumero:
+        Number(
+          ultimaFactura?.consecutivo ||
+          0
+        ),
+
+    });
+
+  }
+
+
+  /* =====================================
+     GENERAR NUEVO CONSECUTIVO
+  ===================================== */
+
+  const codigo =
+    await generarConsecutivo(
+      "facturas",
+      "FAC"
+    );
 
 
   const consecutivo =
     Number(
-      ultimaFactura?.consecutivo ||
-      0
-    ) + 1;
-
-
-  const codigo =
-    `FAC-${String(
-      consecutivo
-    ).padStart(
-      4,
-      "0"
-    )}`;
+      codigo.replace(
+        "FAC-",
+        ""
+      )
+    );
 
 
   return {
     consecutivo,
     codigo,
   };
+
 }
 
 
@@ -259,26 +302,77 @@ async function crear(
 
 
     /* -----------------------------------------
-       EVITAR FACTURA DUPLICADA
+       VALIDAR FACTURACIÓN ANTERIOR
     ----------------------------------------- */
 
-    const facturaExistente =
+    const ultimaFactura =
       await Factura.findOne({
         pedido:
           pedido._id,
-      });
+      })
 
+        .sort({
+          createdAt: -1,
+        });
+
+
+    /*
+      CASO 1:
+      Nunca se ha facturado este pedido.
+      Puede continuar normalmente.
+
+      CASO 2:
+      Tiene una factura activa.
+      No puede generar otra.
+
+      CASO 3:
+      Tiene una factura anulada,
+      pero todavía no se ha revertido.
+      Debe usar "Revertir".
+
+      CASO 4:
+      Tiene una factura anulada
+      y ya fue revertida.
+      Puede generar una nueva factura.
+    */
 
     if (
-      facturaExistente
+      ultimaFactura
     ) {
 
-      return res.status(
-        400
-      ).json({
-        mensaje:
-          `El pedido ${pedido.codigo} ya tiene una factura generada.`,
-      });
+      if (
+        ultimaFactura.estado !==
+        "Anulada"
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              `El pedido ${pedido.codigo} ya tiene una factura activa (${ultimaFactura.codigo}).`,
+
+          });
+
+      }
+
+
+      if (
+        ultimaFactura.estado ===
+          "Anulada" &&
+        !ultimaFactura.fechaReversion
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              `La factura ${ultimaFactura.codigo} está anulada. Debe revertirla para volver a facturar este pedido.`,
+
+          });
+
+      }
 
     }
 
@@ -471,6 +565,11 @@ async function crear(
             pedido.total ||
             0
           ),
+
+
+        metodoPago:
+          pedido.metodoPago ||
+          "Efectivo",
 
 
         estado:
@@ -742,6 +841,8 @@ async function eliminar(
   }
 
 }
+
+
 /* =========================================
    ANULAR FACTURA
 ========================================= */
@@ -855,6 +956,7 @@ async function anular(
 
 /* =========================================
    REVERTIR ANULACIÓN
+   HABILITA PEDIDO PARA REFACTURAR
 ========================================= */
 
 async function revertir(
@@ -870,36 +972,74 @@ async function revertir(
       );
 
 
-    if (!factura) {
+    if (
+      !factura
+    ) {
 
-      return res.status(
-        404
-      ).json({
-        mensaje:
-          "Factura no encontrada.",
-      });
+      return res
+        .status(404)
+        .json({
+
+          mensaje:
+            "Factura no encontrada.",
+
+        });
 
     }
 
+
+    /* -----------------------------------------
+       SOLO FACTURAS ANULADAS
+    ----------------------------------------- */
 
     if (
       factura.estado !==
       "Anulada"
     ) {
 
-      return res.status(
-        400
-      ).json({
-        mensaje:
-          "Solo se pueden revertir facturas anuladas.",
-      });
+      return res
+        .status(400)
+        .json({
+
+          mensaje:
+            "Solo se pueden revertir facturas anuladas.",
+
+        });
 
     }
 
 
-    factura.estado =
-      "Emitida";
+    /* -----------------------------------------
+       EVITAR REVERTIR DOS VECES
+    ----------------------------------------- */
 
+    if (
+      factura.fechaReversion
+    ) {
+
+      return res
+        .status(400)
+        .json({
+
+          mensaje:
+            "Esta factura ya fue revertida y el pedido ya está habilitado para facturar nuevamente.",
+
+        });
+
+    }
+
+
+    /*
+      IMPORTANTE:
+
+      La factura NO vuelve a Emitida.
+
+      Sigue siendo ANULADA para conservar
+      correctamente el historial.
+
+      fechaReversion indica que el pedido
+      puede volver a facturarse.
+    */
 
     factura.fechaReversion =
       new Date();
@@ -909,10 +1049,12 @@ async function revertir(
 
 
     return res.json({
+
       mensaje:
-        "Factura revertida correctamente.",
+        `Factura ${factura.codigo} revertida. El pedido ${factura.pedidoCodigo} puede facturarse nuevamente.`,
 
       factura,
+
     });
 
 
@@ -924,16 +1066,19 @@ async function revertir(
     );
 
 
-    return res.status(
-      500
-    ).json({
-      mensaje:
-        "Error al revertir la factura.",
-    });
+    return res
+      .status(500)
+      .json({
+
+        mensaje:
+          "Error al revertir la factura.",
+
+      });
 
   }
 
 }
+
 
 /* =========================================
    EXPORTAR CONTROLADOR

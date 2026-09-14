@@ -97,8 +97,6 @@ const facturaSchema =
         ref: "Pedido",
 
         required: true,
-
-        unique: true,
       },
 
 
@@ -300,6 +298,12 @@ const facturaSchema =
 ========================================= */
 
 facturaSchema.index({
+  createdAt: -1,
+});
+
+
+facturaSchema.index({
+  pedido: 1,
   createdAt: -1,
 });
 

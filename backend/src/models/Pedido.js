@@ -32,6 +32,13 @@ const itemPedidoSchema =
       },
 
 
+      marca: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+
       /* =====================================
          FORMA DE VENTA
       ===================================== */

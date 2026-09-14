@@ -104,6 +104,26 @@ const OPCIONES_UNIDAD = [
   "Bandeja",
   "Paquete",
   "Botella",
+  "Libra tajada",
+  "Libra entera",
+  "Media libra tajada",
+  "Media libra entera",
+  "Cuarto tajado",
+  "Cuarto entero",
+  "Bloque entero",
+  "Bloque tajado",
+  "1/2 bloque entero",
+  "1/2 bloque tajado",
+  "Bloque entero Pizza",
+  "Bloque tajado Pizza",
+  "Libra y media al vacío",
+  "1 Litro",
+  "1/2 Litro",
+  "Mini",
+  "250 g",
+  "400 g",
+  "500 g",
+  "Bandeja x12",
 ];
 
 
@@ -118,6 +138,26 @@ const UNIDADES_POR_TIPO_VENTA = {
     "ml",
     "g",
     "Libra",
+    "Libra tajada",
+    "Libra entera",
+    "Media libra tajada",
+    "Media libra entera",
+    "Cuarto tajado",
+    "Cuarto entero",
+    "Bloque entero",
+    "Bloque tajado",
+    "1/2 bloque entero",
+    "1/2 bloque tajado",
+    "Bloque entero Pizza",
+    "Bloque tajado Pizza",
+    "Libra y media al vacío",
+    "1 Litro",
+    "1/2 Litro",
+    "Mini",
+    "250 g",
+    "400 g",
+    "500 g",
+    "Bandeja x12",
   ],
 
   Peso: [
@@ -2308,12 +2348,7 @@ export default function Productos() {
                       onChange={cambiarCampo}
                     >
 
-                      {(
-                        UNIDADES_POR_TIPO_VENTA[
-                          form.tipoVenta
-                        ] ||
-                        OPCIONES_UNIDAD
-                      ).map(
+                      {OPCIONES_UNIDAD.map(
                         (opcion) => (
                           <option
                             key={opcion}
@@ -2678,12 +2713,7 @@ export default function Productos() {
                                 }
                               >
 
-                                {(
-                                  UNIDADES_POR_TIPO_VENTA[
-                                    presentacion.tipoVenta
-                                  ] ||
-                                  OPCIONES_UNIDAD
-                                ).map(
+                                {OPCIONES_UNIDAD.map(
                                   (opcion) => (
                                     <option
                                       key={opcion}

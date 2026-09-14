@@ -3802,3 +3802,81 @@ input[list="pedidos-productos-disponibles"]:focus {
   }
 
 }
+
+/* =========================================================
+   TIPO DE PAGO
+========================================================= */
+
+.pedidos-payment {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 25px;
+
+  padding: 4px 10px;
+
+  border: 1px solid transparent;
+  border-radius: 999px;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+
+/* EFECTIVO */
+
+.pedidos-payment-efectivo {
+  border-color: #a9dfc2;
+
+  background: #e9f8ef;
+
+  color: #16724a;
+}
+
+
+/* TRANSFERENCIA */
+
+.pedidos-payment-transferencia {
+  border-color: #b8d6f1;
+
+  background: #eaf4ff;
+
+  color: #216da8;
+}
+
+
+/* CRÉDITO */
+
+.pedidos-payment-credito {
+  border-color: #efd08b;
+
+  background: #fff5d8;
+
+  color: #9a6400;
+}
+
+
+/* TIPO DE PAGO EN TARJETAS */
+
+.pedidos-client-card-info
+.pedidos-payment {
+  display: inline-flex;
+
+  width: auto;
+  max-width: 100%;
+
+  margin-top: 2px;
+}
+
+
+/* TIPO DE PAGO EN LISTA */
+
+.pedidos-list-table
+.pedidos-payment {
+  min-width: 82px;
+}
