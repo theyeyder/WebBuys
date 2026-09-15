@@ -1191,23 +1191,23 @@
 
 .productos-form-cancel {
   border:
-    1px solid #d0d5dd;
+    1px solid #ffffff;
 
   background: #ffffff;
 
-  color: #475467;
+  color: #be1844;
 }
 
 
 .productos-form-cancel:hover {
-  background: #f5f6f8;
+  background: #f9ffff;
 }
 
 
 .productos-form-save {
   border: none;
 
-  background: #087443;
+  background: #fdfffe;
 
   color: #ffffff;
 
@@ -1220,7 +1220,7 @@
 
 
 .productos-form-save:hover {
-  background: #05603a;
+  background: #4acda8;
 }
 
 

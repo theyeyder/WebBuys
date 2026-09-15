@@ -1317,14 +1317,6 @@ export default function Categorias() {
 
         <div
           className="categorias-form-overlay"
-          onMouseDown={(event) => {
-            if (
-              event.target ===
-              event.currentTarget
-            ) {
-              cerrarFormularioCategoria();
-            }
-          }}
         >
 
           <div className="categorias-form-modal">

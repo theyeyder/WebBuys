@@ -3688,9 +3688,6 @@ export default function Pedidos() {
 
           <div
             className="pedidos-modal-overlay pedidos-modal-overlay-movable"
-            onMouseDown={
-              cerrarModalPedido
-            }
           >
 
             <div
@@ -4661,11 +4658,6 @@ export default function Pedidos() {
 
           <div
             className="pedidos-modal-overlay"
-            onMouseDown={() =>
-              setModalBuscar(
-                false
-              )
-            }
           >
 
             <div

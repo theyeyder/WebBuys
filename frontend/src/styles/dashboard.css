@@ -1,5 +1,47 @@
 /* =========================================================
    DASHBOARD - WEBBUYS
+   Versión consolidada y optimizada
+========================================================= */
+
+/* ---------- Variables de diseño ---------- */
+:root {
+  --db-green-900: #064e3b;
+  --db-green-800: #075c43;
+  --db-green-700: #087554;
+  --db-green-600: #0b805c;
+  --db-green-500: #159a75;
+  --db-green-400: #20a875;
+  --db-green-300: #58a568;
+  --db-green-200: #9fd4b8;
+  --db-green-100: #d7f0e2;
+  --db-green-50:  #effbf5;
+
+  --db-teal-500: #0f8b75;
+  --db-teal-400: #20afb2;
+
+  --db-ink-900: #163d31;
+  --db-ink-700: #213b32;
+  --db-ink-500: #61776e;
+  --db-ink-400: #899a93;
+  --db-ink-300: #b5c1bc;
+
+  --db-bg:      #f4f8f6;
+  --db-surface: #ffffff;
+  --db-border:  #dce8e3;
+
+  --db-radius-sm: 8px;
+  --db-radius-md: 12px;
+  --db-radius-lg: 16px;
+
+  --db-shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --db-shadow-md: 0 8px 22px rgba(15, 82, 61, 0.10);
+  --db-shadow-lg: 0 16px 34px rgba(7, 95, 70, 0.22);
+
+  --db-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* =========================================================
+   PÁGINA
 ========================================================= */
 
 .dashboard-page {
@@ -12,26 +54,28 @@
 
   box-sizing: border-box;
 
-  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 
-  background: #f4f8f6;
+  background: var(--db-bg);
+  color: var(--db-ink-900);
+
+  font-family: inherit;
 }
 
-
 /* =========================================================
-   CABECERA
+   CABECERA STICKY
 ========================================================= */
 
 .dashboard-title-bar {
   position: sticky;
-
   top: 0;
-
-  z-index: 8000;
+  z-index: 9000;
 
   width: 100%;
   min-height: 72px;
 
+  padding: 5px 70px 18px;
   box-sizing: border-box;
 
   display: flex;
@@ -39,12 +83,6 @@
   justify-content: space-between;
 
   gap: 20px;
-
-  padding:
-    12px
-    18px
-    12px
-    84px;
 
   background:
     linear-gradient(
@@ -54,90 +92,139 @@
       #20afb2 100%
     );
 
-  border-bottom:
-    1px solid
-    rgba(255, 255, 255, 0.22);
-
-  box-shadow:
-    0 4px 12px
-    rgba(15, 23, 42, 0.10);
-
   color: #ffffff;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: var(--db-shadow-sm);
+
+  overflow: visible;
 }
 
-
-/* =========================================================
-   TÍTULO
-========================================================= */
-
-.dashboard-title-info {
+.dashboard-title-left {
+  min-width: 0;
   display: flex;
   align-items: center;
-
-  min-width: 0;
+  gap: 14px;
 }
 
+.dashboard-title-info {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
 
 .dashboard-title-info h2 {
   margin: 0;
-
   color: #ffffff;
-
   font-size: 24px;
-  font-weight: 900;
-
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 
+.dashboard-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+}
 
-/* =========================================================
-   FECHA
-========================================================= */
+/* ---------- Botón buscar ---------- */
+.dashboard-search-btn {
+  position: relative;
 
+  width: 40px;
+  height: 40px;
+  padding: 5px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  border-radius: var(--db-radius-sm);
+
+  background: #ffffff;
+  cursor: pointer;
+
+  box-shadow: var(--db-shadow-sm);
+
+  transition: transform 0.16s var(--db-ease),
+              box-shadow 0.16s var(--db-ease);
+}
+
+.dashboard-search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+}
+
+.dashboard-search-btn img {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+}
+
+.dashboard-search-btn::after {
+  content: attr(data-tooltip);
+
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+
+  transform: translateX(-50%) translateY(-4px);
+
+  padding: 6px 10px;
+
+  border-radius: 7px;
+  background: #172033;
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 99999;
+
+  transition: opacity 0.18s ease,
+              visibility 0.18s ease,
+              transform 0.18s ease;
+}
+
+.dashboard-search-btn:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- Fecha ---------- */
 .dashboard-date {
   flex-shrink: 0;
 
-  padding:
-    7px
-    12px;
+  padding: 7px 12px;
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.24);
-
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 9px;
 
-  background:
-    rgba(255, 255, 255, 0.12);
-
-  color:
-    rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.94);
 
   font-size: 11px;
   font-weight: 800;
-
   text-transform: capitalize;
 }
 
-
 /* =========================================================
-   CONTENIDO GENERAL
+   CONTENIDO
 ========================================================= */
 
 .dashboard-content {
   width: 100%;
-
   box-sizing: border-box;
-
   padding: 18px;
-
   overflow-x: hidden;
 }
-
-
-/* =========================================================
-   CARGANDO
-========================================================= */
 
 .dashboard-loading {
   min-height: 280px;
@@ -147,11 +234,9 @@
   justify-content: center;
 
   color: #698078;
-
   font-size: 13px;
   font-weight: 800;
 }
-
 
 /* =========================================================
    MÉTRICAS PRINCIPALES
@@ -159,161 +244,136 @@
 
 .dashboard-metrics {
   width: 100%;
-
   display: grid;
-
-  grid-template-columns:
-    repeat(
-      4,
-      minmax(0, 1fr)
-    );
-
-  gap: 12px;
-
-  margin-bottom: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
 }
 
-
-/* =========================================================
-   TARJETAS MÉTRICAS
-========================================================= */
-
+/* ---------- Tarjeta métrica base ---------- */
 .dashboard-metric {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
   min-width: 0;
-  min-height: 116px;
+  min-height: 124px;
 
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-between;
 
-  gap: 5px;
+  gap: 6px;
 
   box-sizing: border-box;
+  padding: 16px 17px;
 
-  padding:
-    14px
-    15px;
+  border: 1px solid transparent;
+  border-radius: var(--db-radius-md);
 
-  border:
-    1px solid #dce8e3;
+  background:
+    linear-gradient(135deg, #075c43 0%, #087554 52%, #10966a 100%);
 
-  border-radius: 12px;
-
-  background: #ffffff;
-
-  color: #263b33;
+  color: #ffffff;
 
   font-family: inherit;
   text-align: left;
-
   cursor: pointer;
 
   box-shadow:
-    0 5px 15px
-    rgba(15, 23, 42, 0.055);
+    0 10px 26px rgba(7, 95, 70, 0.20);
 
-  transition:
-    transform 0.17s ease,
-    box-shadow 0.17s ease,
-    border-color 0.17s ease;
+  transition: transform 0.22s var(--db-ease),
+              box-shadow 0.22s var(--db-ease);
 }
 
+/* Barra lateral luminosa */
+.dashboard-metric::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+
+  border-radius: var(--db-radius-md) 0 0 var(--db-radius-md);
+  background: rgba(255, 255, 255, 0.42);
+}
+
+/* Burbuja decorativa */
+.dashboard-metric::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+
+  width: 135px;
+  height: 135px;
+
+  top: -68px;
+  right: -48px;
+
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.10);
+
+  transition: transform 0.4s var(--db-ease);
+}
 
 .dashboard-metric:hover {
-  transform:
-    translateY(-2px);
-
-  border-color:
-    #bdd8cd;
-
-  box-shadow:
-    0 9px 22px
-    rgba(15, 23, 42, 0.09);
+  transform: translateY(-4px);
+  box-shadow: var(--db-shadow-lg);
 }
 
+.dashboard-metric:hover::after {
+  transform: scale(1.15);
+}
 
 .dashboard-metric span {
-  color: #6c8179;
-
+  color: rgba(255, 255, 255, 0.86);
   font-size: 11px;
   font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
-
 
 .dashboard-metric strong {
   max-width: 100%;
-
   overflow: hidden;
 
-  color: #163d31;
+  color: #ffffff;
 
-  font-size: 25px;
+  font-size: 26px;
   font-weight: 900;
-
   letter-spacing: -0.035em;
 
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-
 .dashboard-metric small {
-  color: #8b9a94;
-
+  color: rgba(255, 255, 255, 0.76);
   font-size: 9px;
   font-weight: 700;
 }
 
+/* ---------- Variantes por tarjeta ---------- */
+.dashboard-metric:nth-child(1) {
+  background: linear-gradient(135deg, #075c43 0%, #087554 52%, #10966a 100%);
+}
 
-/* =========================================================
-   MÉTRICA DESTACADA - VENTAS
-========================================================= */
-
+.dashboard-metric:nth-child(2),
 .dashboard-metric-primary {
-  border-color: transparent;
-
-  background:
-    linear-gradient(
-      135deg,
-      #0f766e 0%,
-      #159a75 55%,
-      #20afb2 100%
-    );
-
-  color: #ffffff;
-
-  box-shadow:
-    0 8px 22px
-    rgba(15, 118, 110, 0.20);
+  background: linear-gradient(135deg, #064e3b 0%, #076b4d 50%, #0c8b61 100%);
+  box-shadow: 0 12px 30px rgba(6, 78, 59, 0.28);
 }
 
-
-.dashboard-metric-primary span {
-  color:
-    rgba(255, 255, 255, 0.82);
+.dashboard-metric:nth-child(3) {
+  background: linear-gradient(135deg, #175c38 0%, #287547 52%, #3d9258 100%);
 }
 
-
-.dashboard-metric-primary strong {
-  color: #ffffff;
+.dashboard-metric:nth-child(4) {
+  background: linear-gradient(135deg, #075747 0%, #086f59 52%, #0e8d6e 100%);
 }
-
-
-.dashboard-metric-primary small {
-  color:
-    rgba(255, 255, 255, 0.74);
-}
-
-
-.dashboard-metric-primary:hover {
-  border-color: transparent;
-
-  box-shadow:
-    0 12px 28px
-    rgba(15, 118, 110, 0.27);
-}
-
 
 /* =========================================================
    CUADRÍCULA PRINCIPAL
@@ -321,49 +381,136 @@
 
 .dashboard-grid {
   width: 100%;
-
   display: grid;
-
-  grid-template-columns:
-    minmax(0, 1.7fr)
-    minmax(270px, 0.8fr);
-
-  gap: 12px;
-
+  grid-template-columns: minmax(0, 1.7fr) minmax(270px, 0.8fr);
+  gap: 14px;
   align-items: stretch;
 }
 
-
 /* =========================================================
-   PANELES
+   PANELES - NUEVAS FORMAS
 ========================================================= */
 
-.dashboard-panel {
+.dashboard-grid > .dashboard-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
   min-width: 0;
-
   box-sizing: border-box;
+  padding: 18px 18px 16px;
 
-  padding: 14px;
-
-  border:
-    1px solid #dce8e3;
-
-  border-radius: 12px;
+  border: 1px solid rgba(8, 86, 52, 0.14);
+  border-radius: 20px;
 
   background: #ffffff;
 
   box-shadow:
-    0 5px 15px
-    rgba(15, 23, 42, 0.05);
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 10px 28px rgba(7, 95, 70, 0.10),
+    0 2px 6px rgba(7, 95, 70, 0.06);
+
+  transition:
+    transform 0.28s var(--db-ease),
+    box-shadow 0.28s var(--db-ease),
+    border-color 0.28s ease;
 }
 
+/* Halo decorativo superior */
+.dashboard-grid > .dashboard-panel::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -120px;
+  right: -100px;
+
+  width: 240px;
+  height: 240px;
+
+  border-radius: 50%;
+  background: rgba(21, 154, 117, 0.08);
+
+  transition: transform 0.5s var(--db-ease);
+}
+
+/* Línea de acento superior */
+.dashboard-grid > .dashboard-panel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 3px;
+
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, #159a75, #20afb2);
+
+  opacity: 0.85;
+}
+
+.dashboard-grid > .dashboard-panel:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 18px 40px rgba(7, 95, 70, 0.16),
+    0 3px 10px rgba(7, 95, 70, 0.08);
+}
+
+.dashboard-grid > .dashboard-panel:hover::before {
+  transform: scale(1.25);
+}
+
+/* ---------- Variantes por panel ---------- */
+.dashboard-grid > .dashboard-panel:nth-child(1) {
+  background: linear-gradient(180deg, #ffffff 0%, #f7fdfa 100%);
+}
+.dashboard-grid > .dashboard-panel:nth-child(1)::after {
+  background: linear-gradient(90deg, #087858, #20a875);
+}
+.dashboard-grid > .dashboard-panel:nth-child(1)::before {
+  background: rgba(8, 120, 88, 0.07);
+}
+
+.dashboard-grid > .dashboard-panel:nth-child(2) {
+  background: linear-gradient(180deg, #ffffff 0%, #f2fbf6 100%);
+}
+.dashboard-grid > .dashboard-panel:nth-child(2)::after {
+  background: linear-gradient(90deg, #0f8b75, #20afb2);
+}
+.dashboard-grid > .dashboard-panel:nth-child(2)::before {
+  background: rgba(15, 139, 117, 0.07);
+}
+
+.dashboard-grid > .dashboard-panel:nth-child(3) {
+  background: linear-gradient(180deg, #ffffff 0%, #eefaf4 100%);
+}
+.dashboard-grid > .dashboard-panel:nth-child(3)::after {
+  background: linear-gradient(90deg, #064e3b, #10966a);
+}
+.dashboard-grid > .dashboard-panel:nth-child(3)::before {
+  width: 200px;
+  height: 200px;
+  top: -100px;
+  right: -80px;
+  background: rgba(16, 150, 106, 0.10);
+}
+
+.dashboard-grid > .dashboard-panel:nth-child(4) {
+  background: linear-gradient(180deg, #ffffff 0%, #f3fbf0 100%);
+}
+.dashboard-grid > .dashboard-panel:nth-child(4)::after {
+  background: linear-gradient(90deg, #34763f, #58a568);
+}
+.dashboard-grid > .dashboard-panel:nth-child(4)::before {
+  background: rgba(52, 118, 63, 0.08);
+}
 
 /* =========================================================
-   CABECERA PANEL
+   CABECERA DE PANEL - FORMA MEJORADA
 ========================================================= */
 
 .dashboard-panel-header {
-  min-height: 38px;
+  min-height: 40px;
 
   display: flex;
   align-items: center;
@@ -371,115 +518,105 @@
 
   gap: 12px;
 
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  padding: 0 0 12px;
 
-  padding-bottom: 9px;
-
-  border-bottom:
-    1px solid #edf2f0;
+  border-bottom: 1px solid rgba(8, 86, 52, 0.10);
+  position: relative;
 }
 
-
+/* Punto indicador junto al título */
 .dashboard-panel-header > div {
+  position: relative;
+  padding-left: 16px;
   min-width: 0;
 }
 
+.dashboard-panel-header > div::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+  background: #159a75;
+
+  box-shadow: 0 0 0 4px rgba(21, 154, 117, 0.15);
+}
 
 .dashboard-panel-header h3 {
   margin: 0;
-
-  color: #213b32;
-
-  font-size: 13px;
+  color: #0b4f32;
+  font-size: 13.5px;
   font-weight: 900;
+  letter-spacing: -0.01em;
 }
-
 
 .dashboard-panel-header span {
   display: block;
-
   margin-top: 2px;
 
-  color: #899a93;
-
-  font-size: 9px;
+  color: #4a7a62;
+  font-size: 9.5px;
   font-weight: 700;
 }
 
-
-/* =========================================================
-   BOTONES DE PANELES
-========================================================= */
-
+/* Botón tipo píldora */
 .dashboard-panel-header button {
   flex-shrink: 0;
+  min-height: 32px;
+  padding: 0 14px;
 
-  min-height: 30px;
+  border: 1px solid rgba(8, 120, 88, 0.24);
+  border-radius: 999px;
 
-  padding:
-    0
-    10px;
-
-  border:
-    1px solid #cae0d7;
-
-  border-radius: 7px;
-
-  background: #eff8f4;
-
+  background: #eaf8f1;
   color: #087858;
 
   font-family: inherit;
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 900;
+  letter-spacing: 0.02em;
 
   cursor: pointer;
 
   transition:
-    background 0.15s ease,
-    transform 0.15s ease;
+    background 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
-
 
 .dashboard-panel-header button:hover {
-  transform:
-    translateY(-1px);
-
-  background: #e4f4ed;
+  transform: translateY(-1px);
+  background: #d8f1e4;
+  box-shadow: 0 6px 14px rgba(8, 120, 88, 0.16);
 }
 
-
 /* =========================================================
-   PEDIDOS RECIENTES
+   PEDIDOS RECIENTES - MINI-TARJETAS
 ========================================================= */
 
 .dashboard-recent {
   min-height: 300px;
+  padding-top: 2px;
 }
-
-
-/* =========================================================
-   LISTA PEDIDOS
-========================================================= */
 
 .dashboard-recent-list {
   width: 100%;
-
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
-
-
-/* =========================================================
-   FILA DE PEDIDO
-========================================================= */
 
 .dashboard-order {
   width: 100%;
   min-width: 0;
 
   display: grid;
-
   grid-template-columns:
     minmax(90px, 0.65fr)
     minmax(150px, 1.5fr)
@@ -487,179 +624,138 @@
     minmax(85px, auto);
 
   align-items: center;
-
-  gap: 10px;
+  gap: 12px;
 
   box-sizing: border-box;
+  padding: 12px 14px;
 
-  padding:
-    9px
-    5px;
+  border: 1px solid rgba(8, 120, 88, 0.10);
+  border-radius: 14px 14px 14px 4px;
 
-  border-bottom:
-    1px solid #edf2f0;
+  background: #ffffff;
+
+  box-shadow:
+    0 2px 6px rgba(8, 120, 88, 0.05),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+
+  transition:
+    transform 0.18s var(--db-ease),
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
 }
-
 
 .dashboard-order:last-child {
-  border-bottom: none;
+  border-bottom: 1px solid rgba(8, 120, 88, 0.10);
 }
-
 
 .dashboard-order:hover {
-  background: #f8fbfa;
+  transform: translateX(4px);
+  border-color: rgba(8, 120, 88, 0.28);
+  background: #f5fdf9;
+  box-shadow:
+    0 8px 20px rgba(8, 120, 88, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.9) inset;
 }
-
-
-/* =========================================================
-   CÓDIGO DEL PEDIDO
-========================================================= */
 
 .dashboard-order-code,
 .dashboard-order-client {
   min-width: 0;
-
   display: flex;
   flex-direction: column;
-
   gap: 2px;
 }
 
-
 .dashboard-order-code strong {
   overflow: hidden;
-
   color: #087858;
-
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 900;
-
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-
 .dashboard-order-code span {
-  color: #8a9993;
-
+  color: #6f8e80;
   font-size: 8px;
 }
-
-
-/* =========================================================
-   CLIENTE
-========================================================= */
 
 .dashboard-order-client strong {
   overflow: hidden;
-
-  color: #263c34;
-
-  font-size: 10px;
+  color: #14402e;
+  font-size: 10.5px;
   font-weight: 850;
-
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-
 .dashboard-order-client span {
-  color: #899891;
-
+  color: #5c7b6c;
   font-size: 8px;
 }
 
-
-/* =========================================================
-   ESTADO DEL PEDIDO
-========================================================= */
-
+/* ---------- Estados con punto de color ---------- */
 .dashboard-order-status {
   justify-self: start;
 
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
 
-  min-height: 24px;
-
-  padding:
-    0
-    8px;
+  min-height: 26px;
+  padding: 0 11px 0 9px;
 
   border-radius: 999px;
 
-  background: #f0f4f2;
-
-  color: #586b64;
-
-  font-size: 8px;
+  font-size: 8.5px;
   font-weight: 900;
-
   white-space: nowrap;
+
+  box-shadow: 0 2px 5px rgba(20, 95, 61, 0.08);
 }
 
-
-/* PENDIENTE */
-
-.dashboard-status-pendiente {
-  background: #fff5db;
-
-  color: #946200;
+.dashboard-order-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55);
 }
 
+.dashboard-status-pendiente      { background: #fff4d6; color: #8a5a00; }
+.dashboard-status-en-preparacion { background: #e0f0ff; color: #1769aa; }
+.dashboard-status-en-ruta        { background: #dbf3ea; color: #087858; }
+.dashboard-status-entregado      { background: #d9f2e2; color: #1f6b3a; }
+.dashboard-status-cancelado      { background: #ffe4e1; color: #b42318; }
 
-/* EN PREPARACIÓN */
-
-.dashboard-status-en-preparacion {
-  background: #e8f4ff;
-
-  color: #1769aa;
-}
-
-
-/* EN RUTA */
-
-.dashboard-status-en-ruta {
-  background: #e8f7f2;
-
-  color: #087858;
-}
-
-
-/* ENTREGADO */
-
-.dashboard-status-entregado {
-  background: #e5f7eb;
-
-  color: #26713e;
-}
-
-
-/* CANCELADO */
-
-.dashboard-status-cancelado {
-  background: #fff0ef;
-
-  color: #b42318;
-}
-
-
-/* =========================================================
-   TOTAL PEDIDO
-========================================================= */
-
+/* ---------- Total chip punteado ---------- */
 .dashboard-order-total {
   justify-self: end;
 
-  color: #193a30;
+  padding: 7px 12px;
 
-  font-size: 10px;
+  border: 1px dashed rgba(8, 120, 88, 0.35);
+  border-radius: 10px;
+
+  background: #f2fbf6;
+  color: #0d5c39;
+
+  font-size: 10.5px;
   font-weight: 900;
-
   white-space: nowrap;
+
+  transition:
+    background 0.18s ease,
+    transform 0.18s ease,
+    border-color 0.18s ease;
 }
 
+.dashboard-order:hover .dashboard-order-total {
+  transform: translateY(-1px);
+  background: #e3f7ec;
+  border-color: rgba(8, 120, 88, 0.55);
+}
 
 /* =========================================================
    SIN DATOS
@@ -674,17 +770,14 @@
 
   padding: 20px;
 
-  color: #8a9993;
-
+  color: #4a6b5c;
   font-size: 11px;
   font-weight: 700;
-
   text-align: center;
 }
 
-
 /* =========================================================
-   ESTADO DE PEDIDOS
+   LISTAS INTERNAS - NUEVAS FORMAS
 ========================================================= */
 
 .dashboard-status-list,
@@ -692,15 +785,12 @@
 .dashboard-inventory-list {
   display: flex;
   flex-direction: column;
-
-  gap: 4px;
+  gap: 7px;
 }
 
-
-.dashboard-status-list > div,
-.dashboard-sales-list > div,
-.dashboard-inventory-list > div {
-  min-height: 44px;
+/* ---------- ESTADO DE PEDIDOS: borde lateral de color ---------- */
+.dashboard-status-list > div {
+  min-height: 52px;
 
   display: flex;
   align-items: center;
@@ -708,95 +798,441 @@
 
   gap: 15px;
 
-  padding:
-    6px
-    8px;
+  padding: 10px 12px 10px 14px;
 
-  border-bottom:
-    1px solid #edf2f0;
+  border: 1px solid rgba(8, 120, 88, 0.10);
+  border-left: 4px solid #159a75;
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow: 0 2px 6px rgba(8, 120, 88, 0.05);
+
+  transition:
+    transform 0.18s var(--db-ease),
+    box-shadow 0.18s ease,
+    background 0.18s ease;
 }
 
-
-.dashboard-status-list > div:last-child,
-.dashboard-sales-list > div:last-child,
-.dashboard-inventory-list > div:last-child {
-  border-bottom: none;
+.dashboard-status-list > div:hover {
+  transform: translateX(3px);
+  background: #f5fdf9;
+  box-shadow: 0 8px 18px rgba(8, 120, 88, 0.12);
 }
 
+.dashboard-status-list > div:nth-child(1) { border-left-color: #f0b429; }
+.dashboard-status-list > div:nth-child(2) { border-left-color: #1769aa; }
+.dashboard-status-list > div:nth-child(3) { border-left-color: #087858; }
+.dashboard-status-list > div:nth-child(4) { border-left-color: #26713e; }
 
-.dashboard-status-list span,
-.dashboard-sales-list span,
+.dashboard-status-list span {
+  color: #2b5b43;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+/* ---------- RESUMEN DE VENTAS: barra inferior de progreso ---------- */
+.dashboard-sales-list > div {
+  position: relative;
+
+  min-height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 10px 14px 12px;
+
+  border: 1px solid rgba(8, 120, 88, 0.10);
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow: 0 2px 6px rgba(8, 120, 88, 0.05);
+
+  overflow: hidden;
+
+  transition:
+    transform 0.18s var(--db-ease),
+    box-shadow 0.18s ease;
+}
+
+.dashboard-sales-list > div::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+
+  width: 0;
+  border-radius: 0 3px 0 0;
+
+  background: linear-gradient(90deg, #159a75, #20afb2);
+
+  transition: width 0.4s var(--db-ease);
+}
+
+.dashboard-sales-list > div:nth-child(1)::after { width: 100%; }
+.dashboard-sales-list > div:nth-child(2)::after { width: 82%; }
+.dashboard-sales-list > div:nth-child(3)::after { width: 64%; }
+.dashboard-sales-list > div:nth-child(4)::after { width: 48%; }
+.dashboard-sales-list > div:nth-child(5)::after { width: 34%; }
+.dashboard-sales-list > div:nth-child(6)::after { width: 22%; }
+
+.dashboard-sales-list > div:hover {
+  transform: translateX(3px);
+  box-shadow: 0 8px 18px rgba(8, 120, 88, 0.12);
+}
+
+.dashboard-sales-list span {
+  color: #2b5b43;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+/* ---------- INVENTARIO: ícono circular de color ---------- */
+.dashboard-inventory-list > div {
+  position: relative;
+
+  min-height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 10px 12px 10px 42px;
+
+  border: 1px solid rgba(8, 120, 88, 0.10);
+  border-radius: 12px 12px 12px 4px;
+
+  background: #ffffff;
+
+  box-shadow: 0 2px 6px rgba(8, 120, 88, 0.05);
+
+  transition:
+    transform 0.18s var(--db-ease),
+    box-shadow 0.18s ease;
+}
+
+.dashboard-inventory-list > div::before {
+  content: "";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 22px;
+  height: 22px;
+
+  border-radius: 50%;
+  background: #eaf8f1;
+
+  box-shadow:
+    0 0 0 3px rgba(8, 120, 88, 0.10),
+    0 2px 5px rgba(8, 120, 88, 0.10) inset;
+}
+
+.dashboard-inventory-list > div:nth-child(1)::before { background: #d9f2e2; }
+.dashboard-inventory-list > div:nth-child(2)::before { background: #fff4d6; }
+.dashboard-inventory-list > div:nth-child(3)::before { background: #ffe4e1; }
+
+.dashboard-inventory-list > div:hover {
+  transform: translateX(3px);
+  box-shadow: 0 8px 18px rgba(8, 120, 88, 0.12);
+}
+
 .dashboard-inventory-list span {
-  color: #61776e;
-
-  font-size: 10px;
-  font-weight: 750;
+  color: #2b5b43;
+  font-size: 10.5px;
+  font-weight: 800;
 }
 
-
+/* ---------- Valores destacados ---------- */
 .dashboard-status-list strong,
 .dashboard-inventory-list strong {
-  min-width: 31px;
-  min-height: 27px;
+  min-width: 46px;
+  min-height: 34px;
+  padding: 0 12px;
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  padding:
-    0
-    7px;
+  border: none;
+  border-radius: 10px;
 
-  border-radius: 7px;
+  background: #eaf8f1;
+  color: #0d5c39;
 
-  background: #edf8f3;
+  font-size: 14px;
+  font-weight: 900;
 
+  box-shadow:
+    0 2px 5px rgba(20, 95, 61, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+/* Colores del badge según estado */
+.dashboard-status-list > div:nth-child(1) strong { background: #fff4d6; color: #8a5a00; }
+.dashboard-status-list > div:nth-child(2) strong { background: #e0f0ff; color: #1769aa; }
+.dashboard-status-list > div:nth-child(3) strong { background: #dbf3ea; color: #087858; }
+.dashboard-status-list > div:nth-child(4) strong { background: #d9f2e2; color: #1f6b3a; }
+
+/* Colores del badge según inventario */
+.dashboard-inventory-list > div:nth-child(1) strong { background: #d9f2e2; color: #1f6b3a; }
+.dashboard-inventory-list > div:nth-child(2) strong { background: #fff4d6; color: #8a5a00; }
+.dashboard-inventory-list > div:nth-child(3) strong { background: #ffe4e1; color: #b42318; }
+
+/* Ventas: chip degradado con esquina recortada */
+.dashboard-sales-list strong {
+  min-width: 112px;
+  min-height: 34px;
+  padding: 0 13px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  border: none;
+  border-radius: 10px 10px 10px 3px;
+
+  background: linear-gradient(135deg, #087858, #10966a);
+  color: #ffffff;
+
+  font-size: 12.5px;
+  font-weight: 900;
+
+  box-shadow: 0 4px 10px rgba(8, 120, 88, 0.22);
+
+  white-space: nowrap;
+
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.dashboard-status-list > div:hover strong,
+.dashboard-inventory-list > div:hover strong {
+  transform: scale(1.06);
+  box-shadow: 0 6px 14px rgba(20, 95, 61, 0.16);
+}
+
+.dashboard-sales-list > div:hover strong {
+  transform: scale(1.03);
+  box-shadow: 0 8px 18px rgba(8, 120, 88, 0.30);
+}
+
+/* =========================================================
+   BUSCADOR GLOBAL
+========================================================= */
+
+.dashboard-search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+
+  padding: 20px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  background: rgba(15, 23, 42, 0.18);
+  pointer-events: none;
+}
+
+.dashboard-search-modal {
+  width: min(760px, 95vw);
+  max-height: 78vh;
+
+  margin-top: 80px;
+  overflow: hidden;
+
+  border-radius: var(--db-radius-lg);
+  background: #ffffff;
+
+  box-shadow: 0 24px 65px rgba(15, 23, 42, 0.28);
+
+  pointer-events: auto;
+}
+
+.dashboard-search-header {
+  min-height: 52px;
+  padding: 9px 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  box-sizing: border-box;
+
+  background: linear-gradient(135deg, #087f69, #20afb2);
+  color: #ffffff;
+}
+
+.dashboard-search-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.dashboard-search-header button {
+  width: 34px;
+  height: 34px;
+  padding: 5px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.dashboard-search-header button img {
+  width: 23px;
+  height: 23px;
+}
+
+.dashboard-search-box {
+  margin: 14px;
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+
+  border: 1px solid #d0d9d5;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.dashboard-search-box:focus-within {
+  border-color: #20afb2;
+  box-shadow: 0 0 0 3px rgba(32, 175, 178, 0.10);
+}
+
+.dashboard-search-box img {
+  width: 22px;
+  height: 22px;
+  margin-left: 11px;
+}
+
+.dashboard-search-box input {
+  width: 100%;
+  height: 40px;
+  padding: 0 11px;
+
+  border: none;
+  outline: none;
+  background: transparent;
+
+  color: #25333d;
+  font-family: inherit;
+}
+
+.dashboard-search-results {
+  max-height: 440px;
+  padding: 0 14px 14px;
+  overflow-y: auto;
+}
+
+.dashboard-search-result {
+  width: 100%;
+  margin-bottom: 7px;
+  padding: 10px 12px;
+
+  display: grid;
+  grid-template-columns: 90px minmax(0, 1fr);
+  align-items: center;
+
+  gap: 2px 10px;
+
+  border: 1px solid #e0ebe6;
+  border-radius: 9px;
+
+  background: #f9fcfb;
+  color: #25333d;
+
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dashboard-search-result:hover {
+  border-color: #b9ddce;
+  background: #eaf8f1;
+}
+
+.dashboard-search-result-type {
+  grid-row: 1 / 3;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 27px;
+  padding: 0 8px;
+
+  border-radius: 999px;
+
+  background: #e5f7ef;
   color: #087858;
 
-  font-size: 12px;
+  font-size: 9px;
   font-weight: 900;
 }
 
+.dashboard-search-result strong {
+  min-width: 0;
+  overflow: hidden;
 
-/* =========================================================
-   VENTAS
-========================================================= */
-
-.dashboard-sales-list strong {
-  color: #087858;
-
+  color: #203b32;
   font-size: 12px;
   font-weight: 900;
 
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+.dashboard-search-result small {
+  min-width: 0;
+  overflow: hidden;
 
-/* =========================================================
-   INVENTARIO
-========================================================= */
+  color: #71847c;
+  font-size: 9px;
+  font-weight: 700;
 
-.dashboard-inventory-list > div:nth-child(2) strong {
-  background: #fff4df;
-
-  color: #9a6500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+.dashboard-search-empty {
+  min-height: 150px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #899a93;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
 
 /* =========================================================
-   TABLET GRANDE
+   RESPONSIVE
 ========================================================= */
 
+/* Tablet grande */
 @media (max-width: 1150px) {
-
   .dashboard-metrics {
-    grid-template-columns:
-      repeat(
-        2,
-        minmax(0, 1fr)
-      );
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
 
   .dashboard-grid {
     grid-template-columns:
@@ -804,254 +1240,196 @@
       minmax(240px, 0.85fr);
   }
 
-
   .dashboard-order {
     grid-template-columns:
       minmax(80px, 0.65fr)
       minmax(130px, 1.4fr)
       auto
       auto;
+    gap: 10px;
   }
-
 }
 
-
-/* =========================================================
-   TABLET
-========================================================= */
-
+/* Tablet */
 @media (max-width: 900px) {
-
   .dashboard-title-bar {
     min-height: 66px;
-
-    padding:
-      10px
-      14px
-      10px
-      76px;
+    padding: 5px 18px 14px;
   }
 
+  .dashboard-title-info h2 { font-size: 21px; }
 
-  .dashboard-title-info h2 {
-    font-size: 21px;
+  .dashboard-content { padding: 12px; }
+
+  .dashboard-grid { grid-template-columns: 1fr; }
+
+  .dashboard-grid > .dashboard-panel {
+    border-radius: 18px;
+    padding: 16px;
   }
 
+  .dashboard-recent { min-height: 0; }
 
-  .dashboard-content {
-    padding: 12px;
+  .dashboard-order {
+    grid-template-columns:
+      minmax(75px, 0.7fr)
+      minmax(110px, 1.3fr)
+      auto;
+    padding: 10px 12px;
   }
 
-
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-
-  .dashboard-recent {
-    min-height: 0;
-  }
-
+  .dashboard-order-status { display: none; }
 }
 
-
-/* =========================================================
-   CELULAR
-========================================================= */
-
+/* Celular */
 @media (max-width: 620px) {
-
   .dashboard-title-bar {
     min-height: 60px;
-
     gap: 8px;
-
-    padding:
-      8px
-      8px
-      8px
-      66px;
+    padding: 5px 8px 10px;
   }
 
+  .dashboard-title-left { gap: 8px; }
+  .dashboard-title-info h2 { font-size: 18px; }
+  .dashboard-title-actions { gap: 5px; }
 
-  .dashboard-title-info h2 {
-    font-size: 18px;
-  }
-
+  .dashboard-search-btn { width: 34px; height: 34px; }
+  .dashboard-search-btn img { width: 21px; height: 21px; }
 
   .dashboard-date {
-    max-width: 145px;
-
+    max-width: 125px;
     overflow: hidden;
-
-    padding:
-      6px
-      7px;
-
+    padding: 6px 7px;
     font-size: 8px;
-
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-
-  .dashboard-content {
-    padding:
-      9px
-      8px;
-  }
-
-
-  /* MÉTRICAS */
+  .dashboard-content { padding: 9px 8px; }
 
   .dashboard-metrics {
-    grid-template-columns:
-      repeat(
-        2,
-        minmax(0, 1fr)
-      );
-
-    gap: 8px;
-
-    margin-bottom: 9px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin-bottom: 10px;
   }
-
 
   .dashboard-metric {
-    min-height: 100px;
-
-    padding:
-      11px
-      10px;
+    min-height: 104px;
+    padding: 12px 11px;
   }
 
+  .dashboard-metric span { font-size: 9px; }
+  .dashboard-metric strong { font-size: 20px; }
+  .dashboard-metric small { font-size: 7px; }
 
-  .dashboard-metric span {
-    font-size: 9px;
+  .dashboard-metric::after {
+    width: 88px;
+    height: 88px;
+    top: -46px;
+    right: -36px;
   }
 
+  .dashboard-grid { gap: 9px; }
 
-  .dashboard-metric strong {
-    font-size: 19px;
+  .dashboard-grid > .dashboard-panel {
+    border-radius: 16px;
+    padding: 13px;
   }
 
-
-  .dashboard-metric small {
-    font-size: 7px;
+  .dashboard-grid > .dashboard-panel::after {
+    left: 16px;
+    right: 16px;
+    height: 2.5px;
   }
-
-
-  /* PANELES */
-
-  .dashboard-grid {
-    gap: 8px;
-  }
-
-
-  .dashboard-panel {
-    padding: 10px;
-
-    border-radius: 9px;
-  }
-
 
   .dashboard-panel-header {
-    margin-bottom: 5px;
-
-    padding-bottom: 7px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
   }
 
-
-  .dashboard-panel-header h3 {
-    font-size: 11px;
-  }
-
-
-  .dashboard-panel-header span {
-    font-size: 8px;
-  }
-
+  .dashboard-panel-header h3 { font-size: 12px; }
+  .dashboard-panel-header span { font-size: 8.5px; }
 
   .dashboard-panel-header button {
-    min-height: 27px;
-
-    padding:
-      0
-      7px;
-
-    font-size: 8px;
+    min-height: 28px;
+    padding: 0 11px;
+    font-size: 8.5px;
   }
-
-
-  /* PEDIDOS */
 
   .dashboard-order {
     grid-template-columns:
       minmax(65px, 0.7fr)
-      minmax(95px, 1.4fr)
+      minmax(95px, 1.3fr)
       auto;
-
-    gap: 5px;
-
-    padding:
-      7px
-      3px;
+    gap: 6px;
+    padding: 9px 10px;
+    border-radius: 11px 11px 11px 3px;
   }
-
-
-  .dashboard-order-status {
-    display: none;
-  }
-
 
   .dashboard-order-code strong,
-  .dashboard-order-client strong,
-  .dashboard-order-total {
-    font-size: 8px;
-  }
-
+  .dashboard-order-client strong { font-size: 9px; }
 
   .dashboard-order-code span,
-  .dashboard-order-client span {
-    font-size: 7px;
-  }
+  .dashboard-order-client span { font-size: 7px; }
 
+  .dashboard-order-total {
+    padding: 5px 8px;
+    font-size: 8.5px;
+    border-radius: 8px;
+  }
 
   .dashboard-status-list > div,
   .dashboard-sales-list > div,
   .dashboard-inventory-list > div {
-    min-height: 39px;
+    min-height: 46px;
+    padding: 9px 10px;
+    border-radius: 10px;
   }
 
+  .dashboard-inventory-list > div {
+    padding-left: 36px;
+  }
+
+  .dashboard-inventory-list > div::before {
+    left: 10px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .dashboard-status-list strong,
+  .dashboard-inventory-list strong {
+    min-width: 40px;
+    min-height: 30px;
+    padding: 0 9px;
+    font-size: 12px;
+  }
+
+  .dashboard-sales-list strong {
+    min-width: 96px;
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 11px;
+    border-radius: 9px 9px 9px 3px;
+  }
+
+  .dashboard-search-overlay { padding: 10px; }
+  .dashboard-search-modal { width: 100%; margin-top: 58px; }
+  .dashboard-search-result {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
 }
 
-
-/* =========================================================
-   CELULARES PEQUEÑOS
-========================================================= */
-
+/* Celulares pequeños */
 @media (max-width: 400px) {
-
-  .dashboard-metrics {
-    grid-template-columns: 1fr;
-  }
-
-
-  .dashboard-metric {
-    min-height: 88px;
-  }
-
+  .dashboard-metrics { grid-template-columns: 1fr; }
+  .dashboard-metric { min-height: 92px; }
 
   .dashboard-order {
     grid-template-columns:
-      minmax(60px, 0.7fr)
-      minmax(80px, 1fr)
+      minmax(58px, 0.7fr)
+      minmax(78px, 1fr)
       auto;
   }
 
-
-  .dashboard-order-total {
-    font-size: 7px;
-  }
-
+  .dashboard-order-total { font-size: 7px; }
 }

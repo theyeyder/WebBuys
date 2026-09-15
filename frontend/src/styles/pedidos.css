@@ -1086,17 +1086,17 @@
   background:
     linear-gradient(
       135deg,
-      #fdfdfd,
-      #ffffff
+      #f0efef,
+      #fdfdfd
     );
 
-  color: #ffffff;
+  color: #f8fbf9;
 }
 
 
 .pedidos-save-btn img {
-  width: 16px;
-  height: 16px;
+  width: 30px;
+  height: 25px;
 
   object-fit: contain;
 }

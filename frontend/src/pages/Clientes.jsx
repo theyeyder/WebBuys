@@ -1920,20 +1920,6 @@ export default function Clientes() {
 
         <div
           className="clientes-search-modal-overlay"
-          onMouseDown={(event) => {
-
-            if (
-              event.target ===
-              event.currentTarget
-            ) {
-
-              setModalBuscarClientes(
-                false
-              );
-
-            }
-
-          }}
         >
 
           <div className="clientes-search-modal">

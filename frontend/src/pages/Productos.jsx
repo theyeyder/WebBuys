@@ -2136,16 +2136,6 @@ export default function Productos() {
 
         <div
           className="productos-form-overlay"
-          onMouseDown={(event) => {
-
-            if (
-              event.target ===
-              event.currentTarget
-            ) {
-              cerrarFormulario();
-            }
-
-          }}
         >
 
           <div className="productos-form-modal">
