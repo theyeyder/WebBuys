@@ -1,5 +1,47 @@
 /* =========================================================
-   MODULO PRINCIPAL
+   MÓDULO RUTAS - WEBBUYS
+   Versión consolidada y optimizada
+========================================================= */
+
+/* ---------- Variables de diseño ---------- */
+:root {
+  --rt-green-900: #064e3b;
+  --rt-green-800: #075c43;
+  --rt-green-700: #087554;
+  --rt-green-600: #0b805c;
+  --rt-green-500: #159a75;
+  --rt-green-400: #20a875;
+  --rt-green-300: #58a568;
+  --rt-green-200: #9fd4b8;
+  --rt-green-100: #d7f0e2;
+  --rt-green-50:  #effbf5;
+
+  --rt-teal-500: #0f8b75;
+  --rt-teal-400: #20afb2;
+
+  --rt-ink-900: #163d31;
+  --rt-ink-700: #213b32;
+  --rt-ink-500: #61776e;
+  --rt-ink-400: #899a93;
+  --rt-ink-300: #b5c1bc;
+
+  --rt-bg:      #f4f8f6;
+  --rt-surface: #ffffff;
+  --rt-border:  #dce8e3;
+
+  --rt-radius-sm: 9px;
+  --rt-radius-md: 12px;
+  --rt-radius-lg: 16px;
+
+  --rt-shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --rt-shadow-md: 0 8px 22px rgba(15, 82, 61, 0.10);
+  --rt-shadow-lg: 0 16px 34px rgba(7, 95, 70, 0.22);
+
+  --rt-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* =========================================================
+   MÓDULO PRINCIPAL
 ========================================================= */
 
 .rutas-module {
@@ -8,50 +50,49 @@
   width: 100%;
   min-height: 100vh;
 
+  margin: 0;
   padding: 0;
 
   box-sizing: border-box;
 
+  overflow-x: clip;
+  overflow-y: visible;
+
   background:
     radial-gradient(
       circle at 12% 8%,
-      rgb(241, 255, 241),
-      transparent 30%
+      #eafbf3 0%,
+      transparent 32%
     ),
     radial-gradient(
       circle at 88% 16%,
-      rgba(69, 123, 157, 0.12),
-      transparent 28%
+      rgba(32, 175, 178, 0.10) 0%,
+      transparent 30%
     ),
     linear-gradient(
-      135deg,
-      #a8f7e3 0%,
-      #b1cdb7 55%,
-      #99a89b 100%
+      160deg,
+      #eefaf4 0%,
+      #e3f4ec 55%,
+      #d6ecdf 100%
     );
+
+  color: var(--rt-ink-900);
+  font-family: inherit;
 }
 
-
 /* =========================================================
-   CABECERA RUTAS FIJA
+   CABECERA STICKY
 ========================================================= */
 
 .rutas-title-bar {
   position: sticky;
-
   top: 0;
-
-  z-index: 8000;
+  z-index: 9000;
 
   width: 100%;
-  max-width: none;
-
   min-height: 72px;
 
-  margin: 0;
-
-  padding: 12px 12px 18px;
-
+  padding: 5px 70px 18px;
   box-sizing: border-box;
 
   display: flex;
@@ -70,36 +111,29 @@
 
   color: #ffffff;
 
-  border-bottom:
-    1px solid rgba(255, 255, 255, 0.22);
-
-  box-shadow:
-    0 4px 12px rgba(15, 23, 42, 0.10);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: var(--rt-shadow-sm);
 
   overflow: visible;
 }
-
-
-/* =========================================================
-   TITULO
-========================================================= */
 
 .rutas-title-info {
   display: flex;
   align-items: center;
 
-  margin-left: 72px;
+  min-width: 0;
+  margin-left: 0;
 }
 
 .rutas-title-info h2 {
-  margin: 0 0 2px;
+  margin: 0;
 
   color: #ffffff;
 
   font-size: 24px;
   font-weight: 800;
+  letter-spacing: -0.02em;
 }
-
 
 /* =========================================================
    BOTONES SUPERIORES
@@ -120,101 +154,79 @@
 
   width: 42px;
   height: 42px;
-
   padding: 6px;
 
-  border:
-    1px solid rgba(255, 255, 255, 0.35);
-
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 11px;
 
-  background:
-    rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.94);
 
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
   cursor: pointer;
-
   overflow: visible;
 
-  box-shadow:
-    0 6px 16px rgba(15, 23, 42, 0.14);
+  box-shadow: var(--rt-shadow-sm);
 
   transition:
-    transform 0.2s ease,
+    transform 0.2s var(--rt-ease),
     box-shadow 0.2s ease,
     background 0.2s ease,
     opacity 0.18s ease;
 }
 
 .rutas-top-icon-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 
   background: #ffffff;
 
   box-shadow:
-    0 10px 22px rgba(15, 23, 42, 0.18);
+    0 10px 22px rgba(15, 23, 42, 0.20);
 }
 
 .rutas-top-icon-btn:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(-1px);
 }
 
 .rutas-top-icon-btn:disabled {
-  opacity: 0.55;
-
+  opacity: 0.5;
   cursor: not-allowed;
-
-  transform: none;
+  filter: grayscale(0.3);
 }
 
 .rutas-top-icon-btn img {
   width: 27px;
   height: 27px;
-
   object-fit: contain;
-
   display: block;
-
   pointer-events: none;
 }
 
-
-/* =========================================================
-   TOOLTIP DE BOTONES
-========================================================= */
-
+/* ---------- Tooltip con flecha ---------- */
 .rutas-top-icon-btn::after {
   content: attr(data-tooltip);
 
   position: absolute;
-
-  top: calc(100% + 8px);
+  top: calc(100% + 9px);
   left: 50%;
 
-  transform:
-    translateX(-50%)
-    translateY(-4px);
+  transform: translateX(-50%) translateY(-4px);
 
   padding: 6px 10px;
 
   background: #172033;
   color: #ffffff;
-
   border-radius: 7px;
 
   font-size: 11px;
   font-weight: 700;
-
   white-space: nowrap;
 
   opacity: 0;
   visibility: hidden;
-
   pointer-events: none;
-
   z-index: 99999;
 
   transition:
@@ -227,8 +239,7 @@
   content: "";
 
   position: absolute;
-
-  top: calc(100% + 3px);
+  top: calc(100% + 4px);
   left: 50%;
 
   transform: translateX(-50%);
@@ -239,9 +250,7 @@
 
   opacity: 0;
   visibility: hidden;
-
   pointer-events: none;
-
   z-index: 99999;
 }
 
@@ -252,25 +261,69 @@
 }
 
 .rutas-top-icon-btn:hover::after {
-  transform:
-    translateX(-50%)
-    translateY(0);
+  transform: translateX(-50%) translateY(0);
 }
 
 /* =========================================================
-   FORMULARIO PRINCIPAL
+   FORMULARIO PRINCIPAL - TARJETA
 ========================================================= */
 
 .rutas-main-form {
-  width: 100%;
-  max-width: 560px;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
 
-  margin: 24px auto 0;
+  width: min(620px, calc(100% - 40px));
+  max-width: 100%;
+
+  margin: 28px auto 60px;
+  padding: 24px 24px 20px;
+
+  box-sizing: border-box;
 
   display: flex;
   flex-direction: column;
+  gap: 16px;
 
-  gap: 14px;
+  border: 1px solid rgba(8, 86, 52, 0.14);
+  border-radius: 20px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 10px 28px rgba(7, 95, 70, 0.10),
+    0 2px 6px rgba(7, 95, 70, 0.06);
+}
+
+/* Halo decorativo */
+.rutas-main-form::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: -120px;
+  right: -100px;
+
+  width: 260px;
+  height: 260px;
+
+  border-radius: 50%;
+  background: rgba(21, 154, 117, 0.07);
+}
+
+/* Línea de acento superior */
+.rutas-main-form::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 3px;
+
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(90deg, #159a75, #20afb2);
+
+  opacity: 0.85;
 }
 
 .rutas-main-form label,
@@ -279,16 +332,17 @@
 
   display: flex;
   flex-direction: column;
-
   gap: 7px;
 }
 
 .rutas-main-form label,
 .rutas-field-label {
-  color: #344054;
+  color: #2b4d3f;
 
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .rutas-main-form input,
@@ -296,36 +350,47 @@
 .rutas-main-form textarea {
   width: 100%;
 
-  border: 1px solid #d8e0dc;
-  border-radius: 9px;
+  border: 1px solid rgba(8, 120, 88, 0.18);
+  border-radius: 10px;
 
   outline: none;
 
   background: #ffffff;
+  color: #1f3a30;
 
-  color: #172033;
-
+  font-family: inherit;
   font-size: 13px;
   font-weight: 600;
 
   transition:
     border-color 0.18s ease,
-    box-shadow 0.18s ease;
+    box-shadow 0.18s ease,
+    background 0.18s ease;
 }
 
 .rutas-main-form input,
 .rutas-main-form select {
-  height: 40px;
-
+  height: 42px;
   padding: 0 12px;
 }
 
 .rutas-main-form textarea {
-  min-height: 78px;
-
-  padding: 10px 12px;
-
+  min-height: 86px;
+  padding: 12px;
   resize: vertical;
+  line-height: 1.5;
+}
+
+.rutas-main-form input::placeholder,
+.rutas-main-form textarea::placeholder {
+  color: #9ab0a5;
+  font-weight: 500;
+}
+
+.rutas-main-form input:hover,
+.rutas-main-form select:hover,
+.rutas-main-form textarea:hover {
+  border-color: rgba(8, 120, 88, 0.32);
 }
 
 .rutas-main-form input:focus,
@@ -334,41 +399,40 @@
   border-color: #20afb2;
 
   box-shadow:
-    0 0 0 3px
-    rgba(32, 175, 178, 0.12);
+    0 0 0 3px rgba(32, 175, 178, 0.14);
 }
 
 .rutas-main-form input[readonly] {
-  background: #f2f4f7;
-  color: #667085;
+  background: #f2faf6;
+  color: #4a6b5c;
   cursor: default;
+
+  border-style: dashed;
+  border-color: rgba(8, 120, 88, 0.20);
 }
 
 /* =========================================================
-   ZONAS DE DESPACHO
+   ZONAS DE DESPACHO - CHIPS
 ========================================================= */
 
 .rutas-main-form .rutas-zonas-selector {
   display: flex;
-
   flex-wrap: wrap;
-
   gap: 8px;
 }
 
 .rutas-main-form .rutas-zonas-selector button {
-  min-height: 34px;
+  min-height: 36px;
+  padding: 7px 13px;
 
-  padding: 6px 11px;
-
-  border: 1px solid #d8e0dc;
-  border-radius: 8px;
+  border: 1px solid rgba(8, 120, 88, 0.20);
+  border-radius: 999px;
 
   background: #ffffff;
+  color: #2b5b43;
 
-  color: #667085;
-
-  font-size: 11px;
+  font-family: inherit;
+  font-size: 11.5px;
   font-weight: 800;
 
   cursor: pointer;
@@ -377,54 +441,49 @@
     background 0.18s ease,
     color 0.18s ease,
     border-color 0.18s ease,
-    transform 0.18s ease;
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .rutas-main-form .rutas-zonas-selector button:hover {
-  border-color: #20afb2;
-
+  border-color: rgba(8, 120, 88, 0.38);
   transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(8, 120, 88, 0.10);
 }
 
 .rutas-main-form .rutas-zonas-selector button.selected {
   border-color: transparent;
 
   background:
-    linear-gradient(
-      135deg,
-      #12b76a,
-      #20afb2
-    );
+    linear-gradient(135deg, #159a75 0%, #20afb2 100%);
 
   color: #ffffff;
+
+  box-shadow: 0 6px 14px rgba(8, 120, 88, 0.24);
 }
 
 /* =========================================================
-   DÍAS DE ATENCIÓN
+   DÍAS DE ATENCIÓN - PÍLDORAS
 ========================================================= */
 
 .rutas-main-form .rutas-days-selector {
   display: grid;
-
-  grid-template-columns:
-    repeat(7, 1fr);
-
-  gap: 6px;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 7px;
 }
 
 .rutas-main-form .rutas-days-selector button {
-  min-height: 34px;
-
+  min-height: 38px;
   padding: 5px;
 
-  border: 1px solid #d8e0dc;
-  border-radius: 8px;
+  border: 1px solid rgba(8, 120, 88, 0.20);
+  border-radius: 10px;
 
   background: #ffffff;
+  color: #2b5b43;
 
-  color: #667085;
-
-  font-size: 10px;
+  font-family: inherit;
+  font-size: 10.5px;
   font-weight: 800;
 
   cursor: pointer;
@@ -432,584 +491,40 @@
   transition:
     background 0.18s ease,
     color 0.18s ease,
-    transform 0.18s ease;
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 }
 
 .rutas-main-form .rutas-days-selector button:hover {
-  transform: translateY(-1px);
+  border-color: rgba(8, 120, 88, 0.38);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(8, 120, 88, 0.10);
 }
 
 .rutas-main-form .rutas-days-selector button.selected {
   border-color: transparent;
 
   background:
-    linear-gradient(
-      135deg,
-      #12b76a,
-      #20afb2
-    );
-
-  color: #ffffff;
-}
-
-/* =========================================================
-   MODAL BUSCAR RUTAS
-========================================================= */
-
-.rutas-search-modal-overlay {
-  position: fixed;
-  inset: 0;
-
-  z-index: 100000;
-
-  background:
-    rgba(15, 23, 42, 0.18);
-
-  pointer-events: none;
-}
-
-.rutas-search-modal {
-  position: fixed;
-
-  width: min(950px, 94vw);
-  max-height: 80vh;
-
-  overflow: hidden;
-
-  border: 1px solid #d8e5df;
-  border-radius: 14px;
-
-  background: #ffffff;
-
-  box-shadow:
-    0 24px 65px
-    rgba(15, 23, 42, 0.28);
-
-  pointer-events: auto;
-}
-
-/* =========================================================
-   CABECERA MODAL
-========================================================= */
-
-.rutas-search-modal-header {
-  min-height: 52px;
-
-  padding: 9px 12px;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  background:
-    linear-gradient(
-      135deg,
-      #087f69,
-      #20afb2
-    );
+    linear-gradient(135deg, #159a75 0%, #20afb2 100%);
 
   color: #ffffff;
 
-  cursor: move;
-  user-select: none;
-}
-
-.rutas-search-modal-header h3 {
-  margin: 0;
-
-  font-size: 18px;
-  font-weight: 800;
-}
-
-.rutas-search-modal-close {
-  width: 34px;
-  height: 34px;
-
-  padding: 5px;
-
-  border: none;
-  border-radius: 8px;
-
-  background: #ffffff;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-}
-
-.rutas-search-modal-close img {
-  width: 22px;
-  height: 22px;
-
-  object-fit: contain;
+  box-shadow: 0 6px 14px rgba(8, 120, 88, 0.24);
 }
 
 /* =========================================================
-   FILTROS DE BÚSQUEDA
+   SELECTOR / BUSCADOR DE ZONAS (COMBOBOX)
 ========================================================= */
-
-.rutas-search-modal-filters {
-  padding: 13px 14px;
-
-  display: grid;
-
-  grid-template-columns:
-    150px 1fr;
-
-  gap: 10px;
-
-  border-bottom:
-    1px solid #e4ebe8;
-
-  background: #f8fbfa;
-}
-
-.rutas-search-modal-filters select {
-  height: 40px;
-
-  padding: 0 10px;
-
-  border:
-    1px solid #d0d9d5;
-
-  border-radius: 8px;
-
-  background: #ffffff;
-
-  outline: none;
-
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.rutas-search-modal-input {
-  position: relative;
-
-  display: flex;
-  align-items: center;
-
-  border:
-    1px solid #d0d9d5;
-
-  border-radius: 8px;
-
-  background: #ffffff;
-}
-
-.rutas-search-modal-input:focus-within {
-  border-color: #20afb2;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(32, 175, 178, 0.12);
-}
-
-.rutas-search-modal-input img {
-  width: 22px;
-  height: 22px;
-
-  margin-left: 10px;
-
-  object-fit: contain;
-}
-
-.rutas-search-modal-input input {
-  width: 100%;
-  height: 38px;
-
-  padding: 0 10px;
-
-  border: none;
-  outline: none;
-
-  background: transparent;
-
-  font-size: 13px;
-}
-
-/* =========================================================
-   TABLA EMERGENTE
-========================================================= */
-
-.rutas-search-modal-table-wrap {
-  max-height: 420px;
-
-  overflow: auto;
-
-  background: #ffffff;
-}
-
-.rutas-search-modal-table {
-  width: 100%;
-
-  border-collapse: collapse;
-}
-
-.rutas-search-modal-table thead {
-  position: sticky;
-
-  top: 0;
-
-  z-index: 5;
-}
-
-.rutas-search-modal-table th {
-  padding: 10px 11px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #0e7a71,
-      #0e7a71
-    );
-
-  color: #ffffff;
-
-  text-align: center;
-
-  font-size: 11px;
-  font-weight: 900;
-
-  text-transform: uppercase;
-  letter-spacing: 0.035em;
-}
-
-.rutas-search-modal-table td {
-  padding: 10px 11px;
-
-  border-bottom:
-    1px solid #e7eeea;
-
-  color: #25333d;
-
-  font-size: 12px;
-
-  text-align: center;
-  vertical-align: middle;
-}
-
-.rutas-search-modal-table tbody tr {
-  cursor: pointer;
-
-  transition:
-    background 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.rutas-search-modal-table tbody tr:nth-child(even) {
-  background: #f5faf8;
-}
-
-.rutas-search-modal-table tbody tr:hover {
-  background: #ddf5ea;
-
-  box-shadow:
-    inset 4px 0 0 #12b76a;
-}
-
-/* =========================================================
-   ZONAS EN MODAL
-========================================================= */
-
-.rutas-search-zonas {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-
-  gap: 4px;
-}
-
-.rutas-search-zonas span {
-  padding: 4px 7px;
-
-  border-radius: 6px;
-
-  background: #eefbf6;
-
-  color: #087443;
-
-  font-size: 10px;
-  font-weight: 800;
-}
-
-/* =========================================================
-   DÍAS EN MODAL
-========================================================= */
-
-.rutas-search-dias {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-
-  gap: 4px;
-}
-
-.rutas-search-dias span {
-  min-width: 30px;
-
-  padding: 4px 5px;
-
-  border-radius: 6px;
-
-  background: #eff8ff;
-
-  color: #175cd3;
-
-  font-size: 9px;
-  font-weight: 800;
-}
-
-/* =========================================================
-   ESTADO EN MODAL
-========================================================= */
-
-.rutas-search-status {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  min-width: 70px;
-
-  padding: 5px 9px;
-
-  border-radius: 999px;
-
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.rutas-search-status.active {
-  color: #067647;
-
-  background: #ecfdf3;
-
-  border: 1px solid #abefc6;
-}
-
-.rutas-search-status.inactive {
-  color: #b42318;
-
-  background: #fef3f2;
-
-  border: 1px solid #fecdca;
-}
-
-/* =========================================================
-   VACÍO
-========================================================= */
-
-.rutas-search-empty {
-  padding: 30px !important;
-
-  color: #98a2b3 !important;
-
-  text-align: center !important;
-}
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media (max-width: 768px) {
-  .rutas-title-bar {
-    max-width: none;
-  }
-
-  .rutas-title-actions {
-    width: 100%;
-
-    justify-content: flex-start;
-
-    flex-wrap: wrap;
-  }
-
-  .rutas-main-form {
-    max-width: none;
-  }
-
-  .rutas-main-form .rutas-days-selector {
-    grid-template-columns:
-      repeat(4, 1fr);
-  }
-
-  .rutas-search-modal-filters {
-    grid-template-columns: 1fr;
-  }
-}
-/* =========================================================
-   REPORTE IMPRESIÓN RUTAS
-========================================================= */
-
-.rutas-print-report {
-  display: none;
-}
-
-
-/* =========================================================
-   MODO IMPRESIÓN
-========================================================= */
-
-@media print {
-
-  @page {
-    size: landscape;
-
-    margin: 12mm;
-  }
-
-
-  /* OCULTAR TODO */
-
-  body * {
-    visibility: hidden !important;
-  }
-
-
-  /* MOSTRAR SOLO REPORTE */
-
-  .rutas-print-report,
-  .rutas-print-report * {
-    visibility: visible !important;
-  }
-
-
-  .rutas-print-report {
-    display: block !important;
-
-    position: absolute;
-
-    left: 0;
-    top: 0;
-
-    width: 100%;
-
-    background: #ffffff;
-
-    color: #000000;
-
-    font-family:
-      Arial,
-      sans-serif;
-  }
-
-
-  /* ENCABEZADO */
-
-  .rutas-print-header {
-    margin-bottom: 18px;
-
-    text-align: center;
-  }
-
-
-  .rutas-print-header h1 {
-    margin: 0;
-
-    font-size: 20px;
-    font-weight: 800;
-  }
-
-
-  .rutas-print-header h2 {
-    margin: 4px 0;
-
-    font-size: 16px;
-  }
-
-
-  .rutas-print-header p {
-    margin: 3px 0;
-
-    font-size: 10px;
-  }
-
-
-  /* TABLA */
-
-  .rutas-print-table {
-    width: 100%;
-
-    border-collapse: collapse;
-
-    font-size: 9px;
-  }
-
-
-  .rutas-print-table th {
-    padding: 7px 5px;
-
-    border: 1px solid #555;
-
-    background: #eeeeee !important;
-
-    color: #000000 !important;
-
-    font-weight: 800;
-
-    text-align: center;
-  }
-
-
-  .rutas-print-table td {
-    padding: 6px 5px;
-
-    border: 1px solid #777;
-
-    color: #000000 !important;
-
-    text-align: center;
-
-    vertical-align: middle;
-  }
-
-
-  /* EVITAR CORTAR FILAS */
-
-  .rutas-print-table tr {
-    break-inside: avoid;
-
-    page-break-inside: avoid;
-  }
-
-
-  /* REPETIR CABECERA EN CADA PÁGINA */
-
-  .rutas-print-table thead {
-    display: table-header-group;
-  }
-
-
-  /* FOOTER REPORTE */
-
-  .rutas-print-footer {
-    margin-top: 12px;
-
-    display: flex;
-    justify-content: space-between;
-
-    font-size: 9px;
-  }
-
-}
-/* =========================================
-   SELECTOR / BUSCADOR DE ZONAS
-========================================= */
 
 .rutas-zonas-combobox {
   position: relative;
   width: 100%;
 }
 
-
-/* =========================================
-   BUSCADOR
-========================================= */
-
 .rutas-zonas-search {
   width: 100%;
-  min-height: 48px;
+  min-height: 46px;
 
   display: flex;
   align-items: center;
@@ -1017,71 +532,53 @@
 
   padding: 0 12px;
 
+  box-sizing: border-box;
+
   background: #ffffff;
 
-  border: 1px solid
-    rgba(25, 135, 84, 0.32);
-
+  border: 1px solid rgba(8, 120, 88, 0.20);
   border-radius: 12px;
-
-  box-sizing: border-box;
 
   transition:
     border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
+    box-shadow 0.2s ease;
 }
-
 
 .rutas-zonas-search:focus-within {
-  border-color:
-    rgba(25, 135, 84, 0.85);
+  border-color: #20afb2;
 
   box-shadow:
-    0 0 0 3px
-    rgba(25, 135, 84, 0.10);
+    0 0 0 3px rgba(32, 175, 178, 0.14);
 }
-
 
 .rutas-zonas-search img {
   width: 20px;
   height: 20px;
-
   object-fit: contain;
 
   opacity: 0.72;
-
   flex-shrink: 0;
 }
 
-
 .rutas-zonas-search input {
   flex: 1;
-
   min-width: 0;
-
   height: 44px;
 
   border: none;
   outline: none;
-
   background: transparent;
 
-  font-size: 14px;
-  font-weight: 500;
-
-  color: #26384a;
+  color: #1f3a30;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
 }
-
 
 .rutas-zonas-search input::placeholder {
-  color: #8795a7;
+  color: #9ab0a5;
+  font-weight: 500;
 }
-
-
-/* =========================================
-   BOTÓN ABRIR / CERRAR
-========================================= */
 
 .rutas-zonas-toggle {
   width: 34px;
@@ -1095,16 +592,13 @@
   outline: none;
 
   background: transparent;
-
-  color: #26384a;
+  color: #2b5b43;
 
   font-size: 12px;
   font-weight: 700;
 
   cursor: pointer;
-
   border-radius: 8px;
-
   flex-shrink: 0;
 
   transition:
@@ -1112,17 +606,12 @@
     transform 0.2s ease;
 }
 
-
 .rutas-zonas-toggle:hover {
-  background:
-    rgba(25, 135, 84, 0.08);
+  background: rgba(8, 120, 88, 0.08);
+  transform: scale(1.05);
 }
 
-
-/* =========================================
-   ZONAS SELECCIONADAS
-========================================= */
-
+/* ---------- Zonas seleccionadas ---------- */
 .rutas-zonas-selected {
   width: 100%;
 
@@ -1130,18 +619,15 @@
   flex-wrap: wrap;
   gap: 8px;
 
-  margin-top: 8px;
-
-  padding: 8px 10px;
-
-  background:
-    rgba(255, 255, 255, 0.48);
-
-  border-radius: 10px;
+  margin-top: 10px;
+  padding: 10px;
 
   box-sizing: border-box;
-}
 
+  background: #f2faf6;
+  border: 1px dashed rgba(8, 120, 88, 0.20);
+  border-radius: 12px;
+}
 
 .rutas-zona-chip {
   display: inline-flex;
@@ -1149,26 +635,29 @@
   gap: 7px;
 
   min-height: 32px;
+  padding: 6px 9px 6px 12px;
 
-  padding: 6px 9px 6px 11px;
+  background: #ffffff;
+  border: 1px solid rgba(8, 120, 88, 0.18);
+  border-radius: 999px;
 
-  background:
-    rgba(31, 168, 112, 0.12);
+  color: #145f3d;
 
-  border:
-    1px solid
-    rgba(31, 168, 112, 0.18);
-
-  border-radius: 10px;
-
-  color: #167957;
-
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
-
   line-height: 1;
+
+  box-shadow: 0 2px 6px rgba(8, 120, 88, 0.08);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
+.rutas-zona-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(8, 120, 88, 0.14);
+}
 
 .rutas-zona-chip button {
   width: 22px;
@@ -1181,13 +670,10 @@
   padding: 0;
 
   border: none;
-
-  background:
-    rgba(22, 121, 87, 0.08);
-
+  background: rgba(8, 120, 88, 0.08);
   border-radius: 50%;
 
-  color: #167957;
+  color: #145f3d;
 
   font-size: 17px;
   font-weight: 500;
@@ -1199,52 +685,57 @@
     transform 0.2s ease;
 }
 
-
 .rutas-zona-chip button:hover {
-  background:
-    rgba(22, 121, 87, 0.16);
-
-  transform: scale(1.06);
+  background: rgba(8, 120, 88, 0.18);
+  transform: scale(1.10);
 }
 
-
-/* =========================================
-   LISTA DESPLEGABLE
-========================================= */
-
+/* ---------- Lista desplegable ---------- */
 .rutas-zonas-list {
   width: 100%;
-
   max-height: 245px;
 
   overflow-y: auto;
 
-  margin-top: 6px;
-
+  margin-top: 8px;
   padding: 6px;
-
-  background: #ffffff;
-
-  border:
-    1px solid
-    rgba(25, 135, 84, 0.18);
-
-  border-radius: 12px;
-
-  box-shadow:
-    0 12px 30px
-    rgba(20, 55, 40, 0.14);
 
   box-sizing: border-box;
 
+  background: #ffffff;
+
+  border: 1px solid rgba(8, 120, 88, 0.18);
+  border-radius: 12px;
+
+  box-shadow:
+    0 12px 30px rgba(20, 55, 40, 0.14),
+    0 2px 6px rgba(20, 55, 40, 0.06);
+
   z-index: 20;
+
+  scrollbar-width: thin;
+  scrollbar-color: #b9d8c9 transparent;
 }
 
+.rutas-zonas-list::-webkit-scrollbar {
+  width: 8px;
+}
 
-/* =========================================
-   OPCIÓN DE ZONA
-========================================= */
+.rutas-zonas-list::-webkit-scrollbar-track {
+  background: transparent;
+}
 
+.rutas-zonas-list::-webkit-scrollbar-thumb {
+  background: #b9d8c9;
+  border-radius: 20px;
+  border: 2px solid #ffffff;
+}
+
+.rutas-zonas-list::-webkit-scrollbar-thumb:hover {
+  background: #8fc3a9;
+}
+
+/* ---------- Opción de zona ---------- */
 .rutas-zona-option {
   width: 100%;
 
@@ -1252,20 +743,19 @@
   align-items: center;
   gap: 10px;
 
-  padding: 9px 10px;
+  padding: 10px 11px;
 
   border: none;
   outline: none;
 
   background: transparent;
+  border-radius: 9px;
 
-  border-radius: 8px;
+  color: #2b4d3f;
 
-  color: #26384a;
-
-  font-size: 14px;
+  font-family: inherit;
+  font-size: 13.5px;
   font-weight: 600;
-
   text-align: left;
 
   cursor: pointer;
@@ -1276,25 +766,17 @@
     transform 0.15s ease;
 }
 
-
 .rutas-zona-option:hover {
-  background:
-    rgba(25, 135, 84, 0.07);
+  background: #eaf8f1;
 }
-
 
 .rutas-zona-option.selected {
-  background:
-    rgba(31, 168, 112, 0.10);
-
-  color: #167957;
+  background: #ddf5ea;
+  color: #145f3d;
+  font-weight: 800;
 }
 
-
-/* =========================================
-   CHECK VISUAL
-========================================= */
-
+/* ---------- Check visual ---------- */
 .rutas-zona-checkbox {
   width: 23px;
   height: 23px;
@@ -1305,14 +787,10 @@
 
   flex-shrink: 0;
 
-  border:
-    2px solid
-    #8a9aaa;
-
-  border-radius: 6px;
+  border: 2px solid #b5c1bc;
+  border-radius: 7px;
 
   background: #ffffff;
-
   color: #ffffff;
 
   font-size: 14px;
@@ -1323,110 +801,668 @@
   transition:
     background 0.15s ease,
     border-color 0.15s ease,
-    box-shadow 0.15s ease;
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 }
 
-
-.rutas-zona-option.selected
-.rutas-zona-checkbox {
+.rutas-zona-option.selected .rutas-zona-checkbox {
   background: #15996b;
-
   border-color: #15996b;
 
-  box-shadow:
-    0 2px 6px
-    rgba(21, 153, 107, 0.24);
+  box-shadow: 0 3px 8px rgba(21, 153, 107, 0.28);
+
+  transform: scale(1.05);
 }
 
-
-/* =========================================
-   SIN RESULTADOS
-========================================= */
-
+/* ---------- Sin resultados ---------- */
 .rutas-zonas-empty {
-  padding: 18px 12px;
+  padding: 22px 12px;
 
   text-align: center;
 
   color: #7d8997;
-
   font-size: 13px;
   font-weight: 600;
 }
 
+/* =========================================================
+   MODAL BUSCAR RUTAS
+========================================================= */
 
-/* =========================================
-   SCROLL
-========================================= */
+.rutas-search-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
 
-.rutas-zonas-list::-webkit-scrollbar {
-  width: 8px;
+  background: rgba(15, 23, 42, 0.22);
+  backdrop-filter: blur(2px);
+
+  pointer-events: none;
 }
 
+.rutas-search-modal {
+  position: fixed;
 
-.rutas-zonas-list::-webkit-scrollbar-track {
+  width: min(950px, 94vw);
+  max-height: 80vh;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(8, 86, 52, 0.16);
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 24px 65px rgba(15, 23, 42, 0.28);
+
+  pointer-events: auto;
+}
+
+/* ---------- Cabecera ---------- */
+.rutas-search-modal-header {
+  min-height: 54px;
+  padding: 10px 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
   background:
-    rgba(0, 0, 0, 0.03);
+    linear-gradient(135deg, #087f69 0%, #20afb2 100%);
 
-  border-radius: 20px;
+  color: #ffffff;
+
+  cursor: move;
+  user-select: none;
 }
 
+.rutas-search-modal-header h3 {
+  margin: 0;
 
-.rutas-zonas-list::-webkit-scrollbar-thumb {
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.rutas-search-modal-close {
+  width: 34px;
+  height: 34px;
+  padding: 5px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.14);
+
+  transition:
+    transform 0.16s var(--rt-ease),
+    box-shadow 0.16s ease;
+}
+
+.rutas-search-modal-close:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.20);
+}
+
+.rutas-search-modal-close img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* ---------- Filtros ---------- */
+.rutas-search-modal-filters {
+  padding: 14px;
+
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 10px;
+
+  border-bottom: 1px solid rgba(8, 86, 52, 0.10);
+  background: #f7fdfa;
+}
+
+.rutas-search-modal-filters select {
+  height: 42px;
+  padding: 0 12px;
+
+  border: 1px solid rgba(8, 120, 88, 0.18);
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #1f3a30;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+
+  outline: none;
+
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.rutas-search-modal-filters select:focus {
+  border-color: #20afb2;
+  box-shadow: 0 0 0 3px rgba(32, 175, 178, 0.12);
+}
+
+.rutas-search-modal-input {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  border: 1px solid rgba(8, 120, 88, 0.18);
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.rutas-search-modal-input:focus-within {
+  border-color: #20afb2;
+  box-shadow: 0 0 0 3px rgba(32, 175, 178, 0.14);
+}
+
+.rutas-search-modal-input img {
+  width: 21px;
+  height: 21px;
+  margin-left: 11px;
+  object-fit: contain;
+}
+
+.rutas-search-modal-input input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+
+  border: none;
+  outline: none;
+  background: transparent;
+
+  color: #1f3a30;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.rutas-search-modal-input input::placeholder {
+  color: #9ab0a5;
+  font-weight: 500;
+}
+
+/* =========================================================
+   TABLA EMERGENTE
+========================================================= */
+
+.rutas-search-modal-table-wrap {
+  max-height: 420px;
+  overflow: auto;
+
+  background: #ffffff;
+
+  scrollbar-width: thin;
+  scrollbar-color: #b9d8c9 transparent;
+}
+
+.rutas-search-modal-table-wrap::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+.rutas-search-modal-table-wrap::-webkit-scrollbar-thumb {
+  background: #b9d8c9;
+  border-radius: 9px;
+  border: 2px solid #ffffff;
+}
+
+.rutas-search-modal-table-wrap::-webkit-scrollbar-thumb:hover {
+  background: #8fc3a9;
+}
+
+.rutas-search-modal-table {
+  width: 100%;
+
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.rutas-search-modal-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.rutas-search-modal-table th {
+  padding: 12px 12px;
+
   background:
-    rgba(61, 88, 74, 0.30);
+    linear-gradient(135deg, #0e7a71, #159a75);
 
-  border-radius: 20px;
+  color: #ffffff;
+
+  text-align: center;
+
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  white-space: nowrap;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
 }
 
+.rutas-search-modal-table td {
+  padding: 12px 12px;
 
-.rutas-zonas-list::-webkit-scrollbar-thumb:hover {
-  background:
-    rgba(61, 88, 74, 0.45);
+  border-bottom: 1px solid rgba(8, 86, 52, 0.08);
+
+  color: #2b4d3f;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  text-align: center;
+  vertical-align: middle;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+.rutas-search-modal-table tbody tr {
+  cursor: pointer;
 
-/* =========================================
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.rutas-search-modal-table tbody tr:nth-child(even) {
+  background: #f7fdfa;
+}
+
+.rutas-search-modal-table tbody tr:hover {
+  background: #e3f7ec;
+  box-shadow: inset 4px 0 0 #12b76a;
+}
+
+.rutas-search-modal-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ---------- Zonas en modal ---------- */
+.rutas-search-zonas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+.rutas-search-zonas span {
+  padding: 4px 8px;
+
+  border-radius: 6px;
+
+  background: #eaf8f1;
+  color: #087858;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  border: 1px solid rgba(8, 120, 88, 0.14);
+}
+
+/* ---------- Días en modal ---------- */
+.rutas-search-dias {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
+.rutas-search-dias span {
+  min-width: 30px;
+  padding: 4px 6px;
+
+  border-radius: 6px;
+
+  background: #eef5ff;
+  color: #175cd3;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  border: 1px solid rgba(23, 92, 211, 0.14);
+}
+
+/* ---------- Estado en modal ---------- */
+.rutas-search-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+
+  min-width: 78px;
+  padding: 5px 11px;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  box-shadow: 0 2px 5px rgba(20, 95, 61, 0.06);
+}
+
+.rutas-search-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+  background: currentColor;
+
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.55);
+}
+
+.rutas-search-status.active {
+  color: #067647;
+  background: #ecfdf3;
+  border: 1px solid #abefc6;
+}
+
+.rutas-search-status.inactive {
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+}
+
+/* ---------- Estado vacío ---------- */
+.rutas-search-empty {
+  padding: 36px 20px !important;
+
+  color: #7f9189 !important;
+  text-align: center !important;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   REPORTE IMPRESIÓN
+========================================================= */
+
+.rutas-print-report {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 12mm;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .rutas-print-report,
+  .rutas-print-report * {
+    visibility: visible !important;
+  }
+
+  .rutas-print-report {
+    display: block !important;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    width: 100%;
+
+    background: #ffffff;
+    color: #000000;
+
+    font-family: Arial, sans-serif;
+  }
+
+  .rutas-print-header {
+    margin-bottom: 18px;
+    text-align: center;
+  }
+
+  .rutas-print-header h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .rutas-print-header h2 {
+    margin: 4px 0;
+    font-size: 16px;
+  }
+
+  .rutas-print-header p {
+    margin: 3px 0;
+    font-size: 10px;
+  }
+
+  .rutas-print-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9px;
+  }
+
+  .rutas-print-table th {
+    padding: 7px 5px;
+
+    border: 1px solid #555;
+
+    background: #eeeeee !important;
+    color: #000000 !important;
+
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .rutas-print-table td {
+    padding: 6px 5px;
+
+    border: 1px solid #777;
+    color: #000000 !important;
+
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  .rutas-print-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .rutas-print-table thead {
+    display: table-header-group;
+  }
+
+  .rutas-print-footer {
+    margin-top: 12px;
+
+    display: flex;
+    justify-content: space-between;
+
+    font-size: 9px;
+  }
+}
+
+/* =========================================================
    RESPONSIVE
-========================================= */
+========================================================= */
+
+@media (max-width: 900px) {
+  .rutas-title-bar {
+    min-height: 66px;
+    padding: 5px 18px 14px;
+  }
+
+  .rutas-title-info h2 { font-size: 21px; }
+
+  .rutas-main-form {
+    width: calc(100% - 24px);
+    margin: 20px auto 50px;
+    padding: 18px;
+    border-radius: 18px;
+  }
+}
 
 @media (max-width: 768px) {
+  .rutas-title-bar {
+    max-width: none;
+    min-height: 62px;
+    padding: 5px 14px 12px;
+  }
+
+  .rutas-title-info h2 { font-size: 19px; }
+
+  .rutas-title-actions {
+    width: auto;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+  }
+
+  .rutas-top-icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .rutas-top-icon-btn img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .rutas-main-form {
+    width: calc(100% - 20px);
+    padding: 16px;
+    margin: 16px auto 50px;
+    border-radius: 16px;
+  }
+
+  .rutas-main-form::after {
+    left: 16px;
+    right: 16px;
+    height: 2.5px;
+  }
+
+  .rutas-main-form .rutas-days-selector {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .rutas-search-modal {
+    width: 96vw;
+    max-height: 85vh;
+    border-radius: 14px;
+  }
+
+  .rutas-search-modal-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .rutas-search-modal-table th,
+  .rutas-search-modal-table td {
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+
+  .rutas-search-modal-table-wrap {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rutas-main-form {
+    padding: 14px;
+    border-radius: 14px;
+  }
+
+  .rutas-main-form label,
+  .rutas-field-label {
+    font-size: 10.5px;
+  }
+
+  .rutas-main-form input,
+  .rutas-main-form select,
+  .rutas-main-form textarea {
+    font-size: 12.5px;
+  }
+
+  .rutas-title-info h2 { font-size: 17px; }
 
   .rutas-zonas-search {
-    min-height: 46px;
-
-    padding:
-      0 10px;
+    min-height: 44px;
+    padding: 0 10px;
   }
-
 
   .rutas-zonas-search input {
-    font-size: 13px;
+    font-size: 12.5px;
   }
-
 
   .rutas-zonas-selected {
     gap: 6px;
-
-    padding: 7px;
+    padding: 8px;
   }
-
 
   .rutas-zona-chip {
-    font-size: 12px;
+    font-size: 11.5px;
+    min-height: 30px;
+    padding: 5px 8px 5px 10px;
   }
-
 
   .rutas-zonas-list {
     max-height: 220px;
   }
 
-
   .rutas-zona-option {
-    font-size: 13px;
-
-    padding:
-      9px 8px;
+    font-size: 12.5px;
+    padding: 9px 9px;
   }
 
+  .rutas-search-modal-header {
+    min-height: 48px;
+    padding: 8px 10px;
+  }
+
+  .rutas-search-modal-header h3 { font-size: 15px; }
+
+  .rutas-search-modal-close {
+    width: 30px;
+    height: 30px;
+  }
+
+  .rutas-search-modal-filters {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .rutas-search-modal-table th,
+  .rutas-search-modal-table td {
+    padding: 9px 6px;
+    font-size: 10.5px;
+  }
 }

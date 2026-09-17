@@ -3,14 +3,17 @@
 ========================================= */
 
 .pedidos-page {
+  position: relative;
+
   width: 100%;
   min-width: 0;
-  height: 100%;
+  min-height: 100vh;
 
   margin: 0;
-  padding: 0;
+  padding: 0 0 70px;
 
-  overflow-x: hidden;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
 
@@ -65,6 +68,7 @@
 ========================================================= */
 
 .pedidos-title-bar {
+  position: -webkit-sticky;
   position: sticky;
 
   top: 0;
@@ -78,9 +82,11 @@
 
   margin: 0;
 
-  padding: 12px 12px 18px;
+  padding: 10px 60px 10px;
 
   box-sizing: border-box;
+
+  flex-shrink: 0;
 
   display: flex;
   align-items: center;
@@ -103,8 +109,8 @@
     rgba(255, 255, 255, 0.22);
 
   box-shadow:
-    0 4px 12px
-    rgba(15, 23, 42, 0.10);
+    0 6px 18px
+    rgba(15, 23, 42, 0.16);
 
   overflow: visible;
 }
@@ -118,7 +124,8 @@
   display: flex;
   align-items: center;
 
-  margin-left: 72px;
+  gap: 14px;
+  margin-left: 0;
 }
 
 .pedidos-title-info h2 {
@@ -1122,7 +1129,7 @@
   }
 
   .pedidos-title-info {
-    margin-left: 50px;
+    margin-left: 0;
   }
 
   .pedidos-modal-overlay {
@@ -3880,3 +3887,1052 @@ input[list="pedidos-productos-disponibles"]:focus {
 .pedidos-payment {
   min-width: 82px;
 }
+
+
+/* =========================================================
+   CLIENTE SELECCIONADO - DATOS DE DESPACHO
+   Compatible con Pedidos_despacho_actualizado.jsx
+========================================================= */
+
+.pedidos-client-selected {
+  align-items: flex-start;
+  padding: 10px 12px;
+  background:
+    linear-gradient(
+      135deg,
+      #f4fbf8 0%,
+      #eef9f5 100%
+    );
+}
+
+.pedidos-client-selected-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.pedidos-client-selected-main > strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #173c30;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.pedidos-client-selected-main > span {
+  display: block;
+  margin-bottom: 8px;
+  color: #6d8179;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.pedidos-client-selected-data {
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.pedidos-client-selected-data > span {
+  min-width: 0;
+  margin: 0;
+  padding: 6px 8px;
+  border: 1px solid #dcebe5;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #526860;
+  font-size: 9px;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pedidos-client-selected-data > span b {
+  color: #087858;
+  font-weight: 900;
+}
+
+.pedidos-client-selected > button {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+
+/* =========================================================
+   TARJETAS - ZONA Y RUTA
+========================================================= */
+
+.pedidos-client-card-info > div:nth-last-child(-n + 2) {
+  border: 1px solid #e0ece7;
+}
+
+.pedidos-client-card-info > div strong {
+  min-height: 12px;
+}
+
+
+/* =========================================================
+   LISTA - ZONA Y RUTA
+========================================================= */
+
+.pedidos-list-table {
+  min-width: 1040px;
+}
+
+.pedidos-list-table th,
+.pedidos-list-table td {
+  vertical-align: middle;
+}
+
+
+/* =========================================================
+   RESPONSIVE - DATOS DEL CLIENTE / DESPACHO
+========================================================= */
+
+@media (max-width: 760px) {
+
+  .pedidos-client-selected-data {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+@media (max-width: 520px) {
+
+  .pedidos-client-selected {
+    flex-direction: column;
+  }
+
+  .pedidos-client-selected-data {
+    grid-template-columns: 1fr;
+  }
+
+  .pedidos-client-selected > button {
+    width: 100%;
+  }
+
+}
+
+
+/* =========================================================
+   PEDIDOS - BORRADORES
+   Cliente opcional / asignar cliente / confirmar pedido
+========================================================= */
+
+/* ESTADO BORRADOR */
+
+.pedidos-status-borrador {
+  border: 1px solid #cfd8dc;
+  background: #f3f6f7;
+  color: #52636b;
+}
+
+.pedidos-card-status-borrador {
+  border-color: #d8e0e3;
+  background: #f4f7f8;
+  color: #52636b;
+}
+
+
+/* =========================================================
+   CLIENTE OPCIONAL EN EL FORMULARIO
+========================================================= */
+
+.pedidos-form-section h3
+.pedidos-client-optional {
+  display: inline-block;
+
+  margin-left: 8px;
+
+  padding: 3px 7px;
+
+  border: 1px solid #d8e4df;
+  border-radius: 999px;
+
+  background: #f5f8f7;
+
+  color: #70817a;
+
+  font-size: 8px;
+  font-weight: 800;
+
+  vertical-align: middle;
+}
+
+
+/* AVISO CUANDO TODAVÍA NO HAY CLIENTE */
+
+.pedidos-draft-client-notice {
+  margin: 0 0 9px;
+
+  padding: 8px 10px;
+
+  border: 1px solid #f0d78e;
+  border-radius: 8px;
+
+  background: #fff9e8;
+
+  color: #805d0a;
+
+  font-size: 10px;
+  font-weight: 750;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   BOTONES DEL BORRADOR
+========================================================= */
+
+.pedidos-assign-client-btn,
+.pedidos-confirm-btn {
+  min-height: 30px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 11px;
+
+  border-radius: 7px;
+
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 900;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease;
+}
+
+
+/* ASIGNAR CLIENTE */
+
+.pedidos-assign-client-btn {
+  border: 1px solid #e0ad3e;
+
+  background: #fff5d7;
+
+  color: #8a5b00;
+
+  box-shadow:
+    0 2px 7px
+    rgba(180, 123, 0, 0.10);
+
+  animation:
+    pedidosAsignarClientePulso
+    1.8s ease-in-out infinite;
+}
+
+
+.pedidos-assign-client-btn:hover {
+  transform: translateY(-1px);
+
+  border-color: #d59a1d;
+
+  background: #ffedb5;
+
+  box-shadow:
+    0 5px 13px
+    rgba(180, 123, 0, 0.18);
+}
+
+
+/* PULSO SUAVE, NO AGRESIVO */
+
+@keyframes pedidosAsignarClientePulso {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0
+      rgba(214, 157, 31, 0);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 4px
+      rgba(214, 157, 31, 0.14);
+  }
+
+}
+
+
+/* CONFIRMAR PEDIDO */
+
+.pedidos-confirm-btn {
+  border: 1px solid #0d8b68;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e,
+      #159a75
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 3px 9px
+    rgba(15, 118, 110, 0.15);
+}
+
+
+.pedidos-confirm-btn:hover {
+  transform: translateY(-1px);
+
+  background:
+    linear-gradient(
+      135deg,
+      #0b695f,
+      #118a69
+    );
+
+  box-shadow:
+    0 6px 14px
+    rgba(15, 118, 110, 0.22);
+}
+
+
+/* =========================================================
+   BORRADOR EN TARJETAS
+========================================================= */
+
+.pedidos-client-card-footer
+.pedidos-assign-client-btn,
+.pedidos-client-card-footer
+.pedidos-confirm-btn {
+  max-width: 170px;
+}
+
+
+/* =========================================================
+   BORRADOR EN VISTA LISTA
+========================================================= */
+
+.pedidos-list-table
+.pedidos-assign-client-btn,
+.pedidos-list-table
+.pedidos-confirm-btn {
+  min-height: 28px;
+
+  padding-left: 9px;
+  padding-right: 9px;
+
+  font-size: 8px;
+}
+
+
+/* =========================================================
+   ACCESIBILIDAD
+   RESPETAR USUARIOS QUE DESACTIVAN ANIMACIONES
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .pedidos-assign-client-btn {
+    animation: none;
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE BORRADORES
+========================================================= */
+
+@media (max-width: 560px) {
+
+  .pedidos-form-section h3
+  .pedidos-client-optional {
+    display: block;
+
+    width: fit-content;
+
+    margin:
+      5px
+      0
+      0;
+  }
+
+
+  .pedidos-client-card-footer {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+
+  .pedidos-client-card-footer
+  .pedidos-assign-client-btn,
+  .pedidos-client-card-footer
+  .pedidos-confirm-btn {
+    width: 100%;
+    max-width: none;
+  }
+
+}
+
+
+/* =========================================================
+   FILTROS RÁPIDOS DE PEDIDOS
+   Estado / pago / cliente / ruta
+========================================================= */
+
+.pedidos-quick-filters {
+  width: 100%;
+  box-sizing: border-box;
+
+  display: grid;
+  grid-template-columns:
+    minmax(135px, 1fr)
+    minmax(145px, 1fr)
+    minmax(135px, 1fr)
+    minmax(150px, 1fr)
+    auto
+    auto;
+
+  gap: 9px;
+  align-items: end;
+
+  padding: 11px 14px;
+  margin: 0;
+
+  border-bottom: 1px solid #dce8e3;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #f7fbf9 100%
+    );
+
+  box-shadow:
+    0 3px 10px
+    rgba(15, 23, 42, 0.04);
+}
+
+
+/* LABELS */
+
+.pedidos-quick-filters > label {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+
+  color: #536a61;
+
+  font-size: 9px;
+  font-weight: 900;
+}
+
+
+/* SELECTS */
+
+.pedidos-quick-filters > label select {
+  width: 100%;
+  height: 35px;
+
+  box-sizing: border-box;
+
+  padding:
+    0
+    30px
+    0
+    10px;
+
+  border: 1px solid #d3e1db;
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #263d34;
+
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+
+.pedidos-quick-filters > label select:hover {
+  border-color: #a8cfc0;
+
+  background: #fbfefd;
+}
+
+
+.pedidos-quick-filters > label select:focus {
+  border-color: #159a75;
+
+  box-shadow:
+    0 0 0 2px
+    rgba(21, 154, 117, 0.10);
+}
+
+
+/* =========================================================
+   CONTADOR DE RESULTADOS
+========================================================= */
+
+.pedidos-quick-filter-result {
+  min-width: 84px;
+  height: 35px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  padding: 0 10px;
+
+  border: 1px solid #cce4da;
+  border-radius: 8px;
+
+  background: #eef8f4;
+
+  white-space: nowrap;
+}
+
+
+.pedidos-quick-filter-result strong {
+  color: #087858;
+
+  font-size: 13px;
+  font-weight: 950;
+}
+
+
+.pedidos-quick-filter-result span {
+  color: #60766d;
+
+  font-size: 9px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   BOTÓN LIMPIAR FILTROS
+========================================================= */
+
+.pedidos-quick-filter-clear {
+  height: 35px;
+
+  padding: 0 13px;
+
+  border: 1px solid #e5c5c2;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #b42318;
+
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 900;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+
+.pedidos-quick-filter-clear:hover {
+  transform: translateY(-1px);
+
+  border-color: #e8aaa5;
+
+  background: #fff5f4;
+
+  box-shadow:
+    0 4px 10px
+    rgba(180, 35, 24, 0.08);
+}
+
+
+/* =========================================================
+   PARPADEO CONSTANTE - ASIGNAR CLIENTE
+========================================================= */
+
+.pedidos-assign-client-btn {
+  animation:
+    pedidosAsignarClienteParpadeo
+    1s ease-in-out infinite !important;
+}
+
+
+@keyframes pedidosAsignarClienteParpadeo {
+
+  0%,
+  100% {
+    opacity: 1;
+
+    background: #fff5d7;
+
+    border-color: #e0ad3e;
+
+    box-shadow:
+      0 0 0 0
+      rgba(214, 157, 31, 0);
+  }
+
+  50% {
+    opacity: 0.58;
+
+    background: #ffe6a0;
+
+    border-color: #cf9216;
+
+    box-shadow:
+      0 0 0 4px
+      rgba(214, 157, 31, 0.17);
+  }
+
+}
+
+
+/* =========================================================
+   RESPONSIVE FILTROS
+========================================================= */
+
+@media (max-width: 1180px) {
+
+  .pedidos-quick-filters {
+    grid-template-columns:
+      repeat(4, minmax(130px, 1fr));
+  }
+
+
+  .pedidos-quick-filter-result,
+  .pedidos-quick-filter-clear {
+    width: 100%;
+  }
+
+}
+
+
+@media (max-width: 760px) {
+
+  .pedidos-quick-filters {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    padding: 10px;
+  }
+
+
+  .pedidos-quick-filter-result,
+  .pedidos-quick-filter-clear {
+    width: 100%;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .pedidos-quick-filters {
+    grid-template-columns: 1fr;
+
+    gap: 7px;
+  }
+
+
+  .pedidos-quick-filters > label select,
+  .pedidos-quick-filter-result,
+  .pedidos-quick-filter-clear {
+    height: 37px;
+  }
+
+}
+
+/* =========================================================
+   CALENDARIO COMPACTO - PEDIDOS
+   Basado en el calendario de Auditoría
+========================================================= */
+
+
+.pedidos-date-field {
+  min-width: 0;
+}
+
+.pedidos-date-trigger {
+  width: 100%;
+  height: 37px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(8, 116, 67, 0.30);
+  border-radius: 8px;
+  background: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.pedidos-date-trigger:hover {
+  border-color: #159a75;
+  background: #fbfefd;
+}
+
+.pedidos-date-trigger:focus-visible {
+  outline: none;
+  border-color: #159a75;
+  box-shadow: 0 0 0 2px rgba(21, 154, 117, 0.10);
+}
+
+.pedidos-date-trigger span {
+  flex-shrink: 0;
+  color: #087443;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+}
+
+.pedidos-date-trigger strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #344054;
+  font-size: 10px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* FECHA DE ENTREGA DENTRO DE NUEVO / EDITAR PEDIDO */
+
+.pedidos-form-date-trigger {
+  width: 100%;
+  height: 35px;
+  min-height: 35px;
+
+  box-sizing: border-box;
+
+  padding: 0 9px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+
+  border: 1px solid #d3dfda;
+  border-radius: 7px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #1f302a;
+
+  font-family: inherit;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.pedidos-form-date-trigger:hover {
+  border-color: #9ccfc0;
+  background: #fbfefd;
+}
+
+.pedidos-form-date-trigger:focus-visible {
+  border-color: #20afb2;
+  box-shadow:
+    0 0 0 2px
+    rgba(32, 175, 178, 0.10);
+}
+
+.pedidos-form-date-trigger span {
+  color: #087443;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  letter-spacing: 0.04em;
+}
+
+.pedidos-form-date-trigger strong {
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #344054;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pedidos-datepicker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.16);
+  backdrop-filter: blur(2px);
+}
+
+.pedidos-datepicker {
+  width: min(320px, calc(100vw - 24px));
+  box-sizing: border-box;
+  padding: 14px;
+  border: 1px solid #dbe8e3;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 20px 55px rgba(15, 23, 42, 0.20);
+}
+
+.pedidos-datepicker-title {
+  margin-bottom: 9px;
+  color: #60766d;
+  font-size: 9px;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pedidos-datepicker-header {
+  display: grid;
+  grid-template-columns: 31px 1fr 31px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.pedidos-datepicker-header strong {
+  color: #172033;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.pedidos-datepicker-header button {
+  width: 29px;
+  height: 29px;
+  padding: 0;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #12965a;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pedidos-datepicker-header button:hover {
+  background: #ecfdf3;
+}
+
+.pedidos-datepicker-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 5px;
+}
+
+.pedidos-datepicker-weekdays span {
+  color: #159a75;
+  font-size: 9px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.pedidos-datepicker-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 4px;
+}
+
+.pedidos-datepicker-days button {
+  position: relative;
+  width: 100%;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #2c3440;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.pedidos-datepicker-days button.outside {
+  color: #c5ceca;
+}
+
+.pedidos-datepicker-days button:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+}
+
+.pedidos-datepicker-days button.range {
+  background: #27a95f;
+  color: #ffffff;
+  border-radius: 0;
+}
+
+.pedidos-datepicker-days button.start {
+  border-radius: 15px 0 0 15px;
+}
+
+.pedidos-datepicker-days button.end {
+  border-radius: 0 15px 15px 0;
+}
+
+.pedidos-datepicker-days button.start.end {
+  border-radius: 15px;
+}
+
+
+/* FECHA ÚNICA: FECHA DE ENTREGA */
+
+.pedidos-datepicker-days button.single {
+  background: #087858;
+  color: #ffffff;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 0 0 3px rgba(8, 120, 88, 0.20);
+}
+
+.pedidos-datepicker-days button.single:hover {
+  background: #066b4f;
+  color: #ffffff;
+
+  border-radius: 50%;
+}
+
+.pedidos-datepicker-days button:not(.range):not(:disabled):hover {
+  background: #ecfdf3;
+  border-radius: 50%;
+  color: #087443;
+}
+
+.pedidos-datepicker-days button.current-week {
+  background: #20a05a;
+  color: #ffffff;
+  border-radius: 0;
+}
+
+.pedidos-datepicker-days button.current-week-start {
+  border-radius: 15px 0 0 15px;
+}
+
+.pedidos-datepicker-days button.current-week-end {
+  border-radius: 0 15px 15px 0;
+}
+
+.pedidos-datepicker-days button.current-week:hover {
+  background: #168b4b;
+  color: #ffffff;
+  border-radius: 0;
+}
+
+.pedidos-datepicker-days button.current-week-start:hover {
+  border-radius: 15px 0 0 15px;
+}
+
+.pedidos-datepicker-days button.current-week-end:hover {
+  border-radius: 0 15px 15px 0;
+}
+
+.pedidos-datepicker-footer {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pedidos-datepicker-footer button {
+  height: 34px;
+  padding: 0 15px;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.pedidos-datepicker-cancel {
+  border: 1px solid #d9e4df;
+  background: #ffffff;
+  color: #344054;
+}
+
+.pedidos-datepicker-cancel:hover {
+  background: #f6f9f8;
+}
+
+.pedidos-datepicker-done {
+  min-width: 78px;
+  border: none;
+  background: #20a45c;
+  color: #ffffff;
+}
+
+.pedidos-datepicker-done:hover {
+  background: #15864a;
+}
+
+@media (max-width: 480px) {
+  .pedidos-datepicker {
+    width: min(300px, calc(100vw - 20px));
+    padding: 12px;
+  }
+
+  .pedidos-datepicker-days button {
+    height: 27px;
+  }
+
+  .pedidos-datepicker-footer button {
+    height: 33px;
+  }
+}
+

@@ -7,6 +7,12 @@ import Producto
 import Cliente
   from "../models/Cliente.js";
 
+import ZonaDespacho
+  from "../models/ZonaDespacho.js";
+
+import Ruta
+  from "../models/Rutas.js";
+
 import Usuario
   from "../models/Usuario.js";
 
@@ -79,6 +85,45 @@ async function validarEmpleado(
 }
 
 
+
+/* =========================================
+   OBTENER DATOS DE DESPACHO DEL CLIENTE
+========================================= */
+
+async function obtenerDatosDespachoCliente(cliente) {
+  let zona = null;
+  let ruta = null;
+
+  if (cliente.zonaDespacho) {
+    zona = await ZonaDespacho.findById(cliente.zonaDespacho);
+  }
+
+  if (zona) {
+    ruta = await Ruta.findOne({
+      zonasDespacho: zona._id,
+      estado: "Activa",
+    });
+  }
+
+  return {
+    clienteCodigo: cliente.codigo || "",
+    clienteNombre: cliente.nombre || "",
+    clienteRazonSocial: cliente.razonSocial || "",
+    clienteTelefono: cliente.telefono || "",
+    clienteDireccion: cliente.direccion || "",
+    clienteBarrio: cliente.barrio || "",
+    clienteCiudad: cliente.ciudad || "",
+    clienteTipo: cliente.tipoCliente || "",
+    zonaDespacho: zona?._id || null,
+    zonaDespachoCodigo: zona?.codigo || "",
+    zonaDespachoNombre: zona?.nombre || "",
+    ruta: ruta?._id || null,
+    rutaCodigo: ruta?.codigo || "",
+    rutaNombre: ruta?.nombre || "",
+    rutaDiasAtencion: Array.isArray(ruta?.diasAtencion) ? ruta.diasAtencion : [],
+  };
+}
+
 /* =========================================
    LISTAR PEDIDOS
 ========================================= */
@@ -93,7 +138,17 @@ export const listarPedidos =
 
           .populate(
             "cliente",
-            "codigo documento nombre telefono zonaDespacho"
+            "codigo nombre razonSocial telefono direccion barrio ciudad tipoCliente zonaDespacho"
+          )
+
+          .populate(
+            "zonaDespacho",
+            "codigo nombre descripcion estado"
+          )
+
+          .populate(
+            "ruta",
+            "codigo nombre descripcion diasAtencion estado"
           )
 
           .populate(
@@ -449,8 +504,8 @@ async function calcularItemPedido(
     reglaAplicadaDesde:
       reglaAplicada
         ? Number(
-            reglaAplicada.desde
-          )
+          reglaAplicada.desde
+        )
         : null,
 
     subtotal,
@@ -489,43 +544,59 @@ export const crearPedido =
 
 
       /* =====================================
-         VALIDAR CLIENTE
+         CLIENTE OPCIONAL
+         SI NO HAY CLIENTE, EL PEDIDO
+         SE GUARDA COMO BORRADOR
       ===================================== */
 
-      if (
-        !cliente
-      ) {
+      let clienteExiste =
+        null;
 
-        return res
-          .status(400)
-          .json({
+      let datosDespacho = {
+        clienteCodigo: "",
+        clienteNombre: "",
+        clienteRazonSocial: "",
+        clienteTelefono: "",
+        clienteDireccion: "",
+        clienteBarrio: "",
+        clienteCiudad: "",
+        clienteTipo: "",
+        zonaDespacho: null,
+        zonaDespachoCodigo: "",
+        zonaDespachoNombre: "",
+        ruta: null,
+        rutaCodigo: "",
+        rutaNombre: "",
+        rutaDiasAtencion: [],
+      };
 
-            mensaje:
-              "Debes seleccionar un cliente.",
 
-          });
+      if (cliente) {
 
-      }
-
-
-      const clienteExiste =
-        await Cliente.findById(
-          cliente
-        );
+        clienteExiste =
+          await Cliente.findById(
+            cliente
+          );
 
 
-      if (
-        !clienteExiste
-      ) {
+        if (!clienteExiste) {
 
-        return res
-          .status(404)
-          .json({
+          return res
+            .status(404)
+            .json({
 
-            mensaje:
-              "El cliente seleccionado no existe.",
+              mensaje:
+                "El cliente seleccionado no existe.",
 
-          });
+            });
+
+        }
+
+
+        datosDespacho =
+          await obtenerDatosDespachoCliente(
+            clienteExiste
+          );
 
       }
 
@@ -754,7 +825,27 @@ export const crearPedido =
 
 
           cliente:
-            clienteExiste._id,
+            clienteExiste
+              ? clienteExiste._id
+              : null,
+
+          clienteCodigo: datosDespacho.clienteCodigo,
+          clienteNombre: datosDespacho.clienteNombre,
+          clienteRazonSocial: datosDespacho.clienteRazonSocial,
+          clienteTelefono: datosDespacho.clienteTelefono,
+          clienteDireccion: datosDespacho.clienteDireccion,
+          clienteBarrio: datosDespacho.clienteBarrio,
+          clienteCiudad: datosDespacho.clienteCiudad,
+          clienteTipo: datosDespacho.clienteTipo,
+
+          zonaDespacho: datosDespacho.zonaDespacho,
+          zonaDespachoCodigo: datosDespacho.zonaDespachoCodigo,
+          zonaDespachoNombre: datosDespacho.zonaDespachoNombre,
+
+          ruta: datosDespacho.ruta,
+          rutaCodigo: datosDespacho.rutaCodigo,
+          rutaNombre: datosDespacho.rutaNombre,
+          rutaDiasAtencion: datosDespacho.rutaDiasAtencion,
 
 
           empleado:
@@ -781,7 +872,7 @@ export const crearPedido =
 
 
           estado:
-            "Pendiente",
+            "Borrador",
 
 
           fechaEntrega:
@@ -814,7 +905,23 @@ export const crearPedido =
             "cliente",
 
           select:
-            "codigo documento nombre telefono zonaDespacho",
+            "codigo nombre razonSocial telefono direccion barrio ciudad tipoCliente zonaDespacho",
+        },
+
+        {
+          path:
+            "zonaDespacho",
+
+          select:
+            "codigo nombre descripcion estado",
+        },
+
+        {
+          path:
+            "ruta",
+
+          select:
+            "codigo nombre descripcion diasAtencion estado",
         },
 
 
@@ -953,25 +1060,74 @@ export const actualizarPedido =
 
 
       /* =====================================
-         VALIDAR CLIENTE
+         CLIENTE OPCIONAL
+         PERMITE ASIGNARLO O RETIRARLO
+         MIENTRAS EL PEDIDO SEA BORRADOR
       ===================================== */
 
-      const clienteExiste =
-        await Cliente.findById(
-          cliente
-        );
+      let clienteExiste =
+        null;
+
+      let datosDespacho = {
+        clienteCodigo: "",
+        clienteNombre: "",
+        clienteRazonSocial: "",
+        clienteTelefono: "",
+        clienteDireccion: "",
+        clienteBarrio: "",
+        clienteCiudad: "",
+        clienteTipo: "",
+        zonaDespacho: null,
+        zonaDespachoCodigo: "",
+        zonaDespachoNombre: "",
+        ruta: null,
+        rutaCodigo: "",
+        rutaNombre: "",
+        rutaDiasAtencion: [],
+      };
+
+
+      if (cliente) {
+
+        clienteExiste =
+          await Cliente.findById(
+            cliente
+          );
+
+
+        if (!clienteExiste) {
+
+          return res
+            .status(404)
+            .json({
+
+              mensaje:
+                "El cliente seleccionado no existe.",
+
+            });
+
+        }
+
+
+        datosDespacho =
+          await obtenerDatosDespachoCliente(
+            clienteExiste
+          );
+
+      }
 
 
       if (
-        !clienteExiste
+        !clienteExiste &&
+        pedido.estado !== "Borrador"
       ) {
 
         return res
-          .status(404)
+          .status(400)
           .json({
 
             mensaje:
-              "El cliente seleccionado no existe.",
+              "No puedes retirar el cliente de un pedido que ya fue confirmado.",
 
           });
 
@@ -1153,7 +1309,27 @@ export const actualizarPedido =
       ===================================== */
 
       pedido.cliente =
-        clienteExiste._id;
+        clienteExiste
+          ? clienteExiste._id
+          : null;
+
+      pedido.clienteCodigo = datosDespacho.clienteCodigo;
+      pedido.clienteNombre = datosDespacho.clienteNombre;
+      pedido.clienteRazonSocial = datosDespacho.clienteRazonSocial;
+      pedido.clienteTelefono = datosDespacho.clienteTelefono;
+      pedido.clienteDireccion = datosDespacho.clienteDireccion;
+      pedido.clienteBarrio = datosDespacho.clienteBarrio;
+      pedido.clienteCiudad = datosDespacho.clienteCiudad;
+      pedido.clienteTipo = datosDespacho.clienteTipo;
+
+      pedido.zonaDespacho = datosDespacho.zonaDespacho;
+      pedido.zonaDespachoCodigo = datosDespacho.zonaDespachoCodigo;
+      pedido.zonaDespachoNombre = datosDespacho.zonaDespachoNombre;
+
+      pedido.ruta = datosDespacho.ruta;
+      pedido.rutaCodigo = datosDespacho.rutaCodigo;
+      pedido.rutaNombre = datosDespacho.rutaNombre;
+      pedido.rutaDiasAtencion = datosDespacho.rutaDiasAtencion;
 
 
       pedido.empleado =
@@ -1215,7 +1391,23 @@ export const actualizarPedido =
             "cliente",
 
           select:
-            "codigo documento nombre telefono zonaDespacho",
+            "codigo nombre razonSocial telefono direccion barrio ciudad tipoCliente zonaDespacho",
+        },
+
+        {
+          path:
+            "zonaDespacho",
+
+          select:
+            "codigo nombre descripcion estado",
+        },
+
+        {
+          path:
+            "ruta",
+
+          select:
+            "codigo nombre descripcion diasAtencion estado",
         },
 
 
@@ -1295,6 +1487,7 @@ export const cambiarEstadoPedido =
 
 
       const estadosValidos = [
+        "Borrador",
         "Pendiente",
         "En preparación",
         "En ruta",
@@ -1337,6 +1530,29 @@ export const cambiarEstadoPedido =
 
             mensaje:
               "Pedido no encontrado.",
+
+          });
+
+      }
+
+
+      /* =====================================
+         NO PERMITIR CONFIRMAR NI AVANZAR
+         UN PEDIDO SIN CLIENTE
+      ===================================== */
+
+      if (
+        !pedido.cliente &&
+        estado !== "Borrador" &&
+        estado !== "Cancelado"
+      ) {
+
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              "Debes asignar un cliente antes de confirmar o cambiar el estado del pedido.",
 
           });
 

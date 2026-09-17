@@ -157,9 +157,111 @@ const pedidoSchema =
 
         ref: "Cliente",
 
-        required: true,
+        default: null,
+      },
+      /* =====================================
+ DATOS DEL CLIENTE AL MOMENTO
+ DEL PEDIDO
+===================================== */
+
+      clienteCodigo: {
+        type: String,
+        default: "",
+        trim: true,
       },
 
+      clienteNombre: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+      clienteRazonSocial: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+      clienteTelefono: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+      clienteDireccion: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+      clienteBarrio: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+      clienteCiudad: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+      clienteTipo: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+
+      /* =====================================
+         ZONA DE DESPACHO
+      ===================================== */
+
+      zonaDespacho: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ZonaDespacho",
+        default: null,
+      },
+
+      zonaDespachoCodigo: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+      zonaDespachoNombre: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+
+      /* =====================================
+         RUTA DE DESPACHO
+      ===================================== */
+
+      ruta: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Ruta",
+        default: null,
+      },
+
+      rutaCodigo: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+      rutaNombre: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+      rutaDiasAtencion: {
+        type: [String],
+        default: [],
+      },
 
       /* =====================================
          EMPLEADO ASIGNADO
@@ -232,6 +334,7 @@ const pedidoSchema =
         type: String,
 
         enum: [
+          "Borrador",
           "Pendiente",
           "En preparación",
           "En ruta",
@@ -239,7 +342,7 @@ const pedidoSchema =
           "Cancelado",
         ],
 
-        default: "Pendiente",
+        default: "Borrador",
       },
 
 

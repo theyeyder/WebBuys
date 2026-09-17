@@ -5,9 +5,6 @@ import {
   useState,
 } from "react";
 
-import AppLayout
-  from "../layouts/AppLayout.jsx";
-
 import Toast
   from "../components/Toast.jsx";
 
@@ -34,6 +31,10 @@ import {
   eliminarPedido,
 } from "../services/pedido.service.js";
 
+import {
+  imprimirPedido,
+  imprimirPedidosFiltrados,
+} from "../utils/pedido.impresion.js";
 import "../styles/pedidos.css";
 
 
@@ -255,6 +256,61 @@ export default function Pedidos() {
   ] = useState("");
 
 
+  /* =========================================
+     CALENDARIO COMPACTO DE BÚSQUEDA
+     Estilo basado en Auditoría
+  ========================================= */
+
+  const [
+    calendarioBusquedaAbierto,
+    setCalendarioBusquedaAbierto,
+  ] = useState(null);
+
+  const [
+    mesCalendarioBusqueda,
+    setMesCalendarioBusqueda,
+  ] = useState(new Date());
+
+  const [
+    fechaTemporalDesdeBusqueda,
+    setFechaTemporalDesdeBusqueda,
+  ] = useState("");
+
+  const [
+    fechaTemporalHastaBusqueda,
+    setFechaTemporalHastaBusqueda,
+  ] = useState("");
+
+  const [
+    fechaTemporalEntrega,
+    setFechaTemporalEntrega,
+  ] = useState("");
+
+
+  const [
+    filtroEstado,
+    setFiltroEstado,
+  ] = useState("Todos");
+
+
+  const [
+    filtroPago,
+    setFiltroPago,
+  ] = useState("Todos");
+
+
+  const [
+    filtroClienteAsignado,
+    setFiltroClienteAsignado,
+  ] = useState("Todos");
+
+
+  const [
+    filtroRuta,
+    setFiltroRuta,
+  ] = useState("Todas");
+
+
   const [
     buscarCliente,
     setBuscarCliente,
@@ -463,8 +519,8 @@ export default function Pedidos() {
       8,
       Math.min(
         window.innerWidth -
-          ancho -
-          8,
+        ancho -
+        8,
         x
       )
     );
@@ -473,8 +529,8 @@ export default function Pedidos() {
       8,
       Math.min(
         window.innerHeight -
-          alto -
-          8,
+        alto -
+        8,
         y
       )
     );
@@ -636,8 +692,8 @@ export default function Pedidos() {
         Array.isArray(data)
           ? data
           : data?.usuarios ||
-            data?.data ||
-            [];
+          data?.data ||
+          [];
 
 
       const empleadosActivos =
@@ -724,8 +780,8 @@ export default function Pedidos() {
         Array.isArray(dataProductos)
           ? dataProductos
           : dataProductos?.productos ||
-            dataProductos?.data ||
-            [];
+          dataProductos?.data ||
+          [];
 
 
       setProductos(
@@ -823,11 +879,14 @@ export default function Pedidos() {
           (cliente) => {
 
             const valores = [
-              cliente.documento,
+              cliente.codigo,
               cliente.nombre,
               cliente.razonSocial,
               cliente.telefono,
+              cliente.direccion,
               cliente.barrio,
+              cliente.ciudad,
+              cliente.tipoCliente,
             ];
 
 
@@ -1531,21 +1590,6 @@ export default function Pedidos() {
 
   async function guardarPedido() {
 
-    if (!form.cliente) {
-
-      setMensaje(
-        "Seleccione un cliente."
-      );
-
-      setTipoMensaje(
-        "error"
-      );
-
-      return;
-
-    }
-
-
     if (
       form.items.length === 0
     ) {
@@ -1601,7 +1645,8 @@ export default function Pedidos() {
       const datos = {
 
         cliente:
-          form.cliente,
+          form.cliente ||
+          null,
 
         empleado:
           form.empleado ||
@@ -1657,7 +1702,9 @@ export default function Pedidos() {
 
 
         setMensaje(
-          "Pedido actualizado correctamente."
+          form.cliente
+            ? "Pedido actualizado correctamente."
+            : "Borrador actualizado sin cliente."
         );
 
       } else {
@@ -1668,7 +1715,9 @@ export default function Pedidos() {
 
 
         setMensaje(
-          "Pedido creado correctamente."
+          form.cliente
+            ? "Pedido guardado como borrador. Ya puedes confirmarlo."
+            : "Pedido guardado como borrador sin cliente."
         );
 
       }
@@ -1812,11 +1861,11 @@ export default function Pedidos() {
       fechaEntrega:
         pedido.fechaEntrega
           ? String(
-              pedido.fechaEntrega
-            ).slice(
-              0,
-              10
-            )
+            pedido.fechaEntrega
+          ).slice(
+            0,
+            10
+          )
           : "",
 
       descuento:
@@ -2245,6 +2294,72 @@ export default function Pedidos() {
 
 
   /* =========================================
+     ASIGNAR CLIENTE A BORRADOR
+  ========================================= */
+
+  function asignarClientePedido(
+    pedido
+  ) {
+
+    setPedidoSeleccionado(
+      pedido
+    );
+
+    abrirPedido(
+      pedido
+    );
+
+    setMensaje(
+      "Selecciona un cliente y guarda el pedido."
+    );
+
+    setTipoMensaje(
+      "info"
+    );
+
+  }
+
+
+  /* =========================================
+     CONFIRMAR PEDIDO
+  ========================================= */
+
+  async function confirmarPedido(
+    pedido
+  ) {
+
+    const tieneCliente =
+      Boolean(
+        pedido.cliente?._id ||
+        pedido.cliente ||
+        pedido.clienteNombre
+      );
+
+
+    if (!tieneCliente) {
+
+      setMensaje(
+        "Debes asignar un cliente antes de confirmar el pedido."
+      );
+
+      setTipoMensaje(
+        "info"
+      );
+
+      return;
+
+    }
+
+
+    await cambiarEstado(
+      pedido,
+      "Pendiente"
+    );
+
+  }
+
+
+  /* =========================================
      CAMBIAR ESTADO
   ========================================= */
 
@@ -2290,6 +2405,35 @@ export default function Pedidos() {
 
 
   /* =========================================
+     RUTAS DISPONIBLES PARA FILTRAR
+  ========================================= */
+
+  const rutasDisponibles =
+    useMemo(() => {
+
+      return Array.from(
+        new Set(
+          pedidos
+            .map(
+              (pedido) =>
+                pedido.rutaNombre ||
+                pedido.ruta?.nombre ||
+                ""
+            )
+            .filter(Boolean)
+        )
+      ).sort(
+        (a, b) =>
+          a.localeCompare(
+            b,
+            "es"
+          )
+      );
+
+    }, [pedidos]);
+
+
+  /* =========================================
      PEDIDOS FILTRADOS
      TEXTO + RANGO DE FECHAS
   ========================================= */
@@ -2319,10 +2463,26 @@ export default function Pedidos() {
             !texto ||
             [
               pedido.codigo,
+              pedido.clienteCodigo,
+              pedido.clienteNombre,
+              pedido.clienteRazonSocial,
+              pedido.clienteTelefono,
+              pedido.clienteDireccion,
+              pedido.clienteBarrio,
+              pedido.clienteCiudad,
+              pedido.clienteTipo,
+              pedido.zonaDespachoCodigo,
+              pedido.zonaDespachoNombre,
+              pedido.rutaCodigo,
+              pedido.rutaNombre,
+              cliente.codigo,
               cliente.nombre,
-              cliente.documento,
+              cliente.razonSocial,
               cliente.telefono,
+              cliente.direccion,
               cliente.barrio,
+              cliente.ciudad,
+              cliente.tipoCliente,
               pedido.estado,
               pedido.total,
             ].some(
@@ -2338,6 +2498,76 @@ export default function Pedidos() {
 
 
           if (!coincideTexto) {
+            return false;
+          }
+
+
+          /* =============================
+             FILTRO POR ESTADO
+          ============================= */
+
+          if (
+            filtroEstado !== "Todos" &&
+            pedido.estado !== filtroEstado
+          ) {
+            return false;
+          }
+
+
+          /* =============================
+             FILTRO POR TIPO DE PAGO
+          ============================= */
+
+          if (
+            filtroPago !== "Todos" &&
+            pedido.metodoPago !== filtroPago
+          ) {
+            return false;
+          }
+
+
+          /* =============================
+             CON / SIN CLIENTE
+          ============================= */
+
+          const tieneCliente =
+            Boolean(
+              pedido.cliente?._id ||
+              pedido.cliente ||
+              pedido.clienteNombre
+            );
+
+
+          if (
+            filtroClienteAsignado === "Con cliente" &&
+            !tieneCliente
+          ) {
+            return false;
+          }
+
+
+          if (
+            filtroClienteAsignado === "Sin cliente" &&
+            tieneCliente
+          ) {
+            return false;
+          }
+
+
+          /* =============================
+             FILTRO POR RUTA
+          ============================= */
+
+          const rutaPedido =
+            pedido.rutaNombre ||
+            pedido.ruta?.nombre ||
+            "";
+
+
+          if (
+            filtroRuta !== "Todas" &&
+            rutaPedido !== filtroRuta
+          ) {
             return false;
           }
 
@@ -2414,7 +2644,165 @@ export default function Pedidos() {
       filtro,
       fechaDesdeBusqueda,
       fechaHastaBusqueda,
+      filtroEstado,
+      filtroPago,
+      filtroClienteAsignado,
+      filtroRuta,
     ]);
+
+
+  /* =========================================
+     CALENDARIO COMPACTO DE BÚSQUEDA
+  ========================================= */
+
+  function abrirCalendarioBusqueda(tipo) {
+    setCalendarioBusquedaAbierto(tipo);
+
+    if (tipo === "entrega") {
+      setFechaTemporalEntrega(
+        form.fechaEntrega || ""
+      );
+
+      setMesCalendarioBusqueda(
+        form.fechaEntrega
+          ? new Date(`${form.fechaEntrega}T00:00:00`)
+          : new Date()
+      );
+
+      return;
+    }
+
+    setFechaTemporalDesdeBusqueda(fechaDesdeBusqueda);
+    setFechaTemporalHastaBusqueda(fechaHastaBusqueda);
+
+    const fechaBase =
+      tipo === "desde"
+        ? fechaDesdeBusqueda || fechaHastaBusqueda
+        : fechaHastaBusqueda || fechaDesdeBusqueda;
+
+    setMesCalendarioBusqueda(
+      fechaBase
+        ? new Date(`${fechaBase}T00:00:00`)
+        : new Date()
+    );
+  }
+
+  function cerrarCalendarioBusqueda() {
+    setCalendarioBusquedaAbierto(null);
+  }
+
+  function confirmarCalendarioBusqueda() {
+    if (calendarioBusquedaAbierto === "entrega") {
+      setForm(
+        (actual) => ({
+          ...actual,
+          fechaEntrega:
+            fechaTemporalEntrega || "",
+        })
+      );
+
+      setCalendarioBusquedaAbierto(null);
+      return;
+    }
+
+    setFechaDesdeBusqueda(fechaTemporalDesdeBusqueda);
+    setFechaHastaBusqueda(fechaTemporalHastaBusqueda);
+    setCalendarioBusquedaAbierto(null);
+  }
+
+  function fechaAStringCalendario(fecha) {
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, "0");
+    const day = String(fecha.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
+  function mostrarFechaBusqueda(valor) {
+    if (!valor) return "dd/mm/aaaa";
+
+    return new Date(`${valor}T00:00:00`)
+      .toLocaleDateString("es-CO");
+  }
+
+  function estaEnSemanaActualCalendario(fecha) {
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const inicioSemana = new Date(hoy);
+    inicioSemana.setDate(hoy.getDate() - hoy.getDay());
+
+    const finSemana = new Date(inicioSemana);
+    finSemana.setDate(inicioSemana.getDate() + 6);
+
+    const fechaComparar = new Date(fecha);
+    fechaComparar.setHours(0, 0, 0, 0);
+
+    return (
+      fechaComparar >= inicioSemana &&
+      fechaComparar <= finSemana
+    );
+  }
+
+  function seleccionarDiaCalendarioBusqueda(fecha) {
+    const valor = fechaAStringCalendario(fecha);
+
+    if (calendarioBusquedaAbierto === "entrega") {
+      setFechaTemporalEntrega(valor);
+      return;
+    }
+
+    if (calendarioBusquedaAbierto === "desde") {
+      setFechaTemporalDesdeBusqueda(valor);
+
+      if (
+        fechaTemporalHastaBusqueda &&
+        valor > fechaTemporalHastaBusqueda
+      ) {
+        setFechaTemporalHastaBusqueda(valor);
+      }
+    } else {
+      if (
+        fechaTemporalDesdeBusqueda &&
+        valor < fechaTemporalDesdeBusqueda
+      ) {
+        return;
+      }
+
+      setFechaTemporalHastaBusqueda(valor);
+    }
+  }
+
+  function cambiarMesCalendarioBusqueda(cambio) {
+    setMesCalendarioBusqueda(
+      (actual) =>
+        new Date(
+          actual.getFullYear(),
+          actual.getMonth() + cambio,
+          1
+        )
+    );
+  }
+
+  function obtenerDiasCalendarioBusqueda() {
+    const year = mesCalendarioBusqueda.getFullYear();
+    const month = mesCalendarioBusqueda.getMonth();
+    const primerDia = new Date(year, month, 1);
+    const inicio = new Date(primerDia);
+
+    inicio.setDate(
+      primerDia.getDate() - primerDia.getDay()
+    );
+
+    const dias = [];
+
+    for (let i = 0; i < 42; i++) {
+      const fecha = new Date(inicio);
+      fecha.setDate(inicio.getDate() + i);
+      dias.push(fecha);
+    }
+
+    return dias;
+  }
 
 
   /* =========================================
@@ -2435,301 +2823,55 @@ export default function Pedidos() {
       ""
     );
 
+    setFiltroEstado(
+      "Todos"
+    );
+
+    setFiltroPago(
+      "Todos"
+    );
+
+    setFiltroClienteAsignado(
+      "Todos"
+    );
+
+    setFiltroRuta(
+      "Todas"
+    );
+
   }
 
 
   /* =========================================
-     IMPRIMIR PEDIDO
+     IMPRIMIR PEDIDOS SEGÚN FILTROS
   ========================================= */
 
-  function imprimirPedido(
-    pedidoDirecto = null
-  ) {
+  function manejarImprimirPedidosFiltrados() {
 
-    const pedido =
-      pedidoDirecto ||
-      pedidoSeleccionado;
+    const resultado = imprimirPedidosFiltrados({
+      pedidos: pedidosFiltrados,
+      filtros: {
+        busqueda: filtro,
+        estado: filtroEstado,
+        pago: filtroPago,
+        cliente: filtroClienteAsignado,
+        ruta: filtroRuta,
+        fechaDesde: fechaDesdeBusqueda,
+        fechaHasta: fechaHastaBusqueda,
+      },
+    });
 
-
-    if (!pedido) {
-
+    if (!resultado?.ok) {
       setMensaje(
-        "Seleccione primero un pedido."
+        resultado?.mensaje ||
+        "No fue posible imprimir los pedidos."
       );
 
       setTipoMensaje(
-        "info"
-      );
-
-      return;
-
-    }
-
-
-    const filas =
-      (
-        pedido.items ||
-        []
-      )
-        .map(
-          (item) => `
-            <tr>
-              <td>
-                ${item.codigoProducto || ""}
-              </td>
-
-              <td>
-                ${item.nombre || ""}
-                ${item.presentacionNombre
-              ? `<br><small>${item.presentacionNombre}</small>`
-              : ""
-            }
-              </td>
-
-              <td>
-                ${item.marca || item.producto?.marca || "Sin marca"}
-              </td>
-
-              <td>
-                ${item.cantidad}
-              </td>
-
-              <td>
-                ${moneda(item.precioAplicado)}
-              </td>
-
-              <td>
-                ${moneda(item.subtotal)}
-              </td>
-            </tr>
-          `
-        )
-        .join("");
-
-
-    const ventana =
-      window.open(
-        "",
-        "_blank",
-        "width=1000,height=800"
-      );
-
-
-    if (!ventana) {
-
-      setMensaje(
-        "El navegador bloqueó la ventana de impresión."
-      );
-
-      setTipoMensaje(
+        resultado?.tipo ||
         "error"
       );
-
-      return;
-
     }
-
-
-    ventana.document.write(`
-      <!DOCTYPE html>
-
-      <html lang="es">
-
-      <head>
-
-        <meta charset="UTF-8">
-
-        <title>
-          ${pedido.codigo} - WebBuys
-        </title>
-
-        <style>
-
-          * {
-            box-sizing: border-box;
-          }
-
-          body {
-            margin: 0;
-            padding: 35px;
-            font-family: Arial, sans-serif;
-            color: #172033;
-          }
-
-          h1 {
-            margin: 0;
-            color: #087f5b;
-          }
-
-          .info {
-            margin: 20px 0;
-            padding: 16px;
-            background: #f4fbf8;
-            border-radius: 12px;
-          }
-
-          table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-
-          th {
-            padding: 11px;
-            background: #087f5b;
-            color: white;
-            text-align: left;
-          }
-
-          td {
-            padding: 11px;
-            border-bottom: 1px solid #e6e9ee;
-          }
-
-          .totales {
-            width: 340px;
-            margin: 25px 0 0 auto;
-          }
-
-          .totales div {
-            display: flex;
-            justify-content: space-between;
-            padding: 7px 0;
-          }
-
-          .total-final {
-            border-top: 2px solid #087f5b;
-            font-size: 20px;
-            font-weight: bold;
-            color: #087f5b;
-          }
-
-          @media print {
-            body {
-              padding: 0;
-            }
-          }
-
-        </style>
-
-      </head>
-
-      <body>
-
-        <h1>
-          Pedido ${pedido.codigo}
-        </h1>
-
-        <div class="info">
-
-          <strong>
-            Cliente:
-          </strong>
-
-          ${pedido.cliente?.nombre || ""}
-
-          <br>
-
-          <strong>
-            Teléfono:
-          </strong>
-
-          ${pedido.cliente?.telefono || "Sin teléfono"}
-
-          <br>
-
-          <strong>
-            Estado:
-          </strong>
-
-          ${pedido.estado}
-
-          <br>
-
-          <strong>
-            Tipo de pago:
-          </strong>
-
-          ${pedido.metodoPago || "Efectivo"}
-
-          <br>
-
-          <strong>
-            Empleado:
-          </strong>
-
-          ${
-            pedido.empleado?.nombres
-              ? `${pedido.empleado.nombres} ${
-                  pedido.empleado.apellidos || ""
-                }`.trim()
-              : pedido.empleado?.nombre ||
-                "Sin asignar"
-          }
-
-        </div>
-
-        <table>
-
-          <thead>
-
-            <tr>
-              <th>Código</th>
-              <th>Producto</th>
-              <th>Marca</th>
-              <th>Cantidad</th>
-              <th>Precio</th>
-              <th>Subtotal</th>
-            </tr>
-
-          </thead>
-
-          <tbody>
-            ${filas}
-          </tbody>
-
-        </table>
-
-        <div class="totales">
-
-          <div>
-            <span>Subtotal</span>
-            <strong>
-              ${moneda(pedido.subtotal)}
-            </strong>
-          </div>
-
-          <div>
-            <span>Descuento</span>
-            <strong>
-              ${moneda(pedido.descuento)}
-            </strong>
-          </div>
-
-          <div class="total-final">
-            <span>Total</span>
-            <strong>
-              ${moneda(pedido.total)}
-            </strong>
-          </div>
-
-        </div>
-
-      </body>
-
-      </html>
-    `);
-
-
-    ventana.document.close();
-
-    ventana.focus();
-
-
-    setTimeout(
-      () =>
-        ventana.print(),
-      300
-    );
 
   }
 
@@ -2740,7 +2882,7 @@ export default function Pedidos() {
 
   return (
 
-    <AppLayout title="Pedidos">
+    <section className="pedidos-page">
 
       <Toast
         mensaje={mensaje}
@@ -2748,18 +2890,13 @@ export default function Pedidos() {
       />
 
 
-      <section className="pedidos-page">
+      {/* CABECERA SUPERIOR FIJA DEL MÓDULO */}
+      <header className="pedidos-title-bar">
 
-
-        {/* MENÚ DE MÓDULOS */}
-        <ModulosMenu />
-
-        {/* CABECERA PEDIDOS */}
-        <div className="pedidos-title-bar">
-
-          <div className="pedidos-title-info">
-            <h2>Pedidos</h2>
-          </div>
+        <div className="pedidos-title-info">
+          <ModulosMenu />
+          <h2>Pedidos</h2>
+        </div>
 
           <div className="pedidos-title-actions">
 
@@ -2770,11 +2907,10 @@ export default function Pedidos() {
               <button
                 type="button"
                 className={
-                  `pedidos-view-btn ${
-                    vistaPedidos ===
+                  `pedidos-view-btn ${vistaPedidos ===
                     "tarjetas"
-                      ? "pedidos-view-btn-active"
-                      : ""
+                    ? "pedidos-view-btn-active"
+                    : ""
                   }`
                 }
                 onClick={() =>
@@ -2804,11 +2940,10 @@ export default function Pedidos() {
               <button
                 type="button"
                 className={
-                  `pedidos-view-btn ${
-                    vistaPedidos ===
+                  `pedidos-view-btn ${vistaPedidos ===
                     "lista"
-                      ? "pedidos-view-btn-active"
-                      : ""
+                    ? "pedidos-view-btn-active"
+                    : ""
                   }`
                 }
                 onClick={() =>
@@ -2878,15 +3013,13 @@ export default function Pedidos() {
               <img src={buscarIcon} alt="" />
             </button>
 
-            {/* IMPRIMIR */}
+            {/* IMPRIMIR PEDIDOS FILTRADOS */}
             <button
               type="button"
               className="pedidos-top-icon-btn"
-              onClick={() =>
-                imprimirPedido()
-              }
-              data-tooltip="Imprimir pedido"
-              disabled={!pedidoSeleccionado}
+              onClick={manejarImprimirPedidosFiltrados}
+              data-tooltip="Imprimir pedidos filtrados"
+              disabled={pedidosFiltrados.length === 0}
             >
               <img
                 src={imprimirIcon}
@@ -2894,7 +3027,117 @@ export default function Pedidos() {
               />
             </button>
 
+        </div>
+
+      </header>
+
+
+      {/* =====================================
+          FILTROS RÁPIDOS DE PEDIDOS
+        ===================================== */}
+
+        <div className="pedidos-quick-filters">
+
+          <label>
+            Estado
+            <select
+              value={filtroEstado}
+              onChange={(event) =>
+                setFiltroEstado(
+                  event.target.value
+                )
+              }
+            >
+              <option value="Todos">Todos</option>
+              <option value="Borrador">Borrador</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="En preparación">En preparación</option>
+              <option value="En ruta">En ruta</option>
+              <option value="Entregado">Entregado</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </label>
+
+
+          <label>
+            Tipo de pago
+            <select
+              value={filtroPago}
+              onChange={(event) =>
+                setFiltroPago(
+                  event.target.value
+                )
+              }
+            >
+              <option value="Todos">Todos</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Crédito">Crédito</option>
+            </select>
+          </label>
+
+
+          <label>
+            Cliente
+            <select
+              value={filtroClienteAsignado}
+              onChange={(event) =>
+                setFiltroClienteAsignado(
+                  event.target.value
+                )
+              }
+            >
+              <option value="Todos">Todos</option>
+              <option value="Con cliente">Con cliente</option>
+              <option value="Sin cliente">Sin cliente</option>
+            </select>
+          </label>
+
+
+          <label>
+            Ruta
+            <select
+              value={filtroRuta}
+              onChange={(event) =>
+                setFiltroRuta(
+                  event.target.value
+                )
+              }
+            >
+              <option value="Todas">Todas</option>
+
+              {rutasDisponibles.map(
+                (ruta) => (
+                  <option
+                    key={ruta}
+                    value={ruta}
+                  >
+                    {ruta}
+                  </option>
+                )
+              )}
+
+            </select>
+          </label>
+
+
+          <div className="pedidos-quick-filter-result">
+            <strong>
+              {pedidosFiltrados.length}
+            </strong>
+            <span>
+              pedido(s)
+            </span>
           </div>
+
+
+          <button
+            type="button"
+            className="pedidos-quick-filter-clear"
+            onClick={limpiarBusquedaPedidos}
+          >
+            Limpiar filtros
+          </button>
 
         </div>
 
@@ -2976,10 +3219,9 @@ export default function Pedidos() {
                       }
 
                       className={
-                        `pedidos-client-card ${
-                          seleccionado
-                            ? "pedidos-client-card-selected"
-                            : ""
+                        `pedidos-client-card ${seleccionado
+                          ? "pedidos-client-card-selected"
+                          : ""
                         }`
                       }
 
@@ -3056,7 +3298,7 @@ export default function Pedidos() {
                           >
 
                             {pedido.estado ||
-                              "Pendiente"}
+                              "Borrador"}
 
                           </span>
 
@@ -3075,25 +3317,22 @@ export default function Pedidos() {
 
                         <h3>
 
-                          {cliente.nombre ||
+                          {pedido.clienteNombre ||
+                            cliente.nombre ||
+                            pedido.clienteRazonSocial ||
                             cliente.razonSocial ||
-                            "Cliente"}
+                            "Sin cliente asignado"}
 
                         </h3>
 
 
-                        {cliente.documento && (
-
+                        {(pedido.clienteCodigo || cliente.codigo) && (
                           <small>
-
-                            Documento:{" "}
-
+                            Código:{" "}
                             <strong>
-                              {cliente.documento}
+                              {pedido.clienteCodigo || cliente.codigo}
                             </strong>
-
                           </small>
-
                         )}
 
                       </div>
@@ -3107,17 +3346,16 @@ export default function Pedidos() {
                           <span>Tipo de pago</span>
                           <strong
                             className={
-                              `pedidos-payment pedidos-payment-${
-                                String(
-                                  pedido.metodoPago ||
-                                  "Efectivo"
+                              `pedidos-payment pedidos-payment-${String(
+                                pedido.metodoPago ||
+                                "Efectivo"
+                              )
+                                .toLowerCase()
+                                .normalize("NFD")
+                                .replace(
+                                  /[\u0300-\u036f]/g,
+                                  ""
                                 )
-                                  .toLowerCase()
-                                  .normalize("NFD")
-                                  .replace(
-                                    /[\u0300-\u036f]/g,
-                                    ""
-                                  )
                               }`
                             }
                           >
@@ -3135,11 +3373,11 @@ export default function Pedidos() {
 
                             {pedido.createdAt
                               ? new Date(
-                                  pedido.createdAt
+                                pedido.createdAt
+                              )
+                                .toLocaleDateString(
+                                  "es-CO"
                                 )
-                                  .toLocaleDateString(
-                                    "es-CO"
-                                  )
                               : "-"}
 
                           </strong>
@@ -3160,20 +3398,31 @@ export default function Pedidos() {
                         </div>
 
 
-                        {cliente.barrio && (
-
+                        {(pedido.clienteBarrio || cliente.barrio) && (
                           <div>
-
-                            <span>
-                              Barrio
-                            </span>
-
+                            <span>Barrio</span>
                             <strong>
-                              {cliente.barrio}
+                              {pedido.clienteBarrio || cliente.barrio}
                             </strong>
-
                           </div>
+                        )}
 
+                        {(pedido.zonaDespachoNombre || pedido.zonaDespacho?.nombre) && (
+                          <div>
+                            <span>Zona</span>
+                            <strong>
+                              {pedido.zonaDespachoNombre || pedido.zonaDespacho?.nombre}
+                            </strong>
+                          </div>
+                        )}
+
+                        {(pedido.rutaNombre || pedido.ruta?.nombre) && (
+                          <div>
+                            <span>Ruta</span>
+                            <strong>
+                              {pedido.rutaNombre || pedido.ruta?.nombre}
+                            </strong>
+                          </div>
                         )}
 
 
@@ -3259,50 +3508,141 @@ export default function Pedidos() {
                         }
                       >
 
-                        <span>
-                          Estado
-                        </span>
+                        {pedido.estado === "Borrador" ? (
 
+                          <>
 
-                        <select
-                          className={
-                            `pedidos-status pedidos-status-${estadoClase}`
-                          }
+                            <span>
+                              Borrador
+                            </span>
 
-                          value={
-                            pedido.estado
-                          }
+                            {(
+                              pedido.cliente?._id ||
+                              pedido.cliente ||
+                              pedido.clienteNombre
+                            ) ? (
 
-                          onChange={
-                            (event) =>
-                              cambiarEstado(
-                                pedido,
-                                event.target.value
+                              <button
+                                type="button"
+                                className="pedidos-confirm-btn"
+                                onClick={() =>
+                                  confirmarPedido(
+                                    pedido
+                                  )
+                                }
+                              >
+                                Confirmar pedido
+                              </button>
+
+                            ) : (
+
+                              <button
+                                type="button"
+                                className="pedidos-assign-client-btn"
+                                onClick={() =>
+                                  asignarClientePedido(
+                                    pedido
+                                  )
+                                }
+                              >
+                                ⚠ Asignar cliente
+                              </button>
+
+                            )}
+
+                          </>
+
+                        ) : (
+
+                          <>
+
+                            <span>
+                              Estado
+                            </span>
+
+                            {pedido.estado === "Borrador" ? (
+
+                              (
+                                pedido.cliente?._id ||
+                                pedido.cliente ||
+                                pedido.clienteNombre
+                              ) ? (
+
+                                <button
+                                  type="button"
+                                  className="pedidos-confirm-btn"
+                                  onClick={() =>
+                                    confirmarPedido(
+                                      pedido
+                                    )
+                                  }
+                                >
+                                  Confirmar
+                                </button>
+
+                              ) : (
+
+                                <button
+                                  type="button"
+                                  className="pedidos-assign-client-btn"
+                                  onClick={() =>
+                                    asignarClientePedido(
+                                      pedido
+                                    )
+                                  }
+                                >
+                                  ⚠ Asignar cliente
+                                </button>
+
                               )
-                          }
-                        >
 
-                          <option value="Pendiente">
-                            Pendiente
-                          </option>
+                            ) : (
 
-                          <option value="En preparación">
-                            En preparación
-                          </option>
+                              <select
+                                className={
+                                  `pedidos-status pedidos-status-${estadoClase}`
+                                }
 
-                          <option value="En ruta">
-                            En ruta
-                          </option>
+                                value={
+                                  pedido.estado
+                                }
 
-                          <option value="Entregado">
-                            Entregado
-                          </option>
+                                onChange={
+                                  (event) =>
+                                    cambiarEstado(
+                                      pedido,
+                                      event.target.value
+                                    )
+                                }
+                              >
 
-                          <option value="Cancelado">
-                            Cancelado
-                          </option>
+                                <option value="Pendiente">
+                                  Pendiente
+                                </option>
 
-                        </select>
+                                <option value="En preparación">
+                                  En preparación
+                                </option>
+
+                                <option value="En ruta">
+                                  En ruta
+                                </option>
+
+                                <option value="Entregado">
+                                  Entregado
+                                </option>
+
+                                <option value="Cancelado">
+                                  Cancelado
+                                </option>
+
+                              </select>
+
+                            )}
+
+                          </>
+
+                        )}
 
                       </div>
 
@@ -3338,7 +3678,11 @@ export default function Pedidos() {
                     </th>
 
                     <th>
-                      Documento
+                      Zona
+                    </th>
+
+                    <th>
+                      Ruta
                     </th>
 
                     <th>
@@ -3458,22 +3802,32 @@ export default function Pedidos() {
 
                             <strong className="pedidos-list-client">
 
-                              {cliente.nombre ||
+                              {pedido.clienteNombre ||
+                                cliente.nombre ||
+                                pedido.clienteRazonSocial ||
                                 cliente.razonSocial ||
-                                "Cliente"}
+                                "Sin cliente asignado"}
 
                             </strong>
 
                           </td>
 
 
-                          {/* DOCUMENTO */}
+                          {/* ZONA */}
 
                           <td>
-
-                            {cliente.documento ||
+                            {pedido.zonaDespachoNombre ||
+                              pedido.zonaDespacho?.nombre ||
                               "-"}
+                          </td>
 
+
+                          {/* RUTA */}
+
+                          <td>
+                            {pedido.rutaNombre ||
+                              pedido.ruta?.nombre ||
+                              "-"}
                           </td>
 
 
@@ -3483,11 +3837,11 @@ export default function Pedidos() {
 
                             {pedido.createdAt
                               ? new Date(
-                                  pedido.createdAt
+                                pedido.createdAt
+                              )
+                                .toLocaleDateString(
+                                  "es-CO"
                                 )
-                                  .toLocaleDateString(
-                                    "es-CO"
-                                  )
                               : "-"}
 
                           </td>
@@ -3499,11 +3853,11 @@ export default function Pedidos() {
 
                             {pedido.fechaEntrega
                               ? new Date(
-                                  pedido.fechaEntrega
+                                pedido.fechaEntrega
+                              )
+                                .toLocaleDateString(
+                                  "es-CO"
                                 )
-                                  .toLocaleDateString(
-                                    "es-CO"
-                                  )
                               : "-"}
 
                           </td>
@@ -3543,17 +3897,16 @@ export default function Pedidos() {
                           <td>
                             <span
                               className={
-                                `pedidos-payment pedidos-payment-${
-                                  String(
-                                    pedido.metodoPago ||
-                                    "Efectivo"
+                                `pedidos-payment pedidos-payment-${String(
+                                  pedido.metodoPago ||
+                                  "Efectivo"
+                                )
+                                  .toLowerCase()
+                                  .normalize("NFD")
+                                  .replace(
+                                    /[\u0300-\u036f]/g,
+                                    ""
                                   )
-                                    .toLowerCase()
-                                    .normalize("NFD")
-                                    .replace(
-                                      /[\u0300-\u036f]/g,
-                                      ""
-                                    )
                                 }`
                               }
                             >
@@ -3570,45 +3923,85 @@ export default function Pedidos() {
                             }
                           >
 
-                            <select
-                              className={
-                                `pedidos-status pedidos-status-${estadoClase}`
-                              }
+                            {pedido.estado === "Borrador" ? (
 
-                              value={
-                                pedido.estado
-                              }
+                              (
+                                pedido.cliente?._id ||
+                                pedido.cliente ||
+                                pedido.clienteNombre
+                              ) ? (
 
-                              onChange={
-                                (event) =>
-                                  cambiarEstado(
-                                    pedido,
-                                    event.target.value
-                                  )
-                              }
-                            >
+                                <button
+                                  type="button"
+                                  className="pedidos-confirm-btn"
+                                  onClick={() =>
+                                    confirmarPedido(
+                                      pedido
+                                    )
+                                  }
+                                >
+                                  Confirmar
+                                </button>
 
-                              <option value="Pendiente">
-                                Pendiente
-                              </option>
+                              ) : (
 
-                              <option value="En preparación">
-                                En preparación
-                              </option>
+                                <button
+                                  type="button"
+                                  className="pedidos-assign-client-btn"
+                                  onClick={() =>
+                                    asignarClientePedido(
+                                      pedido
+                                    )
+                                  }
+                                >
+                                  ⚠ Asignar cliente
+                                </button>
 
-                              <option value="En ruta">
-                                En ruta
-                              </option>
+                              )
 
-                              <option value="Entregado">
-                                Entregado
-                              </option>
+                            ) : (
 
-                              <option value="Cancelado">
-                                Cancelado
-                              </option>
+                              <select
+                                className={
+                                  `pedidos-status pedidos-status-${estadoClase}`
+                                }
 
-                            </select>
+                                value={
+                                  pedido.estado
+                                }
+
+                                onChange={
+                                  (event) =>
+                                    cambiarEstado(
+                                      pedido,
+                                      event.target.value
+                                    )
+                                }
+                              >
+
+                                <option value="Pendiente">
+                                  Pendiente
+                                </option>
+
+                                <option value="En preparación">
+                                  En preparación
+                                </option>
+
+                                <option value="En ruta">
+                                  En ruta
+                                </option>
+
+                                <option value="Entregado">
+                                  Entregado
+                                </option>
+
+                                <option value="Cancelado">
+                                  Cancelado
+                                </option>
+
+                              </select>
+
+                            )}
 
                           </td>
 
@@ -3713,7 +4106,7 @@ export default function Pedidos() {
 
                 <div>
 
-                  
+
 
                   <h2>
                     {modoEdicion
@@ -3751,14 +4144,24 @@ export default function Pedidos() {
 
                   <h3>
                     Cliente
+                    <small className="pedidos-client-optional">
+                      Opcional mientras el pedido sea borrador
+                    </small>
                   </h3>
+
+
+                  {!form.cliente && (
+                    <div className="pedidos-draft-client-notice">
+                      Puedes guardar este pedido sin cliente. Quedará como borrador y deberás asignar un cliente antes de confirmarlo.
+                    </div>
+                  )}
 
 
                   <div className="pedidos-client-search">
 
                     <label>
 
-                      Buscar por nombre o documento
+                      Buscar cliente
 
                       <input
                         type="search"
@@ -3774,7 +4177,7 @@ export default function Pedidos() {
                                 .value
                             )
                         }
-                  
+
                       />
 
                     </label>
@@ -3809,9 +4212,13 @@ export default function Pedidos() {
                                 </strong>
 
                                 <span>
-                                  {
-                                    cliente.documento
-                                  }
+                                  {[
+                                    cliente.codigo,
+                                    cliente.telefono,
+                                    cliente.barrio,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" · ")}
                                 </span>
 
                               </button>
@@ -3824,55 +4231,149 @@ export default function Pedidos() {
                       )}
 
 
-                    {form.cliente && (
+                    {form.cliente && (() => {
 
-                      <div className="pedidos-client-selected">
+                      const clienteActual =
+                        clientes.find(
+                          (cliente) =>
+                            cliente._id === form.cliente
+                        ) || {};
 
-                        <div>
-                          <strong>
+                      const pedidoActual =
+                        modoEdicion
+                          ? pedidoSeleccionado || {}
+                          : {};
 
-                            {
-                              clientes.find(
-                                (
-                                  cliente
-                                ) =>
-                                  cliente._id ===
-                                  form.cliente
-                              )?.nombre ||
-                              buscarCliente
-                            }
+                      const zonaNombre =
+                        pedidoActual.zonaDespachoNombre ||
+                        pedidoActual.zonaDespacho?.nombre ||
+                        clienteActual.zonaDespacho?.nombre ||
+                        "";
 
-                          </strong>
+                      const rutaNombre =
+                        pedidoActual.rutaNombre ||
+                        pedidoActual.ruta?.nombre ||
+                        "";
+
+                      const diasRuta =
+                        pedidoActual.rutaDiasAtencion ||
+                        pedidoActual.ruta?.diasAtencion ||
+                        [];
+
+                      return (
+
+                        <div className="pedidos-client-selected">
+
+                          <div className="pedidos-client-selected-main">
+
+                            <strong>
+                              {clienteActual.nombre ||
+                                pedidoActual.clienteNombre ||
+                                buscarCliente}
+                            </strong>
+
+                            {(
+                              clienteActual.razonSocial ||
+                              pedidoActual.clienteRazonSocial
+                            ) && (
+                              <span>
+                                {clienteActual.razonSocial ||
+                                  pedidoActual.clienteRazonSocial}
+                              </span>
+                            )}
+
+                            <div className="pedidos-client-selected-data">
+
+                              <span>
+                                <b>Código:</b>{" "}
+                                {clienteActual.codigo ||
+                                  pedidoActual.clienteCodigo ||
+                                  "-"}
+                              </span>
+
+                              <span>
+                                <b>Teléfono:</b>{" "}
+                                {clienteActual.telefono ||
+                                  pedidoActual.clienteTelefono ||
+                                  "-"}
+                              </span>
+
+                              <span>
+                                <b>Tipo:</b>{" "}
+                                {clienteActual.tipoCliente ||
+                                  pedidoActual.clienteTipo ||
+                                  "-"}
+                              </span>
+
+                              <span>
+                                <b>Dirección:</b>{" "}
+                                {clienteActual.direccion ||
+                                  pedidoActual.clienteDireccion ||
+                                  "-"}
+                              </span>
+
+                              <span>
+                                <b>Barrio:</b>{" "}
+                                {clienteActual.barrio ||
+                                  pedidoActual.clienteBarrio ||
+                                  "-"}
+                              </span>
+
+                              <span>
+                                <b>Ciudad:</b>{" "}
+                                {clienteActual.ciudad ||
+                                  pedidoActual.clienteCiudad ||
+                                  "-"}
+                              </span>
+
+                              <span>
+                                <b>Zona:</b>{" "}
+                                {zonaNombre || "Sin zona"}
+                              </span>
+
+                              <span>
+                                <b>Ruta:</b>{" "}
+                                {rutaNombre ||
+                                  (modoEdicion
+                                    ? "Sin ruta"
+                                    : "Se asignará al guardar")}
+                              </span>
+
+                              {diasRuta.length > 0 && (
+                                <span>
+                                  <b>Días:</b>{" "}
+                                  {diasRuta.join(" · ")}
+                                </span>
+                              )}
+
+                            </div>
+
+                          </div>
+
+
+                          <button
+                            type="button"
+                            onClick={() => {
+
+                              setForm(
+                                (actual) => ({
+                                  ...actual,
+                                  cliente: "",
+                                })
+                              );
+
+                              setBuscarCliente("");
+
+                            }}
+                          >
+                            Cambiar
+                          </button>
 
                         </div>
 
+                      );
 
-                        <button
-                          type="button"
-                          onClick={() => {
-
-                            setForm(
-                              (
-                                actual
-                              ) => ({
-                                ...actual,
-                                cliente:
-                                  "",
-                              })
-                            );
-
-                            setBuscarCliente(
-                              ""
-                            );
-
-                          }}
-                        >
-                          Cambiar
-                        </button>
-
-                      </div>
-
-                    )}
+                    })()}
 
                   </div>
 
@@ -4083,6 +4584,8 @@ export default function Pedidos() {
                               ) =>
                                 presentacion.estado ===
                                 "Activo" ||
+                                presentacion.estado ===
+                                "Activa" ||
                                 presentacion.estado ===
                                 true
                             )
@@ -4433,12 +4936,11 @@ export default function Pedidos() {
                             >
 
                               {empleado.nombres
-                                ? `${empleado.nombres} ${
-                                    empleado.apellidos ||
-                                    ""
+                                ? `${empleado.nombres} ${empleado.apellidos ||
+                                  ""
                                   }`.trim()
                                 : empleado.nombre ||
-                                  "Empleado"}
+                                "Empleado"}
 
                             </option>
 
@@ -4454,30 +4956,23 @@ export default function Pedidos() {
 
                       Fecha de entrega
 
-                      <input
-                        type="date"
-                        value={
-                          form.fechaEntrega
+                      <button
+                        type="button"
+                        className="pedidos-form-date-trigger"
+                        onClick={() =>
+                          abrirCalendarioBusqueda("entrega")
                         }
-                        onChange={
-                          (
-                            event
-                          ) =>
-                            setForm(
-                              (
-                                actual
-                              ) => ({
-                                ...actual,
+                      >
+                        <span>
+                          FECHA
+                        </span>
 
-                                fechaEntrega:
-                                  event
-                                    .target
-                                    .value,
-
-                              })
-                            )
-                        }
-                      />
+                        <strong>
+                          {mostrarFechaBusqueda(
+                            form.fechaEntrega
+                          )}
+                        </strong>
+                      </button>
 
                     </label>
 
@@ -4637,7 +5132,9 @@ export default function Pedidos() {
 
                   {guardando
                     ? "Guardando..."
-                    : ""}
+                    : modoEdicion
+                      ? "Guardar cambios"
+                      : "Guardar borrador"}
 
                 </button>
 
@@ -4717,7 +5214,7 @@ export default function Pedidos() {
                           event.target.value
                         )
                     }
-                    placeholder="Cliente, documento, código o estado..."
+                    placeholder="Cliente, código, zona, ruta o estado..."
                   />
 
                 </div>
@@ -4727,61 +5224,42 @@ export default function Pedidos() {
 
                 <div className="pedidos-search-date-grid">
 
+                  <div className="pedidos-date-field">
 
-                  <label>
-
-                    Desde
-
-                    <input
-                      type="date"
-                      value={
-                        fechaDesdeBusqueda
+                    <button
+                      type="button"
+                      className="pedidos-date-trigger"
+                      onClick={() =>
+                        abrirCalendarioBusqueda("desde")
                       }
-                      onChange={
-                        (event) =>
-                          setFechaDesdeBusqueda(
-                            event.target.value
-                          )
+                    >
+                      <span>DESDE</span>
+                      <strong>
+                        {mostrarFechaBusqueda(fechaDesdeBusqueda)}
+                      </strong>
+                    </button>
+                  </div>
+
+                  <div className="pedidos-date-field">
+
+                    <button
+                      type="button"
+                      className="pedidos-date-trigger"
+                      onClick={() =>
+                        abrirCalendarioBusqueda("hasta")
                       }
-                      max={
-                        fechaHastaBusqueda ||
-                        undefined
-                      }
-                    />
-
-                  </label>
-
-
-                  <label>
-
-                    Hasta
-
-                    <input
-                      type="date"
-                      value={
-                        fechaHastaBusqueda
-                      }
-                      onChange={
-                        (event) =>
-                          setFechaHastaBusqueda(
-                            event.target.value
-                          )
-                      }
-                      min={
-                        fechaDesdeBusqueda ||
-                        undefined
-                      }
-                    />
-
-                  </label>
-
+                    >
+                      <span>HASTA</span>
+                      <strong>
+                        {mostrarFechaBusqueda(fechaHastaBusqueda)}
+                      </strong>
+                    </button>
+                  </div>
 
                   <button
                     type="button"
                     className="pedidos-search-clear"
-                    onClick={
-                      limpiarBusquedaPedidos
-                    }
+                    onClick={limpiarBusquedaPedidos}
                   >
                     Limpiar
                   </button>
@@ -4803,29 +5281,29 @@ export default function Pedidos() {
                   {(fechaDesdeBusqueda ||
                     fechaHastaBusqueda) && (
 
-                    <span>
+                      <span>
 
-                      {fechaDesdeBusqueda
-                        ? `Desde ${new Date(
+                        {fechaDesdeBusqueda
+                          ? `Desde ${new Date(
                             `${fechaDesdeBusqueda}T00:00:00`
                           ).toLocaleDateString(
                             "es-CO"
                           )}`
-                        : "Desde el inicio"}
+                          : "Desde el inicio"}
 
-                      {" — "}
+                        {" — "}
 
-                      {fechaHastaBusqueda
-                        ? `Hasta ${new Date(
+                        {fechaHastaBusqueda
+                          ? `Hasta ${new Date(
                             `${fechaHastaBusqueda}T00:00:00`
                           ).toLocaleDateString(
                             "es-CO"
                           )}`
-                        : "Hasta hoy"}
+                          : "Hasta hoy"}
 
-                    </span>
+                      </span>
 
-                  )}
+                    )}
 
                 </div>
 
@@ -4862,24 +5340,31 @@ export default function Pedidos() {
                         </strong>
 
                         <b>
-                          {pedido.cliente
-                            ?.nombre ||
-                            "Cliente"}
+                          {pedido.clienteNombre ||
+                            pedido.cliente?.nombre ||
+                            "Sin cliente asignado"}
                         </b>
 
                         <small>
 
                           {pedido.createdAt
                             ? new Date(
-                                pedido.createdAt
-                              ).toLocaleDateString(
-                                "es-CO"
-                              )
+                              pedido.createdAt
+                            ).toLocaleDateString(
+                              "es-CO"
+                            )
                             : "Sin fecha"}
 
-                          {pedido.cliente
-                            ?.documento
-                            ? ` · ${pedido.cliente.documento}`
+                          {(pedido.zonaDespachoNombre ||
+                            pedido.zonaDespacho?.nombre)
+                            ? ` · Zona: ${pedido.zonaDespachoNombre ||
+                              pedido.zonaDespacho?.nombre}`
+                            : ""}
+
+                          {(pedido.rutaNombre ||
+                            pedido.ruta?.nombre)
+                            ? ` · Ruta: ${pedido.rutaNombre ||
+                              pedido.ruta?.nombre}`
                             : ""}
 
                         </small>
@@ -4905,9 +5390,159 @@ export default function Pedidos() {
 
         )}
 
-      </section>
 
-    </AppLayout>
+      {/* =====================================
+          CALENDARIO COMPACTO - BÚSQUEDA
+          No cierra al hacer clic fuera
+      ====================================== */}
+
+      {calendarioBusquedaAbierto && (
+
+        <div className="pedidos-datepicker-overlay">
+
+          <div className="pedidos-datepicker">
+
+            <div className="pedidos-datepicker-title">
+              {calendarioBusquedaAbierto === "entrega"
+                ? "Fecha de entrega"
+                : calendarioBusquedaAbierto === "desde"
+                  ? "Seleccionar fecha desde"
+                  : "Seleccionar fecha hasta"}
+            </div>
+
+            <div className="pedidos-datepicker-header">
+              <button
+                type="button"
+                onClick={() => cambiarMesCalendarioBusqueda(-1)}
+                aria-label="Mes anterior"
+              >
+                ‹
+              </button>
+
+              <strong>
+                {mesCalendarioBusqueda.toLocaleDateString(
+                  "es-CO",
+                  {
+                    month: "long",
+                    year: "numeric",
+                  }
+                )}
+              </strong>
+
+              <button
+                type="button"
+                onClick={() => cambiarMesCalendarioBusqueda(1)}
+                aria-label="Mes siguiente"
+              >
+                ›
+              </button>
+            </div>
+
+            <div className="pedidos-datepicker-weekdays">
+              {["D", "L", "M", "M", "J", "V", "S"].map(
+                (dia, index) => (
+                  <span key={index}>
+                    {dia}
+                  </span>
+                )
+              )}
+            </div>
+
+            <div className="pedidos-datepicker-days">
+              {obtenerDiasCalendarioBusqueda().map((fecha) => {
+                const valor = fechaAStringCalendario(fecha);
+
+                const fueraMes =
+                  fecha.getMonth() !==
+                  mesCalendarioBusqueda.getMonth();
+
+                const seleccionadoDesde =
+                  valor === fechaTemporalDesdeBusqueda;
+
+                const seleccionadoHasta =
+                  valor === fechaTemporalHastaBusqueda;
+
+                const seleccionadoEntrega =
+                  calendarioBusquedaAbierto === "entrega" &&
+                  valor === fechaTemporalEntrega;
+
+                const enRango =
+                  calendarioBusquedaAbierto !== "entrega" &&
+                  fechaTemporalDesdeBusqueda &&
+                  fechaTemporalHastaBusqueda &&
+                  valor >= fechaTemporalDesdeBusqueda &&
+                  valor <= fechaTemporalHastaBusqueda;
+
+                const semanaActual =
+                  estaEnSemanaActualCalendario(fecha);
+
+                const inicioSemanaActual =
+                  semanaActual && fecha.getDay() === 0;
+
+                const finSemanaActual =
+                  semanaActual && fecha.getDay() === 6;
+
+                const deshabilitado =
+                  calendarioBusquedaAbierto === "hasta" &&
+                  fechaTemporalDesdeBusqueda &&
+                  valor < fechaTemporalDesdeBusqueda;
+
+                return (
+                  <button
+                    type="button"
+                    key={valor}
+                    disabled={Boolean(deshabilitado)}
+                    className={[
+                      fueraMes ? "outside" : "",
+                      semanaActual ? "current-week" : "",
+                      inicioSemanaActual
+                        ? "current-week-start"
+                        : "",
+                      finSemanaActual
+                        ? "current-week-end"
+                        : "",
+                      enRango ? "range" : "",
+                      seleccionadoDesde ? "start" : "",
+                      seleccionadoHasta ? "end" : "",
+                      seleccionadoEntrega ? "single" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    onClick={() =>
+                      seleccionarDiaCalendarioBusqueda(fecha)
+                    }
+                  >
+                    {fecha.getDate()}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="pedidos-datepicker-footer">
+              <button
+                type="button"
+                className="pedidos-datepicker-cancel"
+                onClick={cerrarCalendarioBusqueda}
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                className="pedidos-datepicker-done"
+                onClick={confirmarCalendarioBusqueda}
+              >
+                Listo
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
+    </section>
 
   );
 
