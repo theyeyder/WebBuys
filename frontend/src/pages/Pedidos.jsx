@@ -83,6 +83,31 @@ const FORM_INICIAL = {
 
 
 /* =========================================
+   OPCIONES DEL CALENDARIO
+========================================= */
+
+const MESES_CALENDARIO = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+];
+
+const ANIOS_CALENDARIO = Array.from(
+  { length: 101 },
+  (_, index) => 2000 + index
+);
+
+
+/* =========================================
    FORMATEAR MONEDA
 ========================================= */
 
@@ -2783,6 +2808,34 @@ export default function Pedidos() {
     );
   }
 
+
+  function seleccionarMesCalendarioBusqueda(event) {
+    const nuevoMes = Number(event.target.value);
+
+    setMesCalendarioBusqueda(
+      (actual) =>
+        new Date(
+          actual.getFullYear(),
+          nuevoMes,
+          1
+        )
+    );
+  }
+
+
+  function seleccionarAnioCalendarioBusqueda(event) {
+    const nuevoAnio = Number(event.target.value);
+
+    setMesCalendarioBusqueda(
+      (actual) =>
+        new Date(
+          nuevoAnio,
+          actual.getMonth(),
+          1
+        )
+    );
+  }
+
   function obtenerDiasCalendarioBusqueda() {
     const year = mesCalendarioBusqueda.getFullYear();
     const month = mesCalendarioBusqueda.getMonth();
@@ -4963,9 +5016,7 @@ export default function Pedidos() {
                           abrirCalendarioBusqueda("entrega")
                         }
                       >
-                        <span>
-                          FECHA
-                        </span>
+                       
 
                         <strong>
                           {mostrarFechaBusqueda(
@@ -5307,6 +5358,30 @@ export default function Pedidos() {
 
                 </div>
 
+
+                {/* IMPRIMIR SOLO LOS RESULTADOS DE ESTA BÚSQUEDA */}
+
+                <div className="pedidos-search-print-actions">
+
+                  <button
+                    type="button"
+                    className="pedidos-search-print-results"
+                    onClick={manejarImprimirPedidosFiltrados}
+                    disabled={pedidosFiltrados.length === 0}
+                    title="Imprimir pedidos encontrados"
+                  >
+                    <img
+                      src={imprimirIcon}
+                      alt=""
+                    />
+
+                    <span>
+                      Imprimir encontrados
+                    </span>
+                  </button>
+
+                </div>
+
               </div>
 
 
@@ -5413,26 +5488,62 @@ export default function Pedidos() {
             <div className="pedidos-datepicker-header">
               <button
                 type="button"
+                className="pedidos-datepicker-nav"
                 onClick={() => cambiarMesCalendarioBusqueda(-1)}
                 aria-label="Mes anterior"
+                title="Mes anterior"
               >
                 ‹
               </button>
 
-              <strong>
-                {mesCalendarioBusqueda.toLocaleDateString(
-                  "es-CO",
-                  {
-                    month: "long",
-                    year: "numeric",
-                  }
-                )}
-              </strong>
+              <div className="pedidos-datepicker-period">
+
+                <select
+                  className="pedidos-datepicker-select pedidos-datepicker-month-select"
+                  value={mesCalendarioBusqueda.getMonth()}
+                  onChange={seleccionarMesCalendarioBusqueda}
+                  aria-label="Seleccionar mes"
+                  title="Seleccionar mes"
+                >
+                  {MESES_CALENDARIO.map(
+                    (mes, index) => (
+                      <option
+                        key={mes}
+                        value={index}
+                      >
+                        {mes}
+                      </option>
+                    )
+                  )}
+                </select>
+
+                <select
+                  className="pedidos-datepicker-select pedidos-datepicker-year-select"
+                  value={mesCalendarioBusqueda.getFullYear()}
+                  onChange={seleccionarAnioCalendarioBusqueda}
+                  aria-label="Seleccionar año"
+                  title="Seleccionar año"
+                >
+                  {ANIOS_CALENDARIO.map(
+                    (anio) => (
+                      <option
+                        key={anio}
+                        value={anio}
+                      >
+                        {anio}
+                      </option>
+                    )
+                  )}
+                </select>
+
+              </div>
 
               <button
                 type="button"
+                className="pedidos-datepicker-nav"
                 onClick={() => cambiarMesCalendarioBusqueda(1)}
                 aria-label="Mes siguiente"
+                title="Mes siguiente"
               >
                 ›
               </button>
