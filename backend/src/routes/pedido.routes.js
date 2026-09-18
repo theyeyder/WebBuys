@@ -1,5 +1,4 @@
-import express
-  from "express";
+import express from "express";
 
 import {
   listarPedidos,
@@ -15,16 +14,19 @@ import {
 } from "../middlewares/auth.middleware.js";
 
 
-const router =
-  express.Router();
+const router = express.Router();
 
 
-router.use(
-  proteger
-);
+/* =========================================
+   PROTEGER TODAS LAS RUTAS DE PEDIDOS
+========================================= */
+
+router.use(proteger);
 
 
-/* SIGUIENTE CÓDIGO */
+/* =========================================
+   SIGUIENTE CÓDIGO
+========================================= */
 
 router.get(
   "/siguiente-codigo",
@@ -32,7 +34,9 @@ router.get(
 );
 
 
-/* LISTAR */
+/* =========================================
+   LISTAR PEDIDOS
+========================================= */
 
 router.get(
   "/",
@@ -40,7 +44,9 @@ router.get(
 );
 
 
-/* CREAR */
+/* =========================================
+   CREAR PEDIDO
+========================================= */
 
 router.post(
   "/",
@@ -48,7 +54,9 @@ router.post(
 );
 
 
-/* ACTUALIZAR */
+/* =========================================
+   ACTUALIZAR PEDIDO
+========================================= */
 
 router.put(
   "/:id",
@@ -56,7 +64,9 @@ router.put(
 );
 
 
-/* ESTADO */
+/* =========================================
+   CAMBIAR ESTADO
+========================================= */
 
 router.patch(
   "/:id/estado",
@@ -64,7 +74,9 @@ router.patch(
 );
 
 
-/* ELIMINAR */
+/* =========================================
+   ELIMINAR PEDIDO
+========================================= */
 
 router.delete(
   "/:id",

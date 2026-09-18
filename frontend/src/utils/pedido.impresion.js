@@ -23,6 +23,39 @@
 
 
   /* =========================================
+    NOMBRE DEL PERSONAL
+  ========================================= */
+
+  function nombrePersonal(persona) {
+
+    if (!persona) {
+      return "Sin asignar";
+    }
+
+    if (typeof persona === "string") {
+      return persona;
+    }
+
+    const nombreCompleto =
+      [
+        persona.nombres,
+        persona.apellidos,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+    return (
+      nombreCompleto ||
+      persona.nombre ||
+      persona.codigo ||
+      "Sin asignar"
+    );
+
+  }
+
+
+  /* =========================================
     IMPRIMIR PEDIDO
   ========================================= */
 
@@ -107,17 +140,27 @@
 
 
     /* =========================================
-      EMPLEADO
+      PERSONAL DEL PEDIDO
     ========================================= */
 
-    const empleado =
-      pedido.empleado?.nombres
-        ? `${pedido.empleado.nombres} ${
-            pedido.empleado.apellidos ||
-            ""
-          }`.trim()
-        : pedido.empleado?.nombre ||
-          "Sin asignar";
+    const atendidoPor =
+      nombrePersonal(
+        pedido.empleado
+      );
+
+
+    const repartidor =
+      nombrePersonal(
+        pedido.repartidor
+      );
+
+
+    const empacador =
+      pedido.empacador
+        ? nombrePersonal(
+            pedido.empacador
+          )
+        : "—";
 
 
     /* =========================================
@@ -191,6 +234,20 @@
 
           <style>
             ${estilosPedido}
+
+            .info-personal-pedido {
+              display: block;
+            }
+
+            .info-personal-pedido .info-section-title {
+              margin-bottom: 9px;
+              padding-bottom: 6px;
+              border-bottom: 1px solid #dce9e4;
+            }
+
+            .info-personal-pedido .info-grid {
+              width: 100%;
+            }
           </style>
 
         </head>
@@ -413,18 +470,62 @@
 
 
             <!-- ===============================
-                EMPLEADO
+                PERSONAL DEL PEDIDO
             ================================ -->
 
-            <div class="info-section info-empleado">
+            <div class="info-section info-empleado info-personal-pedido">
 
               <div class="info-section-title">
-                Atendido por
+                Personal del pedido
               </div>
 
-              <strong class="info-empleado-nombre">
-                ${empleado}
-              </strong>
+              <div class="info-grid">
+
+                <div class="info-item">
+
+                  <span>
+                    Atendido por
+                  </span>
+
+                  <strong>
+                    ${escaparHtml(
+                      atendidoPor
+                    )}
+                  </strong>
+
+                </div>
+
+
+                <div class="info-item">
+
+                  <span>
+                    Repartidor
+                  </span>
+
+                  <strong>
+                    ${escaparHtml(
+                      repartidor
+                    )}
+                  </strong>
+
+                </div>
+
+
+                <div class="info-item info-item-full">
+
+                  <span>
+                    Empacador
+                  </span>
+
+                  <strong>
+                    ${escaparHtml(
+                      empacador
+                    )}
+                  </strong>
+
+                </div>
+
+              </div>
 
             </div>
 

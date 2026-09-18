@@ -12,54 +12,45 @@ body {
   min-height: 100vh;
 }
 
-/* Solo genera scroll cuando realmente
-   el contenido supera la pantalla */
+/*
+ * El footer normalmente ocupa 42px.
+ * En anchos reducidos (incluido zoom del navegador)
+ * puede crecer a dos filas sin tapar el contenido.
+ */
 #root {
   min-height: 100vh;
-
-  padding-bottom: 50px;
-
+  padding-bottom: 54px;
   box-sizing: border-box;
 }
+
 
 /* =========================================
    PIE FIJO DEL USUARIO
 ========================================= */
 
-/* =========================================
-   FOOTER - DISTRIBUCIÓN
-========================================= */
-
 .user-footer {
   position: fixed;
-
   left: 0;
   right: 0;
   bottom: 0;
-
   z-index: 5000;
 
-  height: 42px;
+  width: 100%;
   min-height: 42px;
-
   padding: 6px 18px;
 
-  display: grid;
-
-  grid-template-columns:
-    1fr auto 1fr;
-
+  display: flex;
   align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
 
   background: rgba(230, 235, 233, 0.96);
-
   border-top: 1px solid #fff8f8;
 
   box-shadow:
     0 -4px 14px rgba(15, 23, 42, 0.06);
 
   backdrop-filter: blur(8px);
-
   box-sizing: border-box;
 }
 
@@ -69,27 +60,29 @@ body {
 ========================================= */
 
 .user-footer-user {
-  justify-self: start;
-
   display: flex;
   align-items: center;
-
   gap: 6px;
 
-  font-size: 11px;
+  min-width: 0;
+  flex: 0 1 auto;
 
-  /* AJUSTES DE POSICIÓN */
-  position: relative;
-  left: 980px;
-  top: 0px;
+  font-size: 11px;
+  white-space: nowrap;
 }
 
 .user-footer-user span {
   color: #1e1f21;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .user-footer-user strong {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
   color: #087443;
   font-weight: 900;
 }
@@ -100,17 +93,12 @@ body {
 ========================================= */
 
 .user-footer-date {
-  justify-self: center;
+  flex: 0 0 auto;
 
   color: #1c4429;
-
   font-size: 11px;
   font-weight: 800;
-
-  /* AJUSTES DE POSICIÓN */
-  position: relative;
-  left: 480px;
-  top: 0px;
+  white-space: nowrap;
 }
 
 
@@ -119,14 +107,13 @@ body {
 ========================================= */
 
 .user-footer-right {
-  justify-self: end;
-
   display: flex;
   align-items: center;
-
-  gap: 22px;
+  justify-content: flex-end;
+  gap: 14px;
 
   min-width: 0;
+  flex: 0 1 auto;
 }
 
 
@@ -137,44 +124,36 @@ body {
 .user-footer-company {
   display: flex;
   align-items: center;
-
   gap: 6px;
 
   min-width: 0;
+  max-width: 310px;
+  flex: 0 1 auto;
 
   padding: 4px 8px;
-
   border-radius: 7px;
 
   background: rgba(255, 255, 255, 0.737);
-
-  /* AJUSTES DE POSICIÓN */
-  position: relative;
-  left: 0px;
-  top: 0px;
 }
 
 .user-footer-company img {
   width: 20px;
   height: 20px;
-
   flex-shrink: 0;
-
   object-fit: contain;
 }
 
 .user-footer-company strong {
+  min-width: 0;
   max-width: 260px;
 
   overflow: hidden;
-
-  color: #087443;
-
-  font-size: 11px;
-  font-weight: 900;
-
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  color: #087443;
+  font-size: 11px;
+  font-weight: 900;
 }
 
 
@@ -187,6 +166,7 @@ body {
 
   width: 30px;
   height: 30px;
+  flex: 0 0 30px;
 
   padding: 4px;
 
@@ -202,30 +182,24 @@ body {
   cursor: pointer;
 
   box-shadow:
-    0 3px 8px
-    rgba(15, 23, 42, 0.10);
+    0 3px 8px rgba(15, 23, 42, 0.10);
 
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease;
 }
 
-
 .user-footer-logout:hover {
   transform: translateY(-2px);
 
   box-shadow:
-    0 6px 12px
-    rgba(15, 23, 42, 0.16);
+    0 6px 12px rgba(15, 23, 42, 0.16);
 }
-
 
 .user-footer-logout img {
   width: 21px;
   height: 21px;
-
   object-fit: contain;
-
   pointer-events: none;
 }
 
@@ -238,7 +212,6 @@ body {
   content: attr(data-tooltip);
 
   position: absolute;
-
   bottom: calc(100% + 7px);
   left: 50%;
 
@@ -247,7 +220,6 @@ body {
     translateY(4px);
 
   padding: 5px 8px;
-
   border-radius: 6px;
 
   background: #172033;
@@ -255,12 +227,10 @@ body {
 
   font-size: 10px;
   font-weight: 700;
-
   white-space: nowrap;
 
   opacity: 0;
   visibility: hidden;
-
   pointer-events: none;
 
   transition:
@@ -269,7 +239,6 @@ body {
     transform 0.18s ease;
 }
 
-
 .user-footer-logout:hover::after {
   opacity: 1;
   visibility: visible;
@@ -277,4 +246,124 @@ body {
   transform:
     translateX(-50%)
     translateY(0);
+}
+
+
+/* =========================================
+   RESPONSIVE / ZOOM DEL NAVEGADOR
+========================================= */
+
+/*
+ * Al aumentar el zoom, el navegador reduce el ancho CSS disponible.
+ * En vez de superponer información, reducimos espacios y permitimos
+ * que los textos largos se recorten con "...".
+ */
+@media (max-width: 1150px) {
+  .user-footer {
+    gap: 12px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .user-footer-user strong {
+    max-width: 180px;
+  }
+
+  .user-footer-company {
+    max-width: 240px;
+  }
+
+  .user-footer-company strong {
+    max-width: 195px;
+  }
+
+  .user-footer-right {
+    gap: 9px;
+  }
+}
+
+/*
+ * Si con más zoom ya no cabe una sola fila,
+ * el footer pasa a dos filas ordenadas en vez de montarse.
+ */
+@media (max-width: 820px) {
+  #root {
+    padding-bottom: 82px;
+  }
+
+  .user-footer {
+    min-height: 70px;
+    padding: 7px 10px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "user date"
+      "right right";
+
+    gap: 5px 12px;
+    align-items: center;
+  }
+
+  .user-footer-user {
+    grid-area: user;
+    justify-self: start;
+    width: 100%;
+  }
+
+  .user-footer-user strong {
+    max-width: 100%;
+  }
+
+  .user-footer-date {
+    grid-area: date;
+    justify-self: end;
+  }
+
+  .user-footer-right {
+    grid-area: right;
+    justify-self: end;
+    max-width: 100%;
+  }
+
+  .user-footer-company {
+    max-width: min(310px, calc(100vw - 70px));
+  }
+}
+
+@media (max-width: 520px) {
+  #root {
+    padding-bottom: 104px;
+  }
+
+  .user-footer {
+    min-height: 92px;
+
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "user user"
+      "date date"
+      "right right";
+
+    gap: 4px 8px;
+  }
+
+  .user-footer-user,
+  .user-footer-date,
+  .user-footer-right {
+    justify-self: end;
+  }
+
+  .user-footer-user {
+    width: auto;
+    max-width: 100%;
+  }
+
+  .user-footer-user strong {
+    max-width: 190px;
+  }
+
+  .user-footer-company {
+    max-width: calc(100vw - 64px);
+  }
 }

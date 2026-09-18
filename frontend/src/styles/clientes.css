@@ -1662,3 +1662,226 @@
   }
 
 }
+
+
+/* =========================================================
+   CLIENTES - CABECERA RESPONSIVE PARA ZOOM
+   Evita que título y botones de acción se monten.
+   Bloque final para prevalecer sobre reglas anteriores.
+========================================================= */
+
+.clientes-title-bar {
+  display: grid;
+
+  grid-template-columns:
+    minmax(150px, 1fr)
+    max-content;
+
+  align-items: center;
+
+  column-gap: 18px;
+  row-gap: 8px;
+
+  min-height: 72px;
+
+  padding:
+    10px
+    18px
+    10px
+    70px;
+
+  overflow: visible;
+}
+
+.clientes-title-info {
+  min-width: 0;
+
+  margin-left: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.clientes-title-info h2 {
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clientes-title-actions {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 7px;
+
+  flex-wrap: nowrap;
+
+  overflow: visible;
+}
+
+.clientes-icon-btn,
+.clientes-title-actions button {
+  flex: 0 0 42px;
+}
+
+
+/* =========================================================
+   ZOOM / PANTALLA INTERMEDIA
+   Compactar antes de que empiece la superposición
+========================================================= */
+
+@media (max-width: 1050px) {
+
+  .clientes-title-bar {
+    grid-template-columns:
+      minmax(125px, 1fr)
+      max-content;
+
+    column-gap: 12px;
+
+    padding-right: 14px;
+  }
+
+  .clientes-title-actions {
+    gap: 5px;
+  }
+
+  .clientes-icon-btn,
+  .clientes-title-actions button {
+    width: 38px;
+    height: 38px;
+
+    flex-basis: 38px;
+
+    padding: 5px;
+
+    border-radius: 9px;
+  }
+
+  .clientes-icon-btn img,
+  .clientes-title-actions button img {
+    width: 24px;
+    height: 24px;
+  }
+
+}
+
+
+/* =========================================================
+   CUANDO YA NO CABE EN UNA SOLA FILA
+   Las acciones bajan completas y conservan su espacio.
+========================================================= */
+
+@media (max-width: 760px) {
+
+  .clientes-title-bar {
+    grid-template-columns: 1fr;
+
+    min-height: auto;
+
+    padding:
+      10px
+      12px
+      10px
+      70px;
+
+    row-gap: 8px;
+  }
+
+  .clientes-title-info {
+    width: 100%;
+  }
+
+  .clientes-title-info h2 {
+    font-size: 22px;
+  }
+
+  .clientes-title-actions {
+    width: 100%;
+
+    justify-content: flex-end;
+
+    flex-wrap: wrap;
+
+    gap: 6px;
+
+    align-self: auto;
+  }
+
+}
+
+
+/* =========================================================
+   ZOOM ALTO / PANTALLA PEQUEÑA
+========================================================= */
+
+@media (max-width: 560px) {
+
+  .clientes-title-bar {
+    padding:
+      9px
+      10px
+      9px
+      62px;
+
+    row-gap: 7px;
+  }
+
+  .clientes-title-info h2 {
+    font-size: 20px;
+  }
+
+  .clientes-title-actions {
+    justify-content: flex-start;
+  }
+
+  .clientes-icon-btn,
+  .clientes-title-actions button {
+    width: 36px;
+    height: 36px;
+
+    flex-basis: 36px;
+  }
+
+  .clientes-icon-btn img,
+  .clientes-title-actions button img {
+    width: 22px;
+    height: 22px;
+  }
+
+}
+
+
+/* =========================================================
+   ZOOM MUY ALTO
+   Mantiene todos los botones visibles sin superposición.
+========================================================= */
+
+@media (max-width: 380px) {
+
+  .clientes-title-bar {
+    padding-left: 60px;
+  }
+
+  .clientes-title-actions {
+    display: grid;
+
+    grid-template-columns:
+      repeat(4, 36px);
+
+    justify-content: start;
+
+    width: 100%;
+
+    gap: 5px;
+  }
+
+}

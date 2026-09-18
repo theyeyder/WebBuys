@@ -15,7 +15,7 @@ import configuracionIcon from "../assets/icons/configuracion.png";
 import modulosIcon from "../assets/icons/modulos.png";
 import cerrarIcon from "../assets/icons/cerrar.png";
 
-import "../styles/ModulosMenu.jsx.css";
+import "../styles/ModulosMenu.css";
 
 const MODULOS = [
   {

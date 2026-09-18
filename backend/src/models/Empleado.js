@@ -1,25 +1,166 @@
-import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+import mongoose from "mongoose";
 
-const usuarioSchema = new mongoose.Schema({
-  nombre: { type: String, required: true },
-  documento: { type: String, required: true, unique: true },
-  telefono: { type: String, default: '' },
-  cargo: { type: String, default: '' },
-  usuario: { type: String, required: true, unique: true, lowercase: true, trim: true },
-  password: { type: String, required: true },
-  rol: { type: String, enum: ['Administrador', 'Empleado'], default: 'Empleado' },
-  estado: { type: Boolean, default: true }
-}, { timestamps: true });
+const empleadoSchema = new mongoose.Schema(
+  {
+    codigo: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      uppercase: true,
+    },
 
-usuarioSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
+    tipoDocumento: {
+      type: String,
+      enum: [
+        "CC",
+        "CE",
+        "TI",
+        "PPT",
+        "PASAPORTE",
+        "NIT",
+      ],
+      default: "CC",
+      trim: true,
+      uppercase: true,
+    },
+
+    documento: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+
+    nombres: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    apellidos: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    telefono: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    direccion: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    ciudad: {
+      type: String,
+      default: "Ibagué",
+      trim: true,
+    },
+
+    cargo: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    fechaIngreso: {
+      type: Date,
+      default: Date.now,
+    },
+
+    salario: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    rutaAsignada: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Ruta",
+      default: null,
+    },
+
+    usuario: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Usuario",
+      default: null,
+    },
+
+    estado: {
+      type: String,
+      enum: [
+        "Activo",
+        "Inactivo",
+      ],
+      default: "Activo",
+    },
+
+    observaciones: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+  },
+  {
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+    },
+    toObject: {
+      virtuals: true,
+    },
+  }
+);
+
+
+/* =========================================================
+   NOMBRE COMPLETO
+========================================================= */
+
+empleadoSchema.virtual(
+  "nombreCompleto"
+).get(function () {
+
+  return [
+    this.nombres,
+    this.apellidos,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
 });
 
-usuarioSchema.methods.compararPassword = function(passwordPlano) {
-  return bcrypt.compare(passwordPlano, this.password);
-};
 
-export default mongoose.model('Usuario', usuarioSchema);
+/* =========================================================
+   ÍNDICES
+========================================================= */
+
+empleadoSchema.index({
+  nombres: 1,
+  apellidos: 1,
+});
+
+empleadoSchema.index({
+  cargo: 1,
+  estado: 1,
+});
+
+empleadoSchema.index({
+  rutaAsignada: 1,
+});
+
+empleadoSchema.index({
+  usuario: 1,
+});
+
+
+export default mongoose.model(
+  "Empleado",
+  empleadoSchema
+);

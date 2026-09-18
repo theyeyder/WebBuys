@@ -1,13 +1,14 @@
-import api
-  from "./api.js";
+import api from "./api.js";
 
 
-const url =
-  "/pedidos";
+const url = "/pedidos";
 
+
+/* =========================================
+   LISTAR PEDIDOS
+========================================= */
 
 export async function listarPedidos() {
-
   const respuesta =
     await api.get(url);
 
@@ -15,8 +16,11 @@ export async function listarPedidos() {
 }
 
 
-export async function obtenerSiguienteCodigoPedido() {
+/* =========================================
+   SIGUIENTE CÓDIGO
+========================================= */
 
+export async function obtenerSiguienteCodigoPedido() {
   const respuesta =
     await api.get(
       `${url}/siguiente-codigo`
@@ -26,10 +30,13 @@ export async function obtenerSiguienteCodigoPedido() {
 }
 
 
+/* =========================================
+   CREAR PEDIDO
+========================================= */
+
 export async function crearPedido(
   datos
 ) {
-
   const respuesta =
     await api.post(
       url,
@@ -40,11 +47,14 @@ export async function crearPedido(
 }
 
 
+/* =========================================
+   ACTUALIZAR PEDIDO
+========================================= */
+
 export async function actualizarPedido(
   id,
   datos
 ) {
-
   const respuesta =
     await api.put(
       `${url}/${id}`,
@@ -55,11 +65,14 @@ export async function actualizarPedido(
 }
 
 
+/* =========================================
+   CAMBIAR ESTADO
+========================================= */
+
 export async function cambiarEstadoPedido(
   id,
   estado
 ) {
-
   const respuesta =
     await api.patch(
       `${url}/${id}/estado`,
@@ -72,10 +85,13 @@ export async function cambiarEstadoPedido(
 }
 
 
+/* =========================================
+   ELIMINAR PEDIDO
+========================================= */
+
 export async function eliminarPedido(
   id
 ) {
-
   const respuesta =
     await api.delete(
       `${url}/${id}`

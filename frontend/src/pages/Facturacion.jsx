@@ -70,32 +70,40 @@ function fechaColombia(fecha) {
 
 
 /* =========================================
-   NOMBRE EMPLEADO
+   NOMBRE DEL PERSONAL
 ========================================= */
 
-function obtenerNombreEmpleado(
-  empleado
+function obtenerNombrePersonal(
+  persona
 ) {
 
-  if (!empleado) {
+  if (!persona) {
     return "Sin asignar";
   }
 
 
   if (
-    empleado.nombres ||
-    empleado.apellidos
+    typeof persona === "string"
+  ) {
+    return persona;
+  }
+
+
+  if (
+    persona.nombres ||
+    persona.apellidos
   ) {
 
-    return `${empleado.nombres || ""} ${
-      empleado.apellidos || ""
+    return `${persona.nombres || ""} ${
+      persona.apellidos || ""
     }`.trim();
 
   }
 
 
   return (
-    empleado.nombre ||
+    persona.nombre ||
+    persona.nombreCompleto ||
     "Sin asignar"
   );
 
@@ -1088,15 +1096,54 @@ export default function Facturacion() {
                   <div>
 
                     <span>
-                      Empleado
+                      Atendido por
                     </span>
 
                     <strong>
 
-                      {obtenerNombreEmpleado(
+                      {obtenerNombrePersonal(
                         pedidoSeleccionado
                           .empleado
                       )}
+
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Repartidor
+                    </span>
+
+                    <strong>
+
+                      {obtenerNombrePersonal(
+                        pedidoSeleccionado
+                          .repartidor
+                      )}
+
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Empacador
+                    </span>
+
+                    <strong>
+
+                      {pedidoSeleccionado
+                        .empacador
+                        ? obtenerNombrePersonal(
+                            pedidoSeleccionado
+                              .empacador
+                          )
+                        : "—"}
 
                     </strong>
 

@@ -508,6 +508,29 @@
   margin: 0;
   padding: 0;
 
-  overflow-x: hidden;
+  /* clip evita desbordamiento horizontal sin crear un contenedor
+     de scroll que pueda interferir con cabeceras sticky. */
+  overflow-x: clip;
 }
 
+
+
+/* =====================================================
+   PROTECCIÓN GLOBAL CONTRA SOLAPAMIENTOS POR ZOOM
+===================================================== */
+
+.app-shell,
+.content-area,
+.webbuys-page {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Cualquier hijo directo de la página puede reducir su ancho
+   sin empujar ni montarse sobre elementos vecinos. */
+.webbuys-page > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}

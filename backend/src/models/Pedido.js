@@ -151,6 +151,10 @@ const pedidoSchema =
       },
 
 
+      /* =====================================
+         CLIENTE
+      ===================================== */
+
       cliente: {
         type:
           mongoose.Schema.Types.ObjectId,
@@ -159,10 +163,12 @@ const pedidoSchema =
 
         default: null,
       },
+
+
       /* =====================================
- DATOS DEL CLIENTE AL MOMENTO
- DEL PEDIDO
-===================================== */
+         DATOS DEL CLIENTE AL MOMENTO
+         DEL PEDIDO
+      ===================================== */
 
       clienteCodigo: {
         type: String,
@@ -170,11 +176,13 @@ const pedidoSchema =
         trim: true,
       },
 
+
       clienteNombre: {
         type: String,
         default: "",
         trim: true,
       },
+
 
       clienteRazonSocial: {
         type: String,
@@ -182,11 +190,13 @@ const pedidoSchema =
         trim: true,
       },
 
+
       clienteTelefono: {
         type: String,
         default: "",
         trim: true,
       },
+
 
       clienteDireccion: {
         type: String,
@@ -194,17 +204,20 @@ const pedidoSchema =
         trim: true,
       },
 
+
       clienteBarrio: {
         type: String,
         default: "",
         trim: true,
       },
 
+
       clienteCiudad: {
         type: String,
         default: "",
         trim: true,
       },
+
 
       clienteTipo: {
         type: String,
@@ -218,16 +231,21 @@ const pedidoSchema =
       ===================================== */
 
       zonaDespacho: {
-        type: mongoose.Schema.Types.ObjectId,
+        type:
+          mongoose.Schema.Types.ObjectId,
+
         ref: "ZonaDespacho",
+
         default: null,
       },
+
 
       zonaDespachoCodigo: {
         type: String,
         default: "",
         trim: true,
       },
+
 
       zonaDespachoNombre: {
         type: String,
@@ -241,10 +259,14 @@ const pedidoSchema =
       ===================================== */
 
       ruta: {
-        type: mongoose.Schema.Types.ObjectId,
+        type:
+          mongoose.Schema.Types.ObjectId,
+
         ref: "Ruta",
+
         default: null,
       },
+
 
       rutaCodigo: {
         type: String,
@@ -252,30 +274,76 @@ const pedidoSchema =
         trim: true,
       },
 
+
       rutaNombre: {
         type: String,
         default: "",
         trim: true,
       },
 
+
       rutaDiasAtencion: {
         type: [String],
         default: [],
       },
 
+
       /* =====================================
-         EMPLEADO ASIGNADO
+         PERSONAL DEL PEDIDO
+      ===================================== */
+
+
+      /* =====================================
+         ATENDIDO POR
+         Cargo: Empleado
+         OBLIGATORIO
       ===================================== */
 
       empleado: {
         type:
           mongoose.Schema.Types.ObjectId,
 
-        ref: "Usuario",
+        ref: "Empleado",
+
+        required: true,
+      },
+
+
+      /* =====================================
+         REPARTIDOR
+         Cargo: Repartidor
+         OBLIGATORIO
+      ===================================== */
+
+      repartidor: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "Empleado",
+
+        required: true,
+      },
+
+
+      /* =====================================
+         EMPACADOR
+         Cargo: Empacador
+         OPCIONAL
+      ===================================== */
+
+      empacador: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "Empleado",
 
         default: null,
       },
 
+
+      /* =====================================
+         PRODUCTOS
+      ===================================== */
 
       items: {
         type: [itemPedidoSchema],
@@ -293,6 +361,10 @@ const pedidoSchema =
         },
       },
 
+
+      /* =====================================
+         TOTALES
+      ===================================== */
 
       subtotal: {
         type: Number,
@@ -317,6 +389,10 @@ const pedidoSchema =
       },
 
 
+      /* =====================================
+         MÉTODO DE PAGO
+      ===================================== */
+
       metodoPago: {
         type: String,
 
@@ -329,6 +405,10 @@ const pedidoSchema =
         default: "Efectivo",
       },
 
+
+      /* =====================================
+         ESTADO
+      ===================================== */
 
       estado: {
         type: String,
@@ -346,11 +426,19 @@ const pedidoSchema =
       },
 
 
+      /* =====================================
+         FECHA DE ENTREGA
+      ===================================== */
+
       fechaEntrega: {
         type: Date,
         default: null,
       },
 
+
+      /* =====================================
+         OBSERVACIONES
+      ===================================== */
 
       observaciones: {
         type: String,
@@ -358,6 +446,10 @@ const pedidoSchema =
         trim: true,
       },
 
+
+      /* =====================================
+         USUARIO QUE CREÓ EL PEDIDO
+      ===================================== */
 
       creadoPor: {
         type:
@@ -386,6 +478,18 @@ pedidoSchema.index({
 
 pedidoSchema.index({
   empleado: 1,
+  createdAt: -1,
+});
+
+
+pedidoSchema.index({
+  repartidor: 1,
+  createdAt: -1,
+});
+
+
+pedidoSchema.index({
+  empacador: 1,
   createdAt: -1,
 });
 

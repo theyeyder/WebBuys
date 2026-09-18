@@ -16,8 +16,8 @@ import {
 } from "../services/cliente.service.js";
 
 import {
-  listarUsuarios,
-} from "../services/usuario.service.js";
+  listarEmpleadosPedidos,
+} from "../services/empleado.service.js";
 
 import {
   listarProductos,
@@ -74,6 +74,8 @@ import cerrarIcon
 const FORM_INICIAL = {
   cliente: "",
   empleado: "",
+  repartidor: "",
+  empacador: "",
   metodoPago: "Efectivo",
   fechaEntrega: "",
   descuento: "",
@@ -711,27 +713,33 @@ export default function Pedidos() {
     try {
 
       const data =
-        await listarUsuarios();
+        await listarEmpleadosPedidos();
+
 
       const lista =
         Array.isArray(data)
           ? data
-          : data?.usuarios ||
+          : data?.empleados ||
           data?.data ||
           [];
 
 
       const empleadosActivos =
         lista.filter(
-          (usuario) =>
-            usuario.rol === "Empleado" &&
-            !usuario.bloqueado
+          (empleado) =>
+            String(
+              empleado.estado || ""
+            )
+              .trim()
+              .toLowerCase() ===
+            "activo"
         );
 
 
       setEmpleados(
         empleadosActivos
       );
+
 
     } catch (error) {
 
@@ -740,11 +748,72 @@ export default function Pedidos() {
         error
       );
 
-      setEmpleados([]);
+
+      setEmpleados(
+        []
+      );
 
     }
 
   }
+
+
+  /* =========================================
+     EMPLEADOS POR CARGO
+  ========================================= */
+
+  const empleadosAtencion =
+    useMemo(
+      () =>
+        empleados.filter(
+          (empleado) =>
+            String(
+              empleado.cargo || ""
+            )
+              .trim()
+              .toLowerCase() ===
+            "empleado"
+        ),
+      [
+        empleados,
+      ]
+    );
+
+
+  const repartidores =
+    useMemo(
+      () =>
+        empleados.filter(
+          (empleado) =>
+            String(
+              empleado.cargo || ""
+            )
+              .trim()
+              .toLowerCase() ===
+            "repartidor"
+        ),
+      [
+        empleados,
+      ]
+    );
+
+
+  const empacadores =
+    useMemo(
+      () =>
+        empleados.filter(
+          (empleado) =>
+            String(
+              empleado.cargo || ""
+            )
+              .trim()
+              .toLowerCase() ===
+            "empacador"
+        ),
+      [
+        empleados,
+      ]
+    );
 
 
   /* =========================================
@@ -1616,6 +1685,40 @@ export default function Pedidos() {
   async function guardarPedido() {
 
     if (
+      !form.empleado
+    ) {
+
+      setMensaje(
+        "Seleccione quién atendió el pedido."
+      );
+
+      setTipoMensaje(
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !form.repartidor
+    ) {
+
+      setMensaje(
+        "Seleccione el repartidor del pedido."
+      );
+
+      setTipoMensaje(
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (
       form.items.length === 0
     ) {
 
@@ -1674,7 +1777,13 @@ export default function Pedidos() {
           null,
 
         empleado:
-          form.empleado ||
+          form.empleado,
+
+        repartidor:
+          form.repartidor,
+
+        empacador:
+          form.empacador ||
           null,
 
         metodoPago:
@@ -1877,6 +1986,16 @@ export default function Pedidos() {
       empleado:
         pedido.empleado?._id ||
         pedido.empleado ||
+        "",
+
+      repartidor:
+        pedido.repartidor?._id ||
+        pedido.repartidor ||
+        "",
+
+      empacador:
+        pedido.empacador?._id ||
+        pedido.empacador ||
         "",
 
       metodoPago:
@@ -2093,6 +2212,16 @@ export default function Pedidos() {
       empleado:
         pedidoSeleccionado.empleado?._id ||
         pedidoSeleccionado.empleado ||
+        "",
+
+      repartidor:
+        pedidoSeleccionado.repartidor?._id ||
+        pedidoSeleccionado.repartidor ||
+        "",
+
+      empacador:
+        pedidoSeleccionado.empacador?._id ||
+        pedidoSeleccionado.empacador ||
         "",
 
       metodoPago:
@@ -4952,7 +5081,7 @@ export default function Pedidos() {
 
                     <label>
 
-                      Empleado asignado
+                      Atendido por *
 
                       <select
                         value={
@@ -4970,13 +5099,14 @@ export default function Pedidos() {
                               })
                             )
                         }
+                        required
                       >
 
                         <option value="">
-                          Sin asignar
+                          Seleccione un empleado
                         </option>
 
-                        {empleados.map(
+                        {empleadosAtencion.map(
                           (empleado) => (
 
                             <option
@@ -4988,12 +5118,120 @@ export default function Pedidos() {
                               }
                             >
 
-                              {empleado.nombres
-                                ? `${empleado.nombres} ${empleado.apellidos ||
-                                  ""
-                                  }`.trim()
-                                : empleado.nombre ||
+                              {`${empleado.nombres || ""} ${empleado.apellidos || ""}`.trim() ||
+                                empleado.nombre ||
+                                empleado.codigo ||
                                 "Empleado"}
+
+                            </option>
+
+                          )
+                        )}
+
+                      </select>
+
+                    </label>
+
+
+                    <label>
+
+                      Repartidor *
+
+                      <select
+                        value={
+                          form.repartidor
+                        }
+                        onChange={
+                          (event) =>
+                            setForm(
+                              (actual) => ({
+                                ...actual,
+
+                                repartidor:
+                                  event.target.value,
+
+                              })
+                            )
+                        }
+                        required
+                      >
+
+                        <option value="">
+                          Seleccione un repartidor
+                        </option>
+
+                        {repartidores.map(
+                          (empleado) => (
+
+                            <option
+                              key={
+                                empleado._id
+                              }
+                              value={
+                                empleado._id
+                              }
+                            >
+
+                              {`${empleado.nombres || ""} ${empleado.apellidos || ""}`.trim() ||
+                                empleado.nombre ||
+                                empleado.codigo ||
+                                "Repartidor"}
+
+                            </option>
+
+                          )
+                        )}
+
+                      </select>
+
+                    </label>
+
+
+                    <label>
+
+                      Empacador
+                      <small className="pedidos-client-optional">
+                        Opcional
+                      </small>
+
+                      <select
+                        value={
+                          form.empacador
+                        }
+                        onChange={
+                          (event) =>
+                            setForm(
+                              (actual) => ({
+                                ...actual,
+
+                                empacador:
+                                  event.target.value,
+
+                              })
+                            )
+                        }
+                      >
+
+                        <option value="">
+                          Sin empacador
+                        </option>
+
+                        {empacadores.map(
+                          (empleado) => (
+
+                            <option
+                              key={
+                                empleado._id
+                              }
+                              value={
+                                empleado._id
+                              }
+                            >
+
+                              {`${empleado.nombres || ""} ${empleado.apellidos || ""}`.trim() ||
+                                empleado.nombre ||
+                                empleado.codigo ||
+                                "Empacador"}
 
                             </option>
 

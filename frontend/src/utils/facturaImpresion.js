@@ -96,6 +96,28 @@ export function imprimirFactura(factura) {
     "Sin asignar";
 
 
+  const repartidorNombre =
+    factura.repartidorNombre ||
+    [
+      factura.repartidor?.nombres,
+      factura.repartidor?.apellidos,
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    "Sin asignar";
+
+
+  const empacadorNombre =
+    factura.empacadorNombre ||
+    [
+      factura.empacador?.nombres,
+      factura.empacador?.apellidos,
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    "—";
+
+
   const filasProductos = (
     factura.items || []
   )
@@ -324,12 +346,42 @@ export function imprimirFactura(factura) {
             <div>
 
               <span class="etiqueta">
-                Empleado
+                Atendido por
               </span>
 
               <strong>
                 ${escaparHTML(
                   empleadoNombre
+                )}
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span class="etiqueta">
+                Repartidor
+              </span>
+
+              <strong>
+                ${escaparHTML(
+                  repartidorNombre
+                )}
+              </strong>
+
+            </div>
+
+
+            <div>
+
+              <span class="etiqueta">
+                Empacador
+              </span>
+
+              <strong>
+                ${escaparHTML(
+                  empacadorNombre
                 )}
               </strong>
 

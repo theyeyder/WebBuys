@@ -94,7 +94,7 @@
   max-height: 80vh;
   padding: 20px;
   border-radius: 16px;
-  background: rgba(71, 149, 102, 0.98);
+  background: rgba(28, 122, 66, 0.98);
   box-shadow: 0 25px 70px rgba(15, 23, 42, 0.25);
   backdrop-filter: blur(14px);
   overflow-y: auto;
@@ -323,4 +323,165 @@
   flex: 0 0 30px;
 
   pointer-events: none;
+}
+/* =========================================================
+   CABECERAS DE MÓDULOS - PROTECCIÓN CONTRA ZOOM
+   Se aplica a cualquier cabecera que contenga ModulosMenu.
+   Evita que título, acciones y botones se monten entre sí.
+========================================================= */
+
+:is(
+  header,
+  [class$="-header"],
+  [class*="-title-bar"]
+):has(.modulos-menu-trigger) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+
+  box-sizing: border-box;
+
+  /* Una cabecera nunca debe recortar sus propias acciones. */
+  overflow: visible;
+}
+
+/* Cada bloque interno puede encogerse sin invadir al vecino. */
+:is(
+  header,
+  [class$="-header"],
+  [class*="-title-bar"]
+):has(.modulos-menu-trigger) > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Los grupos de acciones pueden redistribuir sus botones. */
+:is(
+  header,
+  [class$="-header"],
+  [class*="-title-bar"]
+):has(.modulos-menu-trigger) > :last-child {
+  flex-wrap: wrap;
+}
+
+/* =========================================================
+   ZOOM / ANCHO EFECTIVO MEDIO
+   Al aumentar el zoom, el navegador reduce el ancho CSS
+   disponible y estas reglas entran automáticamente.
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  :is(
+    header,
+    [class$="-header"],
+    [class*="-title-bar"]
+  ):has(.modulos-menu-trigger) {
+    height: auto !important;
+    min-height: 72px;
+
+    padding-left: 66px !important;
+    padding-right: 14px !important;
+
+    column-gap: 12px;
+    row-gap: 8px;
+
+    flex-wrap: wrap;
+  }
+
+  /* Mantiene el título en su zona y las acciones a la derecha. */
+  :is(
+    header,
+    [class$="-header"],
+    [class*="-title-bar"]
+  ):has(.modulos-menu-trigger) > :first-child {
+    flex: 1 1 auto;
+  }
+
+  :is(
+    header,
+    [class$="-header"],
+    [class*="-title-bar"]
+  ):has(.modulos-menu-trigger) > :last-child {
+    flex: 0 1 auto;
+    margin-left: auto;
+  }
+}
+
+/* =========================================================
+   ZOOM ALTO / PANTALLA ESTRECHA
+   Las acciones pasan a una segunda línea en lugar de montarse.
+========================================================= */
+
+@media (max-width: 760px) {
+
+  .modulos-menu-trigger {
+    top: 10px;
+    left: 10px;
+  }
+
+  :is(
+    header,
+    [class$="-header"],
+    [class*="-title-bar"]
+  ):has(.modulos-menu-trigger) {
+    min-height: 64px;
+
+    padding:
+      10px
+      10px
+      10px
+      60px !important;
+
+    align-items: center;
+  }
+
+  /* Si existe un bloque de acciones, ocupa una línea propia. */
+  :is(
+    header,
+    [class$="-header"],
+    [class*="-title-bar"]
+  ):has(.modulos-menu-trigger) > :last-child:not(:first-child) {
+    width: 100%;
+    flex: 1 1 100%;
+
+    margin-left: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+}
+
+/* =========================================================
+   ZOOM MUY ALTO
+========================================================= */
+
+@media (max-width: 520px) {
+
+  :is(
+    header,
+    [class$="-header"],
+    [class*="-title-bar"]
+  ):has(.modulos-menu-trigger) {
+    padding-right: 8px !important;
+  }
+
+  /* Evita que textos largos obliguen a superponer botones. */
+  :is(
+    header,
+    [class$="-header"],
+    [class*="-title-bar"]
+  ):has(.modulos-menu-trigger) h1,
+  :is(
+    header,
+    [class$="-header"],
+    [class*="-title-bar"]
+  ):has(.modulos-menu-trigger) h2 {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
 }

@@ -1,0 +1,503 @@
+/* =========================================================
+   EMPLEADOS - VENTANA DE IMPRESIÓN
+   Estilo similar al reporte de Pedidos.
+========================================================= */
+
+@page {
+  size: A4 landscape;
+  margin: 10mm;
+}
+
+
+* {
+  box-sizing: border-box;
+}
+
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+
+  background: #ffffff;
+
+  color: #17313a;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+
+.empleados-listado-body {
+  padding:
+    26px
+    25px
+    20px;
+
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   CABECERA
+========================================================= */
+
+.empleados-listado-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 24px;
+
+  padding-bottom: 16px;
+
+  border-bottom:
+    3px solid
+    #159a75;
+}
+
+
+.empleados-listado-label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #687b78;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.12em;
+}
+
+
+.empleados-listado-title {
+  margin: 0;
+
+  color: #087a73;
+
+  font-size: 34px;
+  font-weight: 900;
+
+  line-height: 1;
+}
+
+
+.empleados-listado-subtitle {
+  margin:
+    8px
+    0
+    0;
+
+  color: #667085;
+
+  font-size: 13px;
+}
+
+
+.empleados-listado-resumen {
+  min-width: 150px;
+  min-height: 82px;
+
+  padding:
+    14px
+    18px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid
+    #c9dfd8;
+
+  border-radius: 12px;
+
+  background:
+    #f0f8f5;
+
+  color:
+    #087a73;
+}
+
+
+.empleados-listado-resumen strong {
+  font-size: 28px;
+  font-weight: 900;
+
+  line-height: 1;
+}
+
+
+.empleados-listado-resumen span {
+  margin-top: 9px;
+
+  color: #526863;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   FILTROS
+========================================================= */
+
+.empleados-listado-filtros {
+  margin:
+    20px
+    0
+    17px;
+
+  padding:
+    12px
+    14px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  border:
+    1px solid
+    #d3e2dd;
+
+  border-radius: 10px;
+
+  background:
+    #f5faf8;
+
+  color:
+    #48605a;
+
+  font-size:
+    12px;
+}
+
+
+.empleados-listado-filtros strong {
+  color:
+    #143a36;
+}
+
+
+/* =========================================================
+   TABLA
+========================================================= */
+
+.empleados-listado-table-wrap {
+  width: 100%;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    #d2dfdb;
+}
+
+
+.empleados-listado-table {
+  width: 100%;
+
+  table-layout: fixed;
+
+  border-collapse:
+    collapse;
+
+  font-size:
+    10px;
+}
+
+
+.empleados-listado-table thead {
+  display:
+    table-header-group;
+}
+
+
+.empleados-listado-table th {
+  padding:
+    10px
+    8px;
+
+  background:
+    #158477;
+
+  color:
+    #ffffff;
+
+  text-align:
+    left;
+
+  font-size:
+    9px;
+
+  font-weight:
+    900;
+
+  text-transform:
+    uppercase;
+
+  white-space:
+    nowrap;
+}
+
+
+.empleados-listado-table td {
+  padding:
+    9px
+    8px;
+
+  border-right:
+    1px solid
+    #d4dfdc;
+
+  border-bottom:
+    1px solid
+    #d4dfdc;
+
+  color:
+    #1e343c;
+
+  vertical-align:
+    middle;
+
+  overflow-wrap:
+    anywhere;
+}
+
+
+.empleados-listado-table th:last-child,
+.empleados-listado-table td:last-child {
+  border-right: 0;
+}
+
+
+.empleados-listado-table tbody tr:nth-child(even) {
+  background:
+    #f4f7f6;
+}
+
+
+.empleados-listado-table tbody tr {
+  break-inside:
+    avoid;
+
+  page-break-inside:
+    avoid;
+}
+
+
+.empleados-listado-codigo {
+  color:
+    #087a73;
+
+  font-weight:
+    900;
+}
+
+
+.empleados-listado-nombre {
+  font-weight:
+    800;
+}
+
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+.empleados-listado-estado {
+  display: inline-block;
+
+  min-width: 58px;
+
+  padding:
+    4px
+    7px;
+
+  border-radius:
+    999px;
+
+  text-align:
+    center;
+
+  font-size:
+    9px;
+
+  font-weight:
+    900;
+}
+
+
+.empleados-listado-estado.activo {
+  border:
+    1px solid
+    #a9dfc5;
+
+  background:
+    #ecf9f2;
+
+  color:
+    #087443;
+}
+
+
+.empleados-listado-estado.inactivo {
+  border:
+    1px solid
+    #f0c5c1;
+
+  background:
+    #fdf1f0;
+
+  color:
+    #b42318;
+}
+
+
+/* =========================================================
+   ANCHOS
+========================================================= */
+
+.col-codigo {
+  width: 8%;
+}
+
+
+.col-documento {
+  width: 13%;
+}
+
+
+.col-empleado {
+  width: 18%;
+}
+
+
+.col-cargo {
+  width: 12%;
+}
+
+
+.col-telefono {
+  width: 11%;
+}
+
+
+.col-ciudad {
+  width: 10%;
+}
+
+
+.col-ruta {
+  width: 11%;
+}
+
+
+.col-ingreso {
+  width: 10%;
+}
+
+
+.col-estado {
+  width: 7%;
+}
+
+
+/* =========================================================
+   PIE
+========================================================= */
+
+.empleados-listado-footer {
+  margin-top: 18px;
+
+  padding-top: 14px;
+
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+
+  gap: 12px;
+
+  border-top:
+    2px solid
+    #d7e3df;
+
+  color:
+    #586a66;
+
+  font-size:
+    14px;
+
+  font-weight:
+    800;
+}
+
+
+.empleados-listado-footer strong {
+  color:
+    #087a73;
+
+  font-size:
+    22px;
+
+  font-weight:
+    900;
+}
+
+
+/* =========================================================
+   IMPRESIÓN
+========================================================= */
+
+@media print {
+
+  .empleados-listado-body {
+    padding: 0;
+  }
+
+
+  .empleados-listado-header {
+    break-inside:
+      avoid;
+  }
+
+
+  .empleados-listado-filtros {
+    break-inside:
+      avoid;
+  }
+
+
+  .empleados-listado-table {
+    font-size:
+      8px;
+  }
+
+
+  .empleados-listado-table th {
+    padding:
+      7px
+      5px;
+
+    font-size:
+      7px;
+  }
+
+
+  .empleados-listado-table td {
+    padding:
+      6px
+      5px;
+  }
+
+}

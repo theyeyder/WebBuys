@@ -8,6 +8,37 @@ import {
 
 
 /* =========================================
+   NOMBRE DEL PERSONAL
+========================================= */
+
+function obtenerNombrePersonal(
+  persona
+) {
+
+  if (!persona) {
+    return "";
+  }
+
+
+  if (
+    typeof persona === "string"
+  ) {
+    return "";
+  }
+
+
+  return [
+    persona.nombres,
+    persona.apellidos,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
+}
+
+
+/* =========================================
    GENERAR SIGUIENTE CONSECUTIVO
 ========================================= */
 
@@ -111,7 +142,17 @@ async function listar(
 
         .populate(
           "empleado",
-          "codigo nombres apellidos documento"
+          "codigo nombres apellidos documento cargo"
+        )
+
+        .populate(
+          "repartidor",
+          "codigo nombres apellidos documento cargo"
+        )
+
+        .populate(
+          "empacador",
+          "codigo nombres apellidos documento cargo"
         )
 
         .populate(
@@ -176,7 +217,17 @@ async function obtenerPorId(
 
         .populate(
           "empleado",
-          "codigo nombres apellidos documento"
+          "codigo nombres apellidos documento cargo"
+        )
+
+        .populate(
+          "repartidor",
+          "codigo nombres apellidos documento cargo"
+        )
+
+        .populate(
+          "empacador",
+          "codigo nombres apellidos documento cargo"
         )
 
         .populate(
@@ -266,7 +317,17 @@ async function crear(
 
         .populate(
           "empleado",
-          "codigo nombres apellidos documento"
+          "codigo nombres apellidos documento cargo"
+        )
+
+        .populate(
+          "repartidor",
+          "codigo nombres apellidos documento cargo"
+        )
+
+        .populate(
+          "empacador",
+          "codigo nombres apellidos documento cargo"
         );
 
 
@@ -438,23 +499,25 @@ async function crear(
 
 
     /* -----------------------------------------
-       NOMBRE EMPLEADO
+       PERSONAL DEL PEDIDO
     ----------------------------------------- */
 
-    let empleadoNombre =
-      "";
+    const empleadoNombre =
+      obtenerNombrePersonal(
+        pedido.empleado
+      );
 
 
-    if (
-      pedido.empleado
-    ) {
+    const repartidorNombre =
+      obtenerNombrePersonal(
+        pedido.repartidor
+      );
 
-      empleadoNombre =
-        `${pedido.empleado.nombres || ""} ${
-          pedido.empleado.apellidos || ""
-        }`.trim();
 
-    }
+    const empacadorNombre =
+      obtenerNombrePersonal(
+        pedido.empacador
+      );
 
 
     /* -----------------------------------------
@@ -543,6 +606,22 @@ async function crear(
         empleadoNombre,
 
 
+        repartidor:
+          pedido.repartidor
+            ?._id ||
+          null,
+
+        repartidorNombre,
+
+
+        empacador:
+          pedido.empacador
+            ?._id ||
+          null,
+
+        empacadorNombre,
+
+
         items,
 
 
@@ -610,7 +689,17 @@ async function crear(
 
         .populate(
           "empleado",
-          "codigo nombres apellidos documento"
+          "codigo nombres apellidos documento cargo"
+        )
+
+        .populate(
+          "repartidor",
+          "codigo nombres apellidos documento cargo"
+        )
+
+        .populate(
+          "empacador",
+          "codigo nombres apellidos documento cargo"
         )
 
         .populate(
@@ -757,7 +846,17 @@ async function actualizar(
 
         .populate(
           "empleado",
-          "codigo nombres apellidos documento"
+          "codigo nombres apellidos documento cargo"
+        )
+
+        .populate(
+          "repartidor",
+          "codigo nombres apellidos documento cargo"
+        )
+
+        .populate(
+          "empacador",
+          "codigo nombres apellidos documento cargo"
         );
 
 

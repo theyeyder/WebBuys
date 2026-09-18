@@ -13,8 +13,8 @@ import ZonaDespacho
 import Ruta
   from "../models/Rutas.js";
 
-import Usuario
-  from "../models/Usuario.js";
+import Empleado
+  from "../models/Empleado.js";
 
 import Consecutivo
   from "../models/Consecutivo.js";
@@ -29,20 +29,33 @@ import {
 
 
 /* =========================================
-   VALIDAR EMPLEADO
+   VALIDAR PERSONAL DEL PEDIDO
 ========================================= */
 
-async function validarEmpleado(
-  empleadoId
+async function validarEmpleadoPorCargo(
+  empleadoId,
+  cargoEsperado,
+  etiqueta,
+  obligatorio = true
 ) {
 
   if (!empleadoId) {
+
+    if (obligatorio) {
+
+      throw new Error(
+        `Debe seleccionar ${etiqueta}.`
+      );
+
+    }
+
     return null;
+
   }
 
 
   const empleado =
-    await Usuario.findById(
+    await Empleado.findById(
       empleadoId
     );
 
@@ -50,31 +63,43 @@ async function validarEmpleado(
   if (!empleado) {
 
     throw new Error(
-      "El empleado seleccionado no existe."
+      `${etiqueta} seleccionado no existe.`
     );
 
   }
 
 
   if (
-    empleado.rol !==
-    "Empleado"
+    String(
+      empleado.estado || ""
+    )
+      .trim()
+      .toLowerCase() !==
+    "activo"
   ) {
 
     throw new Error(
-      "El usuario seleccionado no corresponde a un empleado."
+      `${etiqueta} seleccionado no está activo.`
     );
 
   }
 
 
   if (
-    empleado.estado !==
-    "Activo"
+    String(
+      empleado.cargo || ""
+    )
+      .trim()
+      .toLowerCase() !==
+    String(
+      cargoEsperado || ""
+    )
+      .trim()
+      .toLowerCase()
   ) {
 
     throw new Error(
-      "El empleado seleccionado no está activo."
+      `${etiqueta} seleccionado debe tener el cargo "${cargoEsperado}".`
     );
 
   }
@@ -153,7 +178,17 @@ export const listarPedidos =
 
           .populate(
             "empleado",
-            "codigo nombres apellidos documento"
+            "codigo nombres apellidos documento cargo estado"
+          )
+
+          .populate(
+            "repartidor",
+            "codigo nombres apellidos documento cargo estado"
+          )
+
+          .populate(
+            "empacador",
+            "codigo nombres apellidos documento cargo estado"
           )
 
           .populate(
@@ -528,7 +563,11 @@ export const crearPedido =
 
         cliente,
 
-        empleado = null,
+        empleado,
+
+        repartidor,
+
+        empacador = null,
 
         items = [],
 
@@ -602,36 +641,60 @@ export const crearPedido =
 
 
       /* =====================================
-         VALIDAR EMPLEADO
+         VALIDAR PERSONAL DEL PEDIDO
+         - ATENDIDO POR: OBLIGATORIO
+         - REPARTIDOR: OBLIGATORIO
+         - EMPACADOR: OPCIONAL
       ===================================== */
 
       let empleadoExiste =
         null;
 
+      let repartidorExiste =
+        null;
 
-      if (
-        empleado
-      ) {
+      let empacadorExiste =
+        null;
 
-        try {
 
-          empleadoExiste =
-            await validarEmpleado(
-              empleado
-            );
+      try {
 
-        } catch (error) {
+        empleadoExiste =
+          await validarEmpleadoPorCargo(
+            empleado,
+            "Empleado",
+            "un empleado para atender el pedido",
+            true
+          );
 
-          return res
-            .status(400)
-            .json({
 
-              mensaje:
-                error.message,
+        repartidorExiste =
+          await validarEmpleadoPorCargo(
+            repartidor,
+            "Repartidor",
+            "un repartidor",
+            true
+          );
 
-            });
 
-        }
+        empacadorExiste =
+          await validarEmpleadoPorCargo(
+            empacador,
+            "Empacador",
+            "un empacador",
+            false
+          );
+
+      } catch (error) {
+
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              error.message,
+
+          });
 
       }
 
@@ -849,8 +912,16 @@ export const crearPedido =
 
 
           empleado:
-            empleadoExiste
-              ? empleadoExiste._id
+            empleadoExiste._id,
+
+
+          repartidor:
+            repartidorExiste._id,
+
+
+          empacador:
+            empacadorExiste
+              ? empacadorExiste._id
               : null,
 
 
@@ -930,7 +1001,25 @@ export const crearPedido =
             "empleado",
 
           select:
-            "codigo nombres apellidos documento",
+            "codigo nombres apellidos documento cargo estado",
+        },
+
+
+        {
+          path:
+            "repartidor",
+
+          select:
+            "codigo nombres apellidos documento cargo estado",
+        },
+
+
+        {
+          path:
+            "empacador",
+
+          select:
+            "codigo nombres apellidos documento cargo estado",
         },
 
 
@@ -1044,7 +1133,11 @@ export const actualizarPedido =
 
         cliente,
 
-        empleado = null,
+        empleado,
+
+        repartidor,
+
+        empacador = null,
 
         items = [],
 
@@ -1135,36 +1228,60 @@ export const actualizarPedido =
 
 
       /* =====================================
-         VALIDAR EMPLEADO
+         VALIDAR PERSONAL DEL PEDIDO
+         - ATENDIDO POR: OBLIGATORIO
+         - REPARTIDOR: OBLIGATORIO
+         - EMPACADOR: OPCIONAL
       ===================================== */
 
       let empleadoExiste =
         null;
 
+      let repartidorExiste =
+        null;
 
-      if (
-        empleado
-      ) {
+      let empacadorExiste =
+        null;
 
-        try {
 
-          empleadoExiste =
-            await validarEmpleado(
-              empleado
-            );
+      try {
 
-        } catch (error) {
+        empleadoExiste =
+          await validarEmpleadoPorCargo(
+            empleado,
+            "Empleado",
+            "un empleado para atender el pedido",
+            true
+          );
 
-          return res
-            .status(400)
-            .json({
 
-              mensaje:
-                error.message,
+        repartidorExiste =
+          await validarEmpleadoPorCargo(
+            repartidor,
+            "Repartidor",
+            "un repartidor",
+            true
+          );
 
-            });
 
-        }
+        empacadorExiste =
+          await validarEmpleadoPorCargo(
+            empacador,
+            "Empacador",
+            "un empacador",
+            false
+          );
+
+      } catch (error) {
+
+        return res
+          .status(400)
+          .json({
+
+            mensaje:
+              error.message,
+
+          });
 
       }
 
@@ -1333,8 +1450,16 @@ export const actualizarPedido =
 
 
       pedido.empleado =
-        empleadoExiste
-          ? empleadoExiste._id
+        empleadoExiste._id;
+
+
+      pedido.repartidor =
+        repartidorExiste._id;
+
+
+      pedido.empacador =
+        empacadorExiste
+          ? empacadorExiste._id
           : null;
 
 
@@ -1416,7 +1541,25 @@ export const actualizarPedido =
             "empleado",
 
           select:
-            "codigo nombres apellidos documento",
+            "codigo nombres apellidos documento cargo estado",
+        },
+
+
+        {
+          path:
+            "repartidor",
+
+          select:
+            "codigo nombres apellidos documento cargo estado",
+        },
+
+
+        {
+          path:
+            "empacador",
+
+          select:
+            "codigo nombres apellidos documento cargo estado",
         },
 
 

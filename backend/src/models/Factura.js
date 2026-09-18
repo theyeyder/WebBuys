@@ -17,11 +17,13 @@ const facturaItemSchema =
         default: null,
       },
 
+
       nombre: {
         type: String,
         required: true,
         trim: true,
       },
+
 
       presentacionNombre: {
         type: String,
@@ -29,11 +31,13 @@ const facturaItemSchema =
         trim: true,
       },
 
+
       unidad: {
         type: String,
         default: "",
         trim: true,
       },
+
 
       cantidad: {
         type: Number,
@@ -41,11 +45,13 @@ const facturaItemSchema =
         min: 0,
       },
 
+
       precioAplicado: {
         type: Number,
         required: true,
         min: 0,
       },
+
 
       subtotal: {
         type: Number,
@@ -143,20 +149,60 @@ const facturaSchema =
 
 
       /* -----------------------------------------
-         EMPLEADO
+         PERSONAL DEL PEDIDO
       ----------------------------------------- */
+
+      /* ATENDIDO POR */
 
       empleado: {
         type:
           mongoose.Schema.Types.ObjectId,
 
-        ref: "Usuario",
+        ref: "Empleado",
 
         default: null,
       },
 
 
       empleadoNombre: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+
+      /* REPARTIDOR */
+
+      repartidor: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "Empleado",
+
+        default: null,
+      },
+
+
+      repartidorNombre: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+
+      /* EMPACADOR - OPCIONAL */
+
+      empacador: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "Empleado",
+
+        default: null,
+      },
+
+
+      empacadorNombre: {
         type: String,
         default: "",
         trim: true,
@@ -241,9 +287,11 @@ const facturaSchema =
 
         default: "Emitida",
       },
+
+
       /* -----------------------------------------
-   ANULACIÓN
------------------------------------------ */
+         ANULACIÓN
+      ----------------------------------------- */
 
       motivoAnulacion: {
         type: String,
@@ -251,15 +299,18 @@ const facturaSchema =
         trim: true,
       },
 
+
       fechaAnulacion: {
         type: Date,
         default: null,
       },
 
+
       fechaReversion: {
         type: Date,
         default: null,
       },
+
 
       /* -----------------------------------------
          OBSERVACIONES
@@ -316,6 +367,18 @@ facturaSchema.index({
 
 facturaSchema.index({
   empleado: 1,
+  createdAt: -1,
+});
+
+
+facturaSchema.index({
+  repartidor: 1,
+  createdAt: -1,
+});
+
+
+facturaSchema.index({
+  empacador: 1,
   createdAt: -1,
 });
 
