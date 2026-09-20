@@ -10,6 +10,7 @@ import categoriasIcon from "../assets/icons/categorias.png";
 import productosIcon from "../assets/icons/productos.png";
 import pedidosIcon from "../assets/icons/pedidos.png";
 import facturacionIcon from "../assets/icons/facturacion.png";
+import cajaIcon from "../assets/icons/caja.png";
 import empleadosIcon from "../assets/icons/empleados.png";
 import configuracionIcon from "../assets/icons/configuracion.png";
 import modulosIcon from "../assets/icons/modulos.png";
@@ -47,6 +48,11 @@ const MODULOS = [
     nombre: "Facturación",
     ruta: "/facturacion",
     icono: facturacionIcon,
+  },
+  {
+    nombre: "Caja",
+    ruta: "/caja",
+    icono: cajaIcon,
   },
   {
     nombre: "Empleados",

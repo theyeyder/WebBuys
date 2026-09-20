@@ -44,6 +44,11 @@ const MODULOS = [
   },
 
   {
+    nombre: "Caja",
+    ruta: "/caja",
+  },
+
+  {
     nombre: "Empleados",
     ruta: "/empleados",
   },
@@ -166,8 +171,9 @@ export default function ModuleSearch() {
 
 
   // =========================================================
-  // 1. CAMBIO: mostrarResultados solo depende de busqueda
+  // RESULTADOS ACTIVOS MIENTRAS HAYA TEXTO
   // =========================================================
+
   const mostrarResultados =
     busqueda.trim().length > 0;
 
@@ -196,17 +202,23 @@ export default function ModuleSearch() {
           onFocus={() =>
             setEnFoco(true)
           }
-          // =========================================================
-          // 2. CAMBIO: onChange refuerza el foco al escribir
-          // =========================================================
           onChange={(event) => {
-            const valor = event.target.value;
 
-            setBusqueda(valor);
+            const valor =
+              event.target.value;
 
-            if (valor.trim()) {
-              setEnFoco(true);
+            setBusqueda(
+              valor
+            );
+
+            if (
+              valor.trim()
+            ) {
+              setEnFoco(
+                true
+              );
             }
+
           }}
           placeholder=""
           aria-label="Buscar módulo o submódulo"
@@ -217,12 +229,16 @@ export default function ModuleSearch() {
           <button
             type="button"
             className="module-search-global-clear"
-            // =========================================================
-            // 3. CAMBIO: botón limpiar mantiene el foco
-            // =========================================================
             onClick={() => {
-              setBusqueda("");
-              setEnFoco(true);
+
+              setBusqueda(
+                ""
+              );
+
+              setEnFoco(
+                true
+              );
+
             }}
             aria-label="Limpiar búsqueda"
           >
@@ -256,11 +272,13 @@ export default function ModuleSearch() {
                   key={resultado.ruta}
                   className="module-search-result"
                   onMouseDown={(event) => {
+
                     event.preventDefault();
 
                     navegar(
                       resultado.ruta
                     );
+
                   }}
                 >
 

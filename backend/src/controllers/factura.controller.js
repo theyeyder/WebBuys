@@ -1,6 +1,8 @@
 import Factura from "../models/Factura.js";
 import Pedido from "../models/Pedido.js";
 import Consecutivo from "../models/Consecutivo.js";
+import Caja from "../models/Caja.js";
+import MovimientoCaja from "../models/MovimientoCaja.js";
 
 import {
   generarConsecutivo,
@@ -34,6 +36,424 @@ function obtenerNombrePersonal(
     .filter(Boolean)
     .join(" ")
     .trim();
+
+}
+
+
+
+/* =========================================
+   UTILIDADES DE CAJA
+   LA VENTA NACE DEL PEDIDO ENTREGADO.
+   LA FACTURA SOLO COMPLEMENTA EL REGISTRO.
+========================================= */
+
+function usuarioActualFactura(
+  req
+) {
+
+  return (
+    req.usuario?._id ||
+    req.user?._id ||
+    null
+  );
+
+}
+
+
+function nombreClientePedidoCaja(
+  pedido
+) {
+
+  return (
+    pedido?.clienteNombre ||
+    pedido?.clienteRazonSocial ||
+    pedido?.cliente?.nombre ||
+    pedido?.cliente?.razonSocial ||
+    "Cliente"
+  );
+
+}
+
+
+async function obtenerMovimientoPedidoCaja(
+  pedidoId
+) {
+
+  if (!pedidoId) {
+    return null;
+  }
+
+
+  return MovimientoCaja
+    .findOne({
+      $or: [
+        {
+          pedido:
+            pedidoId,
+        },
+        {
+          claveUnica:
+            `PEDIDO:${pedidoId}`,
+        },
+      ],
+    })
+    .populate(
+      "caja",
+      "codigo estado"
+    );
+
+}
+
+
+async function sincronizarFacturaMovimientoCaja({
+  factura,
+  pedido,
+  usuarioId = null,
+}) {
+
+  if (
+    !factura ||
+    !pedido
+  ) {
+    return null;
+  }
+
+
+  let movimiento =
+    await obtenerMovimientoPedidoCaja(
+      pedido._id
+    );
+
+
+  /*
+    Flujo normal:
+    el pedido ya entró a Caja cuando se marcó
+    como Entregado. Solo agregamos el consecutivo
+    de la factura al mismo movimiento.
+  */
+  if (movimiento) {
+
+    movimiento.factura =
+      factura._id;
+
+    movimiento.facturaCodigo =
+      factura.codigo ||
+      "";
+
+    movimiento.observacion =
+      "Factura generada";
+
+
+    if (
+      usuarioId &&
+      !movimiento.usuario
+    ) {
+      movimiento.usuario =
+        usuarioId;
+    }
+
+
+    await movimiento.save();
+
+
+    return movimiento;
+
+  }
+
+
+  /*
+    Compatibilidad con pedidos antiguos que ya estaban
+    Entregados antes de instalar esta nueva Caja.
+    Solo se crea el movimiento si actualmente hay una
+    caja abierta. La factura NO exige abrir caja.
+  */
+  if (
+    pedido.estado !==
+    "Entregado"
+  ) {
+    return null;
+  }
+
+
+  const caja =
+    await Caja.findOne({
+      estado: "Abierta",
+    });
+
+
+  if (!caja) {
+    return null;
+  }
+
+
+  const valor =
+    Number(
+      pedido.total ||
+      factura.total ||
+      0
+    );
+
+
+  if (
+    !Number.isFinite(
+      valor
+    ) ||
+    valor <= 0
+  ) {
+    return null;
+  }
+
+
+  const claveUnica =
+    `PEDIDO:${pedido._id}`;
+
+
+  movimiento =
+    await MovimientoCaja
+      .findOneAndUpdate(
+        {
+          claveUnica,
+        },
+
+        {
+          $set: {
+            caja:
+              caja._id,
+
+            tipo:
+              "Ingreso",
+
+            origen:
+              "Pedido",
+
+            concepto:
+              `Pedido entregado - ${pedido.codigo}`,
+
+            valor,
+
+            pedido:
+              pedido._id,
+
+            pedidoCodigo:
+              pedido.codigo ||
+              "",
+
+            cliente:
+              pedido.cliente?._id ||
+              pedido.cliente ||
+              null,
+
+            clienteNombre:
+              nombreClientePedidoCaja(
+                pedido
+              ),
+
+            metodoPago:
+              pedido.metodoPago ||
+              factura.metodoPago ||
+              "Efectivo",
+
+            afectaEfectivo:
+              (
+                pedido.metodoPago ||
+                factura.metodoPago ||
+                "Efectivo"
+              ) ===
+              "Efectivo",
+
+            factura:
+              factura._id,
+
+            facturaCodigo:
+              factura.codigo ||
+              "",
+
+            observacion:
+              "Factura generada",
+
+            usuario:
+              usuarioId,
+
+            estado:
+              "Activo",
+
+            claveUnica,
+          },
+        },
+
+        {
+          new: true,
+          upsert: true,
+          setDefaultsOnInsert: true,
+        }
+      );
+
+
+  return movimiento;
+
+}
+
+
+async function quitarFacturaMovimientoCaja(
+  factura
+) {
+
+  if (
+    !factura?.pedido
+  ) {
+    return null;
+  }
+
+
+  const movimiento =
+    await obtenerMovimientoPedidoCaja(
+      factura.pedido
+    );
+
+
+  if (!movimiento) {
+    return null;
+  }
+
+
+  if (
+    movimiento.factura &&
+    String(
+      movimiento.factura
+    ) !==
+    String(
+      factura._id
+    )
+  ) {
+
+    return movimiento;
+
+  }
+
+
+  movimiento.factura =
+    null;
+
+  movimiento.facturaCodigo =
+    "";
+
+  movimiento.observacion =
+    "Pedido sin factura generada";
+
+
+  await movimiento.save();
+
+
+  return movimiento;
+
+}
+
+
+async function sincronizarMetodoPagoCaja({
+  factura,
+  metodoPago,
+}) {
+
+  const metodosValidos = [
+    "Efectivo",
+    "Transferencia",
+    "Crédito",
+  ];
+
+
+  if (
+    !metodosValidos.includes(
+      metodoPago
+    )
+  ) {
+
+    const error =
+      new Error(
+        "El tipo de pago seleccionado no es válido."
+      );
+
+    error.statusCode =
+      400;
+
+    throw error;
+
+  }
+
+
+  const pedido =
+    await Pedido.findById(
+      factura.pedido
+    );
+
+
+  if (!pedido) {
+
+    const error =
+      new Error(
+        "No fue posible encontrar el pedido relacionado con la factura."
+      );
+
+    error.statusCode =
+      404;
+
+    throw error;
+
+  }
+
+
+  const movimiento =
+    await obtenerMovimientoPedidoCaja(
+      pedido._id
+    );
+
+
+  /*
+    No permitimos modificar el medio de pago si
+    ya forma parte de una caja cerrada.
+  */
+  if (
+    movimiento?.caja?.estado ===
+      "Cerrada" &&
+    movimiento.metodoPago !==
+      metodoPago
+  ) {
+
+    const error =
+      new Error(
+        `No puede cambiar el tipo de pago porque el pedido ${pedido.codigo} ya pertenece a la caja cerrada ${movimiento.caja.codigo}.`
+      );
+
+    error.statusCode =
+      400;
+
+    throw error;
+
+  }
+
+
+  pedido.metodoPago =
+    metodoPago;
+
+
+  await pedido.save();
+
+
+  if (movimiento) {
+
+    movimiento.metodoPago =
+      metodoPago;
+
+    movimiento.afectaEfectivo =
+      metodoPago ===
+      "Efectivo";
+
+
+    await movimiento.save();
+
+  }
+
+
+  return pedido;
 
 }
 
@@ -475,6 +895,8 @@ async function crear(
     }
 
 
+
+
     /* -----------------------------------------
        GENERAR CONSECUTIVO
     ----------------------------------------- */
@@ -667,6 +1089,48 @@ async function crear(
 
       });
 
+    /* -----------------------------------------
+       ACTUALIZAR EL MISMO REGISTRO DE CAJA
+       DEL PEDIDO. NO SUMA LA VENTA OTRA VEZ.
+    ----------------------------------------- */
+
+    try {
+
+      await sincronizarFacturaMovimientoCaja({
+
+        factura,
+
+        pedido,
+
+        usuarioId:
+          usuarioActualFactura(
+            req
+          ),
+
+      });
+
+
+    } catch (
+      errorCaja
+    ) {
+
+      /*
+        Si falla la asociación con Caja,
+        eliminamos la factura recién creada
+        para mantener consistencia.
+      */
+
+      await Factura.findByIdAndDelete(
+        factura._id
+      );
+
+      throw errorCaja;
+
+    }
+
+
+
+
 
     /* -----------------------------------------
        DEVOLVER FACTURA COMPLETA
@@ -795,8 +1259,20 @@ async function actualizar(
 
     if (
       req.body.metodoPago !==
-      undefined
+      undefined &&
+      req.body.metodoPago !==
+      factura.metodoPago
     ) {
+
+      await sincronizarMetodoPagoCaja({
+
+        factura,
+
+        metodoPago:
+          req.body.metodoPago,
+
+      });
+
 
       factura.metodoPago =
         req.body.metodoPago;
@@ -808,6 +1284,28 @@ async function actualizar(
       req.body.estado !==
       undefined
     ) {
+
+      /*
+        La anulación debe hacerse por el endpoint
+        específico para que Caja y Facturación
+        siempre queden sincronizadas.
+      */
+      if (
+        req.body.estado ===
+          "Anulada" &&
+        factura.estado !==
+          "Anulada"
+      ) {
+
+        return res.status(
+          400
+        ).json({
+          mensaje:
+            "Para anular una factura utilice la opción Anular.",
+        });
+
+      }
+
 
       factura.estado =
         req.body.estado;
@@ -829,6 +1327,41 @@ async function actualizar(
     await factura.save();
 
 
+    if (
+      factura.estado !==
+      "Anulada"
+    ) {
+
+      const pedido =
+        await Pedido.findById(
+          factura.pedido
+        )
+          .populate(
+            "cliente",
+            "codigo nombre razonSocial documento telefono"
+          );
+
+
+      if (pedido) {
+
+        await sincronizarFacturaMovimientoCaja({
+
+          factura,
+
+          pedido,
+
+          usuarioId:
+            usuarioActualFactura(
+              req
+            ),
+
+        });
+
+      }
+
+    }
+
+
     const facturaActualizada =
       await Factura.findById(
         factura._id
@@ -836,7 +1369,7 @@ async function actualizar(
 
         .populate(
           "pedido",
-          "codigo estado fechaEntrega"
+          "codigo estado fechaEntrega metodoPago"
         )
 
         .populate(
@@ -873,6 +1406,7 @@ async function actualizar(
 
 
     return res.status(
+      error?.statusCode ||
       500
     ).json({
       mensaje:
@@ -914,12 +1448,21 @@ async function eliminar(
     }
 
 
+    /*
+      La venta del pedido permanece en Caja.
+      Solo retiramos la referencia a la factura.
+    */
+    await quitarFacturaMovimientoCaja(
+      factura
+    );
+
+
     await factura.deleteOne();
 
 
     return res.json({
       mensaje:
-        "Factura eliminada correctamente.",
+        "Factura eliminada correctamente. El pedido continúa registrado en Caja.",
     });
 
   } catch (error) {
@@ -934,6 +1477,7 @@ async function eliminar(
       500
     ).json({
       mensaje:
+        error.message ||
         "Error al eliminar la factura.",
     });
 
@@ -1006,6 +1550,15 @@ async function anular(
     }
 
 
+    /*
+      IMPORTANTE:
+      La factura es opcional.
+
+      Anularla NO revierte la venta de Caja,
+      porque la venta corresponde al pedido
+      que ya fue Entregado.
+    */
+
     factura.estado =
       "Anulada";
 
@@ -1025,9 +1578,14 @@ async function anular(
     await factura.save();
 
 
+    await quitarFacturaMovimientoCaja(
+      factura
+    );
+
+
     return res.json({
       mensaje:
-        "Factura anulada correctamente.",
+        "Factura anulada correctamente. El pedido continúa registrado en Caja sin factura activa.",
 
       factura,
     });
@@ -1045,6 +1603,7 @@ async function anular(
       500
     ).json({
       mensaje:
+        error.message ||
         "Error al anular la factura.",
     });
 

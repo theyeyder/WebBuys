@@ -1,0 +1,5772 @@
+/* =========================================================
+   CAJA - WEBBUYS
+   Estilo visual unificado con los módulos principales
+   ========================================================= */
+
+.webbuys-page:has(.caja-page) {
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+}
+
+
+.caja-page {
+  --caja-primary: #0f766e;
+  --caja-primary-2: #159a75;
+  --caja-accent: #20afb2;
+
+  --caja-success: #138a5b;
+  --caja-success-soft: #e9f8f0;
+
+  --caja-danger: #bb3b35;
+  --caja-danger-soft: #fff0ee;
+
+  --caja-warning: #b87918;
+  --caja-warning-soft: #fff6df;
+
+  --caja-ink: #1f2e29;
+  --caja-muted: #6d7c76;
+
+  --caja-line: #dfe8e4;
+  --caja-line-soft: #edf2f0;
+
+  --caja-bg: #f4f7f6;
+  --caja-card: #ffffff;
+
+  position: relative;
+
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+
+  margin: 0;
+  padding: 0 0 72px;
+
+  box-sizing: border-box;
+
+  overflow-x: clip;
+  overflow-y: visible;
+
+  background:
+    radial-gradient(
+      circle at 12% 7%,
+      rgba(32, 175, 178, 0.08),
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at 88% 15%,
+      rgba(21, 154, 117, 0.06),
+      transparent 24%
+    ),
+    linear-gradient(
+      180deg,
+      #f9fbfa 0%,
+      var(--caja-bg) 100%
+    );
+
+  color: var(--caja-ink);
+}
+
+
+/* =========================================================
+   CABECERA PRINCIPAL FIJA
+========================================================= */
+
+.caja-header {
+  position: -webkit-sticky;
+  position: sticky;
+
+  top: 0;
+
+  z-index: 7000;
+
+  width: 100%;
+  min-height: 70px;
+
+  margin: 0;
+
+  padding:
+    10px
+    40px
+    10px
+    70px;
+
+  box-sizing: border-box;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(170px, 1fr)
+    max-content;
+
+  align-items: center;
+
+  column-gap: 18px;
+  row-gap: 8px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0e6e67 0%,
+      #14906f 50%,
+      #1da6a9 100%
+    );
+
+  color: #ffffff;
+
+  border-bottom:
+    1px solid
+    rgba(255, 255, 255, 0.20);
+
+  box-shadow:
+    0 7px 22px
+    rgba(15, 23, 42, 0.16);
+
+  overflow: visible;
+}
+
+
+.caja-header::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: 1px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.50),
+      transparent
+    );
+
+  pointer-events: none;
+}
+
+
+.caja-header-left {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+}
+
+
+.caja-title-info {
+  min-width: 0;
+}
+
+
+.caja-header h1 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 24px;
+  font-weight: 850;
+
+  line-height: 1.05;
+
+  letter-spacing: -0.02em;
+
+  white-space: nowrap;
+}
+
+
+.caja-header p {
+  margin: 4px 0 0;
+
+  color:
+    rgba(255, 255, 255, 0.80);
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+
+.caja-header-actions {
+  min-width: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  flex-wrap: nowrap;
+
+  overflow: visible;
+}
+
+
+/* =========================================================
+   CONTENIDO GENERAL
+========================================================= */
+
+.caja-content {
+  width:
+    min(
+      calc(100% - 36px),
+      1480px
+    );
+
+  margin:
+    22px
+    auto
+    0;
+
+  display: grid;
+  gap: 18px;
+}
+
+
+/* =========================================================
+   BOTONES
+========================================================= */
+
+.caja-btn {
+  min-height: 42px;
+
+  padding:
+    0
+    16px;
+
+  border:
+    1px solid
+    transparent;
+
+  border-radius: 11px;
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 850;
+
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease,
+    opacity 0.16s ease;
+}
+
+
+.caja-btn:hover:not(:disabled) {
+  transform:
+    translateY(-1px);
+}
+
+
+.caja-btn:active:not(:disabled) {
+  transform:
+    translateY(0);
+}
+
+
+.caja-btn:disabled {
+  opacity: 0.50;
+  cursor: not-allowed;
+}
+
+
+.caja-btn-primary {
+  background:
+    linear-gradient(
+      135deg,
+      var(--caja-primary),
+      var(--caja-primary-2)
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 8px 20px
+    rgba(15, 118, 110, 0.20);
+}
+
+
+.caja-btn-primary:hover:not(:disabled) {
+  box-shadow:
+    0 11px 24px
+    rgba(15, 118, 110, 0.26);
+}
+
+
+.caja-btn-secondary {
+  border-color:
+    var(--caja-line);
+
+  background: #f7f9f8;
+  color: #40504a;
+}
+
+
+.caja-btn-secondary:hover:not(:disabled) {
+  background: #eef4f1;
+  border-color: #cbd8d2;
+}
+
+
+.caja-btn-income {
+  border-color: #c8ead9;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f0fbf5,
+      #e6f7ee
+    );
+
+  color: #11784d;
+}
+
+
+.caja-btn-expense {
+  border-color: #f0d0cc;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fff7f6,
+      #ffefed
+    );
+
+  color: #ab3731;
+}
+
+
+.caja-btn-close {
+  border-color: #d85d57;
+
+  background:
+    linear-gradient(
+      135deg,
+      #be3b35,
+      #a92e29
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 7px 18px
+    rgba(184, 47, 42, 0.20);
+}
+
+
+/* Botones dentro de la cabecera */
+
+.caja-header-actions .caja-btn {
+  min-height: 39px;
+
+  padding:
+    0
+    13px;
+
+  border-color:
+    rgba(255, 255, 255, 0.30);
+
+  box-shadow:
+    0 4px 12px
+    rgba(0, 0, 0, 0.08);
+
+  backdrop-filter:
+    blur(6px);
+}
+
+
+.caja-header-actions
+.caja-btn-income {
+  background:
+    rgba(255, 255, 255, 0.94);
+
+  color: #0e7455;
+}
+
+
+.caja-header-actions
+.caja-btn-expense {
+  background:
+    rgba(255, 255, 255, 0.94);
+
+  color: #a83531;
+}
+
+
+.caja-header-actions
+.caja-btn-close {
+  background:
+    linear-gradient(
+      135deg,
+      #c8423c,
+      #ad302b
+    );
+
+  color: #ffffff;
+}
+
+
+/* =========================================================
+   RESUMEN
+========================================================= */
+
+.caja-summary-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+
+  gap: 14px;
+}
+
+
+.caja-summary-card {
+  position: relative;
+
+  min-height: 122px;
+
+  padding:
+    19px
+    20px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  overflow: hidden;
+
+  background:
+    rgba(255, 255, 255, 0.95);
+
+  border:
+    1px solid
+    var(--caja-line);
+
+  border-radius: 17px;
+
+  box-shadow:
+    0 8px 24px
+    rgba(31, 46, 41, 0.055);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+
+.caja-summary-card::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 3px;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--caja-primary),
+      var(--caja-accent)
+    );
+}
+
+
+.caja-summary-card::after {
+  content: "";
+
+  position: absolute;
+
+  width: 90px;
+  height: 90px;
+
+  right: -38px;
+  bottom: -42px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(15, 118, 110, 0.055);
+
+  pointer-events: none;
+}
+
+
+.caja-summary-card:hover {
+  transform:
+    translateY(-2px);
+
+  border-color: #cbdad4;
+
+  box-shadow:
+    0 14px 32px
+    rgba(31, 46, 41, 0.09);
+}
+
+
+.caja-summary-card span {
+  position: relative;
+  z-index: 1;
+
+  color: #6f7f78;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+
+.caja-summary-card strong {
+  position: relative;
+  z-index: 1;
+
+  color: #26342f;
+
+  font-size: clamp(
+    22px,
+    2vw,
+    28px
+  );
+
+  font-weight: 900;
+
+  line-height: 1.05;
+
+  letter-spacing: -0.03em;
+
+  word-break: break-word;
+}
+
+
+/* Saldo inicial */
+
+.caja-summary-card:nth-child(1)::before {
+  background:
+    linear-gradient(
+      90deg,
+      #75847d,
+      #a7b4ae
+    );
+}
+
+
+/* Ingresos */
+
+.caja-summary-card:nth-child(2)::before {
+  background:
+    linear-gradient(
+      90deg,
+      #159a68,
+      #37bd86
+    );
+}
+
+
+.caja-summary-card:nth-child(2)::after {
+  background:
+    rgba(21, 154, 104, 0.07);
+}
+
+
+.caja-summary-card:nth-child(2) strong {
+  color: #11784d;
+}
+
+
+/* Egresos */
+
+.caja-summary-card:nth-child(3)::before {
+  background:
+    linear-gradient(
+      90deg,
+      #c54a43,
+      #e16b63
+    );
+}
+
+
+.caja-summary-card:nth-child(3)::after {
+  background:
+    rgba(197, 74, 67, 0.065);
+}
+
+
+.caja-summary-card:nth-child(3) strong {
+  color: #ad3933;
+}
+
+
+/* Saldo actual */
+
+.caja-summary-main {
+  border-color: #0e6f69;
+
+  background:
+    linear-gradient(
+      145deg,
+      #183b36 0%,
+      #114f48 50%,
+      #0f766e 100%
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 13px 30px
+    rgba(15, 118, 110, 0.20);
+}
+
+
+.caja-summary-main::before {
+  background:
+    linear-gradient(
+      90deg,
+      #6ee7c1,
+      #78e8e8
+    );
+}
+
+
+.caja-summary-main::after {
+  width: 130px;
+  height: 130px;
+
+  right: -45px;
+  bottom: -70px;
+
+  background:
+    rgba(255, 255, 255, 0.08);
+}
+
+
+.caja-summary-main span,
+.caja-summary-main strong {
+  color: #ffffff;
+}
+
+
+.caja-summary-main span {
+  opacity: 0.76;
+}
+
+
+/* =========================================================
+   INFORMACIÓN DE SESIÓN / ÚLTIMO CIERRE
+========================================================= */
+
+.caja-session-info,
+.caja-last-close {
+  position: relative;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 0;
+
+  padding:
+    0;
+
+  overflow: hidden;
+
+  background:
+    rgba(255, 255, 255, 0.95);
+
+  border:
+    1px solid
+    var(--caja-line);
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 7px 22px
+    rgba(31, 46, 41, 0.045);
+}
+
+
+.caja-last-close {
+  grid-template-columns:
+    repeat(
+      5,
+      minmax(0, 1fr)
+    );
+}
+
+
+.caja-session-info > div,
+.caja-last-close > div {
+  position: relative;
+
+  display: grid;
+  gap: 5px;
+
+  min-width: 0;
+
+  padding:
+    15px
+    18px;
+}
+
+
+.caja-session-info > div:not(:last-child)::after,
+.caja-last-close > div:not(:last-child)::after {
+  content: "";
+
+  position: absolute;
+
+  top: 14px;
+  right: 0;
+  bottom: 14px;
+
+  width: 1px;
+
+  background:
+    var(--caja-line-soft);
+}
+
+
+.caja-session-info span,
+.caja-last-close span {
+  color: #75847e;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+
+.caja-session-info strong,
+.caja-last-close strong {
+  min-width: 0;
+
+  color: #293732;
+
+  font-size: 14px;
+  font-weight: 850;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   APERTURA DE CAJA
+========================================================= */
+
+.caja-open-card {
+  position: relative;
+
+  max-width: 980px;
+
+  margin:
+    34px
+    auto
+    0;
+
+  padding:
+    30px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.1fr)
+    minmax(330px, 0.9fr);
+
+  gap: 34px;
+
+  align-items: center;
+
+  overflow: hidden;
+
+  background:
+    rgba(255, 255, 255, 0.97);
+
+  border:
+    1px solid
+    var(--caja-line);
+
+  border-radius: 22px;
+
+  box-shadow:
+    0 18px 48px
+    rgba(31, 46, 41, 0.09);
+}
+
+
+.caja-open-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 280px;
+  height: 280px;
+
+  left: -130px;
+  bottom: -150px;
+
+  border-radius: 999px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(32, 175, 178, 0.12),
+      rgba(32, 175, 178, 0)
+    );
+
+  pointer-events: none;
+}
+
+
+.caja-open-info {
+  position: relative;
+  z-index: 1;
+}
+
+
+.caja-open-info h2 {
+  margin:
+    13px
+    0
+    9px;
+
+  color: #22312c;
+
+  font-size: 29px;
+  font-weight: 900;
+
+  letter-spacing: -0.025em;
+}
+
+
+.caja-open-info p {
+  margin: 0;
+
+  max-width: 560px;
+
+  color: var(--caja-muted);
+
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+
+.caja-open-badge {
+  display: inline-flex;
+
+  padding:
+    7px
+    11px;
+
+  border:
+    1px solid #f0d0cd;
+
+  border-radius: 999px;
+
+  background:
+    var(--caja-danger-soft);
+
+  color: #a43d36;
+
+  font-size: 12px;
+  font-weight: 850;
+}
+
+
+.caja-open-form {
+  position: relative;
+  z-index: 1;
+
+  display: grid;
+  gap: 14px;
+
+  padding: 20px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fbfcfc,
+      #f7faf8
+    );
+
+  border:
+    1px solid
+    #e4ebe8;
+
+  border-radius: 16px;
+}
+
+
+/* =========================================================
+   CAMPOS
+========================================================= */
+
+.caja-open-form label,
+.caja-modal label {
+  display: grid;
+  gap: 7px;
+}
+
+
+.caja-open-form label > span,
+.caja-modal label > span {
+  color: #4a5953;
+
+  font-size: 12px;
+  font-weight: 850;
+}
+
+
+.caja-open-form input,
+.caja-modal input,
+.caja-modal select,
+.caja-modal textarea,
+.caja-movement-tools select,
+.caja-history-filters input {
+  width: 100%;
+
+  min-height: 43px;
+
+  padding:
+    9px
+    11px;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    #ccd8d3;
+
+  border-radius: 10px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #26342f;
+
+  font: inherit;
+  font-size: 13px;
+
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+
+.caja-modal textarea {
+  resize: vertical;
+
+  min-height: 92px;
+}
+
+
+.caja-open-form input:hover,
+.caja-modal input:hover,
+.caja-modal select:hover,
+.caja-modal textarea:hover,
+.caja-movement-tools select:hover,
+.caja-history-filters input:hover {
+  border-color: #b6c8c0;
+}
+
+
+.caja-open-form input:focus,
+.caja-modal input:focus,
+.caja-modal select:focus,
+.caja-modal textarea:focus,
+.caja-movement-tools select:focus,
+.caja-history-filters input:focus {
+  border-color:
+    var(--caja-primary-2);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(21, 154, 117, 0.11);
+}
+
+
+/* =========================================================
+   TARJETAS DE MOVIMIENTOS / HISTORIAL
+========================================================= */
+
+.caja-movements-card,
+.caja-history-card {
+  overflow: hidden;
+
+  background:
+    rgba(255, 255, 255, 0.96);
+
+  border:
+    1px solid
+    var(--caja-line);
+
+  border-radius: 17px;
+
+  box-shadow:
+    0 8px 25px
+    rgba(31, 46, 41, 0.045);
+}
+
+
+.caja-section-header {
+  min-height: 66px;
+
+  padding:
+    15px
+    18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+
+  border-bottom:
+    1px solid
+    var(--caja-line-soft);
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #fbfcfc
+    );
+}
+
+
+.caja-section-header h2 {
+  margin: 0;
+
+  color: #26352f;
+
+  font-size: 18px;
+  font-weight: 900;
+
+  letter-spacing: -0.015em;
+}
+
+
+.caja-section-header p {
+  margin:
+    4px
+    0
+    0;
+
+  color: #7b8983;
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+
+.caja-count {
+  min-width: 34px;
+  height: 34px;
+
+  padding:
+    0
+    9px;
+
+  display: grid;
+  place-items: center;
+
+  border:
+    1px solid
+    #d9e3df;
+
+  border-radius: 999px;
+
+  background: #f3f6f5;
+
+  color: #46554f;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   FILTRO DE MOVIMIENTOS
+========================================================= */
+
+.caja-movement-tools {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+}
+
+
+.caja-movement-tools select {
+  width: auto;
+
+  min-width: 132px;
+  min-height: 36px;
+
+  padding:
+    6px
+    33px
+    6px
+    10px;
+
+  color: #3b4b45;
+
+  font-weight: 750;
+}
+
+
+/* =========================================================
+   TABLAS
+========================================================= */
+
+.caja-table-wrap {
+  width: 100%;
+
+  overflow:
+    auto;
+}
+
+
+.caja-table {
+  width: 100%;
+
+  min-width: 900px;
+
+  border-collapse:
+    separate;
+
+  border-spacing: 0;
+}
+
+
+.caja-table thead {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 2;
+}
+
+
+.caja-table th {
+  padding:
+    11px
+    14px;
+
+  background: #f6f9f7;
+
+  color: #697771;
+
+  border-bottom:
+    1px solid
+    #dfe8e4;
+
+  text-align: left;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+
+  white-space: nowrap;
+}
+
+
+.caja-table td {
+  padding:
+    12px
+    14px;
+
+  color: #33413c;
+
+  border-bottom:
+    1px solid
+    #edf2f0;
+
+  vertical-align: middle;
+
+  font-size: 13px;
+}
+
+
+.caja-table tbody tr {
+  transition:
+    background 0.15s ease;
+}
+
+
+.caja-table tbody tr:hover {
+  background: #f8fbfa;
+}
+
+
+.caja-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+
+.caja-table td strong {
+  color: #26352f;
+}
+
+
+/* =========================================================
+   TIPO Y VALORES
+========================================================= */
+
+.caja-type {
+  display: inline-flex;
+
+  align-items: center;
+
+  min-height: 27px;
+
+  padding:
+    4px
+    9px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+
+.caja-type-income {
+  border:
+    1px solid
+    #c6ead8;
+
+  background:
+    var(--caja-success-soft);
+
+  color: #11784d;
+}
+
+
+.caja-type-expense {
+  border:
+    1px solid
+    #f0cfcc;
+
+  background:
+    var(--caja-danger-soft);
+
+  color: #aa3933;
+}
+
+
+.caja-value-income {
+  color: #117b50;
+
+  font-weight: 900;
+
+  white-space: nowrap;
+}
+
+
+.caja-value-expense {
+  color: #b13933;
+
+  font-weight: 900;
+
+  white-space: nowrap;
+}
+
+
+.caja-empty {
+  padding:
+    36px
+    20px !important;
+
+  color: #81908a !important;
+
+  text-align: center !important;
+}
+
+
+/* =========================================================
+   HISTORIAL
+========================================================= */
+
+.caja-history-header {
+  align-items: flex-end;
+}
+
+
+.caja-history-filters {
+  display: flex;
+  align-items: flex-end;
+
+  flex-wrap: wrap;
+
+  gap: 9px;
+}
+
+
+
+
+.caja-history-table {
+  min-width: 1250px;
+}
+
+
+/* =========================================================
+   ESTADOS
+========================================================= */
+
+.caja-status {
+  display: inline-flex;
+
+  align-items: center;
+
+  min-height: 27px;
+
+  padding:
+    4px
+    9px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+
+.caja-status-open {
+  border:
+    1px solid
+    #c8ead9;
+
+  background:
+    var(--caja-success-soft);
+
+  color: #11784d;
+}
+
+
+.caja-status-closed {
+  border:
+    1px solid
+    #dce3e0;
+
+  background:
+    #f1f4f3;
+
+  color: #53615b;
+}
+
+
+/* =========================================================
+   ACCIONES DE FILA
+========================================================= */
+
+.caja-row-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+}
+
+
+.caja-icon-btn {
+  width: 34px;
+  height: 34px;
+
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border:
+    1px solid
+    #d8e2de;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+
+.caja-icon-btn:hover {
+  transform:
+    translateY(-1px);
+
+  border-color: #bdd0c8;
+
+  background: #f4f9f6;
+
+  box-shadow:
+    0 5px 12px
+    rgba(31, 46, 41, 0.07);
+}
+
+
+/* =========================================================
+   MODALES
+========================================================= */
+
+.caja-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 12000;
+
+  padding: 20px;
+
+  display: grid;
+  place-items: center;
+
+  background:
+    rgba(15, 26, 22, 0.53);
+
+  backdrop-filter:
+    blur(6px);
+}
+
+
+.caja-modal {
+  width:
+    min(
+      520px,
+      100%
+    );
+
+  max-height:
+    calc(100vh - 40px);
+
+  overflow: auto;
+
+  display: grid;
+  gap: 16px;
+
+  padding: 22px;
+
+  background:
+    #ffffff;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.80);
+
+  border-radius: 19px;
+
+  box-shadow:
+    0 26px 80px
+    rgba(0, 0, 0, 0.24);
+}
+
+
+.caja-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding-bottom: 4px;
+}
+
+
+.caja-modal-header span {
+  color: #7c8a84;
+
+  font-size: 11px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+}
+
+
+.caja-modal-header h3 {
+  margin:
+    3px
+    0
+    0;
+
+  color: #26352f;
+
+  font-size: 21px;
+  font-weight: 900;
+
+  letter-spacing: -0.02em;
+}
+
+
+.caja-modal-x {
+  width: 36px;
+  height: 36px;
+
+  display: grid;
+  place-items: center;
+
+  flex:
+    0
+    0
+    36px;
+
+  padding: 0;
+
+  border:
+    1px solid
+    #dfe6e3;
+
+  border-radius: 9px;
+
+  background: #f4f7f6;
+
+  color: #40504a;
+
+  font-size: 23px;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.caja-modal-x:hover {
+  background: #edf2f0;
+
+  transform:
+    scale(1.03);
+}
+
+
+.caja-modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 9px;
+
+  padding-top: 4px;
+}
+
+
+/* =========================================================
+   CIERRE
+========================================================= */
+
+.caja-close-summary {
+  padding:
+    14px
+    15px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  border:
+    1px solid
+    #e1e8e5;
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f8faf9,
+      #f4f7f5
+    );
+}
+
+
+.caja-close-summary span {
+  color: #697771;
+
+  font-size: 12px;
+  font-weight: 750;
+}
+
+
+.caja-close-summary strong {
+  color: #283731;
+
+  font-size: 19px;
+  font-weight: 900;
+}
+
+
+.caja-diferencia-ok {
+  color: #148255 !important;
+}
+
+
+.caja-diferencia-sobra {
+  color: #b07313 !important;
+}
+
+
+.caja-diferencia-falta {
+  color: #b82f2a !important;
+}
+
+
+/* =========================================================
+   DETALLE HISTÓRICO
+========================================================= */
+
+.caja-detail-modal {
+  width:
+    min(
+      950px,
+      100%
+    );
+}
+
+
+.caja-detail-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 10px;
+}
+
+
+.caja-detail-grid > div {
+  position: relative;
+
+  overflow: hidden;
+
+  display: grid;
+  gap: 5px;
+
+  padding:
+    13px
+    14px;
+
+  border:
+    1px solid
+    #dfe7e3;
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fbfcfc,
+      #f7f9f8
+    );
+}
+
+
+.caja-detail-grid > div::before {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  top: 0;
+  bottom: 0;
+
+  width: 3px;
+
+  background:
+    linear-gradient(
+      180deg,
+      var(--caja-primary),
+      var(--caja-accent)
+    );
+}
+
+
+.caja-detail-grid span {
+  color: #718079;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+.caja-detail-grid strong {
+  color: #293832;
+
+  font-size: 16px;
+  font-weight: 900;
+}
+
+
+.caja-detail-table-wrap {
+  max-height: 360px;
+
+  overflow: auto;
+
+  border:
+    1px solid
+    #e2e9e6;
+
+  border-radius: 11px;
+}
+
+
+.caja-detail-table-wrap
+.caja-table {
+  min-width: 760px;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+========================================================= */
+
+.caja-table-wrap,
+.caja-detail-table-wrap,
+.caja-modal {
+  scrollbar-width: thin;
+  scrollbar-color:
+    #b9c9c2
+    transparent;
+}
+
+
+.caja-table-wrap::-webkit-scrollbar,
+.caja-detail-table-wrap::-webkit-scrollbar,
+.caja-modal::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+
+.caja-table-wrap::-webkit-scrollbar-thumb,
+.caja-detail-table-wrap::-webkit-scrollbar-thumb,
+.caja-modal::-webkit-scrollbar-thumb {
+  background: #bfcdc7;
+
+  border-radius: 999px;
+}
+
+
+.caja-table-wrap::-webkit-scrollbar-track,
+.caja-detail-table-wrap::-webkit-scrollbar-track,
+.caja-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1120px) {
+
+  .caja-header {
+    grid-template-columns:
+      minmax(130px, 1fr)
+      max-content;
+
+    padding:
+      9px
+      13px
+      9px
+      68px;
+
+    column-gap: 10px;
+  }
+
+
+  .caja-header-actions {
+    gap: 5px;
+  }
+
+
+  .caja-header-actions .caja-btn {
+    min-height: 37px;
+
+    padding:
+      0
+      10px;
+
+    font-size: 12px;
+  }
+
+
+  .caja-summary-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+
+  .caja-last-close {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+
+
+  .caja-last-close > div:nth-child(3)::after {
+    display: none;
+  }
+
+}
+
+
+@media (max-width: 900px) {
+
+  .caja-header {
+    grid-template-columns:
+      minmax(0, 1fr);
+
+    min-height: auto;
+
+    padding:
+      9px
+      12px
+      9px
+      68px;
+
+    row-gap: 8px;
+  }
+
+
+  .caja-header-actions {
+    width: 100%;
+
+    justify-content: flex-end;
+
+    flex-wrap: wrap;
+  }
+
+
+  .caja-content {
+    width:
+      min(
+        calc(100% - 24px),
+        1480px
+      );
+
+    margin-top: 14px;
+  }
+
+
+  .caja-open-card {
+    grid-template-columns:
+      1fr;
+
+    max-width: 760px;
+
+    gap: 22px;
+  }
+
+
+  .caja-session-info {
+    grid-template-columns:
+      1fr
+      1fr;
+  }
+
+
+  .caja-session-info > div:nth-child(2)::after {
+    display: none;
+  }
+
+
+  .caja-history-header {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+
+  .caja-history-filters {
+    width: 100%;
+  }
+
+}
+
+
+@media (max-width: 760px) {
+
+  .caja-summary-grid,
+  .caja-session-info,
+  .caja-last-close {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .caja-session-info > div::after,
+  .caja-last-close > div::after {
+    display: none !important;
+  }
+
+
+  .caja-session-info > div:not(:last-child),
+  .caja-last-close > div:not(:last-child) {
+    border-bottom:
+      1px solid
+      var(--caja-line-soft);
+  }
+
+
+  .caja-section-header {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+
+  .caja-movement-tools {
+    width: 100%;
+
+    justify-content: space-between;
+  }
+
+
+  .caja-history-filters {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+
+  .caja-date-filter,
+  .caja-date-trigger,
+  .caja-history-filters .caja-btn {
+    width: 100%;
+  }
+
+
+  .caja-detail-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .caja-modal-actions {
+    flex-direction:
+      column-reverse;
+  }
+
+
+  .caja-modal-actions .caja-btn {
+    width: 100%;
+  }
+
+}
+
+
+@media (max-width: 560px) {
+
+  .caja-header {
+    padding:
+      9px
+      10px
+      9px
+      62px;
+  }
+
+
+  .caja-header h1 {
+    font-size: 20px;
+  }
+
+
+  .caja-header p {
+    display: none;
+  }
+
+
+  .caja-header-actions {
+    justify-content: flex-start;
+  }
+
+
+  .caja-header-actions .caja-btn {
+    flex:
+      1
+      1
+      calc(50% - 5px);
+  }
+
+
+  .caja-content {
+    width:
+      calc(100% - 16px);
+
+    gap: 12px;
+  }
+
+
+  .caja-summary-card {
+    min-height: 104px;
+
+    padding:
+      16px;
+  }
+
+
+  .caja-open-card {
+    margin-top: 12px;
+
+    padding: 18px;
+
+    border-radius: 17px;
+  }
+
+
+  .caja-open-form {
+    padding: 15px;
+  }
+
+
+  .caja-modal-overlay {
+    padding: 10px;
+  }
+
+
+  .caja-modal {
+    max-height:
+      calc(100vh - 20px);
+
+    padding: 17px;
+
+    border-radius: 15px;
+  }
+
+}
+
+
+/* =========================================================
+   CALENDARIO DE CAJA
+========================================================= */
+
+.caja-date-filter {
+  display: grid;
+  gap: 5px;
+}
+
+
+.caja-date-filter > span {
+  color: #74827c;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+
+.caja-date-trigger {
+  min-width: 174px;
+  min-height: 38px;
+
+  padding:
+    7px
+    11px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  border:
+    1px solid
+    #ccd8d3;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #7c8984;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+
+.caja-date-trigger:hover {
+  border-color: #a9c4b9;
+
+  background: #fbfdfc;
+}
+
+
+.caja-date-trigger:focus-visible {
+  outline: none;
+
+  border-color: #159a75;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(21, 154, 117, 0.11);
+}
+
+
+.caja-date-trigger.has-value {
+  color: #31413b;
+
+  border-color: #bdd0c8;
+
+  background: #f9fcfa;
+}
+
+
+.caja-date-trigger img {
+  width: 18px;
+  height: 18px;
+
+  flex:
+    0
+    0
+    18px;
+
+  object-fit: contain;
+
+  opacity: 0.78;
+}
+
+
+.caja-calendar-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 14000;
+
+  padding: 18px;
+
+  display: grid;
+  place-items: center;
+
+  background:
+    rgba(15, 27, 23, 0.54);
+
+  backdrop-filter:
+    blur(6px);
+}
+
+
+.caja-calendar-modal {
+  width:
+    min(
+      430px,
+      100%
+    );
+
+  overflow: hidden;
+
+  background: #ffffff;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.82);
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 28px 80px
+    rgba(0, 0, 0, 0.24);
+}
+
+
+.caja-calendar-header {
+  min-height: 72px;
+
+  padding:
+    15px
+    16px
+    14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e 0%,
+      #159a75 52%,
+      #20afb2 100%
+    );
+
+  color: #ffffff;
+}
+
+
+.caja-calendar-header > div {
+  min-width: 0;
+}
+
+
+.caja-calendar-header span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color:
+    rgba(255, 255, 255, 0.72);
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+
+.caja-calendar-header h3 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 18px;
+  font-weight: 900;
+
+  letter-spacing: -0.02em;
+}
+
+
+.caja-calendar-close {
+  width: 36px;
+  height: 36px;
+
+  flex:
+    0
+    0
+    36px;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.30);
+
+  border-radius: 10px;
+
+  background:
+    rgba(255, 255, 255, 0.14);
+
+  color: #ffffff;
+
+  font-size: 22px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+
+.caja-calendar-selected {
+  padding:
+    12px
+    14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  border-bottom:
+    1px solid
+    #e8efec;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fbfdfc,
+      #f6faf8
+    );
+}
+
+
+.caja-calendar-selected > div {
+  min-width: 0;
+
+  display: grid;
+  gap: 2px;
+}
+
+
+.caja-calendar-selected span {
+  color: #7a8983;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+
+.caja-calendar-selected strong {
+  color: #26362f;
+
+  font-size: 14px;
+  font-weight: 900;
+
+  text-transform: capitalize;
+}
+
+
+.caja-calendar-today {
+  min-height: 34px;
+
+  padding:
+    0
+    12px;
+
+  border:
+    1px solid
+    #c7ddd4;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #0f766e;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+
+.caja-calendar-nav {
+  padding:
+    13px
+    14px
+    8px;
+
+  display: grid;
+
+  grid-template-columns:
+    36px
+    minmax(0, 1fr)
+    92px
+    36px;
+
+  gap: 7px;
+
+  align-items: center;
+}
+
+
+.caja-calendar-nav select {
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+
+  padding:
+    6px
+    8px;
+
+  border:
+    1px solid
+    #d6e0dc;
+
+  border-radius: 9px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #34443e;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+
+.caja-calendar-nav select:focus {
+  border-color: #159a75;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(21, 154, 117, 0.10);
+}
+
+
+.caja-calendar-arrow {
+  width: 36px;
+  height: 36px;
+
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border:
+    1px solid
+    #d7e1dd;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #0f766e;
+
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.caja-calendar-arrow:hover {
+  transform:
+    translateY(-1px);
+
+  border-color: #b8d1c7;
+
+  background: #f2f9f6;
+}
+
+
+.caja-calendar-weekdays,
+.caja-calendar-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      7,
+      minmax(0, 1fr)
+    );
+}
+
+
+.caja-calendar-weekdays {
+  padding:
+    5px
+    14px
+    3px;
+
+  color: #7b8984;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  text-align: center;
+}
+
+
+.caja-calendar-weekdays span {
+  min-height: 24px;
+
+  display: grid;
+  place-items: center;
+}
+
+
+.caja-calendar-grid {
+  padding:
+    4px
+    14px
+    12px;
+
+  gap: 3px;
+}
+
+
+.caja-calendar-day {
+  position: relative;
+
+  aspect-ratio: 1;
+
+  min-width: 0;
+
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border:
+    1px solid
+    transparent;
+
+  border-radius: 9px;
+
+  background: transparent;
+
+  color: #33443d;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease,
+    color 0.14s ease,
+    transform 0.14s ease;
+}
+
+
+.caja-calendar-day:hover {
+  transform:
+    translateY(-1px);
+
+  background: #eef8f4;
+
+  border-color: #d1e6dd;
+}
+
+
+.caja-calendar-day.is-other-month {
+  color: #bac4c0;
+}
+
+
+.caja-calendar-day.is-in-range {
+  border-radius: 5px;
+
+  background: #e9f6f1;
+
+  color: #146c52;
+}
+
+
+.caja-calendar-day.is-range-start,
+.caja-calendar-day.is-range-end,
+.caja-calendar-day.is-selected {
+  border-color: #0f766e;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e,
+      #159a75
+    );
+
+  color: #ffffff;
+
+  font-weight: 900;
+
+  box-shadow:
+    0 5px 12px
+    rgba(15, 118, 110, 0.20);
+}
+
+
+.caja-calendar-day.is-today:not(.is-selected):not(.is-range-start):not(.is-range-end) {
+  border-color: #20afb2;
+
+  color: #0c777a;
+
+  font-weight: 900;
+}
+
+
+.caja-calendar-footer {
+  padding:
+    12px
+    14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  border-top:
+    1px solid
+    #e8efec;
+
+  background: #fbfcfc;
+}
+
+
+.caja-calendar-footer > div {
+  display: flex;
+  align-items: center;
+
+  gap: 7px;
+}
+
+
+.caja-calendar-btn {
+  min-height: 37px;
+
+  padding:
+    0
+    13px;
+
+  border:
+    1px solid
+    #d5dfdb;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #42524c;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 850;
+
+  cursor: pointer;
+}
+
+
+.caja-calendar-btn-clear {
+  color: #af3c36;
+
+  border-color: #ecd0cd;
+
+  background: #fff8f7;
+}
+
+
+.caja-calendar-btn-primary {
+  border-color: #0f766e;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e,
+      #159a75
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 6px 14px
+    rgba(15, 118, 110, 0.18);
+}
+
+
+@media (max-width: 560px) {
+
+  .caja-date-trigger {
+    min-width: 0;
+    width: 100%;
+  }
+
+
+  .caja-calendar-overlay {
+    padding: 9px;
+  }
+
+
+  .caja-calendar-modal {
+    width: 100%;
+
+    border-radius: 15px;
+  }
+
+
+  .caja-calendar-nav {
+    grid-template-columns:
+      34px
+      minmax(0, 1fr)
+      84px
+      34px;
+
+    padding-left: 10px;
+    padding-right: 10px;
+
+    gap: 5px;
+  }
+
+
+  .caja-calendar-arrow {
+    width: 34px;
+    height: 34px;
+  }
+
+
+  .caja-calendar-weekdays,
+  .caja-calendar-grid {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+
+  .caja-calendar-footer {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+
+  .caja-calendar-footer > div {
+    justify-content: flex-end;
+  }
+
+}
+
+
+/* =========================================================
+   CALENDARIO DE CAJA - ESTILO REFERENCIA
+   ========================================================= */
+
+.caja-calendar-modal {
+  width: min(392px, 100%);
+  border-radius: 22px;
+  box-shadow:
+    0 28px 72px rgba(0, 0, 0, 0.20);
+  border: 1px solid #edf2ef;
+  background: #ffffff;
+}
+
+.caja-calendar-header {
+  min-height: auto;
+  padding: 16px 18px 8px;
+  display: block;
+  text-align: center;
+  background: #ffffff;
+  color: #23353a;
+}
+
+.caja-calendar-header > div {
+  display: grid;
+  gap: 2px;
+}
+
+.caja-calendar-header span {
+  margin: 0;
+  color: #6d7f78;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.caja-calendar-header h3 {
+  margin: 0;
+  color: #23353a;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.caja-calendar-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #e5ece8;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #6d7f78;
+  box-shadow: 0 2px 8px rgba(31, 46, 41, 0.06);
+}
+
+.caja-calendar-selected {
+  padding: 0 18px 12px;
+  border-bottom: 0;
+  background: #ffffff;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.caja-calendar-selected > div {
+  display: grid;
+  gap: 2px;
+}
+
+.caja-calendar-selected span {
+  color: #8b9993;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.caja-calendar-selected strong {
+  color: #25363a;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.caja-calendar-today {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid #dce6e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #26a65a;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.caja-calendar-nav {
+  padding: 2px 16px 10px;
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 108px 32px;
+  align-items: center;
+  gap: 8px;
+}
+
+.caja-calendar-nav select {
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #d8e3dd;
+  border-radius: 11px;
+  background: #f9fbfa;
+  color: #24343a;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+}
+
+.caja-calendar-arrow {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #25a55c;
+  font-size: 26px;
+  font-weight: 900;
+  box-shadow: none;
+}
+
+.caja-calendar-arrow:hover {
+  transform: none;
+  background: #f2f8f4;
+  border-color: transparent;
+}
+
+.caja-calendar-weekdays {
+  padding: 0 16px 4px;
+  color: #25a55c;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.caja-calendar-weekdays span {
+  min-height: 28px;
+}
+
+.caja-calendar-grid {
+  padding: 0 16px 16px;
+  gap: 0;
+}
+
+.caja-calendar-day {
+  height: 40px;
+  aspect-ratio: auto;
+  border-radius: 999px;
+  color: #2f3d44;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.caja-calendar-day:hover {
+  transform: none;
+  background: #f3f8f5;
+  border-color: transparent;
+}
+
+.caja-calendar-day.is-other-month {
+  color: #c2cbc7;
+}
+
+.caja-calendar-day.is-today:not(.is-selected):not(.is-range-start):not(.is-range-end) {
+  border: 1px solid #9cdbb5;
+  color: #25a55c;
+  background: #f5fbf7;
+}
+
+.caja-calendar-day.is-in-range {
+  background: #29a95c;
+  color: #ffffff;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.caja-calendar-day.is-range-start {
+  background: #29a95c;
+  color: #ffffff;
+  border-top-left-radius: 999px;
+  border-bottom-left-radius: 999px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: none;
+}
+
+.caja-calendar-day.is-range-end {
+  background: #29a95c;
+  color: #ffffff;
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  box-shadow: none;
+}
+
+.caja-calendar-day.is-selected:not(.is-in-range):not(.is-range-start):not(.is-range-end) {
+  background: #29a95c;
+  color: #ffffff;
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+.caja-calendar-footer {
+  padding: 10px 16px 18px;
+  border-top: 0;
+  background: #ffffff;
+}
+
+.caja-calendar-footer > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.caja-calendar-btn {
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid #d9e3de;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #34434a;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.caja-calendar-btn-clear {
+  color: #34434a;
+  background: #ffffff;
+  border-color: #d6e0db;
+}
+
+.caja-calendar-btn-primary {
+  min-width: 98px;
+  border-color: #29a95c;
+  background: #29a95c;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+@media (max-width: 560px) {
+  .caja-calendar-modal {
+    width: 100%;
+    border-radius: 18px;
+  }
+
+  .caja-calendar-selected {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .caja-calendar-nav {
+    grid-template-columns: 28px minmax(0, 1fr) 92px 28px;
+    padding-left: 12px;
+    padding-right: 12px;
+    gap: 6px;
+  }
+
+  .caja-calendar-weekdays,
+  .caja-calendar-grid {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .caja-calendar-footer {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .caja-calendar-footer > div {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+
+/* =========================================================
+   CORRECCIÓN CALENDARIO
+   La franja verde representa LA SEMANA ACTUAL.
+   No representa el rango Desde/Hasta.
+========================================================= */
+
+.caja-calendar-day.is-current-week {
+  background: #29a95c;
+  color: #ffffff;
+  border-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  font-weight: 900;
+}
+
+
+.caja-calendar-day.is-current-week-start {
+  border-top-left-radius: 999px;
+  border-bottom-left-radius: 999px;
+}
+
+
+.caja-calendar-day.is-current-week-end {
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+}
+
+
+/*
+  La fecha seleccionada para Desde/Hasta se marca aparte,
+  sin convertir todo el rango en una franja.
+*/
+
+.caja-calendar-day.is-selected:not(.is-current-week) {
+  background: #ffffff;
+  color: #17944f;
+  border: 2px solid #29a95c;
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+
+.caja-calendar-day.is-selected.is-current-week {
+  position: relative;
+  background: #29a95c;
+  color: #ffffff;
+}
+
+
+.caja-calendar-day.is-selected.is-current-week::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 5px;
+
+  border: 2px solid rgba(255, 255, 255, 0.92);
+
+  border-radius: 999px;
+
+  pointer-events: none;
+}
+
+
+/* Hoy mantiene una indicación ligera cuando no está en la semana actual */
+
+.caja-calendar-day.is-today:not(.is-current-week):not(.is-selected) {
+  border: 1px solid #9cdbb5;
+  background: #f5fbf7;
+  color: #25a55c;
+}
+
+
+/* Desactivar visual antiguo de rango Desde/Hasta */
+
+.caja-calendar-day.is-in-range,
+.caja-calendar-day.is-range-start,
+.caja-calendar-day.is-range-end {
+  background: transparent;
+  color: inherit;
+  border-radius: 999px;
+  box-shadow: none;
+}
+
+
+/* =========================================================
+   CALENDARIO CAJA
+   Basado en el calendario de Auditoría.
+   La franja verde corresponde a la semana actual.
+========================================================= */
+
+.caja-datepicker-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 110000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+
+  background:
+    rgba(15, 23, 42, 0.10);
+}
+
+
+.caja-datepicker {
+  width: 375px;
+  min-height: 402px;
+
+  padding: 22px;
+
+  box-sizing: border-box;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  filter:
+    drop-shadow(
+      35px
+      45px
+      73px
+      rgba(32, 32, 35, 0.07)
+    );
+}
+
+
+/* CABECERA */
+
+.caja-datepicker-header {
+  display: grid;
+
+  grid-template-columns:
+    38px
+    minmax(0, 1fr)
+    38px;
+
+  align-items: center;
+
+  gap: 8px;
+
+  margin-bottom: 22px;
+}
+
+
+.caja-datepicker-header > button {
+  width: 34px;
+  height: 34px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #12a05c;
+
+  font-size: 25px;
+
+  cursor: pointer;
+}
+
+
+.caja-datepicker-header > button:hover {
+  background: #ecfdf3;
+}
+
+
+/* DESPLEGABLES MES / AÑO */
+
+.caja-datepicker-selects {
+  min-width: 0;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    104px;
+
+  gap: 8px;
+}
+
+
+.caja-datepicker-selects select {
+  min-width: 0;
+  height: 38px;
+
+  padding:
+    0
+    10px;
+
+  border:
+    1px solid
+    #d0d9d5;
+
+  border-radius: 8px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #172033;
+
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.caja-datepicker-selects select:focus {
+  border-color: #20a45c;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(32, 164, 92, 0.10);
+}
+
+
+/* DÍAS SEMANA */
+
+.caja-datepicker-weekdays {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      7,
+      1fr
+    );
+
+  margin-bottom: 8px;
+}
+
+
+.caja-datepicker-weekdays span {
+  text-align: center;
+
+  color: #19a361;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+/* DÍAS */
+
+.caja-datepicker-days {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      7,
+      1fr
+    );
+
+  row-gap: 7px;
+}
+
+
+.caja-datepicker-days button {
+  position: relative;
+
+  width: 100%;
+  height: 32px;
+
+  border: none;
+
+  background: transparent;
+
+  color: #2c3440;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  z-index: 1;
+}
+
+
+.caja-datepicker-days button.outside {
+  color: #c3cac6;
+}
+
+
+/* HOVER */
+
+.caja-datepicker-days
+button:not(.current-week):hover {
+  background: #ecfdf3;
+
+  border-radius: 50%;
+
+  color: #087443;
+}
+
+
+/* =========================================================
+   SEMANA ACTUAL
+========================================================= */
+
+.caja-datepicker-days
+button.current-week {
+  background: #20a05a;
+
+  color: #ffffff;
+
+  border-radius: 0;
+}
+
+
+.caja-datepicker-days
+button.current-week-start {
+  border-radius:
+    18px
+    0
+    0
+    18px;
+}
+
+
+.caja-datepicker-days
+button.current-week-end {
+  border-radius:
+    0
+    18px
+    18px
+    0;
+}
+
+
+.caja-datepicker-days
+button.current-week:hover {
+  background: #168b4b;
+
+  color: #ffffff;
+
+  border-radius: 0;
+}
+
+
+.caja-datepicker-days
+button.current-week-start:hover {
+  border-radius:
+    18px
+    0
+    0
+    18px;
+}
+
+
+.caja-datepicker-days
+button.current-week-end:hover {
+  border-radius:
+    0
+    18px
+    18px
+    0;
+}
+
+
+/* FECHA SELECCIONADA */
+
+.caja-datepicker-days
+button.selected:not(.current-week) {
+  border:
+    2px solid
+    #20a45c;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+
+  color: #087443;
+
+  font-weight: 900;
+}
+
+
+.caja-datepicker-days
+button.selected.current-week::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 4px;
+
+  border:
+    2px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.92
+    );
+
+  border-radius: 50%;
+
+  pointer-events: none;
+}
+
+
+/* FOOTER */
+
+.caja-datepicker-footer {
+  margin-top: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+.caja-datepicker-footer button {
+  height: 40px;
+
+  padding:
+    0
+    20px;
+
+  border-radius: 6px;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.caja-datepicker-cancel {
+  border: none;
+
+  background: transparent;
+
+  color: #344054;
+}
+
+
+.caja-datepicker-done {
+  min-width: 92px;
+
+  border: none;
+
+  background: #20a45c;
+
+  color: #ffffff;
+}
+
+
+.caja-datepicker-done:hover {
+  background: #15864a;
+}
+
+
+@media (max-width: 430px) {
+
+  .caja-datepicker-overlay {
+    padding: 8px;
+  }
+
+
+  .caja-datepicker {
+    width: 100%;
+
+    padding:
+      18px
+      14px;
+  }
+
+
+  .caja-datepicker-header {
+    grid-template-columns:
+      34px
+      minmax(0, 1fr)
+      34px;
+
+    gap: 5px;
+  }
+
+
+  .caja-datepicker-selects {
+    grid-template-columns:
+      minmax(0, 1fr)
+      88px;
+
+    gap: 5px;
+  }
+
+
+  .caja-datepicker-selects select {
+    padding:
+      0
+      7px;
+
+    font-size: 12px;
+  }
+
+}
+
+
+/* =========================================================
+   CAJA - CONCILIACIÓN DE PEDIDOS ENTREGADOS
+   ========================================================= */
+
+.caja-sales-panel,
+.caja-cash-panel {
+  overflow: hidden;
+
+  background: rgba(255, 255, 255, 0.97);
+
+  border:
+    1px solid
+    var(--caja-line);
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 9px 28px
+    rgba(31, 46, 41, 0.055);
+}
+
+
+.caja-sales-panel .caja-section-header,
+.caja-cash-panel .caja-section-header {
+  padding:
+    16px
+    18px;
+
+  border-bottom:
+    1px solid
+    var(--caja-line-soft);
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f8fbfa
+    );
+}
+
+
+.caja-reconciliation {
+  min-width: 128px;
+
+  padding:
+    8px
+    12px;
+
+  display: grid;
+
+  gap: 2px;
+
+  border:
+    1px solid
+    #dfe8e4;
+
+  border-radius: 11px;
+
+  text-align: right;
+}
+
+
+.caja-reconciliation span {
+  color: #75847e;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+
+.caja-reconciliation strong {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+
+.caja-reconciliation.is-ok {
+  border-color: #bfe4d0;
+  background: #ecfdf3;
+  color: #087443;
+}
+
+
+.caja-reconciliation.is-warning {
+  border-color: #f0d7a7;
+  background: #fff7e8;
+  color: #a15c09;
+}
+
+
+.caja-sales-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      5,
+      minmax(0, 1fr)
+    );
+
+  gap: 10px;
+
+  padding: 14px;
+}
+
+
+.caja-sale-card {
+  position: relative;
+
+  min-width: 0;
+  min-height: 116px;
+
+  padding:
+    15px
+    16px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    #e2e9e6;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+}
+
+
+.caja-sale-card::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 3px;
+
+  background: #8b9b94;
+}
+
+
+.caja-sale-card > span,
+.caja-cash-grid article > span {
+  color: #6d7c76;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+}
+
+
+.caja-sale-card > strong {
+  margin-top: 10px;
+
+  color: #20302a;
+
+  font-size: clamp(
+    19px,
+    1.7vw,
+    25px
+  );
+
+  font-weight: 900;
+
+  line-height: 1.05;
+
+  letter-spacing: -0.025em;
+
+  overflow-wrap: anywhere;
+}
+
+
+.caja-sale-card > small {
+  margin-top: 9px;
+
+  color: #89958f;
+
+  font-size: 9px;
+  font-weight: 700;
+
+  line-height: 1.35;
+}
+
+
+.caja-sale-card-total::before {
+  background:
+    linear-gradient(
+      90deg,
+      #0f766e,
+      #20afb2
+    );
+}
+
+
+.caja-sale-card-total strong {
+  color: #0f766e;
+}
+
+
+.caja-sale-card-cash::before {
+  background:
+    linear-gradient(
+      90deg,
+      #138a5b,
+      #37bd86
+    );
+}
+
+
+.caja-sale-card-cash strong {
+  color: #11784d;
+}
+
+
+.caja-sale-card-transfer::before {
+  background:
+    linear-gradient(
+      90deg,
+      #2b73b9,
+      #56a1d8
+    );
+}
+
+
+.caja-sale-card-transfer strong {
+  color: #245f99;
+}
+
+
+.caja-sale-card-credit::before {
+  background:
+    linear-gradient(
+      90deg,
+      #b87918,
+      #e4aa44
+    );
+}
+
+
+.caja-sale-card-credit strong {
+  color: #966112;
+}
+
+
+/* =========================================================
+   EFECTIVO FÍSICO
+   ========================================================= */
+
+.caja-cash-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      5,
+      minmax(0, 1fr)
+    );
+
+  gap: 0;
+
+  padding: 0;
+}
+
+
+.caja-cash-grid article {
+  position: relative;
+
+  min-width: 0;
+
+  padding:
+    16px
+    18px;
+
+  display: grid;
+
+  gap: 7px;
+
+  background: #ffffff;
+}
+
+
+.caja-cash-grid article:not(:last-child)::after {
+  content: "";
+
+  position: absolute;
+
+  top: 14px;
+  right: 0;
+  bottom: 14px;
+
+  width: 1px;
+
+  background:
+    var(--caja-line-soft);
+}
+
+
+.caja-cash-grid article strong {
+  color: #26342f;
+
+  font-size: 18px;
+  font-weight: 900;
+
+  overflow-wrap: anywhere;
+}
+
+
+.caja-cash-grid .caja-cash-main {
+  background:
+    linear-gradient(
+      145deg,
+      #183b36,
+      #0f766e
+    );
+}
+
+
+.caja-cash-grid .caja-cash-main::after {
+  display: none;
+}
+
+
+.caja-cash-grid .caja-cash-main span,
+.caja-cash-grid .caja-cash-main strong {
+  color: #ffffff;
+}
+
+
+.caja-cash-grid .caja-cash-main span {
+  opacity: 0.76;
+}
+
+
+/* =========================================================
+   PEDIDOS ENTREGADOS
+   ========================================================= */
+
+.caja-orders-card {
+  border-color: #d9e8e2;
+}
+
+
+.caja-orders-table {
+  min-width: 980px;
+}
+
+
+.caja-orders-table th:nth-child(1) {
+  width: 13%;
+}
+
+
+.caja-orders-table th:nth-child(2) {
+  width: 21%;
+}
+
+
+.caja-orders-table th:nth-child(3) {
+  width: 14%;
+}
+
+
+.caja-orders-table th:nth-child(4) {
+  width: 13%;
+}
+
+
+.caja-orders-table th:nth-child(5) {
+  width: 25%;
+}
+
+
+.caja-orders-table th:nth-child(6) {
+  width: 14%;
+}
+
+
+.caja-order-code,
+.caja-invoice-code {
+  color: #087443;
+
+  font-weight: 900;
+}
+
+
+.caja-no-invoice {
+  color: #a6b0ab;
+
+  font-weight: 800;
+}
+
+
+.caja-order-total {
+  color: #20362f;
+
+  font-weight: 900;
+
+  text-align: right;
+}
+
+
+.caja-payment-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 92px;
+
+  padding:
+    5px
+    9px;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 900;
+}
+
+
+.caja-payment-efectivo {
+  border:
+    1px solid
+    #bfe4d0;
+
+  background: #ecfdf3;
+
+  color: #067647;
+}
+
+
+.caja-payment-transferencia {
+  border:
+    1px solid
+    #c4dbef;
+
+  background: #eff8ff;
+
+  color: #175cd3;
+}
+
+
+.caja-payment-credito {
+  border:
+    1px solid
+    #eed7a8;
+
+  background: #fff8e7;
+
+  color: #9a6700;
+}
+
+
+.caja-observation-warning {
+  display: inline-flex;
+
+  padding:
+    5px
+    8px;
+
+  border-radius: 7px;
+
+  background: #fff7e8;
+
+  color: #a15c09;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+.caja-observation-ok {
+  display: inline-flex;
+
+  padding:
+    5px
+    8px;
+
+  border-radius: 7px;
+
+  background: #eef8f4;
+
+  color: #087443;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+
+.caja-manual-card {
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   HISTORIAL
+   ========================================================= */
+
+.caja-history-table {
+  min-width: 1480px;
+}
+
+
+/* =========================================================
+   DETALLE
+   ========================================================= */
+
+.caja-detail-sales-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 9px;
+
+  margin-bottom: 10px;
+}
+
+
+.caja-detail-sales-grid > div {
+  min-width: 0;
+
+  padding:
+    11px
+    12px;
+
+  display: grid;
+
+  gap: 4px;
+
+  border:
+    1px solid
+    #dbe7e2;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f8fbfa
+    );
+}
+
+
+.caja-detail-sales-grid span {
+  color: #6d7c76;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+
+.caja-detail-sales-grid strong {
+  color: #0f766e;
+
+  font-size: 14px;
+  font-weight: 900;
+
+  overflow-wrap: anywhere;
+}
+
+
+.caja-detail-section-title {
+  margin:
+    18px
+    0
+    8px;
+
+  color: #20302a;
+
+  font-size: 12px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+}
+
+
+.caja-detail-modal {
+  width:
+    min(
+      1050px,
+      96vw
+    );
+}
+
+
+/* =========================================================
+   RESPONSIVE NUEVA CAJA
+   ========================================================= */
+
+@media (max-width: 1180px) {
+
+  .caja-sales-grid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+
+
+  .caja-cash-grid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+
+
+  .caja-cash-grid article::after {
+    display: none;
+  }
+
+}
+
+
+@media (max-width: 760px) {
+
+  .caja-sales-grid,
+  .caja-cash-grid,
+  .caja-detail-sales-grid {
+    grid-template-columns:
+      1fr
+      1fr;
+  }
+
+
+  .caja-reconciliation {
+    min-width: 0;
+
+    text-align: left;
+  }
+
+}
+
+
+@media (max-width: 520px) {
+
+  .caja-sales-grid,
+  .caja-cash-grid,
+  .caja-detail-sales-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .caja-sale-card {
+    min-height: 100px;
+  }
+
+}
+/* =========================================================
+   CAJA - REFINAMIENTO VISUAL V2
+   Mejora general sin alterar la lógica ni el calendario
+   ========================================================= */
+
+.caja-page {
+  --caja-shadow-xs:
+    0 1px 2px
+    rgba(16, 24, 40, 0.04);
+
+  --caja-shadow-sm:
+    0 8px 24px
+    rgba(15, 61, 52, 0.055);
+
+  --caja-shadow-md:
+    0 18px 42px
+    rgba(15, 61, 52, 0.085);
+
+  --caja-radius-lg: 22px;
+  --caja-radius-md: 16px;
+
+  background:
+    radial-gradient(
+      circle at 10% 3%,
+      rgba(32, 175, 178, 0.10),
+      transparent 24%
+    ),
+    radial-gradient(
+      circle at 92% 10%,
+      rgba(15, 118, 110, 0.08),
+      transparent 22%
+    ),
+    linear-gradient(
+      180deg,
+      #fbfdfc 0%,
+      #f4f8f6 55%,
+      #f1f6f4 100%
+    );
+}
+
+
+/* =========================================================
+   CABECERA
+   ========================================================= */
+
+.caja-header {
+  min-height: 62px;
+
+  padding:
+    10px
+    22px
+    10px
+    72px;
+
+  background:
+    linear-gradient(
+      120deg,
+      #0a625c 0%,
+      #0f766e 42%,
+      #16907f 72%,
+      #1ba2a3 100%
+    );
+
+  box-shadow:
+    0 8px 28px
+    rgba(5, 63, 58, 0.18);
+
+  backdrop-filter:
+    blur(10px);
+}
+
+
+.caja-header::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      circle at 84% 0%,
+      rgba(255, 255, 255, 0.15),
+      transparent 30%
+    );
+}
+
+
+.caja-header-left,
+.caja-header-actions {
+  position: relative;
+  z-index: 1;
+}
+
+
+.caja-header h1 {
+  font-size: 25px;
+  letter-spacing: -0.035em;
+}
+
+
+.caja-header p {
+  margin-top: 3px;
+
+  color:
+    rgba(255, 255, 255, 0.76);
+
+  font-size: 11px;
+  font-weight: 650;
+}
+
+
+.caja-header-actions .caja-btn {
+  min-height: 38px;
+
+  border-radius: 10px;
+
+  box-shadow:
+    0 5px 16px
+    rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================================================
+   CONTENIDO
+   ========================================================= */
+
+.caja-content {
+  width:
+    min(
+      calc(100% - 42px),
+      1520px
+    );
+
+  margin-top: 24px;
+
+  gap: 20px;
+}
+
+
+/* =========================================================
+   ENCABEZADOS DE SECCIÓN
+   ========================================================= */
+
+.caja-section-header {
+  gap: 18px;
+}
+
+
+.caja-section-header h2 {
+  margin: 0;
+
+  color: #18352f;
+
+  font-size: 19px;
+  font-weight: 900;
+
+  letter-spacing: -0.025em;
+}
+
+
+.caja-section-header p {
+  margin:
+    5px
+    0
+    0;
+
+  max-width: 760px;
+
+  color: #77857f;
+
+  font-size: 12px;
+  font-weight: 550;
+
+  line-height: 1.45;
+}
+
+
+/* =========================================================
+   PANELES PRINCIPALES
+   ========================================================= */
+
+.caja-sales-panel,
+.caja-cash-panel,
+.caja-movements-card,
+.caja-history-card,
+.caja-session-info,
+.caja-last-close {
+  border-color:
+    rgba(209, 225, 218, 0.92);
+
+  box-shadow:
+    var(--caja-shadow-sm);
+}
+
+
+.caja-sales-panel,
+.caja-cash-panel,
+.caja-movements-card,
+.caja-history-card {
+  border-radius:
+    var(--caja-radius-lg);
+
+  background:
+    rgba(255, 255, 255, 0.98);
+}
+
+
+.caja-sales-panel,
+.caja-cash-panel {
+  position: relative;
+
+  overflow: hidden;
+}
+
+
+.caja-sales-panel::before,
+.caja-cash-panel::before {
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 4px;
+
+  z-index: 2;
+
+  background:
+    linear-gradient(
+      90deg,
+      #0f766e,
+      #1ca58c,
+      #20afb2
+    );
+}
+
+
+.caja-sales-panel .caja-section-header,
+.caja-cash-panel .caja-section-header,
+.caja-movements-card .caja-section-header,
+.caja-history-card .caja-section-header {
+  padding:
+    19px
+    21px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.99),
+      rgba(247, 251, 249, 0.94)
+    );
+}
+
+
+/* =========================================================
+   CONCILIACIÓN
+   ========================================================= */
+
+.caja-reconciliation {
+  min-width: 140px;
+
+  padding:
+    9px
+    13px;
+
+  border-radius: 12px;
+
+  box-shadow:
+    var(--caja-shadow-xs);
+
+  text-align: left;
+}
+
+
+.caja-reconciliation.is-ok {
+  border-color: #b7e6cc;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f3fff8,
+      #eafaf1
+    );
+
+  color: #087443;
+}
+
+
+.caja-reconciliation.is-ok strong::before {
+  content: "✓";
+
+  display: inline-grid;
+  place-items: center;
+
+  width: 18px;
+  height: 18px;
+
+  margin-right: 6px;
+
+  border-radius: 999px;
+
+  background: #14945b;
+  color: #ffffff;
+
+  font-size: 11px;
+}
+
+
+.caja-reconciliation.is-warning {
+  border-color: #ecd3a1;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fffaf0,
+      #fff4df
+    );
+}
+
+
+/* =========================================================
+   VENTAS ENTREGADAS
+   ========================================================= */
+
+.caja-sales-grid {
+  gap: 12px;
+
+  padding:
+    16px
+    17px
+    18px;
+}
+
+
+.caja-sale-card {
+  min-height: 128px;
+
+  padding:
+    17px
+    17px
+    16px;
+
+  border:
+    1px solid
+    #dde8e3;
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      155deg,
+      #ffffff 0%,
+      #fbfdfc 100%
+    );
+
+  box-shadow:
+    0 5px 18px
+    rgba(20, 60, 50, 0.045);
+
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+
+.caja-sale-card:hover {
+  transform:
+    translateY(-2px);
+
+  border-color: #cbded6;
+
+  box-shadow:
+    0 12px 28px
+    rgba(20, 60, 50, 0.085);
+}
+
+
+.caja-sale-card::after {
+  content: "";
+
+  position: absolute;
+
+  width: 90px;
+  height: 90px;
+
+  right: -38px;
+  bottom: -42px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(15, 118, 110, 0.045);
+
+  pointer-events: none;
+}
+
+
+.caja-sale-card > span {
+  position: relative;
+  z-index: 1;
+
+  color: #718078;
+
+  font-size: 10px;
+}
+
+
+.caja-sale-card > strong {
+  position: relative;
+  z-index: 1;
+
+  margin-top: 13px;
+
+  font-size:
+    clamp(
+      21px,
+      1.8vw,
+      27px
+    );
+}
+
+
+.caja-sale-card > small {
+  position: relative;
+  z-index: 1;
+
+  margin-top: 10px;
+
+  color: #8b9691;
+
+  font-size: 9.5px;
+  line-height: 1.4;
+}
+
+
+.caja-sale-card-total {
+  border-color: #c9e1dc;
+
+  background:
+    linear-gradient(
+      150deg,
+      #f7fffc 0%,
+      #eefaf7 100%
+    );
+}
+
+
+.caja-sale-card-total::after {
+  background:
+    rgba(15, 118, 110, 0.075);
+}
+
+
+.caja-sale-card-cash {
+  background:
+    linear-gradient(
+      150deg,
+      #fbfffd 0%,
+      #f0fbf5 100%
+    );
+}
+
+
+.caja-sale-card-cash::after {
+  background:
+    rgba(19, 138, 91, 0.065);
+}
+
+
+.caja-sale-card-transfer {
+  background:
+    linear-gradient(
+      150deg,
+      #fcfeff 0%,
+      #f2f8ff 100%
+    );
+}
+
+
+.caja-sale-card-transfer::after {
+  background:
+    rgba(43, 115, 185, 0.06);
+}
+
+
+.caja-sale-card-credit {
+  background:
+    linear-gradient(
+      150deg,
+      #fffefa 0%,
+      #fff8e9 100%
+    );
+}
+
+
+.caja-sale-card-credit::after {
+  background:
+    rgba(184, 121, 24, 0.065);
+}
+
+
+/* =========================================================
+   EFECTIVO FÍSICO
+   ========================================================= */
+
+.caja-cash-grid {
+  padding: 8px;
+
+  gap: 8px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fbfdfc,
+      #f7faf9
+    );
+}
+
+
+.caja-cash-grid article {
+  min-height: 92px;
+
+  padding:
+    15px
+    16px;
+
+  align-content: center;
+
+  border:
+    1px solid
+    transparent;
+
+  border-radius: 14px;
+
+  background:
+    rgba(255, 255, 255, 0.92);
+
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.16s ease;
+}
+
+
+.caja-cash-grid article:hover {
+  transform:
+    translateY(-1px);
+
+  border-color: #dce8e3;
+
+  background: #ffffff;
+}
+
+
+.caja-cash-grid article:not(:last-child)::after {
+  display: none;
+}
+
+
+.caja-cash-grid article > span {
+  color: #75827c;
+}
+
+
+.caja-cash-grid article strong {
+  margin-top: 2px;
+
+  font-size: 19px;
+  letter-spacing: -0.025em;
+}
+
+
+.caja-cash-grid .caja-cash-main {
+  min-height: 96px;
+
+  border:
+    1px solid
+    rgba(81, 197, 160, 0.28);
+
+  background:
+    linear-gradient(
+      135deg,
+      #153e37 0%,
+      #0f6b61 55%,
+      #0f8174 100%
+    );
+
+  box-shadow:
+    0 10px 24px
+    rgba(15, 118, 110, 0.18);
+}
+
+
+.caja-cash-grid .caja-cash-main strong {
+  font-size: 22px;
+}
+
+
+/* =========================================================
+   SESIÓN DE CAJA
+   ========================================================= */
+
+.caja-session-info {
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #fbfdfc
+    );
+}
+
+
+.caja-session-info > div {
+  padding:
+    14px
+    18px;
+}
+
+
+.caja-session-info span {
+  color: #7a8781;
+}
+
+
+.caja-session-info strong {
+  color: #1f3831;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   TABLAS
+   ========================================================= */
+
+.caja-table-wrap {
+  scrollbar-width: thin;
+  scrollbar-color:
+    #c9d8d2
+    transparent;
+}
+
+
+.caja-table-wrap::-webkit-scrollbar {
+  height: 9px;
+  width: 9px;
+}
+
+
+.caja-table-wrap::-webkit-scrollbar-thumb {
+  border:
+    2px solid
+    transparent;
+
+  border-radius: 999px;
+
+  background:
+    #c9d8d2;
+
+  background-clip:
+    padding-box;
+}
+
+
+.caja-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+
+.caja-table thead th {
+  position: sticky;
+  top: 0;
+
+  z-index: 3;
+
+  padding:
+    13px
+    16px;
+
+  background:
+    #f3f8f6;
+
+  color: #5f716a;
+
+  border-bottom:
+    1px solid
+    #dbe7e2;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: 0.045em;
+}
+
+
+.caja-table tbody td {
+  padding:
+    14px
+    16px;
+
+  border-bottom:
+    1px solid
+    #edf2f0;
+
+  color: #2e423b;
+
+  font-size: 12px;
+
+  transition:
+    background 0.14s ease;
+}
+
+
+.caja-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+
+.caja-table tbody tr:hover td {
+  background:
+    #f8fcfa;
+}
+
+
+/* =========================================================
+   PEDIDOS ENTREGADOS
+   ========================================================= */
+
+.caja-orders-card {
+  overflow: hidden;
+
+  border-color: #d5e6df;
+}
+
+
+.caja-orders-card .caja-section-header {
+  border-bottom:
+    1px solid
+    #e4eee9;
+}
+
+
+.caja-orders-card .caja-count {
+  min-width: 42px;
+  height: 42px;
+
+  display: inline-grid;
+  place-items: center;
+
+  padding: 0;
+
+  border:
+    1px solid
+    #d6e4df;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f3f7f5
+    );
+
+  color: #355048;
+
+  font-size: 12px;
+  font-weight: 900;
+
+  box-shadow:
+    var(--caja-shadow-xs);
+}
+
+
+.caja-orders-table tbody td:first-child {
+  padding-left: 20px;
+}
+
+
+.caja-orders-table tbody td:last-child {
+  padding-right: 20px;
+}
+
+
+.caja-order-code {
+  color: #163e36;
+
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+
+.caja-invoice-code {
+  color: #0c7b52;
+
+  font-size: 12px;
+  letter-spacing: 0.015em;
+}
+
+
+.caja-order-total {
+  color: #172f29;
+
+  font-size: 13px;
+  font-weight: 950;
+
+  white-space: nowrap;
+}
+
+
+.caja-payment-badge {
+  min-width: 114px;
+
+  padding:
+    6px
+    12px;
+
+  border-radius: 999px;
+
+  box-shadow:
+    inset
+    0 0 0 1px
+    rgba(255, 255, 255, 0.45);
+
+  font-size: 10px;
+  letter-spacing: 0.01em;
+}
+
+
+.caja-payment-efectivo {
+  background:
+    linear-gradient(
+      180deg,
+      #f1fff7,
+      #e5f8ee
+    );
+}
+
+
+.caja-payment-transferencia {
+  background:
+    linear-gradient(
+      180deg,
+      #f5faff,
+      #eaf4ff
+    );
+}
+
+
+.caja-payment-credito {
+  background:
+    linear-gradient(
+      180deg,
+      #fffaf0,
+      #fff2da
+    );
+}
+
+
+.caja-observation-warning,
+.caja-observation-ok {
+  padding:
+    6px
+    10px;
+
+  border:
+    1px solid
+    transparent;
+
+  border-radius: 9px;
+
+  font-size: 10px;
+  line-height: 1.2;
+
+  white-space: nowrap;
+}
+
+
+.caja-observation-warning {
+  border-color: #f3dfb8;
+
+  background:
+    #fff7e8;
+}
+
+
+.caja-observation-ok {
+  border-color: #cce9d9;
+
+  background:
+    #edf9f2;
+}
+
+
+/* =========================================================
+   MOVIMIENTOS MANUALES
+   ========================================================= */
+
+.caja-manual-card {
+  overflow: hidden;
+}
+
+
+.caja-manual-card .caja-section-header {
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #fafcfb
+    );
+}
+
+
+.caja-movement-tools select {
+  min-height: 38px;
+
+  padding:
+    0
+    34px
+    0
+    12px;
+
+  border:
+    1px solid
+    #d9e4df;
+
+  border-radius: 10px;
+
+  background-color: #ffffff;
+
+  color: #354b43;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+.caja-type {
+  padding:
+    5px
+    9px;
+
+  border-radius: 999px;
+
+  font-size: 9.5px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   HISTORIAL
+   ========================================================= */
+
+.caja-history-card {
+  overflow: hidden;
+}
+
+
+.caja-history-header {
+  align-items: end;
+}
+
+
+.caja-history-filters {
+  gap: 9px;
+}
+
+
+.caja-date-filter > span {
+  color: #68776f;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  letter-spacing: 0.045em;
+
+  text-transform: uppercase;
+}
+
+
+.caja-date-trigger {
+  min-height: 40px;
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f9fbfa
+    );
+}
+
+
+.caja-history-table tbody td {
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   BOTONES Y ACCIONES
+   ========================================================= */
+
+.caja-btn {
+  border-radius: 11px;
+
+  font-weight: 850;
+
+  box-shadow:
+    var(--caja-shadow-xs);
+}
+
+
+.caja-btn-primary {
+  background:
+    linear-gradient(
+      135deg,
+      #0d7068,
+      #149575
+    );
+
+  box-shadow:
+    0 9px 22px
+    rgba(15, 118, 110, 0.19);
+}
+
+
+.caja-btn-secondary {
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f5f8f7
+    );
+}
+
+
+.caja-icon-btn {
+  border-radius: 10px;
+
+  transition:
+    transform 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease;
+}
+
+
+.caja-icon-btn:hover {
+  transform:
+    translateY(-1px);
+}
+
+
+/* =========================================================
+   MODALES
+   ========================================================= */
+
+.caja-modal {
+  border:
+    1px solid
+    #d9e7e1;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 26px 70px
+    rgba(18, 52, 45, 0.20);
+}
+
+
+.caja-modal-header {
+  padding:
+    18px
+    20px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f8fbfa
+    );
+}
+
+
+.caja-modal-x {
+  border-radius: 10px;
+}
+
+
+/* =========================================================
+   APERTURA Y ÚLTIMO CIERRE
+   ========================================================= */
+
+.caja-open-card {
+  border-radius: 24px;
+
+  box-shadow:
+    var(--caja-shadow-md);
+}
+
+
+.caja-last-close {
+  border-radius: 16px;
+}
+
+
+/* =========================================================
+   RESPONSIVE V2
+   ========================================================= */
+
+@media (max-width: 1240px) {
+
+  .caja-sales-grid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+
+
+  .caja-cash-grid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+
+}
+
+
+@media (max-width: 860px) {
+
+  .caja-content {
+    width:
+      min(
+        calc(100% - 24px),
+        1520px
+      );
+  }
+
+
+  .caja-header {
+    padding-left: 62px;
+  }
+
+
+  .caja-sales-grid,
+  .caja-cash-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+
+  .caja-section-header,
+  .caja-history-header {
+    align-items: stretch;
+  }
+
+
+  .caja-history-filters {
+    width: 100%;
+  }
+
+}
+
+
+@media (max-width: 580px) {
+
+  .caja-content {
+    width:
+      calc(100% - 16px);
+
+    margin-top: 14px;
+
+    gap: 14px;
+  }
+
+
+  .caja-sales-panel,
+  .caja-cash-panel,
+  .caja-movements-card,
+  .caja-history-card {
+    border-radius: 16px;
+  }
+
+
+  .caja-sales-grid,
+  .caja-cash-grid {
+    grid-template-columns:
+      1fr;
+
+    padding: 10px;
+  }
+
+
+  .caja-sale-card {
+    min-height: 105px;
+  }
+
+
+  .caja-section-header,
+  .caja-sales-panel .caja-section-header,
+  .caja-cash-panel .caja-section-header,
+  .caja-movements-card .caja-section-header,
+  .caja-history-card .caja-section-header {
+    padding:
+      15px
+      14px;
+  }
+
+
+  .caja-reconciliation {
+    width: 100%;
+  }
+
+}
+/* =========================================================
+   CORRECCIÓN - PANEL DE MÓDULOS
+   Se restaura la geometría original de la cabecera para que
+   ModulosMenu vuelva a quedar centrado como antes.
+   ========================================================= */
+
+.caja-header {
+  min-height: 50px;
+
+  padding:
+    10px
+    18px
+    10px
+    70px;
+
+  align-items: center;
+}
+
+
+.caja-header-left {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+}
+
+
+.caja-header-left > * {
+  align-self: center;
+}
+
+
+@media (max-width: 860px) {
+
+  .caja-header {
+    padding-left: 70px;
+  }
+
+}
+/* =========================================================
+   CORRECCIÓN DEFINITIVA - PANEL DE MÓDULOS EN CAJA
+
+   No usar backdrop-filter en .caja-header:
+   al estar ModulosMenu dentro de la cabecera, ese efecto puede
+   convertir la cabecera en el bloque de referencia del overlay
+   fixed y hacer que el panel aparezca pegado arriba.
+
+   Con esto el overlay vuelve a tomar toda la ventana, igual que
+   en Pedidos, y el panel queda centrado vertical y horizontalmente.
+   ========================================================= */
+
+.caja-header {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+
+  filter: none !important;
+  transform: none !important;
+  perspective: none !important;
+
+  contain: none !important;
+  will-change: auto !important;
+}
+
+
+/* Se fuerza el comportamiento normal del menú global
+   sin cambiar su tamaño ni su diseño. */
+
+.caja-page .modulos-menu-overlay {
+  position: fixed !important;
+
+  inset: 0 !important;
+
+  width: 100vw !important;
+  height: 100vh !important;
+
+  display: flex !important;
+
+  align-items: center !important;
+  justify-content: center !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+.caja-page .modulos-menu-modal {
+  position: relative !important;
+
+  margin: 0 !important;
+
+  transform: none !important;
+}
+/* =========================================================
+   CAJA - ACCIONES DE CABECERA CON ICONOS
+   ========================================================= */
+
+.caja-header-actions {
+  gap: 9px;
+}
+
+
+.caja-header-icon-btn {
+  position: relative;
+
+  flex:
+    0 0
+    42px;
+
+  width: 42px;
+  height: 42px;
+
+  min-width: 42px;
+  min-height: 42px;
+
+  max-width: 42px;
+  max-height: 42px;
+
+  padding: 6px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.42);
+
+  border-radius: 11px;
+
+  background:
+    rgba(255, 255, 255, 0.96);
+
+  cursor: pointer;
+
+  overflow: visible;
+
+  box-sizing: border-box;
+
+  box-shadow:
+    0 5px 14px
+    rgba(15, 23, 42, 0.13);
+
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease,
+    border-color 0.16s ease;
+}
+
+
+.caja-header-icon-btn:hover {
+  transform:
+    translateY(-2px);
+
+  background:
+    #ffffff;
+
+  border-color:
+    rgba(255, 255, 255, 0.82);
+
+  box-shadow:
+    0 10px 22px
+    rgba(15, 23, 42, 0.18);
+}
+
+
+.caja-header-icon-btn:active {
+  transform:
+    translateY(0);
+}
+
+
+.caja-header-icon-btn img {
+  display: block;
+
+  width: 29px;
+  height: 29px;
+
+  object-fit: contain;
+
+  pointer-events: none;
+}
+
+
+.caja-header-icon-close {
+  border-color:
+    rgba(255, 196, 196, 0.84);
+
+  background:
+    rgba(255, 247, 247, 0.98);
+}
+
+
+/* TOOLTIP */
+
+.caja-header-icon-btn::after {
+  content:
+    attr(data-tooltip);
+
+  position: absolute;
+
+  top:
+    calc(100% + 8px);
+
+  left: 50%;
+
+  transform:
+    translateX(-50%)
+    translateY(-4px);
+
+  padding:
+    6px
+    10px;
+
+  border-radius: 7px;
+
+  background: #172033;
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 750;
+
+  line-height: 1;
+
+  white-space: nowrap;
+
+  opacity: 0;
+  visibility: hidden;
+
+  pointer-events: none;
+
+  z-index: 99999;
+
+  transition:
+    opacity 0.16s ease,
+    visibility 0.16s ease,
+    transform 0.16s ease;
+}
+
+
+.caja-header-icon-btn::before {
+  content: "";
+
+  position: absolute;
+
+  top:
+    calc(100% + 3px);
+
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  border-left:
+    5px solid transparent;
+
+  border-right:
+    5px solid transparent;
+
+  border-bottom:
+    5px solid #172033;
+
+  opacity: 0;
+  visibility: hidden;
+
+  pointer-events: none;
+
+  z-index: 99999;
+}
+
+
+.caja-header-icon-btn:hover::after,
+.caja-header-icon-btn:hover::before {
+  opacity: 1;
+  visibility: visible;
+}
+
+
+.caja-header-icon-btn:hover::after {
+  transform:
+    translateX(-50%)
+    translateY(0);
+}
+
+
+@media (max-width: 620px) {
+
+  .caja-header-icon-btn {
+    flex-basis: 38px;
+
+    width: 38px;
+    height: 38px;
+
+    min-width: 38px;
+    min-height: 38px;
+
+    max-width: 38px;
+    max-height: 38px;
+
+    padding: 5px;
+  }
+
+
+  .caja-header-icon-btn img {
+    width: 27px;
+    height: 27px;
+  }
+
+}
+/* =========================================================
+   CAJA - CABECERA MISMA ALTURA ABIERTA / CERRADA
+   
+   ========================================================= */
+
+.caja-header {
+  min-height: 62px !important;
+}

@@ -19,6 +19,15 @@ import Empleado
 import Consecutivo
   from "../models/Consecutivo.js";
 
+import Factura
+  from "../models/Factura.js";
+
+import Caja
+  from "../models/Caja.js";
+
+import MovimientoCaja
+  from "../models/MovimientoCaja.js";
+
 import {
   generarConsecutivo,
 } from "../utils/generarConsecutivo.js";
@@ -148,6 +157,331 @@ async function obtenerDatosDespachoCliente(cliente) {
     rutaDiasAtencion: Array.isArray(ruta?.diasAtencion) ? ruta.diasAtencion : [],
   };
 }
+
+
+/* =========================================
+   UTILIDADES DE CAJA PARA PEDIDOS
+========================================= */
+
+function usuarioActualPedido(req) {
+
+  return (
+    req.usuario?._id ||
+    req.user?._id ||
+    null
+  );
+
+}
+
+
+async function obtenerCajaAbiertaPedido() {
+
+  return Caja.findOne({
+    estado: "Abierta",
+  });
+
+}
+
+
+async function obtenerFacturaActivaPedido(
+  pedidoId
+) {
+
+  return Factura.findOne({
+    pedido:
+      pedidoId,
+
+    estado: {
+      $ne: "Anulada",
+    },
+  })
+    .sort({
+      createdAt: -1,
+    });
+
+}
+
+
+function nombreClientePedido(
+  pedido
+) {
+
+  return (
+    pedido.clienteNombre ||
+    pedido.clienteRazonSocial ||
+    "Cliente"
+  );
+
+}
+
+
+async function registrarPedidoEntregadoEnCaja({
+  pedido,
+  caja,
+  usuarioId = null,
+}) {
+
+  if (
+    !pedido ||
+    !caja
+  ) {
+
+    const error =
+      new Error(
+        "No fue posible identificar el pedido o la caja abierta."
+      );
+
+    error.statusCode =
+      400;
+
+    throw error;
+
+  }
+
+
+  const valor =
+    Number(
+      pedido.total ||
+      0
+    );
+
+
+  if (
+    !Number.isFinite(
+      valor
+    ) ||
+    valor <= 0
+  ) {
+
+    const error =
+      new Error(
+        `El pedido ${pedido.codigo} no tiene un total válido para ingresar a Caja.`
+      );
+
+    error.statusCode =
+      400;
+
+    throw error;
+
+  }
+
+
+  const factura =
+    await obtenerFacturaActivaPedido(
+      pedido._id
+    );
+
+
+  const claveUnica =
+    `PEDIDO:${pedido._id}`;
+
+
+  const existente =
+    await MovimientoCaja
+      .findOne({
+        claveUnica,
+      })
+      .populate(
+        "caja",
+        "codigo estado"
+      );
+
+
+  /*
+    Si el pedido ya quedó registrado en otra caja y
+    ese movimiento sigue activo, no se duplica.
+  */
+  if (
+    existente &&
+    existente.estado ===
+      "Activo" &&
+    String(
+      existente.caja?._id ||
+      existente.caja
+    ) !==
+    String(
+      caja._id
+    )
+  ) {
+
+    return existente;
+
+  }
+
+
+  /*
+    Si el movimiento fue anulado dentro de una caja
+    ya cerrada, no se mueve a otra caja porque eso
+    modificaría un cierre histórico.
+  */
+  if (
+    existente &&
+    existente.estado ===
+      "Anulado" &&
+    existente.caja?.estado ===
+      "Cerrada" &&
+    String(
+      existente.caja?._id ||
+      existente.caja
+    ) !==
+    String(
+      caja._id
+    )
+  ) {
+
+    const error =
+      new Error(
+        `El pedido ${pedido.codigo} ya tuvo un movimiento en la caja ${existente.caja.codigo}. No puede reingresarse automáticamente porque esa caja está cerrada.`
+      );
+
+    error.statusCode =
+      400;
+
+    throw error;
+
+  }
+
+
+  return MovimientoCaja
+    .findOneAndUpdate(
+      {
+        claveUnica,
+      },
+
+      {
+        $set: {
+          caja:
+            caja._id,
+
+          tipo:
+            "Ingreso",
+
+          origen:
+            "Pedido",
+
+          concepto:
+            `Pedido entregado - ${pedido.codigo}`,
+
+          valor,
+
+          pedido:
+            pedido._id,
+
+          pedidoCodigo:
+            pedido.codigo ||
+            "",
+
+          cliente:
+            pedido.cliente ||
+            null,
+
+          clienteNombre:
+            nombreClientePedido(
+              pedido
+            ),
+
+          metodoPago:
+            pedido.metodoPago ||
+            "Efectivo",
+
+          afectaEfectivo:
+            (
+              pedido.metodoPago ||
+              "Efectivo"
+            ) ===
+            "Efectivo",
+
+          factura:
+            factura?._id ||
+            null,
+
+          facturaCodigo:
+            factura?.codigo ||
+            "",
+
+          observacion:
+            factura
+              ? "Factura generada"
+              : "Pedido sin factura generada",
+
+          usuario:
+            usuarioId,
+
+          estado:
+            "Activo",
+
+          claveUnica,
+        },
+      },
+
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
+      }
+    );
+
+}
+
+
+async function anularMovimientoPedidoEntregado(
+  pedido
+) {
+
+  const claveUnica =
+    `PEDIDO:${pedido._id}`;
+
+
+  const movimiento =
+    await MovimientoCaja
+      .findOne({
+        claveUnica,
+        estado:
+          "Activo",
+      })
+      .populate(
+        "caja",
+        "codigo estado"
+      );
+
+
+  if (!movimiento) {
+    return null;
+  }
+
+
+  if (
+    movimiento.caja?.estado ===
+    "Cerrada"
+  ) {
+
+    const error =
+      new Error(
+        `El pedido ${pedido.codigo} ya fue incluido en la caja cerrada ${movimiento.caja.codigo}. No puede retirarse de esa caja cambiando el estado del pedido.`
+      );
+
+    error.statusCode =
+      400;
+
+    throw error;
+
+  }
+
+
+  movimiento.estado =
+    "Anulado";
+
+  movimiento.observacion =
+    "Movimiento anulado porque el pedido dejó de estar Entregado";
+
+
+  await movimiento.save();
+
+
+  return movimiento;
+
+}
+
 
 /* =========================================
    LISTAR PEDIDOS
@@ -1702,6 +2036,134 @@ export const cambiarEstadoPedido =
       }
 
 
+      const estadoAnterior =
+        pedido.estado;
+
+
+      /*
+        Si no cambió realmente el estado,
+        no se crea ningún movimiento nuevo.
+      */
+      if (
+        estadoAnterior ===
+        estado
+      ) {
+
+        return res.json({
+
+          mensaje:
+            "El pedido ya se encuentra en ese estado.",
+
+          estado:
+            pedido.estado,
+
+        });
+
+      }
+
+
+      /* =====================================
+         ENTREGADO -> ENTRA A CAJA
+      ===================================== */
+
+      if (
+        estado ===
+        "Entregado"
+      ) {
+
+        const caja =
+          await obtenerCajaAbiertaPedido();
+
+
+        if (!caja) {
+
+          return res
+            .status(400)
+            .json({
+
+              mensaje:
+                "Debe abrir la caja antes de marcar un pedido como Entregado.",
+
+            });
+
+        }
+
+
+        pedido.estado =
+          estado;
+
+
+        await pedido.save();
+
+
+        try {
+
+          await registrarPedidoEntregadoEnCaja({
+
+            pedido,
+
+            caja,
+
+            usuarioId:
+              usuarioActualPedido(
+                req
+              ),
+
+          });
+
+
+        } catch (
+          errorCaja
+        ) {
+
+          /*
+            Rollback del estado si Caja no pudo
+            registrar correctamente el pedido.
+          */
+
+          pedido.estado =
+            estadoAnterior;
+
+
+          await pedido.save();
+
+
+          throw errorCaja;
+
+        }
+
+
+        return res.json({
+
+          mensaje:
+            "Pedido marcado como Entregado y registrado en Caja correctamente.",
+
+          estado:
+            pedido.estado,
+
+        });
+
+      }
+
+
+      /* =====================================
+         SI DEJA DE ESTAR ENTREGADO
+         SE ANULA SU MOVIMIENTO SOLO SI
+         LA CAJA TODAVÍA ESTÁ ABIERTA
+      ===================================== */
+
+      if (
+        estadoAnterior ===
+        "Entregado"
+      ) {
+
+        await anularMovimientoPedidoEntregado(
+          pedido
+        );
+
+      }
+
+
       pedido.estado =
         estado;
 
@@ -1728,10 +2190,14 @@ export const cambiarEstadoPedido =
 
 
       return res
-        .status(500)
+        .status(
+          error?.statusCode ||
+          500
+        )
         .json({
 
           mensaje:
+            error.message ||
             "No fue posible cambiar el estado del pedido.",
 
         });

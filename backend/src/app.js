@@ -34,6 +34,8 @@ import empleadoRoutes from "./routes/empleado.routes.js";
 
 import facturaRoutes from "./routes/factura.routes.js";
 
+import cajaRoutes from "./routes/caja.routes.js";
+
 
 const app = express();
 
@@ -153,6 +155,11 @@ app.use(
 app.use(
   "/api/facturas",
   facturaRoutes
+);
+
+app.use(
+  "/api/caja",
+  cajaRoutes
 );
 
 

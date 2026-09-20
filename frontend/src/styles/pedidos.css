@@ -1,5 +1,3 @@
-
-
 /* =========================================================
    BASE DEL MÓDULO
 ========================================================= */
@@ -76,12 +74,10 @@
   flex-shrink: 0;
   justify-content: space-between;
   gap: 20px;
-  background: linear-gradient(
-        135deg,
-        #0f766e 0%,
-        #159a75 52%,
-        #20afb2 100%
-      );
+  background: linear-gradient(135deg,
+      #0f766e 0%,
+      #159a75 52%,
+      #20afb2 100%);
   color: #ffffff;
   border-bottom: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.16);
@@ -90,7 +86,7 @@
   align-items: center;
   column-gap: 18px;
   row-gap: 8px;
-  min-height: 72px;
+  min-height: 50px;
   padding: 10px 18px 10px 70px;
   overflow: visible;
 }
@@ -202,7 +198,7 @@
 }
 
 .pedidos-top-icon-btn:hover::after,
-  .pedidos-top-icon-btn:hover::before {
+.pedidos-top-icon-btn:hover::before {
   opacity: 1;
   visibility: visible;
 }
@@ -249,12 +245,10 @@
   gap: 16px;
   padding: 10px 14px 10px 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.20);
-  background: linear-gradient(
-        135deg,
-        #0f766e 0%,
-        #159a75 55%,
-        #20afb2 100%
-      );
+  background: linear-gradient(135deg,
+      #0f766e 0%,
+      #159a75 55%,
+      #20afb2 100%);
 }
 
 .pedidos-modal-header span {
@@ -353,8 +347,8 @@
 }
 
 .pedidos-form-section input,
-  .pedidos-form-section select,
-  .pedidos-form-section textarea {
+.pedidos-form-section select,
+.pedidos-form-section textarea {
   width: 100%;
   box-sizing: border-box;
   border: 1px solid #d3dfda;
@@ -367,7 +361,7 @@
 }
 
 .pedidos-form-section input,
-  .pedidos-form-section select {
+.pedidos-form-section select {
   height: 35px;
   min-height: 35px;
   padding: 0 9px;
@@ -380,8 +374,8 @@
 }
 
 .pedidos-form-section input:focus,
-  .pedidos-form-section select:focus,
-  .pedidos-form-section textarea:focus {
+.pedidos-form-section select:focus,
+.pedidos-form-section textarea:focus {
   border-color: #20afb2;
   box-shadow: 0 0 0 2px rgba(32, 175, 178, 0.10);
 }
@@ -400,11 +394,9 @@
   border-radius: 8px;
   align-items: flex-start;
   padding: 10px 12px;
-  background: linear-gradient(
-        135deg,
-        #f4fbf8 0%,
-        #eef9f5 100%
-      );
+  background: linear-gradient(135deg,
+      #f4fbf8 0%,
+      #eef9f5 100%);
 }
 
 .pedidos-client-selected span {
@@ -520,11 +512,9 @@
   padding: 0 14px;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(
-        135deg,
-        #0f766e,
-        #159a75
-      );
+  background: linear-gradient(135deg,
+      #0f766e,
+      #159a75);
   color: #ffffff;
   font-size: 11px;
   font-weight: 900;
@@ -585,7 +575,7 @@
 }
 
 .pedidos-items-table th:first-child,
-  .pedidos-items-table td:first-child {
+.pedidos-items-table td:first-child {
   width: 38%;
 }
 
@@ -634,7 +624,7 @@
   background: #ffffff;
 }
 
-.pedidos-summary > div {
+.pedidos-summary>div {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -644,7 +634,7 @@
   font-size: 11px;
 }
 
-.pedidos-summary > div strong {
+.pedidos-summary>div strong {
   color: #253a32;
 }
 
@@ -655,7 +645,7 @@
 }
 
 .pedidos-summary-total span,
-  .pedidos-summary-total strong {
+.pedidos-summary-total strong {
   font-size: 15px;
   font-weight: 900;
   color: #087a58 !important;
@@ -674,7 +664,7 @@
 }
 
 .pedidos-cancel-btn,
-  .pedidos-save-btn {
+.pedidos-save-btn {
   min-height: 35px;
   height: 35px;
   padding: 0 14px;
@@ -696,11 +686,9 @@
   justify-content: center;
   gap: 8px;
   border: none;
-  background: linear-gradient(
-        135deg,
-        #f0efef,
-        #fdfdfd
-      );
+  background: linear-gradient(135deg,
+      #f0efef,
+      #fdfdfd);
   color: #f8fbf9;
 }
 
@@ -725,14 +713,12 @@
   z-index: 20001;
 }
 
-.pedidos-modal-movable
-  .pedidos-modal-header {
+.pedidos-modal-movable .pedidos-modal-header {
   cursor: move;
   user-select: none;
 }
 
-.pedidos-modal-movable
-  .pedidos-close {
+.pedidos-modal-movable .pedidos-close {
   cursor: pointer;
 }
 
@@ -771,12 +757,10 @@
   gap: 15px;
   padding: 10px 12px 10px 16px;
   border-bottom: none;
-  background: linear-gradient(
-        135deg,
-        #0f766e 0%,
-        #159a75 55%,
-        #20afb2 100%
-      );
+  background: linear-gradient(135deg,
+      #0f766e 0%,
+      #159a75 55%,
+      #20afb2 100%);
 }
 
 .pedidos-search-header h3 {
@@ -849,14 +833,12 @@
   background: #f8fbfa;
 }
 
-.pedidos-search-filters
-  .pedidos-search-input {
+.pedidos-search-filters .pedidos-search-input {
   position: relative;
   padding: 0;
 }
 
-.pedidos-search-filters
-  .pedidos-search-input img {
+.pedidos-search-filters .pedidos-search-input img {
   position: absolute;
   left: 11px;
   top: 50%;
@@ -867,8 +849,7 @@
   pointer-events: none;
 }
 
-.pedidos-search-filters
-  .pedidos-search-input input {
+.pedidos-search-filters .pedidos-search-input input {
   width: 100%;
   height: 39px;
   box-sizing: border-box;
@@ -882,8 +863,7 @@
   font-size: 12px;
 }
 
-.pedidos-search-filters
-  .pedidos-search-input input:focus {
+.pedidos-search-filters .pedidos-search-input input:focus {
   border-color: #159a75;
   box-shadow: 0 0 0 2px rgba(21, 154, 117, 0.10);
 }
@@ -921,14 +901,12 @@
   cursor: pointer;
 }
 
-.pedidos-search-date-grid
-  input[type="date"]:focus {
+.pedidos-search-date-grid input[type="date"]:focus {
   border-color: #159a75;
   box-shadow: 0 0 0 2px rgba(21, 154, 117, 0.10);
 }
 
-.pedidos-search-date-grid
-  input[type="date"]::-webkit-calendar-picker-indicator {
+.pedidos-search-date-grid input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: pointer;
   opacity: 0.72;
 }
@@ -1027,7 +1005,7 @@
   background: #ffffff;
 }
 
-.pedidos-search-results > button {
+.pedidos-search-results>button {
   width: 100%;
   min-height: 55px;
   display: flex;
@@ -1044,7 +1022,7 @@
   transition: background 0.15s ease;
 }
 
-.pedidos-search-results > button:hover {
+.pedidos-search-results>button:hover {
   background: #f1faf6;
 }
 
@@ -1075,9 +1053,7 @@
   font-size: 9px;
 }
 
-.pedidos-search-results
-  > button
-  > strong {
+.pedidos-search-results>button>strong {
   flex-shrink: 0;
   color: #173c30;
   font-size: 11px;
@@ -1191,11 +1167,9 @@
   padding: 0 9px;
   border: none;
   border-radius: 6px;
-  background: linear-gradient(
-        135deg,
-        #0f766e,
-        #159a75
-      );
+  background: linear-gradient(135deg,
+      #0f766e,
+      #159a75);
   color: #ffffff;
   font-family: inherit;
   font-size: 9px;
@@ -1229,14 +1203,12 @@
   border-radius: 10px;
 }
 
-.pedidos-product-builder
-  input[list="pedidos-productos-disponibles"] {
+.pedidos-product-builder input[list="pedidos-productos-disponibles"] {
   background: #ffffff;
   border-color: #d3dfda;
 }
 
-.pedidos-product-builder
-  input[list="pedidos-productos-disponibles"]:focus {
+.pedidos-product-builder input[list="pedidos-productos-disponibles"]:focus {
   border-color: #159a75;
   box-shadow: 0 0 0 2px rgba(21, 154, 117, 0.10);
 }
@@ -1309,12 +1281,10 @@
   gap: 8px;
   box-sizing: border-box;
   padding: 10px 12px;
-  background: linear-gradient(
-        135deg,
-        #0f766e 0%,
-        #159a75 55%,
-        #20afb2 100%
-      );
+  background: linear-gradient(135deg,
+      #0f766e 0%,
+      #159a75 55%,
+      #20afb2 100%);
   color: #ffffff;
 }
 
@@ -1381,7 +1351,7 @@
   border-bottom: 1px solid #edf2f0;
 }
 
-.pedidos-client-card-client > span {
+.pedidos-client-card-client>span {
   display: block;
   margin-bottom: 3px;
   color: #81938c;
@@ -1424,7 +1394,7 @@
   padding: 11px 13px;
 }
 
-.pedidos-client-card-info > div {
+.pedidos-client-card-info>div {
   min-width: 0;
   padding: 7px 8px;
   border-radius: 7px;
@@ -1488,8 +1458,7 @@
   transition: opacity 0.17s ease, transform 0.17s ease, visibility 0.17s ease;
 }
 
-.pedidos-client-card:hover
-  .pedidos-client-card-actions {
+.pedidos-client-card:hover .pedidos-client-card-actions {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
@@ -1533,14 +1502,13 @@
   background: #f7faf9;
 }
 
-.pedidos-client-card-footer > span {
+.pedidos-client-card-footer>span {
   color: #71857c;
   font-size: 8px;
   font-weight: 850;
 }
 
-.pedidos-client-card-footer
-  .pedidos-status {
+.pedidos-client-card-footer .pedidos-status {
   width: auto;
   max-width: 145px;
   min-height: 29px;
@@ -1681,12 +1649,10 @@
 }
 
 .pedidos-list-table thead {
-  background: linear-gradient(
-        135deg,
-        #0f766e 0%,
-        #159a75 55%,
-        #20afb2 100%
-      );
+  background: linear-gradient(135deg,
+      #0f766e 0%,
+      #159a75 55%,
+      #20afb2 100%);
 }
 
 .pedidos-list-table th {
@@ -1733,15 +1699,13 @@
   padding-left: 16px;
 }
 
-.pedidos-list-table
-  .pedidos-list-row-selected {
+.pedidos-list-table .pedidos-list-row-selected {
   position: relative;
   background: #e6f7f1;
   box-shadow: inset 4px 0 0 #0b8b67;
 }
 
-.pedidos-list-table
-  .pedidos-list-row-selected:hover {
+.pedidos-list-table .pedidos-list-row-selected:hover {
   background: #dff4ed;
 }
 
@@ -1784,8 +1748,7 @@
   white-space: nowrap;
 }
 
-.pedidos-list-table
-  .pedidos-status {
+.pedidos-list-table .pedidos-status {
   width: 125px;
   max-width: 125px;
   min-height: 29px;
@@ -1819,8 +1782,7 @@
   background: #8ca99e;
 }
 
-.pedidos-title-actions
-  .pedidos-view-switch button {
+.pedidos-title-actions .pedidos-view-switch button {
   flex-shrink: 0;
 }
 
@@ -1866,8 +1828,7 @@
   pointer-events: none;
 }
 
-.pedidos-client-card-top-actions
-  .pedidos-client-card-status {
+.pedidos-client-card-top-actions .pedidos-client-card-status {
   flex-shrink: 0;
 }
 
@@ -1957,16 +1918,14 @@
   color: #9a6400;
 }
 
-.pedidos-client-card-info
-  .pedidos-payment {
+.pedidos-client-card-info .pedidos-payment {
   display: inline-flex;
   width: auto;
   max-width: 100%;
   margin-top: 2px;
 }
 
-.pedidos-list-table
-  .pedidos-payment {
+.pedidos-list-table .pedidos-payment {
   min-width: 82px;
 }
 
@@ -1975,7 +1934,7 @@
   min-width: 0;
 }
 
-.pedidos-client-selected-main > strong {
+.pedidos-client-selected-main>strong {
   display: block;
   margin-bottom: 2px;
   color: #173c30;
@@ -1983,7 +1942,7 @@
   font-weight: 900;
 }
 
-.pedidos-client-selected-main > span {
+.pedidos-client-selected-main>span {
   display: block;
   margin-bottom: 8px;
   color: #6d8179;
@@ -1998,7 +1957,7 @@
   margin-top: 7px;
 }
 
-.pedidos-client-selected-data > span {
+.pedidos-client-selected-data>span {
   min-width: 0;
   margin: 0;
   padding: 6px 8px;
@@ -2012,26 +1971,26 @@
   text-overflow: ellipsis;
 }
 
-.pedidos-client-selected-data > span b {
+.pedidos-client-selected-data>span b {
   color: #087858;
   font-weight: 900;
 }
 
-.pedidos-client-selected > button {
+.pedidos-client-selected>button {
   flex-shrink: 0;
   margin-top: 1px;
 }
 
-.pedidos-client-card-info > div:nth-last-child(-n + 2) {
+.pedidos-client-card-info>div:nth-last-child(-n + 2) {
   border: 1px solid #e0ece7;
 }
 
-.pedidos-client-card-info > div strong {
+.pedidos-client-card-info>div strong {
   min-height: 12px;
 }
 
 .pedidos-list-table th,
-  .pedidos-list-table td {
+.pedidos-list-table td {
   vertical-align: middle;
 }
 
@@ -2047,8 +2006,7 @@
   color: #52636b;
 }
 
-.pedidos-form-section h3
-  .pedidos-client-optional {
+.pedidos-form-section h3 .pedidos-client-optional {
   display: inline-block;
   margin-left: 8px;
   padding: 3px 7px;
@@ -2074,7 +2032,7 @@
 }
 
 .pedidos-assign-client-btn,
-  .pedidos-confirm-btn {
+.pedidos-confirm-btn {
   min-height: 30px;
   display: inline-flex;
   align-items: center;
@@ -2106,36 +2064,28 @@
 
 .pedidos-confirm-btn {
   border: 1px solid #0d8b68;
-  background: linear-gradient(
-        135deg,
-        #0f766e,
-        #159a75
-      );
+  background: linear-gradient(135deg,
+      #0f766e,
+      #159a75);
   color: #ffffff;
   box-shadow: 0 3px 9px rgba(15, 118, 110, 0.15);
 }
 
 .pedidos-confirm-btn:hover {
   transform: translateY(-1px);
-  background: linear-gradient(
-        135deg,
-        #0b695f,
-        #118a69
-      );
+  background: linear-gradient(135deg,
+      #0b695f,
+      #118a69);
   box-shadow: 0 6px 14px rgba(15, 118, 110, 0.22);
 }
 
-.pedidos-client-card-footer
-  .pedidos-assign-client-btn,
-  .pedidos-client-card-footer
-  .pedidos-confirm-btn {
+.pedidos-client-card-footer .pedidos-assign-client-btn,
+.pedidos-client-card-footer .pedidos-confirm-btn {
   max-width: 170px;
 }
 
-.pedidos-list-table
-  .pedidos-assign-client-btn,
-  .pedidos-list-table
-  .pedidos-confirm-btn {
+.pedidos-list-table .pedidos-assign-client-btn,
+.pedidos-list-table .pedidos-confirm-btn {
   min-height: 28px;
   padding-left: 9px;
   padding-right: 9px;
@@ -2156,15 +2106,13 @@
   padding: 11px 14px;
   margin: 0;
   border-bottom: 1px solid #dce8e3;
-  background: linear-gradient(
-        180deg,
-        #ffffff 0%,
-        #f7fbf9 100%
-      );
+  background: linear-gradient(180deg,
+      #ffffff 0%,
+      #f7fbf9 100%);
   box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
 }
 
-.pedidos-quick-filters > label {
+.pedidos-quick-filters>label {
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -2174,7 +2122,7 @@
   font-weight: 900;
 }
 
-.pedidos-quick-filters > label select {
+.pedidos-quick-filters>label select {
   width: 100%;
   height: 35px;
   box-sizing: border-box;
@@ -2191,12 +2139,12 @@
   transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
 }
 
-.pedidos-quick-filters > label select:hover {
+.pedidos-quick-filters>label select:hover {
   border-color: #a8cfc0;
   background: #fbfefd;
 }
 
-.pedidos-quick-filters > label select:focus {
+.pedidos-quick-filters>label select:focus {
   border-color: #159a75;
   box-shadow: 0 0 0 2px rgba(21, 154, 117, 0.10);
 }
@@ -2595,8 +2543,7 @@
   background: #15864a;
 }
 
-.pedidos-title-actions
-.pedidos-view-switch button {
+.pedidos-title-actions .pedidos-view-switch button {
   flex: 0 0 auto;
 }
 
@@ -2609,6 +2556,7 @@
     opacity: 0;
     transform: scale(0.975) translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -2616,23 +2564,27 @@
 }
 
 @keyframes pedidosAsignarClientePulso {
+
   0%,
-    100% {
+  100% {
     box-shadow: 0 0 0 0 rgba(214, 157, 31, 0);
   }
+
   50% {
     box-shadow: 0 0 0 4px rgba(214, 157, 31, 0.14);
   }
 }
 
 @keyframes pedidosAsignarClienteParpadeo {
+
   0%,
-    100% {
+  100% {
     opacity: 1;
     background: #fff5d7;
     border-color: #e0ad3e;
     box-shadow: 0 0 0 0 rgba(214, 157, 31, 0);
   }
+
   50% {
     opacity: 0.58;
     background: #ffe6a0;
@@ -2655,27 +2607,34 @@
   .pedidos-quick-filters {
     grid-template-columns: repeat(4, minmax(130px, 1fr));
   }
+
   .pedidos-quick-filter-result,
-    .pedidos-quick-filter-clear {
+  .pedidos-quick-filter-clear {
     width: 100%;
   }
+
   .pedidos-title-bar {
     grid-template-columns: minmax(130px, 1fr) max-content;
     column-gap: 12px;
     padding-right: 14px;
   }
+
   .pedidos-title-actions {
     gap: 5px;
   }
+
   .pedidos-view-switch {
     margin-right: 1px;
   }
+
   .pedidos-view-btn {
     padding: 0 8px;
   }
-  .pedidos-view-btn > span:last-child {
+
+  .pedidos-view-btn>span:last-child {
     display: none;
   }
+
   .pedidos-top-icon-btn {
     width: 38px;
     height: 38px;
@@ -2683,6 +2642,7 @@
     padding: 5px;
     border-radius: 9px;
   }
+
   .pedidos-top-icon-btn img {
     width: 24px;
     height: 24px;
@@ -2699,24 +2659,30 @@
   .pedidos-view-btn {
     padding: 0 9px;
   }
-  .pedidos-view-btn > span:last-child {
+
+  .pedidos-view-btn>span:last-child {
     display: none;
   }
+
   .pedidos-view-switch {
     margin-right: 0;
   }
+
   .pedidos-title-bar {
     grid-template-columns: 1fr;
     min-height: auto;
     padding: 10px 12px 10px 70px;
     row-gap: 8px;
   }
+
   .pedidos-title-info {
     width: 100%;
   }
+
   .pedidos-title-info h2 {
     font-size: 22px;
   }
+
   .pedidos-title-actions {
     width: 100%;
     justify-content: flex-end;
@@ -2730,42 +2696,53 @@
     flex-wrap: wrap;
     gap: 10px;
   }
+
   .pedidos-title-info {
     margin-left: 0;
   }
+
   .pedidos-modal-overlay {
     padding: 8px;
   }
+
   .pedidos-modal {
     width: 100%;
     max-height: 94vh;
     border-radius: 12px;
   }
+
   .pedidos-product-builder {
     grid-template-columns: 1fr;
   }
+
   .pedidos-final-grid {
     grid-template-columns: 1fr;
   }
+
   .pedidos-summary {
     width: 100%;
   }
+
   .pedidos-modal-footer {
     flex-wrap: wrap;
   }
+
   .pedidos-cancel-btn,
-    .pedidos-save-btn {
+  .pedidos-save-btn {
     flex: 1;
   }
+
   .pedidos-client-selected-data {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
   .pedidos-quick-filters {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     padding: 10px;
   }
+
   .pedidos-quick-filter-result,
-    .pedidos-quick-filter-clear {
+  .pedidos-quick-filter-clear {
     width: 100%;
   }
 }
@@ -2774,21 +2751,26 @@
   .pedidos-search-date-grid {
     grid-template-columns: 1fr 1fr;
   }
+
   .pedidos-search-clear {
     grid-column: 1 / -1;
     width: 100%;
   }
+
   .pedidos-search-filter-info {
     flex-direction: column;
     align-items: flex-start;
     gap: 3px;
   }
+
   .pedidos-card {
     padding: 9px;
   }
+
   .pedidos-cards-grid {
     gap: 9px;
   }
+
   .pedidos-client-card-actions {
     position: static;
     display: flex;
@@ -2799,24 +2781,30 @@
     transform: none;
     pointer-events: auto;
   }
+
   .pedidos-card-open-btn {
     min-height: 31px;
   }
+
   .pedidos-list-table {
     min-width: 820px;
   }
+
   .pedidos-list-table th,
-    .pedidos-list-table td {
+  .pedidos-list-table td {
     padding-left: 9px;
     padding-right: 9px;
   }
+
   .pedidos-client-card-top-actions {
     gap: 6px;
   }
+
   .pedidos-card-print-btn {
     width: 20px;
     height: 20px;
   }
+
   .pedidos-card-print-btn img {
     width: 18px;
     height: 18px;
@@ -2828,17 +2816,21 @@
     padding: 9px 10px 9px 62px;
     row-gap: 7px;
   }
+
   .pedidos-title-info h2 {
     font-size: 20px;
   }
+
   .pedidos-title-actions {
     justify-content: flex-start;
   }
+
   .pedidos-top-icon-btn {
     width: 36px;
     height: 36px;
     flex-basis: 36px;
   }
+
   .pedidos-top-icon-btn img {
     width: 22px;
     height: 22px;
@@ -2849,62 +2841,77 @@
   .pedidos-modal-overlay:not(.pedidos-modal-overlay-movable) {
     padding: 8px;
   }
+
   .pedidos-search-modal {
     width: calc(100vw - 16px);
     max-width: none;
     max-height: calc(100vh - 20px);
     border-radius: 11px;
   }
+
   .pedidos-search-header {
     min-height: 50px;
     padding: 8px 9px 8px 12px;
   }
+
   .pedidos-search-header h3 {
     font-size: 15px;
   }
+
   .pedidos-search-header button {
     width: 32px;
     height: 32px;
     flex-basis: 32px;
   }
+
   .pedidos-search-input {
     padding: 9px;
   }
+
   .pedidos-search-input img {
     left: 20px;
   }
+
   .pedidos-search-input input {
     height: 37px;
     font-size: 11px;
   }
+
   .pedidos-search-results {
     padding: 0 9px 9px;
   }
-  .pedidos-search-results > button {
+
+  .pedidos-search-results>button {
     gap: 8px;
     padding: 9px 7px;
   }
+
   .pedidos-search-results span,
-    .pedidos-search-results span strong,
-    .pedidos-search-results > button > strong {
+  .pedidos-search-results span strong,
+  .pedidos-search-results>button>strong {
     font-size: 10px;
   }
+
   .pedidos-product-results {
     width: 100%;
     max-width: 100%;
     max-height: 200px;
   }
+
   .pedidos-product-result {
     min-height: 45px;
     gap: 7px;
     padding: 6px;
   }
+
   .pedidos-product-result-info strong {
     font-size: 10px;
   }
+
   .pedidos-product-result-info span {
     font-size: 8px;
   }
+
   .pedidos-product-result button {
     height: 27px;
     padding: 0 7px;
@@ -2916,29 +2923,32 @@
   .pedidos-cards-grid {
     grid-template-columns: 1fr;
   }
+
   .pedidos-client-card {
     min-height: 0;
   }
+
   .pedidos-client-card-client h3 {
     font-size: 13px;
   }
+
   .pedidos-client-card-total strong {
     font-size: 14px;
   }
-  .pedidos-form-section h3
-    .pedidos-client-optional {
+
+  .pedidos-form-section h3 .pedidos-client-optional {
     display: block;
     width: fit-content;
     margin: 5px 0 0;
   }
+
   .pedidos-client-card-footer {
     align-items: stretch;
     flex-direction: column;
   }
-  .pedidos-client-card-footer
-    .pedidos-assign-client-btn,
-    .pedidos-client-card-footer
-    .pedidos-confirm-btn {
+
+  .pedidos-client-card-footer .pedidos-assign-client-btn,
+  .pedidos-client-card-footer .pedidos-confirm-btn {
     width: 100%;
     max-width: none;
   }
@@ -2948,10 +2958,12 @@
   .pedidos-client-selected {
     flex-direction: column;
   }
+
   .pedidos-client-selected-data {
     grid-template-columns: 1fr;
   }
-  .pedidos-client-selected > button {
+
+  .pedidos-client-selected>button {
     width: 100%;
   }
 }
@@ -2960,86 +2972,97 @@
   .pedidos-search-filters {
     padding: 9px 9px 7px;
   }
-  .pedidos-search-filters
-    .pedidos-search-input input {
+
+  .pedidos-search-filters .pedidos-search-input input {
     height: 37px;
     font-size: 11px;
   }
+
   .pedidos-search-date-grid {
     grid-template-columns: 1fr;
     gap: 7px;
     margin-top: 8px;
   }
-  .pedidos-search-date-grid
-    input[type="date"] {
+
+  .pedidos-search-date-grid input[type="date"] {
     height: 36px;
   }
+
   .pedidos-search-clear {
     grid-column: auto;
     width: 100%;
     height: 35px;
   }
+
   .pedidos-search-filter-info {
     margin-top: 7px;
     padding: 6px 7px;
     font-size: 8px;
   }
+
   .pedidos-search-results {
     padding: 5px 9px 9px;
   }
-  .pedidos-search-results
-    > button {
+
+  .pedidos-search-results>button {
     min-height: 52px;
     gap: 7px;
     padding: 7px 6px;
   }
-  .pedidos-search-results
-    span strong,
-    .pedidos-search-results
-    span b,
-    .pedidos-search-results
-    > button
-    > strong {
+
+  .pedidos-search-results span strong,
+  .pedidos-search-results span b,
+  .pedidos-search-results>button>strong {
     font-size: 10px;
   }
-  .pedidos-search-results
-    span small {
+
+  .pedidos-search-results span small {
     font-size: 8px;
   }
+
   .pedidos-quick-filters {
     grid-template-columns: 1fr;
     gap: 7px;
   }
-  .pedidos-quick-filters > label select,
-    .pedidos-quick-filter-result,
-    .pedidos-quick-filter-clear {
+
+  .pedidos-quick-filters>label select,
+  .pedidos-quick-filter-result,
+  .pedidos-quick-filter-clear {
     height: 37px;
   }
+
   .pedidos-datepicker {
     width: min(300px, calc(100vw - 20px));
     padding: 12px;
   }
+
   .pedidos-datepicker-header {
     grid-template-columns: 29px minmax(0, 1fr) 29px;
     gap: 4px;
   }
+
   .pedidos-datepicker-period {
     gap: 4px;
   }
+
   .pedidos-datepicker-month-select {
     width: 106px;
   }
+
   .pedidos-datepicker-year-select {
     width: 80px;
   }
+
   .pedidos-datepicker-select {
     padding-left: 7px;
     padding-right: 18px;
     font-size: 10px;
   }
+
   .pedidos-datepicker-days button {
     height: 27px;
   }
+
   .pedidos-datepicker-footer button {
     height: 33px;
   }
@@ -3049,6 +3072,7 @@
   .pedidos-title-bar {
     padding-left: 60px;
   }
+
   .pedidos-title-actions {
     display: grid;
     grid-template-columns: auto repeat(5, 36px);
@@ -3056,6 +3080,7 @@
     width: 100%;
     gap: 5px;
   }
+
   .pedidos-view-switch {
     grid-column: 1 / -1;
     justify-self: start;
@@ -3066,23 +3091,27 @@
   .pedidos-client-card-top {
     gap: 7px;
   }
+
   .pedidos-client-card-code {
     flex: 1;
     min-width: 0;
   }
+
   .pedidos-client-card-top-actions {
     gap: 5px;
   }
+
   .pedidos-card-print-btn {
     width: 17px;
     height: 17px;
   }
+
   .pedidos-card-print-btn img {
     width: 17px;
     height: 17px;
   }
-  .pedidos-client-card-top-actions
-    .pedidos-client-card-status {
+
+  .pedidos-client-card-top-actions .pedidos-client-card-status {
     padding-left: 7px;
     padding-right: 7px;
     font-size: 7px;
@@ -3093,10 +3122,12 @@
   .pedidos-client-card-info {
     grid-template-columns: 1fr;
   }
+
   .pedidos-client-card-top {
     align-items: flex-start;
     flex-direction: column;
   }
+
   .pedidos-client-card-status {
     align-self: flex-start;
   }
