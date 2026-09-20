@@ -3138,3 +3138,1354 @@
     animation: none;
   }
 }
+/* =========================================================
+   PEDIDOS - AJUSTES FINALES DEL NUEVO FLUJO
+   No modifica la cabecera ni ModulosMenu
+   ========================================================= */
+
+/* Nuevo estado: Listo para entrega */
+.pedidos-status-listo-para-entrega {
+  border: 1px solid #b6ded0;
+  background: #eaf8f3;
+  color: #087858;
+}
+
+.pedidos-card-status-listo-para-entrega {
+  border-color: #b7dfd0;
+  background: #e7f7f1;
+  color: #087858;
+}
+
+/* El texto "Listo para entrega" necesita un poco más de espacio */
+.pedidos-client-card-footer .pedidos-status {
+  max-width: 165px;
+  min-width: 145px;
+}
+
+.pedidos-list-table .pedidos-status {
+  width: 150px;
+  max-width: 150px;
+}
+
+/* Empacador continúa siendo opcional */
+.pedidos-form-section label .pedidos-client-optional {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  margin-top: 1px;
+  padding: 2px 7px;
+  border: 1px solid #d8e4df;
+  border-radius: 999px;
+  background: #f5f8f7;
+  color: #70817a;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+/* Al quitar Tipo de pago y Repartidor, los campos finales
+   quedan organizados en una sola fila en pantallas amplias. */
+.pedidos-final-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1000px) {
+  .pedidos-final-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .pedidos-final-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pedidos-client-card-footer .pedidos-status,
+  .pedidos-list-table .pedidos-status {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+/* =========================================================
+   PEDIDOS - ESTADOS / ESTILO VISUAL MEJORADO
+   No modifica cabecera, ModulosMenu ni acciones superiores
+   ========================================================= */
+
+.pedidos-status {
+  min-width: 154px;
+  height: 32px;
+  padding: 0 34px 0 12px;
+
+  border-radius: 999px;
+
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 2px 6px
+    rgba(15, 23, 42, 0.05);
+
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+
+.pedidos-status:hover {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 5px 12px
+    rgba(15, 23, 42, 0.09);
+}
+
+
+.pedidos-status:focus {
+  box-shadow:
+    0 0 0 3px
+    rgba(32, 175, 178, 0.12),
+    0 5px 12px
+    rgba(15, 23, 42, 0.07);
+}
+
+
+/* Borrador */
+.pedidos-status-borrador {
+  border-color: #d6dee1;
+  background:
+    linear-gradient(
+      180deg,
+      #fbfcfc 0%,
+      #f1f4f5 100%
+    );
+  color: #52636b;
+}
+
+
+/* En preparación */
+.pedidos-status-en-preparacion {
+  border-color: #b8d7f0;
+  background:
+    linear-gradient(
+      180deg,
+      #f5fbff 0%,
+      #e8f4ff 100%
+    );
+  color: #1769aa;
+}
+
+
+/* Listo para entrega */
+.pedidos-status-listo-para-entrega {
+  border-color: #9fd6c3;
+  background:
+    linear-gradient(
+      180deg,
+      #f3fcf8 0%,
+      #e4f7ef 100%
+    );
+  color: #087858;
+}
+
+
+/* Cancelado */
+.pedidos-status-cancelado {
+  border-color: #efc1bd;
+  background:
+    linear-gradient(
+      180deg,
+      #fff8f7 0%,
+      #ffefed 100%
+    );
+  color: #b42318;
+}
+
+
+/* Estado pequeño en la cabecera de cada tarjeta */
+.pedidos-client-card-status {
+  position: relative;
+
+  min-height: 25px;
+
+  padding:
+    0
+    9px
+    0
+    21px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: 0.015em;
+
+  box-shadow:
+    0 2px 7px
+    rgba(15, 23, 42, 0.08);
+
+  white-space: nowrap;
+}
+
+
+.pedidos-client-card-status::before {
+  content: "";
+
+  position: absolute;
+
+  left: 9px;
+
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(255, 255, 255, 0.55);
+}
+
+
+/* Badge superior: Borrador */
+.pedidos-card-status-borrador {
+  border-color: #d8e0e3;
+  background: #f4f7f8;
+  color: #52636b;
+}
+
+
+/* Badge superior: En preparación */
+.pedidos-card-status-en-preparacion {
+  border-color: #b9d9f5;
+  background: #eaf5ff;
+  color: #1769aa;
+}
+
+
+/* Badge superior: Listo para entrega */
+.pedidos-card-status-listo-para-entrega {
+  border-color: #adddcb;
+  background: #e8f8f1;
+  color: #087858;
+}
+
+
+/* Badge superior: Cancelado */
+.pedidos-card-status-cancelado {
+  border-color: #efc3bf;
+  background: #fff0ef;
+  color: #b42318;
+}
+
+
+/* Estado final bloqueado: Listo / Cancelado */
+.pedidos-status-static {
+  position: relative;
+
+  min-height: 31px;
+
+  padding:
+    0
+    12px
+    0
+    27px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid transparent;
+  border-radius: 999px;
+
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 0.01em;
+
+  white-space: nowrap;
+
+  box-shadow:
+    0 2px 7px
+    rgba(15, 23, 42, 0.05);
+}
+
+
+.pedidos-status-static::before {
+  content: "";
+
+  position: absolute;
+
+  left: 11px;
+
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+}
+
+
+.pedidos-status-static-listo-para-entrega {
+  border-color: #9fd6c3;
+  background:
+    linear-gradient(
+      180deg,
+      #f3fcf8 0%,
+      #e5f7ef 100%
+    );
+  color: #087858;
+}
+
+
+.pedidos-status-static-cancelado {
+  border-color: #efc1bd;
+  background:
+    linear-gradient(
+      180deg,
+      #fff8f7 0%,
+      #ffefed 100%
+    );
+  color: #b42318;
+}
+
+
+/* Tarjeta: estado al pie */
+.pedidos-client-card-footer {
+  min-height: 52px;
+}
+
+
+.pedidos-client-card-footer > span {
+  color: #6f827a;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.045em;
+}
+
+
+.pedidos-client-card-footer .pedidos-status {
+  width: auto;
+  min-width: 154px;
+  max-width: 176px;
+}
+
+
+/* Lista */
+.pedidos-list-table .pedidos-status {
+  width: 154px;
+  min-width: 154px;
+  max-width: 154px;
+}
+
+
+.pedidos-list-table .pedidos-status-static {
+  min-width: 142px;
+}
+
+
+/* Asignar cliente mantiene apariencia de advertencia */
+.pedidos-assign-client-btn {
+  min-height: 31px;
+
+  padding:
+    0
+    11px;
+
+  border:
+    1px solid
+    #efcf79;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fffdf5,
+      #fff6d9
+    );
+
+  color: #8a6200;
+
+  font-size: 9px;
+  font-weight: 900;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 2px 7px
+    rgba(138, 98, 0, 0.08);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+}
+
+
+.pedidos-assign-client-btn:hover {
+  transform:
+    translateY(-1px);
+
+  background:
+    #fff3c5;
+
+  box-shadow:
+    0 5px 12px
+    rgba(138, 98, 0, 0.12);
+}
+
+
+@media (max-width: 760px) {
+
+  .pedidos-client-card-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+
+  .pedidos-client-card-footer .pedidos-status,
+  .pedidos-client-card-footer .pedidos-status-static,
+  .pedidos-list-table .pedidos-status,
+  .pedidos-list-table .pedidos-status-static {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+}
+/* =========================================================
+   PEDIDOS - ESTADOS VERDES MEJORADOS
+   Cada estado seleccionado muestra un color distinto
+   sin tocar la cabecera ni ModulosMenu
+   ========================================================= */
+
+.pedidos-status {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  min-width: 168px;
+  min-height: 40px;
+  padding: 0 42px 0 14px;
+
+  border: 1px solid #cfe3da;
+  border-radius: 12px;
+
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+  background-size: 13px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23556766' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
+  box-shadow:
+    0 4px 10px rgba(16, 24, 40, 0.05),
+    inset 0 1px 0 rgba(255,255,255,0.55);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+
+.pedidos-status:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 8px 18px rgba(16, 24, 40, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.pedidos-status:focus {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(21, 154, 117, 0.12),
+    0 8px 18px rgba(16, 24, 40, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.pedidos-status option {
+  color: #213038;
+  background: #ffffff;
+  font-weight: 700;
+}
+
+/* ========= COLORES DEL SELECT SEGÚN ESTADO ========= */
+
+.pedidos-status-borrador {
+  border-color: #d4e2dc;
+  background:
+    linear-gradient(180deg, #f9fcfb 0%, #eef6f3 100%);
+  color: #536761;
+}
+
+.pedidos-status-en-preparacion {
+  border-color: #a8ddd1;
+  background:
+    linear-gradient(180deg, #effcf8 0%, #dff6ef 100%);
+  color: #0f7a65;
+}
+
+.pedidos-status-listo-para-entrega {
+  border-color: #82d0b7;
+  background:
+    linear-gradient(180deg, #e7fbf3 0%, #cff3e3 100%);
+  color: #05684e;
+}
+
+.pedidos-status-cancelado {
+  border-color: #e8c2bc;
+  background:
+    linear-gradient(180deg, #fff7f5 0%, #fdebe7 100%);
+  color: #b43826;
+}
+
+/* ========= BADGE SUPERIOR DE TARJETA ========= */
+
+.pedidos-client-card-status {
+  min-height: 28px;
+  padding: 0 11px 0 24px;
+
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 999px;
+
+  font-size: 8px;
+  font-weight: 950;
+
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.pedidos-client-card-status::before {
+  left: 10px;
+  width: 8px;
+  height: 8px;
+}
+
+.pedidos-card-status-borrador {
+  border-color: #d4e2dc;
+  background: #f2f8f5;
+  color: #536761;
+}
+
+.pedidos-card-status-en-preparacion {
+  border-color: #a8ddd1;
+  background: #e6f8f1;
+  color: #0f7a65;
+}
+
+.pedidos-card-status-listo-para-entrega {
+  border-color: #82d0b7;
+  background: #d9f5e8;
+  color: #05684e;
+}
+
+.pedidos-card-status-cancelado {
+  border-color: #e8c2bc;
+  background: #fff1ee;
+  color: #b43826;
+}
+
+/* ========= ESTADO FIJO CUANDO YA NO ES SELECT ========= */
+
+.pedidos-status-static {
+  min-height: 36px;
+  padding: 0 13px 0 29px;
+
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 950;
+
+  box-shadow:
+    0 4px 10px rgba(16, 24, 40, 0.05),
+    inset 0 1px 0 rgba(255,255,255,0.55);
+}
+
+.pedidos-status-static::before {
+  left: 12px;
+  width: 8px;
+  height: 8px;
+}
+
+.pedidos-status-static-listo-para-entrega {
+  border-color: #82d0b7;
+  background:
+    linear-gradient(180deg, #e7fbf3 0%, #cff3e3 100%);
+  color: #05684e;
+}
+
+.pedidos-status-static-cancelado {
+  border-color: #e8c2bc;
+  background:
+    linear-gradient(180deg, #fff7f5 0%, #fdebe7 100%);
+  color: #b43826;
+}
+
+/* ========= EN TARJETA Y TABLA ========= */
+
+.pedidos-client-card-footer .pedidos-status,
+.pedidos-list-table .pedidos-status {
+  width: auto;
+  max-width: none;
+}
+
+.pedidos-client-card-footer .pedidos-status-static,
+.pedidos-list-table .pedidos-status-static {
+  min-width: 168px;
+  justify-content: center;
+}
+
+@media (max-width: 760px) {
+  .pedidos-client-card-footer .pedidos-status,
+  .pedidos-list-table .pedidos-status,
+  .pedidos-client-card-footer .pedidos-status-static,
+  .pedidos-list-table .pedidos-status-static {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+
+/* =========================================================
+   PEDIDO LISTO PARA ENTREGA - MODO CONSULTA
+========================================================= */
+
+.pedidos-readonly-notice {
+  margin: 0 0 10px;
+  padding: 9px 11px;
+
+  border: 1px solid #b9d9cd;
+  border-radius: 9px;
+
+  background: #f0f8f5;
+  color: #426158;
+
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+
+.pedidos-readonly-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+}
+
+
+.pedidos-readonly-fieldset:disabled {
+  opacity: 1;
+}
+
+
+.pedidos-readonly-fieldset:disabled input,
+.pedidos-readonly-fieldset:disabled select,
+.pedidos-readonly-fieldset:disabled textarea,
+.pedidos-readonly-fieldset:disabled button {
+  cursor: default;
+}
+
+
+.pedidos-readonly-fieldset:disabled input,
+.pedidos-readonly-fieldset:disabled select,
+.pedidos-readonly-fieldset:disabled textarea {
+  background: #f5f7f6;
+  color: #53675f;
+}
+
+/* =========================================================
+   PEDIDOS - ESTADOS V3 / MISMO ESTILO VISUAL DE ENTREGA
+   ========================================================= */
+
+.pedidos-state-trigger {
+  --state-color: #52665e;
+  --state-border: #cbded6;
+  --state-bg-top: #ffffff;
+  --state-bg-bottom: #f4f8f6;
+
+  position: relative;
+  min-width: 175px;
+  height: 37px;
+  padding: 0 8px 0 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--state-border);
+  border-radius: 999px;
+  outline: none;
+  background: linear-gradient(180deg, var(--state-bg-top), var(--state-bg-bottom));
+  color: var(--state-color);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  text-align: left;
+  cursor: pointer;
+  box-shadow:
+    0 3px 9px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.pedidos-state-trigger:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 7px 16px rgba(15, 23, 42, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+.pedidos-state-trigger:focus-visible {
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--state-color) 16%, transparent),
+    0 7px 16px rgba(15, 23, 42, 0.10);
+}
+
+.pedidos-state-trigger:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pedidos-state-trigger-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
+  border-radius: 50%;
+  background: var(--state-color);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.92),
+    0 0 0 4px color-mix(in srgb, var(--state-color) 60%, transparent);
+}
+
+.pedidos-state-trigger-text {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pedidos-state-trigger-arrow {
+  width: 23px;
+  height: 23px;
+  flex: 0 0 23px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--state-color) 9%, #ffffff);
+  color: var(--state-color);
+  font-size: 12px;
+  line-height: 1;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.pedidos-state-trigger-arrow.open {
+  transform: rotate(180deg);
+}
+
+.pedidos-state-trigger-compact {
+  min-width: 150px;
+  height: 32px;
+  padding-left: 10px;
+  font-size: 9px;
+}
+
+.pedidos-state-trigger-compact .pedidos-state-trigger-arrow {
+  width: 21px;
+  height: 21px;
+  flex-basis: 21px;
+}
+
+.pedidos-state-trigger-filter {
+  width: 100%;
+  min-width: 0;
+  height: 35px;
+  border-radius: 8px;
+}
+
+/* Colores por estado */
+.pedidos-state-trigger-todos {
+  --state-color: #475569;
+  --state-border: #cbd5e1;
+  --state-bg-top: #ffffff;
+  --state-bg-bottom: #f4f7fa;
+}
+
+.pedidos-state-trigger-borrador {
+  --state-color: #a16207;
+  --state-border: #efcf7c;
+  --state-bg-top: #fffdf7;
+  --state-bg-bottom: #fff3d0;
+}
+
+.pedidos-state-trigger-en-preparacion {
+  --state-color: #315fbd;
+  --state-border: #b9cdfd;
+  --state-bg-top: #f8faff;
+  --state-bg-bottom: #eaf1ff;
+}
+
+.pedidos-state-trigger-listo-para-entrega {
+  --state-color: #0f766e;
+  --state-border: #8bd6c4;
+  --state-bg-top: #f4fcf9;
+  --state-bg-bottom: #ddf6ee;
+}
+
+.pedidos-state-trigger-cancelado {
+  --state-color: #b42318;
+  --state-border: #efaaa4;
+  --state-bg-top: #fff9f8;
+  --state-bg-bottom: #ffe7e4;
+}
+
+/* Menú flotante igual al de Entrega */
+.pedidos-state-menu {
+  position: fixed;
+  z-index: 50000;
+  max-height: 260px;
+  padding: 6px;
+  overflow-y: auto;
+  border: 1px solid #d9e5e0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 20px 45px rgba(15, 23, 42, 0.20),
+    0 4px 12px rgba(15, 23, 42, 0.08);
+  animation: pedidosEstadoMenuEntrada 0.15s ease;
+}
+
+.pedidos-state-menu::-webkit-scrollbar { width: 6px; }
+.pedidos-state-menu::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #c7d8d1;
+}
+
+@keyframes pedidosEstadoMenuEntrada {
+  from { opacity: 0; transform: translateY(-5px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.pedidos-state-option {
+  --option-color: #52665e;
+  --option-soft: #f5f8f7;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 9px;
+  outline: none;
+  background: transparent;
+  color: #344d43;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease, transform 0.14s ease;
+}
+
+.pedidos-state-option + .pedidos-state-option { margin-top: 2px; }
+
+.pedidos-state-option:hover,
+.pedidos-state-option:focus-visible {
+  background: var(--option-soft);
+  color: var(--option-color);
+  transform: translateX(2px);
+}
+
+.pedidos-state-option.active {
+  background: var(--option-soft);
+  color: var(--option-color);
+}
+
+.pedidos-state-option-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 50%;
+  background: var(--option-color);
+  box-shadow:
+    0 0 0 3px #ffffff,
+    0 0 0 4px color-mix(in srgb, var(--option-color) 42%, transparent);
+}
+
+.pedidos-state-option-text {
+  min-width: 0;
+  flex: 1;
+}
+
+.pedidos-state-option-check {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--option-color);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 950;
+}
+
+.pedidos-state-option-todos {
+  --option-color: #475569;
+  --option-soft: #f1f5f9;
+}
+
+.pedidos-state-option-borrador {
+  --option-color: #a16207;
+  --option-soft: #fff6dc;
+}
+
+.pedidos-state-option-en-preparacion {
+  --option-color: #315fbd;
+  --option-soft: #eef4ff;
+}
+
+.pedidos-state-option-listo-para-entrega {
+  --option-color: #0f766e;
+  --option-soft: #e7f8f2;
+}
+
+.pedidos-state-option-cancelado {
+  --option-color: #b42318;
+  --option-soft: #fff0ee;
+}
+
+/* Integración en Pedidos */
+.pedidos-client-card-footer .pedidos-state-trigger {
+  margin-left: auto;
+}
+
+.pedidos-list-table .pedidos-state-trigger {
+  min-width: 150px;
+}
+
+.pedidos-quick-filters .pedidos-state-trigger-filter {
+  width: 100%;
+}
+
+@media (max-width: 760px) {
+  .pedidos-state-trigger-compact,
+  .pedidos-state-trigger-filter {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* =========================================================
+   PEDIDOS - TODOS LOS SELECT CON EL MISMO ESTILO
+   DEL SELECT PERSONALIZADO DE ESTADOS
+   ========================================================= */
+
+.pedidos-select-trigger {
+  --select-color: #0f766e;
+  --select-border: #8bd6c4;
+  --select-bg-top: #f8fdfb;
+  --select-bg-bottom: #e7f8f2;
+
+  position: relative;
+
+  width: 100%;
+  min-width: 0;
+  height: 35px;
+
+  padding: 0 8px 0 11px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid var(--select-border);
+  border-radius: 999px;
+  outline: none;
+
+  background: linear-gradient(
+    180deg,
+    var(--select-bg-top),
+    var(--select-bg-bottom)
+  );
+
+  color: var(--select-color);
+
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  text-align: left;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 3px 9px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+}
+
+
+.pedidos-select-trigger:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 7px 16px rgba(15, 23, 42, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+}
+
+
+.pedidos-select-trigger:focus-visible {
+  box-shadow:
+    0 0 0 3px rgba(15, 118, 110, 0.14),
+    0 7px 16px rgba(15, 23, 42, 0.09);
+}
+
+
+.pedidos-select-trigger:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+.pedidos-select-trigger-empty {
+  --select-color: #65776f;
+  --select-border: #d1dfda;
+  --select-bg-top: #ffffff;
+  --select-bg-bottom: #f4f8f6;
+}
+
+
+.pedidos-select-trigger-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 9px;
+
+  border-radius: 50%;
+
+  background: var(--select-color);
+
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.92),
+    0 0 0 4px color-mix(
+      in srgb,
+      var(--select-color) 55%,
+      transparent
+    );
+}
+
+
+.pedidos-select-trigger-text {
+  min-width: 0;
+  flex: 1;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.pedidos-select-trigger-arrow {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: color-mix(
+    in srgb,
+    var(--select-color) 9%,
+    #ffffff
+  );
+
+  color: var(--select-color);
+
+  font-size: 12px;
+  line-height: 1;
+
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease;
+}
+
+
+.pedidos-select-trigger-arrow.open {
+  transform: rotate(180deg);
+}
+
+
+.pedidos-select-trigger-filter {
+  height: 35px;
+  border-radius: 10px;
+}
+
+
+.pedidos-select-trigger-calendar {
+  width: auto;
+  min-width: 86px;
+  height: 30px;
+  border-radius: 9px;
+  font-size: 10px;
+}
+
+
+.pedidos-datepicker-period
+> .pedidos-select-trigger-calendar:first-child {
+  min-width: 120px;
+}
+
+
+.pedidos-select-menu {
+  position: fixed;
+  z-index: 52000;
+
+  max-height: 260px;
+  padding: 6px;
+
+  overflow-y: auto;
+
+  border: 1px solid #d9e5e0;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+
+  box-shadow:
+    0 20px 45px rgba(15, 23, 42, 0.20),
+    0 4px 12px rgba(15, 23, 42, 0.08);
+
+  animation:
+    pedidosSelectMenuEntrada
+    0.15s ease;
+}
+
+
+.pedidos-select-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+
+.pedidos-select-menu::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #c7d8d1;
+}
+
+
+@keyframes pedidosSelectMenuEntrada {
+
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.98);
+  }
+
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+}
+
+
+.pedidos-select-option {
+  --option-color: #0f766e;
+  --option-soft: #e7f8f2;
+
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 0;
+  border-radius: 9px;
+  outline: none;
+
+  background: transparent;
+  color: #344d43;
+
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background 0.14s ease,
+    color 0.14s ease,
+    transform 0.14s ease;
+}
+
+
+.pedidos-select-option
++ .pedidos-select-option {
+  margin-top: 2px;
+}
+
+
+.pedidos-select-option:hover,
+.pedidos-select-option:focus-visible,
+.pedidos-select-option.active {
+  background: var(--option-soft);
+  color: var(--option-color);
+}
+
+
+.pedidos-select-option:hover,
+.pedidos-select-option:focus-visible {
+  transform: translateX(2px);
+}
+
+
+.pedidos-select-option-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+
+  border-radius: 50%;
+
+  background: var(--option-color);
+
+  box-shadow:
+    0 0 0 3px #ffffff,
+    0 0 0 4px color-mix(
+      in srgb,
+      var(--option-color) 42%,
+      transparent
+    );
+}
+
+
+.pedidos-select-option-text {
+  min-width: 0;
+  flex: 1;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.pedidos-select-option-check {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: var(--option-color);
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 950;
+}
+
+
+/* FILTROS */
+
+.pedidos-quick-filters
+.pedidos-select-trigger {
+  width: 100%;
+}
+
+
+/* FORMULARIO */
+
+.pedidos-form-section label
+> .pedidos-select-trigger {
+  width: 100%;
+}
+
+
+/* CALENDARIO */
+
+.pedidos-datepicker-period
+> .pedidos-select-trigger {
+  flex: 0 0 auto;
+}
+
+
+/* =========================================================
+   FECHA DE ENTREGA
+   TOMA LA FECHA ACTUAL Y SOLO CAMBIA CON DOBLE CLIC
+   ========================================================= */
+
+.pedidos-form-date-trigger {
+  cursor: default;
+  user-select: none;
+}
+
+
+.pedidos-form-date-trigger:hover {
+  border-color: #8bd6c4;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f8fdfb,
+      #e7f8f2
+    );
+}
+
+
+.pedidos-date-double-hint {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #789087;
+
+  font-size: 8px;
+  font-weight: 750;
+}
+
+
+@media (max-width: 760px) {
+
+  .pedidos-select-trigger,
+  .pedidos-select-trigger-filter {
+    width: 100%;
+    min-width: 0;
+  }
+
+}
+

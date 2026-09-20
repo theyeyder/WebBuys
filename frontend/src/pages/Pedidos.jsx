@@ -5,6 +5,10 @@ import {
   useState,
 } from "react";
 
+import {
+  createPortal,
+} from "react-dom";
+
 import Toast
   from "../components/Toast.jsx";
 
@@ -68,15 +72,50 @@ import cerrarIcon
 
 
 /* =========================================
+   FECHA ACTUAL LOCAL DEL PEDIDO
+========================================= */
+
+function fechaActualPedido() {
+
+  const hoy =
+    new Date();
+
+
+  const anio =
+    hoy.getFullYear();
+
+
+  const mes =
+    String(
+      hoy.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+
+  const dia =
+    String(
+      hoy.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+
+  return `${anio}-${mes}-${dia}`;
+
+}
+
+
+/* =========================================
    FORMULARIO INICIAL
 ========================================= */
 
 const FORM_INICIAL = {
   cliente: "",
   empleado: "",
-  repartidor: "",
   empacador: "",
-  metodoPago: "Efectivo",
   fechaEntrega: "",
   descuento: "",
   observaciones: "",
@@ -129,6 +168,26 @@ function moneda(valor) {
 }
 
 
+
+
+function pedidoTieneProductosPorPeso(
+  pedido
+) {
+
+  return (
+    Array.isArray(
+      pedido?.items
+    ) &&
+    pedido.items.some(
+      (item) =>
+        item.tipoVenta ===
+        "Peso"
+    )
+  );
+
+}
+
+
 /* =========================================
    CALCULAR PRECIO EN PANTALLA
 ========================================= */
@@ -151,6 +210,7 @@ function calcularPrecioVista(
 
 
   if (
+    cantidadNumero <= 0 ||
     !Array.isArray(reglasPrecio) ||
     reglasPrecio.length === 0
   ) {
@@ -204,6 +264,719 @@ function calcularPrecioVista(
 
 
 /* =========================================
+   ESTADOS DE PEDIDOS
+========================================= */
+
+const ESTADOS_PEDIDO = [
+  "Borrador",
+  "En preparación",
+  "Listo para entrega",
+  "Cancelado",
+];
+
+const ESTADOS_FILTRO_PEDIDO = [
+  "Todos",
+  ...ESTADOS_PEDIDO,
+];
+
+function claseEstadoPedido(estado) {
+  return String(estado || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/* =========================================
+   SELECT VISUAL DE ESTADOS
+   MISMO PATRÓN DE ENTREGA
+========================================= */
+
+function EstadoPedidoSelect({
+  value,
+  options,
+  onChange,
+  disabled = false,
+  compacto = false,
+  filtro = false,
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const [posicion, setPosicion] = useState({
+    top: 0,
+    left: 0,
+    width: 180,
+  });
+  const botonRef = useRef(null);
+
+  function actualizarPosicion() {
+    const boton = botonRef.current;
+    if (!boton) return;
+
+    const rect = boton.getBoundingClientRect();
+    const anchoMenu = Math.max(rect.width, filtro ? 190 : 175);
+    const espacioAbajo = window.innerHeight - rect.bottom;
+    const altoEstimado = Math.min(options.length * 43 + 14, 240);
+    const abrirArriba =
+      espacioAbajo < altoEstimado + 12 &&
+      rect.top > altoEstimado + 12;
+
+    let left = rect.left;
+    if (left + anchoMenu > window.innerWidth - 10) {
+      left = Math.max(10, window.innerWidth - anchoMenu - 10);
+    }
+
+    setPosicion({
+      top: abrirArriba
+        ? Math.max(10, rect.top - altoEstimado - 7)
+        : rect.bottom + 7,
+      left,
+      width: anchoMenu,
+    });
+  }
+
+  useEffect(() => {
+    if (!abierto) return undefined;
+
+    actualizarPosicion();
+
+    function cerrarAlPresionarFuera(event) {
+      const dentroBoton = botonRef.current?.contains(event.target);
+      const dentroMenu = event.target?.closest?.(".pedidos-state-menu");
+      if (!dentroBoton && !dentroMenu) setAbierto(false);
+    }
+
+    function cerrarEscape(event) {
+      if (event.key === "Escape") setAbierto(false);
+    }
+
+    function reposicionar() {
+      actualizarPosicion();
+    }
+
+    document.addEventListener("mousedown", cerrarAlPresionarFuera);
+    document.addEventListener("keydown", cerrarEscape);
+    window.addEventListener("resize", reposicionar);
+    window.addEventListener("scroll", reposicionar, true);
+
+    return () => {
+      document.removeEventListener("mousedown", cerrarAlPresionarFuera);
+      document.removeEventListener("keydown", cerrarEscape);
+      window.removeEventListener("resize", reposicionar);
+      window.removeEventListener("scroll", reposicionar, true);
+    };
+  }, [abierto, filtro, options.length]);
+
+  const claseActual = claseEstadoPedido(value);
+
+  const menu =
+    abierto && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            className={`pedidos-state-menu ${filtro ? "pedidos-state-menu-filter" : ""}`}
+            role="listbox"
+            aria-label={filtro ? "Filtrar pedidos por estado" : "Cambiar estado del pedido"}
+            style={{
+              top: posicion.top,
+              left: posicion.left,
+              width: posicion.width,
+            }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            {options.map((estado) => {
+              const activo = estado === value;
+              const claseOpcion = claseEstadoPedido(estado);
+
+              return (
+                <button
+                  key={estado}
+                  type="button"
+                  role="option"
+                  aria-selected={activo}
+                  className={`pedidos-state-option pedidos-state-option-${claseOpcion} ${activo ? "active" : ""}`}
+                  onClick={() => {
+                    setAbierto(false);
+                    if (estado !== value) onChange(estado);
+                  }}
+                >
+                  <span className="pedidos-state-option-dot" aria-hidden="true" />
+                  <span className="pedidos-state-option-text">{estado}</span>
+                  {activo && (
+                    <span className="pedidos-state-option-check" aria-hidden="true">
+                      ✓
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>,
+          document.body
+        )
+      : null;
+
+  return (
+    <>
+      <button
+        ref={botonRef}
+        type="button"
+        className={`pedidos-state-trigger pedidos-state-trigger-${claseActual} ${compacto ? "pedidos-state-trigger-compact" : ""} ${filtro ? "pedidos-state-trigger-filter" : ""}`}
+        onClick={(event) => {
+          event.stopPropagation();
+          if (disabled) return;
+          actualizarPosicion();
+          setAbierto((actual) => !actual);
+        }}
+        disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={abierto}
+      >
+        <span className="pedidos-state-trigger-dot" aria-hidden="true" />
+        <span className="pedidos-state-trigger-text">{value}</span>
+        <span
+          className={`pedidos-state-trigger-arrow ${abierto ? "open" : ""}`}
+          aria-hidden="true"
+        >
+          ▾
+        </span>
+      </button>
+      {menu}
+    </>
+  );
+}
+
+/* =========================================
+   SELECT VISUAL GENERAL DE PEDIDOS
+   MISMO ESTILO DE LOS ESTADOS
+========================================= */
+
+function PedidoSelectVisual({
+  value,
+  options,
+  onChange,
+  disabled = false,
+  filtro = false,
+  calendario = false,
+  ariaLabel = "Seleccionar opción",
+}) {
+
+  const [
+    abierto,
+    setAbierto,
+  ] = useState(false);
+
+
+  const [
+    posicion,
+    setPosicion,
+  ] = useState({
+    top: 0,
+    left: 0,
+    width: 180,
+  });
+
+
+  const botonRef =
+    useRef(null);
+
+
+  const opciones =
+    options.map(
+      (opcion) => {
+
+        if (
+          typeof opcion ===
+          "object" &&
+          opcion !== null
+        ) {
+
+          return {
+            value:
+              String(
+                opcion.value ??
+                ""
+              ),
+
+            label:
+              String(
+                opcion.label ??
+                opcion.value ??
+                ""
+              ),
+          };
+
+        }
+
+
+        return {
+          value:
+            String(
+              opcion ??
+              ""
+            ),
+
+          label:
+            String(
+              opcion ??
+              ""
+            ),
+        };
+
+      }
+    );
+
+
+  const valorActual =
+    String(
+      value ??
+      ""
+    );
+
+
+  const opcionActual =
+    opciones.find(
+      (opcion) =>
+        opcion.value ===
+        valorActual
+    ) ||
+    opciones[0] ||
+    {
+      value: "",
+      label: "Seleccione",
+    };
+
+
+  function actualizarPosicion() {
+
+    const boton =
+      botonRef.current;
+
+
+    if (!boton) {
+      return;
+    }
+
+
+    const rect =
+      boton.getBoundingClientRect();
+
+
+    const anchoMenu =
+      Math.max(
+        rect.width,
+        calendario
+          ? 135
+          : filtro
+            ? 190
+            : 180
+      );
+
+
+    const altoEstimado =
+      Math.min(
+        opciones.length *
+          42 +
+          14,
+        260
+      );
+
+
+    const espacioAbajo =
+      window.innerHeight -
+      rect.bottom;
+
+
+    const abrirArriba =
+      espacioAbajo <
+        altoEstimado +
+        12 &&
+      rect.top >
+        altoEstimado +
+        12;
+
+
+    let left =
+      rect.left;
+
+
+    if (
+      left +
+        anchoMenu >
+      window.innerWidth -
+        10
+    ) {
+
+      left =
+        Math.max(
+          10,
+          window.innerWidth -
+            anchoMenu -
+            10
+        );
+
+    }
+
+
+    setPosicion({
+      top:
+        abrirArriba
+          ? Math.max(
+              10,
+              rect.top -
+                altoEstimado -
+                7
+            )
+          : rect.bottom +
+            7,
+
+      left,
+
+      width:
+        anchoMenu,
+    });
+
+  }
+
+
+  useEffect(
+    () => {
+
+      if (!abierto) {
+        return undefined;
+      }
+
+
+      actualizarPosicion();
+
+
+      function cerrarAlPresionarFuera(
+        event
+      ) {
+
+        const dentroBoton =
+          botonRef.current
+            ?.contains(
+              event.target
+            );
+
+
+        const dentroMenu =
+          event.target
+            ?.closest?.(
+              ".pedidos-select-menu"
+            );
+
+
+        if (
+          !dentroBoton &&
+          !dentroMenu
+        ) {
+
+          setAbierto(
+            false
+          );
+
+        }
+
+      }
+
+
+      function cerrarEscape(
+        event
+      ) {
+
+        if (
+          event.key ===
+          "Escape"
+        ) {
+
+          setAbierto(
+            false
+          );
+
+        }
+
+      }
+
+
+      function reposicionar() {
+        actualizarPosicion();
+      }
+
+
+      document.addEventListener(
+        "mousedown",
+        cerrarAlPresionarFuera
+      );
+
+
+      document.addEventListener(
+        "keydown",
+        cerrarEscape
+      );
+
+
+      window.addEventListener(
+        "resize",
+        reposicionar
+      );
+
+
+      window.addEventListener(
+        "scroll",
+        reposicionar,
+        true
+      );
+
+
+      return () => {
+
+        document.removeEventListener(
+          "mousedown",
+          cerrarAlPresionarFuera
+        );
+
+
+        document.removeEventListener(
+          "keydown",
+          cerrarEscape
+        );
+
+
+        window.removeEventListener(
+          "resize",
+          reposicionar
+        );
+
+
+        window.removeEventListener(
+          "scroll",
+          reposicionar,
+          true
+        );
+
+      };
+
+    },
+    [
+      abierto,
+      calendario,
+      filtro,
+      opciones.length,
+    ]
+  );
+
+
+  const menu =
+    abierto &&
+    typeof document !==
+      "undefined"
+      ? createPortal(
+
+          <div
+            className={
+              `pedidos-select-menu ${
+                calendario
+                  ? "pedidos-select-menu-calendar"
+                  : ""
+              }`
+            }
+            role="listbox"
+            aria-label={
+              ariaLabel
+            }
+            style={{
+              top:
+                posicion.top,
+              left:
+                posicion.left,
+              width:
+                posicion.width,
+            }}
+            onClick={
+              (event) =>
+                event.stopPropagation()
+            }
+          >
+
+            {opciones.map(
+              (opcion) => {
+
+                const activo =
+                  opcion.value ===
+                  valorActual;
+
+
+                return (
+
+                  <button
+                    key={
+                      `${opcion.value}-${opcion.label}`
+                    }
+                    type="button"
+                    role="option"
+                    aria-selected={
+                      activo
+                    }
+                    className={
+                      `pedidos-select-option ${
+                        activo
+                          ? "active"
+                          : ""
+                      }`
+                    }
+                    onClick={() => {
+
+                      setAbierto(
+                        false
+                      );
+
+
+                      if (
+                        opcion.value !==
+                        valorActual
+                      ) {
+
+                        onChange(
+                          opcion.value
+                        );
+
+                      }
+
+                    }}
+                  >
+
+                    <span
+                      className="pedidos-select-option-dot"
+                      aria-hidden="true"
+                    />
+
+
+                    <span className="pedidos-select-option-text">
+                      {opcion.label}
+                    </span>
+
+
+                    {activo && (
+
+                      <span
+                        className="pedidos-select-option-check"
+                        aria-hidden="true"
+                      >
+                        ✓
+                      </span>
+
+                    )}
+
+                  </button>
+
+                );
+
+              }
+            )}
+
+          </div>,
+
+          document.body
+
+        )
+      : null;
+
+
+  return (
+    <>
+
+      <button
+        ref={
+          botonRef
+        }
+        type="button"
+        className={
+          `pedidos-select-trigger ${
+            !valorActual
+              ? "pedidos-select-trigger-empty"
+              : ""
+          } ${
+            filtro
+              ? "pedidos-select-trigger-filter"
+              : ""
+          } ${
+            calendario
+              ? "pedidos-select-trigger-calendar"
+              : ""
+          }`
+        }
+        onClick={
+          (event) => {
+
+            event.stopPropagation();
+
+
+            if (
+              disabled
+            ) {
+              return;
+            }
+
+
+            actualizarPosicion();
+
+
+            setAbierto(
+              (actual) =>
+                !actual
+            );
+
+          }
+        }
+        disabled={
+          disabled
+        }
+        aria-haspopup="listbox"
+        aria-expanded={
+          abierto
+        }
+        aria-label={
+          ariaLabel
+        }
+      >
+
+        <span
+          className="pedidos-select-trigger-dot"
+          aria-hidden="true"
+        />
+
+
+        <span className="pedidos-select-trigger-text">
+          {opcionActual.label}
+        </span>
+
+
+        <span
+          className={
+            `pedidos-select-trigger-arrow ${
+              abierto
+                ? "open"
+                : ""
+            }`
+          }
+          aria-hidden="true"
+        >
+          ▾
+        </span>
+
+      </button>
+
+
+      {menu}
+
+    </>
+  );
+
+}
+
+
+/* =========================================
    COMPONENTE
 ========================================= */
 
@@ -250,6 +1023,12 @@ export default function Pedidos() {
   const [
     modoEdicion,
     setModoEdicion,
+  ] = useState(false);
+
+
+  const [
+    pedidoSoloLectura,
+    setPedidoSoloLectura,
   ] = useState(false);
 
 
@@ -321,12 +1100,6 @@ export default function Pedidos() {
 
 
   const [
-    filtroPago,
-    setFiltroPago,
-  ] = useState("Todos");
-
-
-  const [
     filtroClienteAsignado,
     setFiltroClienteAsignado,
   ] = useState("Todos");
@@ -372,6 +1145,12 @@ export default function Pedidos() {
     cantidad,
     setCantidad,
   ] = useState("1");
+
+
+  const [
+    itemEditandoId,
+    setItemEditandoId,
+  ] = useState(null);
 
 
   const [
@@ -779,25 +1558,6 @@ export default function Pedidos() {
       ]
     );
 
-
-  const repartidores =
-    useMemo(
-      () =>
-        empleados.filter(
-          (empleado) =>
-            String(
-              empleado.cargo || ""
-            )
-              .trim()
-              .toLowerCase() ===
-            "repartidor"
-        ),
-      [
-        empleados,
-      ]
-    );
-
-
   const empacadores =
     useMemo(
       () =>
@@ -978,7 +1738,6 @@ export default function Pedidos() {
               cliente.razonSocial,
               cliente.telefono,
               cliente.direccion,
-              cliente.barrio,
               cliente.ciudad,
               cliente.tipoCliente,
             ];
@@ -1345,11 +2104,30 @@ export default function Pedidos() {
     );
 
 
+  const tieneProductosPorPeso =
+    useMemo(
+      () =>
+        form.items.some(
+          (item) =>
+            item.tipoVenta ===
+            "Peso"
+        ),
+      [
+        form.items,
+      ]
+    );
+
+
   /* =========================================
      NUEVO PEDIDO
   ========================================= */
 
   async function nuevoPedido() {
+
+    setPedidoSoloLectura(
+      false
+    );
+
 
     setModoEdicion(
       false
@@ -1361,9 +2139,12 @@ export default function Pedidos() {
     );
 
 
-    setForm(
-      FORM_INICIAL
-    );
+    setForm({
+      ...FORM_INICIAL,
+
+      fechaEntrega:
+        fechaActualPedido(),
+    });
 
 
     setProductoSeleccionado(
@@ -1383,6 +2164,11 @@ export default function Pedidos() {
 
     setCantidad(
       "1"
+    );
+
+
+    setItemEditandoId(
+      null
     );
 
 
@@ -1450,6 +2236,16 @@ export default function Pedidos() {
       false
     );
 
+
+    setPedidoSoloLectura(
+      false
+    );
+
+
+    setItemEditandoId(
+      null
+    );
+
   }
 
 
@@ -1477,7 +2273,58 @@ export default function Pedidos() {
 
 
   /* =========================================
-     AGREGAR PRODUCTO
+     EDITAR PRODUCTO AGREGADO
+  ========================================= */
+
+  function editarItem(
+    item
+  ) {
+
+    if (!item) {
+      return;
+    }
+
+
+    setProductoSeleccionado(
+      item.producto ||
+      ""
+    );
+
+
+    setProductoTexto(
+      item.nombre ||
+      ""
+    );
+
+
+    setPresentacionSeleccionada(
+      item.presentacionId ||
+      ""
+    );
+
+
+    setCantidad(
+      String(
+        item.cantidad ??
+        1
+      )
+    );
+
+
+    setBuscarProducto(
+      ""
+    );
+
+
+    setItemEditandoId(
+      item.temporalId
+    );
+
+  }
+
+
+  /* =========================================
+     AGREGAR / ACTUALIZAR PRODUCTO
   ========================================= */
 
   function agregarProducto() {
@@ -1503,26 +2350,6 @@ export default function Pedidos() {
       );
 
 
-    if (
-      !Number.isFinite(
-        cantidadNumero
-      ) ||
-      cantidadNumero <= 0
-    ) {
-
-      setMensaje(
-        "Ingrese una cantidad válida."
-      );
-
-      setTipoMensaje(
-        "error"
-      );
-
-      return;
-
-    }
-
-
     const origen =
       presentacionActual ||
       productoActual;
@@ -1538,15 +2365,29 @@ export default function Pedidos() {
       productoActual.unidad;
 
 
+    const esProductoPorPeso =
+      tipoVenta ===
+      "Peso";
+
+
     if (
-      tipoVenta === "Unidad" &&
+      !Number.isFinite(
+        cantidadNumero
+      ) ||
       !Number.isInteger(
         cantidadNumero
+      ) ||
+      cantidadNumero < 0 ||
+      (
+        !esProductoPorPeso &&
+        cantidadNumero === 0
       )
     ) {
 
       setMensaje(
-        "Los productos vendidos por unidad deben llevar una cantidad entera."
+        esProductoPorPeso
+          ? "La cantidad debe ser un número entero igual o mayor que cero."
+          : "La cantidad debe ser un número entero mayor que cero."
       );
 
       setTipoMensaje(
@@ -1558,18 +2399,26 @@ export default function Pedidos() {
     }
 
 
+    /*
+      Los productos por KG se agregan al pedido
+      sin registrar peso. Su subtotal se calcula
+      después en el módulo Entrega.
+    */
     const subtotal =
-      Number(
-        (
-          cantidadNumero *
-          precioVista.precioAplicado
-        ).toFixed(2)
-      );
+      esProductoPorPeso
+        ? 0
+        : Number(
+            (
+              cantidadNumero *
+              precioVista.precioAplicado
+            ).toFixed(2)
+          );
 
 
     const nuevoItem = {
 
       temporalId:
+        itemEditandoId ||
         `${productoActual._id}-${presentacionSeleccionada || "principal"}-${Date.now()}`,
 
       producto:
@@ -1621,12 +2470,26 @@ export default function Pedidos() {
       (actual) => ({
         ...actual,
 
-        items: [
-          ...actual.items,
-          nuevoItem,
-        ],
+        items:
+          itemEditandoId
+            ? actual.items.map(
+                (item) =>
+                  item.temporalId ===
+                  itemEditandoId
+                    ? nuevoItem
+                    : item
+              )
+            : [
+                ...actual.items,
+                nuevoItem,
+              ],
 
       })
+    );
+
+
+    setItemEditandoId(
+      null
     );
 
 
@@ -1675,6 +2538,38 @@ export default function Pedidos() {
       })
     );
 
+
+    if (
+      itemEditandoId ===
+      temporalId
+    ) {
+
+      setItemEditandoId(
+        null
+      );
+
+      setProductoSeleccionado(
+        ""
+      );
+
+      setProductoTexto(
+        ""
+      );
+
+      setPresentacionSeleccionada(
+        ""
+      );
+
+      setCantidad(
+        "1"
+      );
+
+      setBuscarProducto(
+        ""
+      );
+
+    }
+
   }
 
 
@@ -1690,23 +2585,6 @@ export default function Pedidos() {
 
       setMensaje(
         "Seleccione quién atendió el pedido."
-      );
-
-      setTipoMensaje(
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    if (
-      !form.repartidor
-    ) {
-
-      setMensaje(
-        "Seleccione el repartidor del pedido."
       );
 
       setTipoMensaje(
@@ -1779,15 +2657,9 @@ export default function Pedidos() {
         empleado:
           form.empleado,
 
-        repartidor:
-          form.repartidor,
-
         empacador:
           form.empacador ||
           null,
-
-        metodoPago:
-          form.metodoPago,
 
         fechaEntrega:
           form.fechaEntrega ||
@@ -1850,7 +2722,7 @@ export default function Pedidos() {
 
         setMensaje(
           form.cliente
-            ? "Pedido guardado como borrador. Ya puedes confirmarlo."
+            ? "Pedido guardado como borrador."
             : "Pedido guardado como borrador sin cliente."
         );
 
@@ -1947,20 +2819,17 @@ export default function Pedidos() {
     );
 
 
-    /* PEDIDOS CERRADOS:
-       SOLO LOS SELECCIONAMOS */
+    /* CANCELADO SE MANTIENE CERRADO.
+       LISTO PARA ENTREGA SÍ PUEDE ABRIRSE
+       EN MODO CONSULTA. */
 
     if (
-      [
-        "Entregado",
-        "Cancelado",
-      ].includes(
-        pedido.estado
-      )
+      pedido.estado ===
+      "Cancelado"
     ) {
 
       setMensaje(
-        `El pedido ${pedido.codigo} está ${pedido.estado.toLowerCase()} y no se puede editar.`
+        `El pedido ${pedido.codigo} está cancelado y no se puede abrir para edición.`
       );
 
       setTipoMensaje(
@@ -1970,6 +2839,12 @@ export default function Pedidos() {
       return;
 
     }
+
+
+    setPedidoSoloLectura(
+      pedido.estado ===
+      "Listo para entrega"
+    );
 
 
     const cliente =
@@ -1988,19 +2863,10 @@ export default function Pedidos() {
         pedido.empleado ||
         "",
 
-      repartidor:
-        pedido.repartidor?._id ||
-        pedido.repartidor ||
-        "",
-
       empacador:
         pedido.empacador?._id ||
         pedido.empacador ||
         "",
-
-      metodoPago:
-        pedido.metodoPago ||
-        "Efectivo",
 
       fechaEntrega:
         pedido.fechaEntrega
@@ -2113,6 +2979,11 @@ export default function Pedidos() {
     );
 
 
+    setItemEditandoId(
+      null
+    );
+
+
     setModoEdicion(
       true
     );
@@ -2178,7 +3049,7 @@ export default function Pedidos() {
 
     if (
       [
-        "Entregado",
+        "Listo para entrega",
         "Cancelado",
       ].includes(
         pedidoSeleccionado.estado
@@ -2186,7 +3057,7 @@ export default function Pedidos() {
     ) {
 
       setMensaje(
-        "Los pedidos entregados o cancelados no se pueden editar."
+        "Los pedidos listos para entrega o cancelados no se pueden editar."
       );
 
       setTipoMensaje(
@@ -2214,19 +3085,10 @@ export default function Pedidos() {
         pedidoSeleccionado.empleado ||
         "",
 
-      repartidor:
-        pedidoSeleccionado.repartidor?._id ||
-        pedidoSeleccionado.repartidor ||
-        "",
-
       empacador:
         pedidoSeleccionado.empacador?._id ||
         pedidoSeleccionado.empacador ||
         "",
-
-      metodoPago:
-        pedidoSeleccionado.metodoPago ||
-        "Efectivo",
 
       fechaEntrega:
         pedidoSeleccionado
@@ -2380,11 +3242,11 @@ export default function Pedidos() {
 
     if (
       pedidoSeleccionado.estado ===
-      "Entregado"
+      "Listo para entrega"
     ) {
 
       setMensaje(
-        "Un pedido entregado no se puede eliminar."
+        "Un pedido listo para entrega no se puede eliminar."
       );
 
       setTipoMensaje(
@@ -2473,44 +3335,6 @@ export default function Pedidos() {
 
   }
 
-
-  /* =========================================
-     CONFIRMAR PEDIDO
-  ========================================= */
-
-  async function confirmarPedido(
-    pedido
-  ) {
-
-    const tieneCliente =
-      Boolean(
-        pedido.cliente?._id ||
-        pedido.cliente ||
-        pedido.clienteNombre
-      );
-
-
-    if (!tieneCliente) {
-
-      setMensaje(
-        "Debes asignar un cliente antes de confirmar el pedido."
-      );
-
-      setTipoMensaje(
-        "info"
-      );
-
-      return;
-
-    }
-
-
-    await cambiarEstado(
-      pedido,
-      "Pendiente"
-    );
-
-  }
 
 
   /* =========================================
@@ -2622,7 +3446,6 @@ export default function Pedidos() {
               pedido.clienteRazonSocial,
               pedido.clienteTelefono,
               pedido.clienteDireccion,
-              pedido.clienteBarrio,
               pedido.clienteCiudad,
               pedido.clienteTipo,
               pedido.zonaDespachoCodigo,
@@ -2634,7 +3457,6 @@ export default function Pedidos() {
               cliente.razonSocial,
               cliente.telefono,
               cliente.direccion,
-              cliente.barrio,
               cliente.ciudad,
               cliente.tipoCliente,
               pedido.estado,
@@ -2663,18 +3485,6 @@ export default function Pedidos() {
           if (
             filtroEstado !== "Todos" &&
             pedido.estado !== filtroEstado
-          ) {
-            return false;
-          }
-
-
-          /* =============================
-             FILTRO POR TIPO DE PAGO
-          ============================= */
-
-          if (
-            filtroPago !== "Todos" &&
-            pedido.metodoPago !== filtroPago
           ) {
             return false;
           }
@@ -2799,7 +3609,6 @@ export default function Pedidos() {
       fechaDesdeBusqueda,
       fechaHastaBusqueda,
       filtroEstado,
-      filtroPago,
       filtroClienteAsignado,
       filtroRuta,
     ]);
@@ -2938,8 +3747,8 @@ export default function Pedidos() {
   }
 
 
-  function seleccionarMesCalendarioBusqueda(event) {
-    const nuevoMes = Number(event.target.value);
+  function seleccionarMesCalendarioBusqueda(valor) {
+    const nuevoMes = Number(valor);
 
     setMesCalendarioBusqueda(
       (actual) =>
@@ -2952,8 +3761,8 @@ export default function Pedidos() {
   }
 
 
-  function seleccionarAnioCalendarioBusqueda(event) {
-    const nuevoAnio = Number(event.target.value);
+  function seleccionarAnioCalendarioBusqueda(valor) {
+    const nuevoAnio = Number(valor);
 
     setMesCalendarioBusqueda(
       (actual) =>
@@ -3009,10 +3818,6 @@ export default function Pedidos() {
       "Todos"
     );
 
-    setFiltroPago(
-      "Todos"
-    );
-
     setFiltroClienteAsignado(
       "Todos"
     );
@@ -3035,7 +3840,6 @@ export default function Pedidos() {
       filtros: {
         busqueda: filtro,
         estado: filtroEstado,
-        pago: filtroPago,
         cliente: filtroClienteAsignado,
         ruta: filtroRuta,
         fechaDesde: fechaDesdeBusqueda,
@@ -3222,84 +4026,78 @@ export default function Pedidos() {
 
           <label>
             Estado
-            <select
+
+            <EstadoPedidoSelect
               value={filtroEstado}
-              onChange={(event) =>
-                setFiltroEstado(
-                  event.target.value
-                )
-              }
-            >
-              <option value="Todos">Todos</option>
-              <option value="Borrador">Borrador</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="En preparación">En preparación</option>
-              <option value="En ruta">En ruta</option>
-              <option value="Entregado">Entregado</option>
-              <option value="Cancelado">Cancelado</option>
-            </select>
-          </label>
+              options={ESTADOS_FILTRO_PEDIDO}
+              onChange={setFiltroEstado}
+              filtro
+            />
 
-
-          <label>
-            Tipo de pago
-            <select
-              value={filtroPago}
-              onChange={(event) =>
-                setFiltroPago(
-                  event.target.value
-                )
-              }
-            >
-              <option value="Todos">Todos</option>
-              <option value="Efectivo">Efectivo</option>
-              <option value="Transferencia">Transferencia</option>
-              <option value="Crédito">Crédito</option>
-            </select>
           </label>
 
 
           <label>
             Cliente
-            <select
-              value={filtroClienteAsignado}
-              onChange={(event) =>
-                setFiltroClienteAsignado(
-                  event.target.value
-                )
+
+            <PedidoSelectVisual
+              value={
+                filtroClienteAsignado
               }
-            >
-              <option value="Todos">Todos</option>
-              <option value="Con cliente">Con cliente</option>
-              <option value="Sin cliente">Sin cliente</option>
-            </select>
+              options={[
+                {
+                  value: "Todos",
+                  label: "Todos",
+                },
+                {
+                  value: "Con cliente",
+                  label: "Con cliente",
+                },
+                {
+                  value: "Sin cliente",
+                  label: "Sin cliente",
+                },
+              ]}
+              onChange={
+                setFiltroClienteAsignado
+              }
+              filtro
+              ariaLabel="Filtrar por cliente"
+            />
+
           </label>
 
 
           <label>
             Ruta
-            <select
-              value={filtroRuta}
-              onChange={(event) =>
-                setFiltroRuta(
-                  event.target.value
-                )
+
+            <PedidoSelectVisual
+              value={
+                filtroRuta
               }
-            >
-              <option value="Todas">Todas</option>
+              options={[
+                {
+                  value: "Todas",
+                  label: "Todas",
+                },
 
-              {rutasDisponibles.map(
-                (ruta) => (
-                  <option
-                    key={ruta}
-                    value={ruta}
-                  >
-                    {ruta}
-                  </option>
-                )
-              )}
+                ...rutasDisponibles.map(
+                  (ruta) => ({
+                    value:
+                      ruta,
 
-            </select>
+                    label:
+                      ruta,
+                  })
+                ),
+              ]}
+              onChange={
+                setFiltroRuta
+              }
+              filtro
+              ariaLabel="Filtrar por ruta"
+            />
+
           </label>
 
 
@@ -3508,6 +4306,39 @@ export default function Pedidos() {
                         </h3>
 
 
+                        {!(
+                          pedido.cliente?._id ||
+                          pedido.cliente ||
+                          pedido.clienteNombre ||
+                          pedido.clienteRazonSocial
+                        ) && (
+
+                          <button
+                            type="button"
+                            className="pedidos-assign-client-btn"
+                            onClick={
+                              (event) => {
+
+                                event.stopPropagation();
+
+                                asignarClientePedido(
+                                  pedido
+                                );
+
+                              }
+                            }
+                            onDoubleClick={
+                              (event) =>
+                                event.stopPropagation()
+                            }
+                            title="Asignar cliente a este pedido"
+                          >
+                            Asignar cliente
+                          </button>
+
+                        )}
+
+
                         {(pedido.clienteCodigo || cliente.codigo) && (
                           <small>
                             Código:{" "}
@@ -3523,27 +4354,6 @@ export default function Pedidos() {
                       {/* INFORMACIÓN */}
 
                       <div className="pedidos-client-card-info">
-
-                        <div>
-                          <span>Tipo de pago</span>
-                          <strong
-                            className={
-                              `pedidos-payment pedidos-payment-${String(
-                                pedido.metodoPago ||
-                                "Efectivo"
-                              )
-                                .toLowerCase()
-                                .normalize("NFD")
-                                .replace(
-                                  /[\u0300-\u036f]/g,
-                                  ""
-                                )
-                              }`
-                            }
-                          >
-                            {pedido.metodoPago || "Efectivo"}
-                          </strong>
-                        </div>
 
                         <div>
 
@@ -3579,15 +4389,6 @@ export default function Pedidos() {
 
                         </div>
 
-
-                        {(pedido.clienteBarrio || cliente.barrio) && (
-                          <div>
-                            <span>Barrio</span>
-                            <strong>
-                              {pedido.clienteBarrio || cliente.barrio}
-                            </strong>
-                          </div>
-                        )}
 
                         {(pedido.zonaDespachoNombre || pedido.zonaDespacho?.nombre) && (
                           <div>
@@ -3639,7 +4440,11 @@ export default function Pedidos() {
                       <div className="pedidos-client-card-total">
 
                         <span>
-                          Total
+                          {pedidoTieneProductosPorPeso(
+                            pedido
+                          )
+                            ? "Total parcial"
+                            : "Total"}
                         </span>
 
                         <strong>
@@ -3678,8 +4483,6 @@ export default function Pedidos() {
                         </button>
 
                       </div>
-
-
                       {/* ESTADO */}
 
                       <div
@@ -3690,141 +4493,21 @@ export default function Pedidos() {
                         }
                       >
 
-                        {pedido.estado === "Borrador" ? (
+                        <span>
+                          Estado
+                        </span>
 
-                          <>
-
-                            <span>
-                              Borrador
-                            </span>
-
-                            {(
-                              pedido.cliente?._id ||
-                              pedido.cliente ||
-                              pedido.clienteNombre
-                            ) ? (
-
-                              <button
-                                type="button"
-                                className="pedidos-confirm-btn"
-                                onClick={() =>
-                                  confirmarPedido(
-                                    pedido
-                                  )
-                                }
-                              >
-                                Confirmar pedido
-                              </button>
-
-                            ) : (
-
-                              <button
-                                type="button"
-                                className="pedidos-assign-client-btn"
-                                onClick={() =>
-                                  asignarClientePedido(
-                                    pedido
-                                  )
-                                }
-                              >
-                                ⚠ Asignar cliente
-                              </button>
-
-                            )}
-
-                          </>
-
-                        ) : (
-
-                          <>
-
-                            <span>
-                              Estado
-                            </span>
-
-                            {pedido.estado === "Borrador" ? (
-
-                              (
-                                pedido.cliente?._id ||
-                                pedido.cliente ||
-                                pedido.clienteNombre
-                              ) ? (
-
-                                <button
-                                  type="button"
-                                  className="pedidos-confirm-btn"
-                                  onClick={() =>
-                                    confirmarPedido(
-                                      pedido
-                                    )
-                                  }
-                                >
-                                  Confirmar
-                                </button>
-
-                              ) : (
-
-                                <button
-                                  type="button"
-                                  className="pedidos-assign-client-btn"
-                                  onClick={() =>
-                                    asignarClientePedido(
-                                      pedido
-                                    )
-                                  }
-                                >
-                                  ⚠ Asignar cliente
-                                </button>
-
-                              )
-
-                            ) : (
-
-                              <select
-                                className={
-                                  `pedidos-status pedidos-status-${estadoClase}`
-                                }
-
-                                value={
-                                  pedido.estado
-                                }
-
-                                onChange={
-                                  (event) =>
-                                    cambiarEstado(
-                                      pedido,
-                                      event.target.value
-                                    )
-                                }
-                              >
-
-                                <option value="Pendiente">
-                                  Pendiente
-                                </option>
-
-                                <option value="En preparación">
-                                  En preparación
-                                </option>
-
-                                <option value="En ruta">
-                                  En ruta
-                                </option>
-
-                                <option value="Entregado">
-                                  Entregado
-                                </option>
-
-                                <option value="Cancelado">
-                                  Cancelado
-                                </option>
-
-                              </select>
-
-                            )}
-
-                          </>
-
-                        )}
+                        <EstadoPedidoSelect
+                          value={pedido.estado}
+                          options={ESTADOS_PEDIDO}
+                          onChange={(estado) =>
+                            cambiarEstado(
+                              pedido,
+                              estado
+                            )
+                          }
+                          compacto
+                        />
 
                       </div>
 
@@ -3881,10 +4564,6 @@ export default function Pedidos() {
 
                     <th>
                       Total
-                    </th>
-
-                    <th>
-                      Tipo de pago
                     </th>
 
                     <th>
@@ -3992,6 +4671,39 @@ export default function Pedidos() {
 
                             </strong>
 
+
+                            {!(
+                              pedido.cliente?._id ||
+                              pedido.cliente ||
+                              pedido.clienteNombre ||
+                              pedido.clienteRazonSocial
+                            ) && (
+
+                              <button
+                                type="button"
+                                className="pedidos-assign-client-btn"
+                                onClick={
+                                  (event) => {
+
+                                    event.stopPropagation();
+
+                                    asignarClientePedido(
+                                      pedido
+                                    );
+
+                                  }
+                                }
+                                onDoubleClick={
+                                  (event) =>
+                                    event.stopPropagation()
+                                }
+                                title="Asignar cliente a este pedido"
+                              >
+                                Asignar cliente
+                              </button>
+
+                            )}
+
                           </td>
 
 
@@ -4065,37 +4777,19 @@ export default function Pedidos() {
 
                             <strong className="pedidos-list-total">
 
-                              {moneda(
-                                pedido.total
-                              )}
+                              {pedidoTieneProductosPorPeso(
+                                pedido
+                              )
+                                ? `Parcial: ${moneda(
+                                    pedido.total
+                                  )}`
+                                : moneda(
+                                    pedido.total
+                                  )}
 
                             </strong>
 
                           </td>
-
-
-                          {/* TIPO DE PAGO */}
-
-                          <td>
-                            <span
-                              className={
-                                `pedidos-payment pedidos-payment-${String(
-                                  pedido.metodoPago ||
-                                  "Efectivo"
-                                )
-                                  .toLowerCase()
-                                  .normalize("NFD")
-                                  .replace(
-                                    /[\u0300-\u036f]/g,
-                                    ""
-                                  )
-                                }`
-                              }
-                            >
-                              {pedido.metodoPago || "Efectivo"}
-                            </span>
-                          </td>
-
                           {/* ESTADO */}
 
                           <td
@@ -4105,85 +4799,17 @@ export default function Pedidos() {
                             }
                           >
 
-                            {pedido.estado === "Borrador" ? (
-
-                              (
-                                pedido.cliente?._id ||
-                                pedido.cliente ||
-                                pedido.clienteNombre
-                              ) ? (
-
-                                <button
-                                  type="button"
-                                  className="pedidos-confirm-btn"
-                                  onClick={() =>
-                                    confirmarPedido(
-                                      pedido
-                                    )
-                                  }
-                                >
-                                  Confirmar
-                                </button>
-
-                              ) : (
-
-                                <button
-                                  type="button"
-                                  className="pedidos-assign-client-btn"
-                                  onClick={() =>
-                                    asignarClientePedido(
-                                      pedido
-                                    )
-                                  }
-                                >
-                                  ⚠ Asignar cliente
-                                </button>
-
-                              )
-
-                            ) : (
-
-                              <select
-                                className={
-                                  `pedidos-status pedidos-status-${estadoClase}`
-                                }
-
-                                value={
-                                  pedido.estado
-                                }
-
-                                onChange={
-                                  (event) =>
-                                    cambiarEstado(
-                                      pedido,
-                                      event.target.value
-                                    )
-                                }
-                              >
-
-                                <option value="Pendiente">
-                                  Pendiente
-                                </option>
-
-                                <option value="En preparación">
-                                  En preparación
-                                </option>
-
-                                <option value="En ruta">
-                                  En ruta
-                                </option>
-
-                                <option value="Entregado">
-                                  Entregado
-                                </option>
-
-                                <option value="Cancelado">
-                                  Cancelado
-                                </option>
-
-                              </select>
-
-                            )}
+                            <EstadoPedidoSelect
+                              value={pedido.estado}
+                              options={ESTADOS_PEDIDO}
+                              onChange={(estado) =>
+                                cambiarEstado(
+                                  pedido,
+                                  estado
+                                )
+                              }
+                              compacto
+                            />
 
                           </td>
 
@@ -4291,9 +4917,11 @@ export default function Pedidos() {
 
 
                   <h2>
-                    {modoEdicion
-                      ? `Editar ${pedidoSeleccionado?.codigo || "pedido"}`
-                      : "Nuevo pedido"}
+                    {pedidoSoloLectura
+                      ? `Ver ${pedidoSeleccionado?.codigo || "pedido"}`
+                      : modoEdicion
+                        ? `Editar ${pedidoSeleccionado?.codigo || "pedido"}`
+                        : "Nuevo pedido"}
                   </h2>
 
                 </div>
@@ -4319,6 +4947,22 @@ export default function Pedidos() {
 
               <div className="pedidos-modal-body">
 
+                {pedidoSoloLectura && (
+
+                  <div className="pedidos-readonly-notice">
+                    Este pedido está listo para entrega. Puedes consultarlo, pero para modificar sus datos primero cambia el estado a Borrador o En preparación.
+                  </div>
+
+                )}
+
+
+                <fieldset
+                  className="pedidos-readonly-fieldset"
+                  disabled={
+                    pedidoSoloLectura
+                  }
+                >
+
 
                 {/* CLIENTE */}
 
@@ -4334,7 +4978,7 @@ export default function Pedidos() {
 
                   {!form.cliente && (
                     <div className="pedidos-draft-client-notice">
-                      Puedes guardar este pedido sin cliente. Quedará como borrador y deberás asignar un cliente antes de confirmarlo.
+                      Puedes guardar este pedido sin cliente. Quedará como borrador y deberás asignar un cliente antes de pasarlo a preparación.
                     </div>
                   )}
 
@@ -4397,7 +5041,6 @@ export default function Pedidos() {
                                   {[
                                     cliente.codigo,
                                     cliente.telefono,
-                                    cliente.barrio,
                                   ]
                                     .filter(Boolean)
                                     .join(" · ")}
@@ -4491,13 +5134,6 @@ export default function Pedidos() {
                                 <b>Dirección:</b>{" "}
                                 {clienteActual.direccion ||
                                   pedidoActual.clienteDireccion ||
-                                  "-"}
-                              </span>
-
-                              <span>
-                                <b>Barrio:</b>{" "}
-                                {clienteActual.barrio ||
-                                  pedidoActual.clienteBarrio ||
                                   "-"}
                               </span>
 
@@ -4736,63 +5372,51 @@ export default function Pedidos() {
 
                         Presentación
 
-                        <select
+                        <PedidoSelectVisual
                           value={
                             presentacionSeleccionada
                           }
-                          onChange={
-                            (
-                              event
-                            ) =>
-                              setPresentacionSeleccionada(
-                                event.target.value
-                              )
-                          }
-                        >
+                          options={[
+                            {
+                              value: "",
+                              label:
+                                productoActual.unidad ||
+                                "Principal",
+                            },
 
-                          <option value="">
-                            {productoActual.unidad ||
-                              "Principal"}
-                          </option>
-
-                          {(
-                            productoActual
-                              .presentacionesAdicionales ||
-                            []
-                          )
-                            .filter(
-                              (
-                                presentacion
-                              ) =>
-                                presentacion.estado ===
-                                "Activo" ||
-                                presentacion.estado ===
-                                "Activa" ||
-                                presentacion.estado ===
-                                true
+                            ...(
+                              productoActual
+                                .presentacionesAdicionales ||
+                              []
                             )
-                            .map(
-                              (
-                                presentacion
-                              ) => (
-
-                                <option
-                                  key={
-                                    presentacion._id
-                                  }
-                                  value={
-                                    presentacion._id
-                                  }
-                                >
-                                  {
-                                    presentacion.nombre
-                                  }
-                                </option>
-
+                              .filter(
+                                (
+                                  presentacion
+                                ) =>
+                                  presentacion.estado ===
+                                  "Activo" ||
+                                  presentacion.estado ===
+                                  "Activa" ||
+                                  presentacion.estado ===
+                                  true
                               )
-                            )}
+                              .map(
+                                (
+                                  presentacion
+                                ) => ({
+                                  value:
+                                    presentacion._id,
 
-                        </select>
+                                  label:
+                                    presentacion.nombre,
+                                })
+                              ),
+                          ]}
+                          onChange={
+                            setPresentacionSeleccionada
+                          }
+                          ariaLabel="Seleccionar presentación"
+                        />
 
                       </label>
 
@@ -4801,26 +5425,20 @@ export default function Pedidos() {
 
                     <label>
 
-                      {(
-                        presentacionActual ||
-                        productoActual
-                      )?.tipoVenta ===
-                        "Peso"
-                        ? "Peso"
-                        : "Cantidad"}
+                      Cantidad
 
                       <input
                         type="number"
-                        min="0.01"
-                        step={
+                        min={
                           (
                             presentacionActual ||
                             productoActual
                           )?.tipoVenta ===
                             "Peso"
-                            ? "0.01"
+                            ? "0"
                             : "1"
                         }
+                        step="1"
                         value={
                           cantidad
                         }
@@ -4834,6 +5452,18 @@ export default function Pedidos() {
                             )
                         }
                       />
+
+                      {(
+                        presentacionActual ||
+                        productoActual
+                      )?.tipoVenta ===
+                        "Peso" && (
+
+                        <small>
+                          Puede usar cantidad 0 si aún no conoce las piezas. El peso real se registra en Entrega.
+                        </small>
+
+                      )}
 
                     </label>
 
@@ -4892,7 +5522,9 @@ export default function Pedidos() {
                         agregarProducto
                       }
                     >
-                      + Agregar
+                      {itemEditandoId
+                        ? "Guardar edición"
+                        : "+ Agregar"}
                     </button>
 
                   </div>
@@ -5006,9 +5638,12 @@ export default function Pedidos() {
                                 <td>
 
                                   <strong>
-                                    {moneda(
-                                      item.subtotal
-                                    )}
+                                    {item.tipoVenta ===
+                                      "Peso"
+                                      ? "Pendiente por pesar"
+                                      : moneda(
+                                          item.subtotal
+                                        )}
                                   </strong>
 
                                 </td>
@@ -5016,24 +5651,58 @@ export default function Pedidos() {
 
                                 <td>
 
-                                  <button
-                                    type="button"
-                                    className="pedidos-remove-item"
-                                    onClick={() =>
-                                      quitarItem(
-                                        item.temporalId
-                                      )
-                                    }
+                                  <div
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: "6px",
+                                    }}
                                   >
 
-                                    <img
-                                      src={
-                                        eliminarIcon
+                                    <button
+                                      type="button"
+                                      className="pedidos-remove-item"
+                                      title="Editar producto"
+                                      aria-label="Editar producto"
+                                      onClick={() =>
+                                        editarItem(
+                                          item
+                                        )
                                       }
-                                      alt="Eliminar"
-                                    />
+                                    >
 
-                                  </button>
+                                      <img
+                                        src={
+                                          editarIcon
+                                        }
+                                        alt="Editar"
+                                      />
+
+                                    </button>
+
+
+                                    <button
+                                      type="button"
+                                      className="pedidos-remove-item"
+                                      title="Eliminar producto"
+                                      aria-label="Eliminar producto"
+                                      onClick={() =>
+                                        quitarItem(
+                                          item.temporalId
+                                        )
+                                      }
+                                    >
+
+                                      <img
+                                        src={
+                                          eliminarIcon
+                                        }
+                                        alt="Eliminar"
+                                      />
+
+                                    </button>
+
+                                  </div>
 
                                 </td>
 
@@ -5061,128 +5730,48 @@ export default function Pedidos() {
 
                     <label>
 
-                      Tipo de pago
-
-                      <select
-                        value={form.metodoPago}
-                        onChange={(event) =>
-                          setForm((actual) => ({
-                            ...actual,
-                            metodoPago: event.target.value,
-                          }))
-                        }
-                      >
-                        <option value="Efectivo">Efectivo</option>
-                        <option value="Transferencia">Transferencia</option>
-                        <option value="Crédito">Crédito</option>
-                      </select>
-
-                    </label>
-
-                    <label>
-
                       Atendido por *
 
-                      <select
+                      <PedidoSelectVisual
                         value={
                           form.empleado
                         }
+                        options={[
+                          {
+                            value: "",
+                            label:
+                              "Seleccione un empleado",
+                          },
+
+                          ...empleadosAtencion.map(
+                            (
+                              empleado
+                            ) => ({
+                              value:
+                                empleado._id,
+
+                              label:
+                                `${empleado.nombres || ""} ${empleado.apellidos || ""}`.trim() ||
+                                empleado.nombre ||
+                                empleado.codigo ||
+                                "Empleado",
+                            })
+                          ),
+                        ]}
                         onChange={
-                          (event) =>
+                          (valor) =>
                             setForm(
                               (actual) => ({
                                 ...actual,
 
                                 empleado:
-                                  event.target.value,
+                                  valor,
 
                               })
                             )
                         }
-                        required
-                      >
-
-                        <option value="">
-                          Seleccione un empleado
-                        </option>
-
-                        {empleadosAtencion.map(
-                          (empleado) => (
-
-                            <option
-                              key={
-                                empleado._id
-                              }
-                              value={
-                                empleado._id
-                              }
-                            >
-
-                              {`${empleado.nombres || ""} ${empleado.apellidos || ""}`.trim() ||
-                                empleado.nombre ||
-                                empleado.codigo ||
-                                "Empleado"}
-
-                            </option>
-
-                          )
-                        )}
-
-                      </select>
-
-                    </label>
-
-
-                    <label>
-
-                      Repartidor *
-
-                      <select
-                        value={
-                          form.repartidor
-                        }
-                        onChange={
-                          (event) =>
-                            setForm(
-                              (actual) => ({
-                                ...actual,
-
-                                repartidor:
-                                  event.target.value,
-
-                              })
-                            )
-                        }
-                        required
-                      >
-
-                        <option value="">
-                          Seleccione un repartidor
-                        </option>
-
-                        {repartidores.map(
-                          (empleado) => (
-
-                            <option
-                              key={
-                                empleado._id
-                              }
-                              value={
-                                empleado._id
-                              }
-                            >
-
-                              {`${empleado.nombres || ""} ${empleado.apellidos || ""}`.trim() ||
-                                empleado.nombre ||
-                                empleado.codigo ||
-                                "Repartidor"}
-
-                            </option>
-
-                          )
-                        )}
-
-                      </select>
+                        ariaLabel="Seleccionar empleado"
+                      />
 
                     </label>
 
@@ -5194,51 +5783,46 @@ export default function Pedidos() {
                         Opcional
                       </small>
 
-                      <select
+                      <PedidoSelectVisual
                         value={
                           form.empacador
                         }
+                        options={[
+                          {
+                            value: "",
+                            label:
+                              "Sin empacador",
+                          },
+
+                          ...empacadores.map(
+                            (
+                              empleado
+                            ) => ({
+                              value:
+                                empleado._id,
+
+                              label:
+                                `${empleado.nombres || ""} ${empleado.apellidos || ""}`.trim() ||
+                                empleado.nombre ||
+                                empleado.codigo ||
+                                "Empacador",
+                            })
+                          ),
+                        ]}
                         onChange={
-                          (event) =>
+                          (valor) =>
                             setForm(
                               (actual) => ({
                                 ...actual,
 
                                 empacador:
-                                  event.target.value,
+                                  valor,
 
                               })
                             )
                         }
-                      >
-
-                        <option value="">
-                          Sin empacador
-                        </option>
-
-                        {empacadores.map(
-                          (empleado) => (
-
-                            <option
-                              key={
-                                empleado._id
-                              }
-                              value={
-                                empleado._id
-                              }
-                            >
-
-                              {`${empleado.nombres || ""} ${empleado.apellidos || ""}`.trim() ||
-                                empleado.nombre ||
-                                empleado.codigo ||
-                                "Empacador"}
-
-                            </option>
-
-                          )
-                        )}
-
-                      </select>
+                        ariaLabel="Seleccionar empacador"
+                      />
 
                     </label>
 
@@ -5250,18 +5834,26 @@ export default function Pedidos() {
                       <button
                         type="button"
                         className="pedidos-form-date-trigger"
-                        onClick={() =>
-                          abrirCalendarioBusqueda("entrega")
+                        onDoubleClick={() =>
+                          abrirCalendarioBusqueda(
+                            "entrega"
+                          )
                         }
+                        title="Doble clic para cambiar la fecha de entrega"
+                        aria-label="Fecha de entrega. Doble clic para cambiar."
                       >
-                       
 
                         <strong>
                           {mostrarFechaBusqueda(
                             form.fechaEntrega
                           )}
                         </strong>
+
                       </button>
+
+                      <small className="pedidos-date-double-hint">
+                        Doble clic para cambiar
+                      </small>
 
                     </label>
 
@@ -5343,7 +5935,9 @@ export default function Pedidos() {
 
                   <div>
                     <span>
-                      Subtotal
+                      {tieneProductosPorPeso
+                        ? "Subtotal parcial"
+                        : "Subtotal"}
                     </span>
 
                     <strong>
@@ -5370,7 +5964,9 @@ export default function Pedidos() {
                   <div className="pedidos-summary-total">
 
                     <span>
-                      Total
+                      {tieneProductosPorPeso
+                        ? "Total parcial"
+                        : "Total"}
                     </span>
 
                     <strong>
@@ -5381,7 +5977,19 @@ export default function Pedidos() {
 
                   </div>
 
+
+                  {tieneProductosPorPeso && (
+
+                    <small>
+                      Los productos por KG quedan pendientes de peso y su valor final se calculará en Entrega.
+                    </small>
+
+                  )}
+
                 </div>
+
+
+                </fieldset>
 
               </div>
 
@@ -5397,35 +6005,41 @@ export default function Pedidos() {
                     cerrarModalPedido
                   }
                 >
-                  Cancelar
+                  {pedidoSoloLectura
+                    ? "Cerrar"
+                    : "Cancelar"}
                 </button>
 
 
-                <button
-                  type="button"
-                  className="pedidos-save-btn"
-                  disabled={
-                    guardando
-                  }
-                  onClick={
-                    guardarPedido
-                  }
-                >
+                {!pedidoSoloLectura && (
 
-                  <img
-                    src={
-                      guardarIcon
+                  <button
+                    type="button"
+                    className="pedidos-save-btn"
+                    disabled={
+                      guardando
                     }
-                    alt=""
-                  />
+                    onClick={
+                      guardarPedido
+                    }
+                  >
 
-                  {guardando
-                    ? "Guardando..."
-                    : modoEdicion
-                      ? "Guardar cambios"
-                      : "Guardar borrador"}
+                    <img
+                      src={
+                        guardarIcon
+                      }
+                      alt=""
+                    />
 
-                </button>
+                    {guardando
+                      ? "Guardando..."
+                      : modoEdicion
+                        ? "Guardar cambios"
+                        : "Guardar borrador"}
+
+                  </button>
+
+                )}
 
               </footer>
 
@@ -5685,9 +6299,15 @@ export default function Pedidos() {
                       </span>
 
                       <strong>
-                        {moneda(
-                          pedido.total
-                        )}
+                        {pedidoTieneProductosPorPeso(
+                          pedido
+                        )
+                          ? `Parcial: ${moneda(
+                              pedido.total
+                            )}`
+                          : moneda(
+                              pedido.total
+                            )}
                       </strong>
 
                     </button>
@@ -5736,43 +6356,58 @@ export default function Pedidos() {
 
               <div className="pedidos-datepicker-period">
 
-                <select
-                  className="pedidos-datepicker-select pedidos-datepicker-month-select"
-                  value={mesCalendarioBusqueda.getMonth()}
-                  onChange={seleccionarMesCalendarioBusqueda}
-                  aria-label="Seleccionar mes"
-                  title="Seleccionar mes"
-                >
-                  {MESES_CALENDARIO.map(
-                    (mes, index) => (
-                      <option
-                        key={mes}
-                        value={index}
-                      >
-                        {mes}
-                      </option>
+                <PedidoSelectVisual
+                  value={
+                    String(
+                      mesCalendarioBusqueda.getMonth()
                     )
-                  )}
-                </select>
+                  }
+                  options={
+                    MESES_CALENDARIO.map(
+                      (
+                        mes,
+                        index
+                      ) => ({
+                        value:
+                          String(index),
 
-                <select
-                  className="pedidos-datepicker-select pedidos-datepicker-year-select"
-                  value={mesCalendarioBusqueda.getFullYear()}
-                  onChange={seleccionarAnioCalendarioBusqueda}
-                  aria-label="Seleccionar año"
-                  title="Seleccionar año"
-                >
-                  {ANIOS_CALENDARIO.map(
-                    (anio) => (
-                      <option
-                        key={anio}
-                        value={anio}
-                      >
-                        {anio}
-                      </option>
+                        label:
+                          mes,
+                      })
                     )
-                  )}
-                </select>
+                  }
+                  onChange={
+                    seleccionarMesCalendarioBusqueda
+                  }
+                  calendario
+                  ariaLabel="Seleccionar mes"
+                />
+
+                <PedidoSelectVisual
+                  value={
+                    String(
+                      mesCalendarioBusqueda.getFullYear()
+                    )
+                  }
+                  options={
+                    ANIOS_CALENDARIO.map(
+                      (
+                        anio
+                      ) => ({
+                        value:
+                          String(anio),
+
+                        label:
+                          String(anio),
+                      })
+                    )
+                  }
+                  onChange={
+                    seleccionarAnioCalendarioBusqueda
+                  }
+                  calendario
+                  ariaLabel="Seleccionar año"
+                />
 
               </div>
 

@@ -30,6 +30,8 @@ import productoRoutes from "./routes/producto.routes.js";
 
 import pedidoRoutes from "./routes/pedido.routes.js";
 
+import entregaRoutes from "./routes/entrega.routes.js";
+
 import empleadoRoutes from "./routes/empleado.routes.js";
 
 import facturaRoutes from "./routes/factura.routes.js";
@@ -145,6 +147,11 @@ app.use(
 app.use(
   "/api/pedidos",
   pedidoRoutes
+);
+
+app.use(
+  "/api/entregas",
+  entregaRoutes
 );
 
 app.use(

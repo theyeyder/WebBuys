@@ -19,15 +19,6 @@ import Empleado
 import Consecutivo
   from "../models/Consecutivo.js";
 
-import Factura
-  from "../models/Factura.js";
-
-import Caja
-  from "../models/Caja.js";
-
-import MovimientoCaja
-  from "../models/MovimientoCaja.js";
-
 import {
   generarConsecutivo,
 } from "../utils/generarConsecutivo.js";
@@ -160,325 +151,32 @@ async function obtenerDatosDespachoCliente(cliente) {
 
 
 /* =========================================
-   UTILIDADES DE CAJA PARA PEDIDOS
+   NORMALIZAR ESTADOS DEL FLUJO ANTERIOR
+   Solo para compatibilidad con pedidos
+   creados antes del módulo Entrega.
 ========================================= */
 
-function usuarioActualPedido(req) {
-
-  return (
-    req.usuario?._id ||
-    req.user?._id ||
-    null
-  );
-
-}
-
-
-async function obtenerCajaAbiertaPedido() {
-
-  return Caja.findOne({
-    estado: "Abierta",
-  });
-
-}
-
-
-async function obtenerFacturaActivaPedido(
-  pedidoId
+function normalizarEstadoPedido(
+  estado
 ) {
 
-  return Factura.findOne({
-    pedido:
-      pedidoId,
-
-    estado: {
-      $ne: "Anulada",
-    },
-  })
-    .sort({
-      createdAt: -1,
-    });
-
-}
-
-
-function nombreClientePedido(
-  pedido
-) {
-
-  return (
-    pedido.clienteNombre ||
-    pedido.clienteRazonSocial ||
-    "Cliente"
-  );
-
-}
-
-
-async function registrarPedidoEntregadoEnCaja({
-  pedido,
-  caja,
-  usuarioId = null,
-}) {
-
   if (
-    !pedido ||
-    !caja
+    estado ===
+    "Pendiente"
   ) {
-
-    const error =
-      new Error(
-        "No fue posible identificar el pedido o la caja abierta."
-      );
-
-    error.statusCode =
-      400;
-
-    throw error;
-
-  }
-
-
-  const valor =
-    Number(
-      pedido.total ||
-      0
-    );
-
-
-  if (
-    !Number.isFinite(
-      valor
-    ) ||
-    valor <= 0
-  ) {
-
-    const error =
-      new Error(
-        `El pedido ${pedido.codigo} no tiene un total válido para ingresar a Caja.`
-      );
-
-    error.statusCode =
-      400;
-
-    throw error;
-
-  }
-
-
-  const factura =
-    await obtenerFacturaActivaPedido(
-      pedido._id
-    );
-
-
-  const claveUnica =
-    `PEDIDO:${pedido._id}`;
-
-
-  const existente =
-    await MovimientoCaja
-      .findOne({
-        claveUnica,
-      })
-      .populate(
-        "caja",
-        "codigo estado"
-      );
-
-
-  /*
-    Si el pedido ya quedó registrado en otra caja y
-    ese movimiento sigue activo, no se duplica.
-  */
-  if (
-    existente &&
-    existente.estado ===
-      "Activo" &&
-    String(
-      existente.caja?._id ||
-      existente.caja
-    ) !==
-    String(
-      caja._id
-    )
-  ) {
-
-    return existente;
-
-  }
-
-
-  /*
-    Si el movimiento fue anulado dentro de una caja
-    ya cerrada, no se mueve a otra caja porque eso
-    modificaría un cierre histórico.
-  */
-  if (
-    existente &&
-    existente.estado ===
-      "Anulado" &&
-    existente.caja?.estado ===
-      "Cerrada" &&
-    String(
-      existente.caja?._id ||
-      existente.caja
-    ) !==
-    String(
-      caja._id
-    )
-  ) {
-
-    const error =
-      new Error(
-        `El pedido ${pedido.codigo} ya tuvo un movimiento en la caja ${existente.caja.codigo}. No puede reingresarse automáticamente porque esa caja está cerrada.`
-      );
-
-    error.statusCode =
-      400;
-
-    throw error;
-
-  }
-
-
-  return MovimientoCaja
-    .findOneAndUpdate(
-      {
-        claveUnica,
-      },
-
-      {
-        $set: {
-          caja:
-            caja._id,
-
-          tipo:
-            "Ingreso",
-
-          origen:
-            "Pedido",
-
-          concepto:
-            `Pedido entregado - ${pedido.codigo}`,
-
-          valor,
-
-          pedido:
-            pedido._id,
-
-          pedidoCodigo:
-            pedido.codigo ||
-            "",
-
-          cliente:
-            pedido.cliente ||
-            null,
-
-          clienteNombre:
-            nombreClientePedido(
-              pedido
-            ),
-
-          metodoPago:
-            pedido.metodoPago ||
-            "Efectivo",
-
-          afectaEfectivo:
-            (
-              pedido.metodoPago ||
-              "Efectivo"
-            ) ===
-            "Efectivo",
-
-          factura:
-            factura?._id ||
-            null,
-
-          facturaCodigo:
-            factura?.codigo ||
-            "",
-
-          observacion:
-            factura
-              ? "Factura generada"
-              : "Pedido sin factura generada",
-
-          usuario:
-            usuarioId,
-
-          estado:
-            "Activo",
-
-          claveUnica,
-        },
-      },
-
-      {
-        new: true,
-        upsert: true,
-        setDefaultsOnInsert: true,
-      }
-    );
-
-}
-
-
-async function anularMovimientoPedidoEntregado(
-  pedido
-) {
-
-  const claveUnica =
-    `PEDIDO:${pedido._id}`;
-
-
-  const movimiento =
-    await MovimientoCaja
-      .findOne({
-        claveUnica,
-        estado:
-          "Activo",
-      })
-      .populate(
-        "caja",
-        "codigo estado"
-      );
-
-
-  if (!movimiento) {
-    return null;
+    return "En preparación";
   }
 
 
   if (
-    movimiento.caja?.estado ===
-    "Cerrada"
+    estado === "En ruta" ||
+    estado === "Entregado"
   ) {
-
-    const error =
-      new Error(
-        `El pedido ${pedido.codigo} ya fue incluido en la caja cerrada ${movimiento.caja.codigo}. No puede retirarse de esa caja cambiando el estado del pedido.`
-      );
-
-    error.statusCode =
-      400;
-
-    throw error;
-
+    return "Listo para entrega";
   }
 
 
-  movimiento.estado =
-    "Anulado";
-
-  movimiento.observacion =
-    "Movimiento anulado porque el pedido dejó de estar Entregado";
-
-
-  await movimiento.save();
-
-
-  return movimiento;
+  return estado;
 
 }
 
@@ -516,11 +214,6 @@ export const listarPedidos =
           )
 
           .populate(
-            "repartidor",
-            "codigo nombres apellidos documento cargo estado"
-          )
-
-          .populate(
             "empacador",
             "codigo nombres apellidos documento cargo estado"
           )
@@ -540,8 +233,28 @@ export const listarPedidos =
           });
 
 
+      const pedidosNormalizados =
+        pedidos.map(
+          (pedido) => {
+
+            const data =
+              pedido.toObject();
+
+
+            data.estado =
+              normalizarEstadoPedido(
+                data.estado
+              );
+
+
+            return data;
+
+          }
+        );
+
+
       return res.json(
-        pedidos
+        pedidosNormalizados
       );
 
     } catch (error) {
@@ -656,20 +369,6 @@ async function calcularItemPedido(
     );
 
 
-  if (
-    !Number.isFinite(
-      cantidad
-    ) ||
-    cantidad <= 0
-  ) {
-
-    throw new Error(
-      `La cantidad de "${producto.nombre}" no es válida.`
-    );
-
-  }
-
-
   /* =====================================
      PRESENTACIÓN ADICIONAL
   ===================================== */
@@ -773,24 +472,68 @@ async function calcularItemPedido(
 
 
   /* =====================================
-     PRECIO AUTOMÁTICO
+     VALIDAR CANTIDAD
+     - Unidad: mínimo 1
+     - Peso: permite 0
   ===================================== */
 
+  const esProductoPorPeso =
+    tipoVenta ===
+    "Peso";
+
+
+  if (
+    !Number.isFinite(
+      cantidad
+    ) ||
+    !Number.isInteger(
+      cantidad
+    ) ||
+    cantidad < 0 ||
+    (
+      !esProductoPorPeso &&
+      cantidad === 0
+    )
+  ) {
+
+    throw new Error(
+      esProductoPorPeso
+        ? `La cantidad solicitada de "${producto.nombre}" debe ser un número entero igual o mayor que cero.`
+        : `La cantidad solicitada de "${producto.nombre}" debe ser un número entero mayor que cero.`
+    );
+
+  }
+
+
+  /* =====================================
+     PRECIO AUTOMÁTICO POR CANTIDAD
+     APLICA TANTO A UNIDAD COMO A PESO
+  ===================================== */
+
+  const cantidadSinConfirmar =
+    esProductoPorPeso &&
+    cantidad === 0;
+
+
   const precioAplicado =
-    calcularPrecioProducto({
+    cantidadSinConfirmar
+      ? precioNormal
+      : calcularPrecioProducto({
 
-      precioVenta:
-        precioNormal,
+          precioVenta:
+            precioNormal,
 
-      reglasPrecio,
+          reglasPrecio,
 
-      cantidad,
+          cantidad,
 
-    });
+        });
 
 
   const reglasCumplidas =
-    reglasPrecio
+    cantidadSinConfirmar
+      ? []
+      : reglasPrecio
 
       .filter(
         (regla) =>
@@ -827,6 +570,67 @@ async function calcularItemPedido(
       )
     );
 
+
+  /*
+    Los productos vendidos por peso NO se pesan en Pedidos.
+    Pedidos sí determina el precio por KG según la cantidad
+    solicitada. El subtotal definitivo sigue pendiente hasta
+    registrar el peso real en Entrega.
+  */
+  if (
+    tipoVenta ===
+    "Peso"
+  ) {
+
+    return {
+
+      producto:
+        producto._id,
+
+      codigoProducto:
+        producto.codigo,
+
+      nombre:
+        producto.nombre,
+
+      marca:
+        producto.marca ||
+        "",
+
+      tipoVenta,
+
+      unidad,
+
+      presentacionId,
+
+      presentacionNombre,
+
+      cantidad,
+
+      precioNormal,
+
+      precioAplicado,
+
+      aplicoPrecioCantidad,
+
+      reglaAplicadaDesde:
+        reglaAplicada
+          ? Number(
+            reglaAplicada.desde
+          )
+          : null,
+
+      subtotal:
+        0,
+
+    };
+
+  }
+
+
+  /* =====================================
+     SUBTOTAL - PRODUCTOS POR UNIDAD
+  ===================================== */
 
   const subtotal =
     Number(
@@ -899,15 +703,11 @@ export const crearPedido =
 
         empleado,
 
-        repartidor,
-
         empacador = null,
 
         items = [],
 
         descuento = 0,
-
-        metodoPago = "Efectivo",
 
         fechaEntrega,
 
@@ -918,8 +718,8 @@ export const crearPedido =
 
       /* =====================================
          CLIENTE OPCIONAL
-         SI NO HAY CLIENTE, EL PEDIDO
-         SE GUARDA COMO BORRADOR
+         SI NO HAY CLIENTE, SE GUARDA
+         COMO BORRADOR
       ===================================== */
 
       let clienteExiste =
@@ -975,16 +775,13 @@ export const crearPedido =
 
 
       /* =====================================
-         VALIDAR PERSONAL DEL PEDIDO
+         PERSONAL DEL PEDIDO
          - ATENDIDO POR: OBLIGATORIO
-         - REPARTIDOR: OBLIGATORIO
          - EMPACADOR: OPCIONAL
+         El repartidor se asignará en Entrega.
       ===================================== */
 
       let empleadoExiste =
-        null;
-
-      let repartidorExiste =
         null;
 
       let empacadorExiste =
@@ -998,15 +795,6 @@ export const crearPedido =
             empleado,
             "Empleado",
             "un empleado para atender el pedido",
-            true
-          );
-
-
-        repartidorExiste =
-          await validarEmpleadoPorCargo(
-            repartidor,
-            "Repartidor",
-            "un repartidor",
             true
           );
 
@@ -1027,35 +815,6 @@ export const crearPedido =
 
             mensaje:
               error.message,
-
-          });
-
-      }
-
-
-      /* =====================================
-         VALIDAR MÉTODO DE PAGO
-      ===================================== */
-
-      const metodosPagoValidos = [
-        "Efectivo",
-        "Transferencia",
-        "Crédito",
-      ];
-
-
-      if (
-        !metodosPagoValidos.includes(
-          metodoPago
-        )
-      ) {
-
-        return res
-          .status(400)
-          .json({
-
-            mensaje:
-              "El tipo de pago seleccionado no es válido.",
 
           });
 
@@ -1085,10 +844,6 @@ export const crearPedido =
       }
 
 
-      /* =====================================
-         CALCULAR ITEMS
-      ===================================== */
-
       const itemsCalculados =
         [];
 
@@ -1098,27 +853,22 @@ export const crearPedido =
         of items
       ) {
 
-        const calculado =
+        itemsCalculados.push(
           await calcularItemPedido(
             item
-          );
-
-
-        itemsCalculados.push(
-          calculado
+          )
         );
 
       }
 
 
-      /* =====================================
-         SUBTOTAL
-      ===================================== */
-
+      /*
+        Los productos por peso quedan con subtotal 0.
+        Su valor definitivo se calculará en Entrega.
+      */
       const subtotal =
         Number(
           itemsCalculados
-
             .reduce(
               (
                 acumulado,
@@ -1126,21 +876,16 @@ export const crearPedido =
               ) =>
                 acumulado +
                 Number(
-                  item.subtotal
+                  item.subtotal ||
+                  0
                 ),
-
               0
             )
-
             .toFixed(
               2
             )
         );
 
-
-      /* =====================================
-         DESCUENTO
-      ===================================== */
 
       const descuentoNumero =
         Number(
@@ -1153,22 +898,7 @@ export const crearPedido =
         !Number.isFinite(
           descuentoNumero
         ) ||
-        descuentoNumero < 0
-      ) {
-
-        return res
-          .status(400)
-          .json({
-
-            mensaje:
-              "El descuento no es válido.",
-
-          });
-
-      }
-
-
-      if (
+        descuentoNumero < 0 ||
         descuentoNumero >
         subtotal
       ) {
@@ -1178,16 +908,12 @@ export const crearPedido =
           .json({
 
             mensaje:
-              "El descuento no puede superar el subtotal.",
+              "El descuento no es válido para el subtotal calculado.",
 
           });
 
       }
 
-
-      /* =====================================
-         TOTAL
-      ===================================== */
 
       const total =
         Number(
@@ -1200,10 +926,6 @@ export const crearPedido =
         );
 
 
-      /* =====================================
-         CONSECUTIVO
-      ===================================== */
-
       const codigo =
         await generarConsecutivo(
           "pedidos",
@@ -1211,79 +933,85 @@ export const crearPedido =
         );
 
 
-      /* =====================================
-         CREAR PEDIDO
-      ===================================== */
-
       const pedido =
         await Pedido.create({
 
           codigo,
-
 
           cliente:
             clienteExiste
               ? clienteExiste._id
               : null,
 
-          clienteCodigo: datosDespacho.clienteCodigo,
-          clienteNombre: datosDespacho.clienteNombre,
-          clienteRazonSocial: datosDespacho.clienteRazonSocial,
-          clienteTelefono: datosDespacho.clienteTelefono,
-          clienteDireccion: datosDespacho.clienteDireccion,
-          clienteBarrio: datosDespacho.clienteBarrio,
-          clienteCiudad: datosDespacho.clienteCiudad,
-          clienteTipo: datosDespacho.clienteTipo,
+          clienteCodigo:
+            datosDespacho.clienteCodigo,
 
-          zonaDespacho: datosDespacho.zonaDespacho,
-          zonaDespachoCodigo: datosDespacho.zonaDespachoCodigo,
-          zonaDespachoNombre: datosDespacho.zonaDespachoNombre,
+          clienteNombre:
+            datosDespacho.clienteNombre,
 
-          ruta: datosDespacho.ruta,
-          rutaCodigo: datosDespacho.rutaCodigo,
-          rutaNombre: datosDespacho.rutaNombre,
-          rutaDiasAtencion: datosDespacho.rutaDiasAtencion,
+          clienteRazonSocial:
+            datosDespacho.clienteRazonSocial,
 
+          clienteTelefono:
+            datosDespacho.clienteTelefono,
+
+          clienteDireccion:
+            datosDespacho.clienteDireccion,
+
+          clienteBarrio:
+            datosDespacho.clienteBarrio,
+
+          clienteCiudad:
+            datosDespacho.clienteCiudad,
+
+          clienteTipo:
+            datosDespacho.clienteTipo,
+
+          zonaDespacho:
+            datosDespacho.zonaDespacho,
+
+          zonaDespachoCodigo:
+            datosDespacho.zonaDespachoCodigo,
+
+          zonaDespachoNombre:
+            datosDespacho.zonaDespachoNombre,
+
+          ruta:
+            datosDespacho.ruta,
+
+          rutaCodigo:
+            datosDespacho.rutaCodigo,
+
+          rutaNombre:
+            datosDespacho.rutaNombre,
+
+          rutaDiasAtencion:
+            datosDespacho.rutaDiasAtencion,
 
           empleado:
             empleadoExiste._id,
-
-
-          repartidor:
-            repartidorExiste._id,
-
 
           empacador:
             empacadorExiste
               ? empacadorExiste._id
               : null,
 
-
           items:
             itemsCalculados,
 
-
           subtotal,
-
 
           descuento:
             descuentoNumero,
 
-
           total,
-
-
-          metodoPago,
-
 
           estado:
             "Borrador",
 
-
           fechaEntrega:
             fechaEntrega ||
             null,
-
 
           observaciones:
             String(
@@ -1291,17 +1019,12 @@ export const crearPedido =
               ""
             ).trim(),
 
-
           creadoPor:
             req.usuario?._id ||
             null,
 
         });
 
-
-      /* =====================================
-         POPULATE
-      ===================================== */
 
       await pedido.populate([
 
@@ -1329,7 +1052,6 @@ export const crearPedido =
             "codigo nombre descripcion diasAtencion estado",
         },
 
-
         {
           path:
             "empleado",
@@ -1337,16 +1059,6 @@ export const crearPedido =
           select:
             "codigo nombres apellidos documento cargo estado",
         },
-
-
-        {
-          path:
-            "repartidor",
-
-          select:
-            "codigo nombres apellidos documento cargo estado",
-        },
-
 
         {
           path:
@@ -1356,7 +1068,6 @@ export const crearPedido =
             "codigo nombres apellidos documento cargo estado",
         },
 
-
         {
           path:
             "items.producto",
@@ -1364,7 +1075,6 @@ export const crearPedido =
           select:
             "codigo nombre marca categoria",
         },
-
 
         {
           path:
@@ -1410,7 +1120,6 @@ export const crearPedido =
 
   };
 
-
 /* =========================================
    ACTUALIZAR PEDIDO
 ========================================= */
@@ -1426,9 +1135,7 @@ export const actualizarPedido =
         );
 
 
-      if (
-        !pedido
-      ) {
+      if (!pedido) {
 
         return res
           .status(404)
@@ -1444,6 +1151,8 @@ export const actualizarPedido =
 
       if (
         [
+          "Listo para entrega",
+          "En ruta",
           "Entregado",
           "Cancelado",
         ].includes(
@@ -1456,7 +1165,7 @@ export const actualizarPedido =
           .json({
 
             mensaje:
-              "No puedes modificar un pedido entregado o cancelado.",
+              "No puedes modificar un pedido listo para entrega o cancelado.",
 
           });
 
@@ -1469,15 +1178,11 @@ export const actualizarPedido =
 
         empleado,
 
-        repartidor,
-
         empacador = null,
 
         items = [],
 
         descuento = 0,
-
-        metodoPago = "Efectivo",
 
         fechaEntrega,
 
@@ -1485,12 +1190,6 @@ export const actualizarPedido =
 
       } = req.body;
 
-
-      /* =====================================
-         CLIENTE OPCIONAL
-         PERMITE ASIGNARLO O RETIRARLO
-         MIENTRAS EL PEDIDO SEA BORRADOR
-      ===================================== */
 
       let clienteExiste =
         null;
@@ -1546,7 +1245,8 @@ export const actualizarPedido =
 
       if (
         !clienteExiste &&
-        pedido.estado !== "Borrador"
+        pedido.estado !==
+          "Borrador"
       ) {
 
         return res
@@ -1554,24 +1254,14 @@ export const actualizarPedido =
           .json({
 
             mensaje:
-              "No puedes retirar el cliente de un pedido que ya fue confirmado.",
+              "No puedes retirar el cliente de un pedido que ya está en preparación.",
 
           });
 
       }
 
 
-      /* =====================================
-         VALIDAR PERSONAL DEL PEDIDO
-         - ATENDIDO POR: OBLIGATORIO
-         - REPARTIDOR: OBLIGATORIO
-         - EMPACADOR: OPCIONAL
-      ===================================== */
-
       let empleadoExiste =
-        null;
-
-      let repartidorExiste =
         null;
 
       let empacadorExiste =
@@ -1585,15 +1275,6 @@ export const actualizarPedido =
             empleado,
             "Empleado",
             "un empleado para atender el pedido",
-            true
-          );
-
-
-        repartidorExiste =
-          await validarEmpleadoPorCargo(
-            repartidor,
-            "Repartidor",
-            "un repartidor",
             true
           );
 
@@ -1620,39 +1301,6 @@ export const actualizarPedido =
       }
 
 
-      /* =====================================
-         VALIDAR MÉTODO DE PAGO
-      ===================================== */
-
-      const metodosPagoValidos = [
-        "Efectivo",
-        "Transferencia",
-        "Crédito",
-      ];
-
-
-      if (
-        !metodosPagoValidos.includes(
-          metodoPago
-        )
-      ) {
-
-        return res
-          .status(400)
-          .json({
-
-            mensaje:
-              "El tipo de pago seleccionado no es válido.",
-
-          });
-
-      }
-
-
-      /* =====================================
-         VALIDAR ITEMS
-      ===================================== */
-
       if (
         !Array.isArray(
           items
@@ -1672,10 +1320,6 @@ export const actualizarPedido =
       }
 
 
-      /* =====================================
-         RECALCULAR ITEMS
-      ===================================== */
-
       const itemsCalculados =
         [];
 
@@ -1686,24 +1330,17 @@ export const actualizarPedido =
       ) {
 
         itemsCalculados.push(
-
           await calcularItemPedido(
             item
           )
-
         );
 
       }
 
 
-      /* =====================================
-         SUBTOTAL
-      ===================================== */
-
       const subtotal =
         Number(
           itemsCalculados
-
             .reduce(
               (
                 acumulado,
@@ -1711,21 +1348,16 @@ export const actualizarPedido =
               ) =>
                 acumulado +
                 Number(
-                  item.subtotal
+                  item.subtotal ||
+                  0
                 ),
-
               0
             )
-
             .toFixed(
               2
             )
         );
 
-
-      /* =====================================
-         DESCUENTO
-      ===================================== */
 
       const descuentoNumero =
         Number(
@@ -1748,66 +1380,79 @@ export const actualizarPedido =
           .json({
 
             mensaje:
-              "El descuento no es válido.",
+              "El descuento no es válido para el subtotal calculado.",
 
           });
 
       }
 
 
-      /* =====================================
-         ACTUALIZAR
-      ===================================== */
-
       pedido.cliente =
         clienteExiste
           ? clienteExiste._id
           : null;
 
-      pedido.clienteCodigo = datosDespacho.clienteCodigo;
-      pedido.clienteNombre = datosDespacho.clienteNombre;
-      pedido.clienteRazonSocial = datosDespacho.clienteRazonSocial;
-      pedido.clienteTelefono = datosDespacho.clienteTelefono;
-      pedido.clienteDireccion = datosDespacho.clienteDireccion;
-      pedido.clienteBarrio = datosDespacho.clienteBarrio;
-      pedido.clienteCiudad = datosDespacho.clienteCiudad;
-      pedido.clienteTipo = datosDespacho.clienteTipo;
+      pedido.clienteCodigo =
+        datosDespacho.clienteCodigo;
 
-      pedido.zonaDespacho = datosDespacho.zonaDespacho;
-      pedido.zonaDespachoCodigo = datosDespacho.zonaDespachoCodigo;
-      pedido.zonaDespachoNombre = datosDespacho.zonaDespachoNombre;
+      pedido.clienteNombre =
+        datosDespacho.clienteNombre;
 
-      pedido.ruta = datosDespacho.ruta;
-      pedido.rutaCodigo = datosDespacho.rutaCodigo;
-      pedido.rutaNombre = datosDespacho.rutaNombre;
-      pedido.rutaDiasAtencion = datosDespacho.rutaDiasAtencion;
+      pedido.clienteRazonSocial =
+        datosDespacho.clienteRazonSocial;
 
+      pedido.clienteTelefono =
+        datosDespacho.clienteTelefono;
+
+      pedido.clienteDireccion =
+        datosDespacho.clienteDireccion;
+
+      pedido.clienteBarrio =
+        datosDespacho.clienteBarrio;
+
+      pedido.clienteCiudad =
+        datosDespacho.clienteCiudad;
+
+      pedido.clienteTipo =
+        datosDespacho.clienteTipo;
+
+      pedido.zonaDespacho =
+        datosDespacho.zonaDespacho;
+
+      pedido.zonaDespachoCodigo =
+        datosDespacho.zonaDespachoCodigo;
+
+      pedido.zonaDespachoNombre =
+        datosDespacho.zonaDespachoNombre;
+
+      pedido.ruta =
+        datosDespacho.ruta;
+
+      pedido.rutaCodigo =
+        datosDespacho.rutaCodigo;
+
+      pedido.rutaNombre =
+        datosDespacho.rutaNombre;
+
+      pedido.rutaDiasAtencion =
+        datosDespacho.rutaDiasAtencion;
 
       pedido.empleado =
         empleadoExiste._id;
-
-
-      pedido.repartidor =
-        repartidorExiste._id;
-
 
       pedido.empacador =
         empacadorExiste
           ? empacadorExiste._id
           : null;
 
-
       pedido.items =
         itemsCalculados;
-
 
       pedido.subtotal =
         subtotal;
 
-
       pedido.descuento =
         descuentoNumero;
-
 
       pedido.total =
         Number(
@@ -1819,15 +1464,9 @@ export const actualizarPedido =
           )
         );
 
-
-      pedido.metodoPago =
-        metodoPago;
-
-
       pedido.fechaEntrega =
         fechaEntrega ||
         null;
-
 
       pedido.observaciones =
         String(
@@ -1836,12 +1475,17 @@ export const actualizarPedido =
         ).trim();
 
 
+      if (
+        pedido.estado ===
+        "Pendiente"
+      ) {
+        pedido.estado =
+          "En preparación";
+      }
+
+
       await pedido.save();
 
-
-      /* =====================================
-         POPULATE
-      ===================================== */
 
       await pedido.populate([
 
@@ -1869,7 +1513,6 @@ export const actualizarPedido =
             "codigo nombre descripcion diasAtencion estado",
         },
 
-
         {
           path:
             "empleado",
@@ -1877,16 +1520,6 @@ export const actualizarPedido =
           select:
             "codigo nombres apellidos documento cargo estado",
         },
-
-
-        {
-          path:
-            "repartidor",
-
-          select:
-            "codigo nombres apellidos documento cargo estado",
-        },
-
 
         {
           path:
@@ -1896,7 +1529,6 @@ export const actualizarPedido =
             "codigo nombres apellidos documento cargo estado",
         },
 
-
         {
           path:
             "items.producto",
@@ -1904,7 +1536,6 @@ export const actualizarPedido =
           select:
             "codigo nombre marca categoria",
         },
-
 
         {
           path:
@@ -1948,7 +1579,6 @@ export const actualizarPedido =
 
   };
 
-
 /* =========================================
    CAMBIAR ESTADO
 ========================================= */
@@ -1965,10 +1595,8 @@ export const cambiarEstadoPedido =
 
       const estadosValidos = [
         "Borrador",
-        "Pendiente",
         "En preparación",
-        "En ruta",
-        "Entregado",
+        "Listo para entrega",
         "Cancelado",
       ];
 
@@ -1997,9 +1625,7 @@ export const cambiarEstadoPedido =
         );
 
 
-      if (
-        !pedido
-      ) {
+      if (!pedido) {
 
         return res
           .status(404)
@@ -2013,15 +1639,16 @@ export const cambiarEstadoPedido =
       }
 
 
-      /* =====================================
-         NO PERMITIR CONFIRMAR NI AVANZAR
-         UN PEDIDO SIN CLIENTE
-      ===================================== */
-
+      /*
+        Los estados del pedido se pueden cambiar libremente.
+        Únicamente para marcarlo como "Listo para entrega"
+        se exige tener un cliente asignado, porque ese es el
+        estado que permite que Entrega lo reciba.
+      */
       if (
-        !pedido.cliente &&
-        estado !== "Borrador" &&
-        estado !== "Cancelado"
+        estado ===
+          "Listo para entrega" &&
+        !pedido.cliente
       ) {
 
         return res
@@ -2029,23 +1656,15 @@ export const cambiarEstadoPedido =
           .json({
 
             mensaje:
-              "Debes asignar un cliente antes de confirmar o cambiar el estado del pedido.",
+              "Debes asignar un cliente antes de marcar el pedido como Listo para entrega.",
 
           });
 
       }
 
 
-      const estadoAnterior =
-        pedido.estado;
-
-
-      /*
-        Si no cambió realmente el estado,
-        no se crea ningún movimiento nuevo.
-      */
       if (
-        estadoAnterior ===
+        pedido.estado ===
         estado
       ) {
 
@@ -2058,108 +1677,6 @@ export const cambiarEstadoPedido =
             pedido.estado,
 
         });
-
-      }
-
-
-      /* =====================================
-         ENTREGADO -> ENTRA A CAJA
-      ===================================== */
-
-      if (
-        estado ===
-        "Entregado"
-      ) {
-
-        const caja =
-          await obtenerCajaAbiertaPedido();
-
-
-        if (!caja) {
-
-          return res
-            .status(400)
-            .json({
-
-              mensaje:
-                "Debe abrir la caja antes de marcar un pedido como Entregado.",
-
-            });
-
-        }
-
-
-        pedido.estado =
-          estado;
-
-
-        await pedido.save();
-
-
-        try {
-
-          await registrarPedidoEntregadoEnCaja({
-
-            pedido,
-
-            caja,
-
-            usuarioId:
-              usuarioActualPedido(
-                req
-              ),
-
-          });
-
-
-        } catch (
-          errorCaja
-        ) {
-
-          /*
-            Rollback del estado si Caja no pudo
-            registrar correctamente el pedido.
-          */
-
-          pedido.estado =
-            estadoAnterior;
-
-
-          await pedido.save();
-
-
-          throw errorCaja;
-
-        }
-
-
-        return res.json({
-
-          mensaje:
-            "Pedido marcado como Entregado y registrado en Caja correctamente.",
-
-          estado:
-            pedido.estado,
-
-        });
-
-      }
-
-
-      /* =====================================
-         SI DEJA DE ESTAR ENTREGADO
-         SE ANULA SU MOVIMIENTO SOLO SI
-         LA CAJA TODAVÍA ESTÁ ABIERTA
-      ===================================== */
-
-      if (
-        estadoAnterior ===
-        "Entregado"
-      ) {
-
-        await anularMovimientoPedidoEntregado(
-          pedido
-        );
 
       }
 
@@ -2190,10 +1707,7 @@ export const cambiarEstadoPedido =
 
 
       return res
-        .status(
-          error?.statusCode ||
-          500
-        )
+        .status(500)
         .json({
 
           mensaje:
@@ -2205,7 +1719,6 @@ export const cambiarEstadoPedido =
     }
 
   };
-
 
 /* =========================================
    ELIMINAR PEDIDO
@@ -2222,9 +1735,7 @@ export const eliminarPedido =
         );
 
 
-      if (
-        !pedido
-      ) {
+      if (!pedido) {
 
         return res
           .status(404)
@@ -2239,8 +1750,13 @@ export const eliminarPedido =
 
 
       if (
-        pedido.estado ===
-        "Entregado"
+        [
+          "Listo para entrega",
+          "En ruta",
+          "Entregado",
+        ].includes(
+          pedido.estado
+        )
       ) {
 
         return res
@@ -2248,7 +1764,7 @@ export const eliminarPedido =
           .json({
 
             mensaje:
-              "No puedes eliminar un pedido entregado.",
+              "No puedes eliminar un pedido que ya fue enviado al proceso de entrega.",
 
           });
 

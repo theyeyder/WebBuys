@@ -83,13 +83,34 @@ const itemPedidoSchema =
 
 
       /* =====================================
-         CANTIDAD / PESO
+         CANTIDAD SOLICITADA
+         Si el producto es por peso, aquí se
+         guarda la cantidad de piezas solicitadas.
+         El peso real se define en Entrega.
       ===================================== */
 
       cantidad: {
         type: Number,
         required: true,
-        min: 0.001,
+
+        validate: {
+          validator(valor) {
+
+            if (
+              !Number.isFinite(valor) ||
+              !Number.isInteger(valor)
+            ) {
+              return false;
+            }
+
+            return this.tipoVenta === "Peso"
+              ? valor >= 0
+              : valor >= 1;
+          },
+
+          message:
+            "La cantidad debe ser un número entero válido. Los productos por peso permiten 0; los productos por unidad requieren mínimo 1.",
+        },
       },
 
 
@@ -310,22 +331,6 @@ const pedidoSchema =
 
 
       /* =====================================
-         REPARTIDOR
-         Cargo: Repartidor
-         OBLIGATORIO
-      ===================================== */
-
-      repartidor: {
-        type:
-          mongoose.Schema.Types.ObjectId,
-
-        ref: "Empleado",
-
-        required: true,
-      },
-
-
-      /* =====================================
          EMPACADOR
          Cargo: Empacador
          OPCIONAL
@@ -390,23 +395,6 @@ const pedidoSchema =
 
 
       /* =====================================
-         MÉTODO DE PAGO
-      ===================================== */
-
-      metodoPago: {
-        type: String,
-
-        enum: [
-          "Efectivo",
-          "Transferencia",
-          "Crédito",
-        ],
-
-        default: "Efectivo",
-      },
-
-
-      /* =====================================
          ESTADO
       ===================================== */
 
@@ -415,10 +403,8 @@ const pedidoSchema =
 
         enum: [
           "Borrador",
-          "Pendiente",
           "En preparación",
-          "En ruta",
-          "Entregado",
+          "Listo para entrega",
           "Cancelado",
         ],
 
@@ -478,12 +464,6 @@ pedidoSchema.index({
 
 pedidoSchema.index({
   empleado: 1,
-  createdAt: -1,
-});
-
-
-pedidoSchema.index({
-  repartidor: 1,
   createdAt: -1,
 });
 

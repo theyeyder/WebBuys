@@ -45,7 +45,6 @@ const FORM_INICIAL = {
   razonSocial: "",
   telefono: "",
   direccion: "",
-  barrio: "",
   zonaDespacho: "",
   ciudad: "",
   tipoCliente: "Tienda",
@@ -388,9 +387,6 @@ export default function Clientes() {
       direccion:
         cliente.direccion || "",
 
-      barrio:
-        cliente.barrio || "",
-
       zonaDespacho:
         cliente.zonaDespacho?._id ||
         cliente.zonaDespacho ||
@@ -453,9 +449,6 @@ export default function Clientes() {
 
       direccion:
         cliente.direccion || "",
-
-      barrio:
-        cliente.barrio || "",
 
       zonaDespacho:
         cliente.zonaDespacho?._id ||
@@ -802,9 +795,6 @@ export default function Clientes() {
         direccion:
           form.direccion.trim(),
 
-        barrio:
-          form.barrio.trim(),
-
         zonaDespacho:
           form.zonaDespacho ||
           null,
@@ -972,10 +962,6 @@ export default function Clientes() {
             cliente.direccion ||
             "-";
 
-          const barrio =
-            cliente.barrio ||
-            "-";
-
           const zona =
             obtenerNombreZona(
               cliente
@@ -1020,10 +1006,6 @@ export default function Clientes() {
 
               <td>
                 ${escaparHtml(direccion)}
-              </td>
-
-              <td>
-                ${escaparHtml(barrio)}
               </td>
 
               <td>
@@ -1119,7 +1101,6 @@ export default function Clientes() {
                   <th>Cliente</th>
                   <th>Teléfono</th>
                   <th>Dirección</th>
-                  <th>Barrio</th>
                   <th>Zona</th>
                   <th>Tipo</th>
                   <th>Estado</th>
@@ -1259,12 +1240,6 @@ export default function Clientes() {
               ""
             ).toLowerCase();
 
-          const barrio =
-            String(
-              cliente.barrio ||
-              ""
-            ).toLowerCase();
-
           const zona =
             String(
               cliente.zonaDespacho
@@ -1302,11 +1277,6 @@ export default function Clientes() {
                 texto
               );
 
-            case "barrio":
-              return barrio.includes(
-                texto
-              );
-
             case "zona":
               return zona.includes(
                 texto
@@ -1319,7 +1289,6 @@ export default function Clientes() {
                 nombre.includes(texto) ||
                 razonSocial.includes(texto) ||
                 telefono.includes(texto) ||
-                barrio.includes(texto) ||
                 zona.includes(texto)
               );
 
@@ -1733,26 +1702,6 @@ export default function Clientes() {
             </div>
 
 
-            {/* BARRIO */}
-
-            <div className="clientes-field clientes-field-barrio">
-
-              <label>
-                Barrio
-              </label>
-
-              <input
-                type="text"
-                name="barrio"
-                value={form.barrio}
-                onChange={cambiar}
-                placeholder="Barrio"
-                disabled={guardando}
-              />
-
-            </div>
-
-
             {/* CIUDAD */}
 
             <div className="clientes-field clientes-field-ciudad">
@@ -1991,10 +1940,6 @@ export default function Clientes() {
                   Teléfono
                 </option>
 
-                <option value="barrio">
-                  Barrio
-                </option>
-
                 <option value="zona">
                   Zona
                 </option>
@@ -2041,7 +1986,6 @@ export default function Clientes() {
                     <th>Documento</th>
                     <th>Cliente</th>
                     <th>Teléfono</th>
-                    <th>Barrio</th>
                     <th>Zona</th>
                     <th>Estado</th>
                   </tr>
@@ -2056,7 +2000,7 @@ export default function Clientes() {
                     <tr>
 
                       <td
-                        colSpan="7"
+                        colSpan="6"
                         className="clientes-search-empty"
                       >
                         Cargando clientes...
@@ -2069,7 +2013,7 @@ export default function Clientes() {
                     <tr>
 
                       <td
-                        colSpan="7"
+                        colSpan="6"
                         className="clientes-search-empty"
                       >
                         No se encontraron clientes.
@@ -2130,14 +2074,6 @@ export default function Clientes() {
 
                           <td>
                             {cliente.telefono ||
-                              "—"}
-                          </td>
-
-
-                          {/* BARRIO */}
-
-                          <td>
-                            {cliente.barrio ||
                               "—"}
                           </td>
 

@@ -34,14 +34,19 @@ const MODULOS = [
   },
 
   {
-    nombre: "Pedidos",
-    ruta: "/pedidos",
-  },
+  nombre: "Pedidos",
+  ruta: "/pedidos",
+},
 
-  {
-    nombre: "Facturación",
-    ruta: "/facturacion",
-  },
+{
+  nombre: "Entrega",
+  ruta: "/entregas",
+},
+
+{
+  nombre: "Facturación",
+  ruta: "/facturacion",
+},
 
   {
     nombre: "Caja",
