@@ -39,6 +39,27 @@ const facturaItemSchema =
       },
 
 
+      tipoVenta: {
+        type: String,
+        enum: ["Unidad", "Peso"],
+        default: "Unidad",
+      },
+
+
+      cantidadSolicitada: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+
+      pesoReal: {
+        type: Number,
+        default: null,
+        min: 0,
+      },
+
+
       cantidad: {
         type: Number,
         required: true,
@@ -109,6 +130,28 @@ const facturaSchema =
       pedidoCodigo: {
         type: String,
         required: true,
+        trim: true,
+      },
+
+
+      /* -----------------------------------------
+         ENTREGA FINAL
+         Opcional para compatibilidad con facturas antiguas
+      ----------------------------------------- */
+
+      entrega: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "Entrega",
+
+        default: null,
+      },
+
+
+      entregaCodigo: {
+        type: String,
+        default: "",
         trim: true,
       },
 
@@ -355,6 +398,12 @@ facturaSchema.index({
 
 facturaSchema.index({
   pedido: 1,
+  createdAt: -1,
+});
+
+
+facturaSchema.index({
+  entrega: 1,
   createdAt: -1,
 });
 

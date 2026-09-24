@@ -24,6 +24,7 @@ import Pedidos from "./pages/Pedidos.jsx";
 import Entregas from "./pages/Entregas.jsx";
 import Facturacion from "./pages/Facturacion.jsx";
 import Caja from "./pages/Caja.jsx";
+import Cartera from "./pages/Cartera.jsx";
 import Empleados from "./pages/Empleados.jsx";
 import Empresa from "./pages/Empresa.jsx";
 import Rutas from "./pages/Rutas.jsx";
@@ -98,6 +99,11 @@ function AppContent() {
           <Route
             path="/caja"
             element={<Caja />}
+          />
+
+          <Route
+            path="/cartera"
+            element={<Cartera />}
           />
 
 

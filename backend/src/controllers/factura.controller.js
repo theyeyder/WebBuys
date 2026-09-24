@@ -1,5 +1,6 @@
 import Factura from "../models/Factura.js";
 import Pedido from "../models/Pedido.js";
+import Entrega from "../models/Entrega.js";
 import Consecutivo from "../models/Consecutivo.js";
 import Caja from "../models/Caja.js";
 import MovimientoCaja from "../models/MovimientoCaja.js";
@@ -10,41 +11,7 @@ import {
 
 
 /* =========================================
-   NOMBRE DEL PERSONAL
-========================================= */
-
-function obtenerNombrePersonal(
-  persona
-) {
-
-  if (!persona) {
-    return "";
-  }
-
-
-  if (
-    typeof persona === "string"
-  ) {
-    return "";
-  }
-
-
-  return [
-    persona.nombres,
-    persona.apellidos,
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .trim();
-
-}
-
-
-
-/* =========================================
-   UTILIDADES DE CAJA
-   LA VENTA NACE DEL PEDIDO ENTREGADO.
-   LA FACTURA SOLO COMPLEMENTA EL REGISTRO.
+   UTILIDADES GENERALES
 ========================================= */
 
 function usuarioActualFactura(
@@ -60,20 +27,155 @@ function usuarioActualFactura(
 }
 
 
-function nombreClientePedidoCaja(
-  pedido
+function obtenerNombrePersonal(
+  persona
+) {
+
+  if (!persona) {
+    return "";
+  }
+
+
+  if (
+    typeof persona ===
+    "string"
+  ) {
+    return "";
+  }
+
+
+  return (
+    [
+      persona.nombres,
+      persona.apellidos,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim() ||
+    persona.nombre ||
+    persona.nombreCompleto ||
+    ""
+  );
+
+}
+
+
+function nombreClienteEntrega(
+  entrega
 ) {
 
   return (
-    pedido?.clienteNombre ||
-    pedido?.clienteRazonSocial ||
-    pedido?.cliente?.nombre ||
-    pedido?.cliente?.razonSocial ||
+    entrega?.clienteNombre ||
+    entrega?.cliente?.nombre ||
+    entrega?.cliente?.razonSocial ||
     "Cliente"
   );
 
 }
 
+
+/* =========================================
+   POPULATE DE ENTREGA PARA FACTURACIÓN
+========================================= */
+
+function populateEntregaFacturacion(
+  query
+) {
+
+  return query
+
+    .populate({
+      path:
+        "pedido",
+
+      select:
+        "codigo estado fechaEntrega observaciones empleado",
+
+      populate: {
+        path:
+          "empleado",
+
+        select:
+          "codigo nombres apellidos documento cargo estado",
+      },
+    })
+
+    .populate(
+      "cliente",
+      "codigo nombre razonSocial documento telefono direccion ciudad"
+    )
+
+    .populate(
+      "empacador",
+      "codigo nombres apellidos documento cargo estado"
+    )
+
+    .populate(
+      "repartidor",
+      "codigo nombres apellidos documento telefono cargo estado"
+    )
+
+    .populate(
+      "items.producto",
+      "codigo nombre marca"
+    );
+
+}
+
+
+/* =========================================
+   POPULATE DE FACTURA
+========================================= */
+
+function populateFactura(
+  query
+) {
+
+  return query
+
+    .populate(
+      "pedido",
+      "codigo estado fechaEntrega metodoPago"
+    )
+
+    .populate(
+      "entrega",
+      "pedidoCodigo estado fechaProgramada fechaEntregaReal metodoPago total"
+    )
+
+    .populate(
+      "cliente",
+      "codigo nombre razonSocial documento telefono"
+    )
+
+    .populate(
+      "empleado",
+      "codigo nombres apellidos documento cargo"
+    )
+
+    .populate(
+      "repartidor",
+      "codigo nombres apellidos documento cargo"
+    )
+
+    .populate(
+      "empacador",
+      "codigo nombres apellidos documento cargo"
+    )
+
+    .populate(
+      "creadoPor",
+      "nombres apellidos"
+    );
+
+}
+
+
+/* =========================================
+   CAJA - COMPATIBILIDAD
+   La venta debe nacer de Entrega.
+   Caja se termina de actualizar en el siguiente módulo.
+========================================= */
 
 async function obtenerMovimientoPedidoCaja(
   pedidoId
@@ -107,12 +209,14 @@ async function obtenerMovimientoPedidoCaja(
 
 async function sincronizarFacturaMovimientoCaja({
   factura,
+  entrega,
   pedido,
   usuarioId = null,
 }) {
 
   if (
     !factura ||
+    !entrega ||
     !pedido
   ) {
     return null;
@@ -126,10 +230,8 @@ async function sincronizarFacturaMovimientoCaja({
 
 
   /*
-    Flujo normal:
-    el pedido ya entró a Caja cuando se marcó
-    como Entregado. Solo agregamos el consecutivo
-    de la factura al mismo movimiento.
+    Si Caja ya creó el movimiento al entregar,
+    aquí únicamente anexamos el número de factura.
   */
   if (movimiento) {
 
@@ -148,8 +250,10 @@ async function sincronizarFacturaMovimientoCaja({
       usuarioId &&
       !movimiento.usuario
     ) {
+
       movimiento.usuario =
         usuarioId;
+
     }
 
 
@@ -162,13 +266,13 @@ async function sincronizarFacturaMovimientoCaja({
 
 
   /*
-    Compatibilidad con pedidos antiguos que ya estaban
-    Entregados antes de instalar esta nueva Caja.
-    Solo se crea el movimiento si actualmente hay una
-    caja abierta. La factura NO exige abrir caja.
+    Compatibilidad temporal:
+    mientras terminamos el módulo Caja, si hay caja abierta
+    y todavía no existe el movimiento, lo creamos usando
+    LOS VALORES FINALES DE ENTREGA.
   */
   if (
-    pedido.estado !==
+    entrega.estado !==
     "Entregado"
   ) {
     return null;
@@ -177,7 +281,8 @@ async function sincronizarFacturaMovimientoCaja({
 
   const caja =
     await Caja.findOne({
-      estado: "Abierta",
+      estado:
+        "Abierta",
     });
 
 
@@ -188,7 +293,7 @@ async function sincronizarFacturaMovimientoCaja({
 
   const valor =
     Number(
-      pedido.total ||
+      entrega.total ||
       factura.total ||
       0
     );
@@ -204,6 +309,12 @@ async function sincronizarFacturaMovimientoCaja({
   }
 
 
+  const metodoPago =
+    entrega.metodoPago ||
+    factura.metodoPago ||
+    "Efectivo";
+
+
   const claveUnica =
     `PEDIDO:${pedido._id}`;
 
@@ -214,7 +325,6 @@ async function sincronizarFacturaMovimientoCaja({
         {
           claveUnica,
         },
-
         {
           $set: {
             caja:
@@ -227,7 +337,7 @@ async function sincronizarFacturaMovimientoCaja({
               "Pedido",
 
             concepto:
-              `Pedido entregado - ${pedido.codigo}`,
+              `Entrega finalizada - ${entrega.pedidoCodigo}`,
 
             valor,
 
@@ -235,30 +345,26 @@ async function sincronizarFacturaMovimientoCaja({
               pedido._id,
 
             pedidoCodigo:
+              entrega.pedidoCodigo ||
               pedido.codigo ||
               "",
 
             cliente:
+              entrega.cliente?._id ||
+              entrega.cliente ||
               pedido.cliente?._id ||
               pedido.cliente ||
               null,
 
             clienteNombre:
-              nombreClientePedidoCaja(
-                pedido
+              nombreClienteEntrega(
+                entrega
               ),
 
-            metodoPago:
-              pedido.metodoPago ||
-              factura.metodoPago ||
-              "Efectivo",
+            metodoPago,
 
             afectaEfectivo:
-              (
-                pedido.metodoPago ||
-                factura.metodoPago ||
-                "Efectivo"
-              ) ===
+              metodoPago ===
               "Efectivo",
 
             factura:
@@ -280,7 +386,6 @@ async function sincronizarFacturaMovimientoCaja({
             claveUnica,
           },
         },
-
         {
           new: true,
           upsert: true,
@@ -325,9 +430,7 @@ async function quitarFacturaMovimientoCaja(
       factura._id
     )
   ) {
-
     return movimiento;
-
   }
 
 
@@ -338,7 +441,7 @@ async function quitarFacturaMovimientoCaja(
     "";
 
   movimiento.observacion =
-    "Pedido sin factura generada";
+    "Entrega sin factura generada";
 
 
   await movimiento.save();
@@ -380,37 +483,12 @@ async function sincronizarMetodoPagoCaja({
   }
 
 
-  const pedido =
-    await Pedido.findById(
+  const movimiento =
+    await obtenerMovimientoPedidoCaja(
       factura.pedido
     );
 
 
-  if (!pedido) {
-
-    const error =
-      new Error(
-        "No fue posible encontrar el pedido relacionado con la factura."
-      );
-
-    error.statusCode =
-      404;
-
-    throw error;
-
-  }
-
-
-  const movimiento =
-    await obtenerMovimientoPedidoCaja(
-      pedido._id
-    );
-
-
-  /*
-    No permitimos modificar el medio de pago si
-    ya forma parte de una caja cerrada.
-  */
   if (
     movimiento?.caja?.estado ===
       "Cerrada" &&
@@ -420,7 +498,7 @@ async function sincronizarMetodoPagoCaja({
 
     const error =
       new Error(
-        `No puede cambiar el tipo de pago porque el pedido ${pedido.codigo} ya pertenece a la caja cerrada ${movimiento.caja.codigo}.`
+        `No puede cambiar el tipo de pago porque la venta ya pertenece a la caja cerrada ${movimiento.caja.codigo}.`
       );
 
     error.statusCode =
@@ -431,11 +509,44 @@ async function sincronizarMetodoPagoCaja({
   }
 
 
-  pedido.metodoPago =
-    metodoPago;
+  if (
+    factura.entrega
+  ) {
+
+    const entrega =
+      await Entrega.findById(
+        factura.entrega
+      );
 
 
-  await pedido.save();
+    if (entrega) {
+
+      entrega.metodoPago =
+        metodoPago;
+
+      await entrega.save();
+
+    }
+
+  } else {
+
+    /* Compatibilidad con facturas antiguas */
+    const pedido =
+      await Pedido.findById(
+        factura.pedido
+      );
+
+
+    if (pedido) {
+
+      pedido.metodoPago =
+        metodoPago;
+
+      await pedido.save();
+
+    }
+
+  }
 
 
   if (movimiento) {
@@ -447,37 +558,25 @@ async function sincronizarMetodoPagoCaja({
       metodoPago ===
       "Efectivo";
 
-
     await movimiento.save();
 
   }
-
-
-  return pedido;
 
 }
 
 
 /* =========================================
-   GENERAR SIGUIENTE CONSECUTIVO
+   CONSECUTIVO
 ========================================= */
 
 async function generarConsecutivoFactura() {
 
-  /* =====================================
-     SINCRONIZAR CONTADOR INICIAL
-  ===================================== */
-
   const contador =
     await Consecutivo.findOne({
-      clave: "facturas",
+      clave:
+        "facturas",
     });
 
-
-  /*
-    Solo hacemos esta sincronización
-    cuando todavía no existe el contador.
-  */
 
   if (!contador) {
 
@@ -493,7 +592,6 @@ async function generarConsecutivoFactura() {
 
 
     await Consecutivo.create({
-
       clave:
         "facturas",
 
@@ -502,15 +600,10 @@ async function generarConsecutivoFactura() {
           ultimaFactura?.consecutivo ||
           0
         ),
-
     });
 
   }
 
-
-  /* =====================================
-     GENERAR NUEVO CONSECUTIVO
-  ===================================== */
 
   const codigo =
     await generarConsecutivo(
@@ -548,38 +641,9 @@ async function listar(
   try {
 
     const facturas =
-      await Factura.find()
-
-        .populate(
-          "pedido",
-          "codigo estado fechaEntrega"
-        )
-
-        .populate(
-          "cliente",
-          "codigo nombre documento telefono"
-        )
-
-        .populate(
-          "empleado",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "repartidor",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "empacador",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "creadoPor",
-          "nombres apellidos"
-        )
-
+      await populateFactura(
+        Factura.find()
+      )
         .sort({
           createdAt: -1,
         });
@@ -588,6 +652,7 @@ async function listar(
     return res.json(
       facturas
     );
+
 
   } catch (error) {
 
@@ -610,6 +675,61 @@ async function listar(
 
 
 /* =========================================
+   LISTAR ENTREGAS FINALIZADAS
+   FUENTE DE FACTURACIÓN
+========================================= */
+
+async function listarDisponibles(
+  req,
+  res
+) {
+
+  try {
+
+    const entregas =
+      await populateEntregaFacturacion(
+        Entrega.find({
+          estado:
+            "Entregado",
+
+          metodoPago: {
+            $ne:
+              "Crédito",
+          },
+        })
+      )
+        .sort({
+          fechaEntregaReal: -1,
+          updatedAt: -1,
+        });
+
+
+    return res.json(
+      entregas
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Error listando entregas facturables:",
+      error
+    );
+
+
+    return res.status(
+      500
+    ).json({
+      mensaje:
+        "No fue posible cargar las entregas finalizadas para facturación.",
+    });
+
+  }
+
+}
+
+
+/* =========================================
    OBTENER FACTURA
 ========================================= */
 
@@ -621,39 +741,11 @@ async function obtenerPorId(
   try {
 
     const factura =
-      await Factura.findById(
-        req.params.id
-      )
-
-        .populate(
-          "pedido",
-          "codigo estado fechaEntrega"
+      await populateFactura(
+        Factura.findById(
+          req.params.id
         )
-
-        .populate(
-          "cliente",
-          "codigo nombre documento telefono"
-        )
-
-        .populate(
-          "empleado",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "repartidor",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "empacador",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "creadoPor",
-          "nombres apellidos"
-        );
+      );
 
 
     if (!factura) {
@@ -671,6 +763,7 @@ async function obtenerPorId(
     return res.json(
       factura
     );
+
 
   } catch (error) {
 
@@ -693,7 +786,7 @@ async function obtenerPorId(
 
 
 /* =========================================
-   CREAR FACTURA DESDE PEDIDO
+   CREAR FACTURA DESDE ENTREGA
 ========================================= */
 
 async function crear(
@@ -704,71 +797,46 @@ async function crear(
   try {
 
     const {
-      pedido:
-        pedidoId,
-    } = req.body;
+      entrega:
+        entregaId,
+    } =
+      req.body;
 
 
-    /* -----------------------------------------
-       VALIDAR PEDIDO
-    ----------------------------------------- */
-
-    if (!pedidoId) {
+    if (!entregaId) {
 
       return res.status(
         400
       ).json({
         mensaje:
-          "Debe seleccionar un pedido.",
+          "Debe seleccionar una entrega finalizada.",
       });
 
     }
 
 
-    const pedido =
-      await Pedido.findById(
-        pedidoId
-      )
-
-        .populate(
-          "cliente",
-          "codigo nombre documento telefono"
+    const entrega =
+      await populateEntregaFacturacion(
+        Entrega.findById(
+          entregaId
         )
-
-        .populate(
-          "empleado",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "repartidor",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "empacador",
-          "codigo nombres apellidos documento cargo"
-        );
+      );
 
 
-    if (!pedido) {
+    if (!entrega) {
 
       return res.status(
         404
       ).json({
         mensaje:
-          "El pedido seleccionado no existe.",
+          "La entrega seleccionada no existe.",
       });
 
     }
 
 
-    /* -----------------------------------------
-       SOLO PEDIDOS ENTREGADOS
-    ----------------------------------------- */
-
     if (
-      pedido.estado !==
+      entrega.estado !==
       "Entregado"
     ) {
 
@@ -776,46 +844,69 @@ async function crear(
         400
       ).json({
         mensaje:
-          "Solo se pueden facturar pedidos entregados.",
+          "Solo se pueden facturar entregas con estado Entregado.",
       });
 
     }
 
 
+    if (
+      entrega.metodoPago ===
+      "Crédito"
+    ) {
+
+      return res.status(
+        400
+      ).json({
+        mensaje:
+          "Las entregas a Crédito se gestionan en Cartera y no se envían a Facturación.",
+      });
+
+    }
+
+
+    const pedido =
+      entrega.pedido;
+
+
+    if (!pedido) {
+
+      return res.status(
+        400
+      ).json({
+        mensaje:
+          "La entrega no tiene un pedido de origen válido.",
+      });
+
+    }
+
+
+    const pedidoId =
+      pedido._id ||
+      pedido;
+
+
     /* -----------------------------------------
-       VALIDAR FACTURACIÓN ANTERIOR
+       VALIDAR FACTURA ANTERIOR
     ----------------------------------------- */
 
     const ultimaFactura =
       await Factura.findOne({
-        pedido:
-          pedido._id,
+        $or: [
+          {
+            entrega:
+              entrega._id,
+          },
+          {
+            pedido:
+              pedidoId,
+          },
+        ],
       })
-
         .sort({
           createdAt: -1,
         });
 
-
-    /*
-      CASO 1:
-      Nunca se ha facturado este pedido.
-      Puede continuar normalmente.
-
-      CASO 2:
-      Tiene una factura activa.
-      No puede generar otra.
-
-      CASO 3:
-      Tiene una factura anulada,
-      pero todavía no se ha revertido.
-      Debe usar "Revertir".
-
-      CASO 4:
-      Tiene una factura anulada
-      y ya fue revertida.
-      Puede generar una nueva factura.
-    */
 
     if (
       ultimaFactura
@@ -829,10 +920,8 @@ async function crear(
         return res
           .status(400)
           .json({
-
             mensaje:
-              `El pedido ${pedido.codigo} ya tiene una factura activa (${ultimaFactura.codigo}).`,
-
+              `La entrega del pedido ${entrega.pedidoCodigo} ya tiene una factura activa (${ultimaFactura.codigo}).`,
           });
 
       }
@@ -847,10 +936,8 @@ async function crear(
         return res
           .status(400)
           .json({
-
             mensaje:
-              `La factura ${ultimaFactura.codigo} está anulada. Debe revertirla para volver a facturar este pedido.`,
-
+              `La factura ${ultimaFactura.codigo} está anulada. Debe revertirla para volver a facturar esta entrega.`,
           });
 
       }
@@ -862,44 +949,126 @@ async function crear(
        VALIDAR CLIENTE
     ----------------------------------------- */
 
+    const clienteId =
+      entrega.cliente?._id ||
+      entrega.cliente;
+
+
+    if (!clienteId) {
+
+      return res.status(
+        400
+      ).json({
+        mensaje:
+          "La entrega no tiene un cliente válido.",
+      });
+
+    }
+
+
     if (
-      !pedido.cliente
+      !Array.isArray(
+        entrega.items
+      ) ||
+      entrega.items.length ===
+        0
     ) {
 
       return res.status(
         400
       ).json({
         mensaje:
-          "El pedido no tiene un cliente válido.",
+          "La entrega no tiene productos para facturar.",
       });
 
     }
 
 
     /* -----------------------------------------
-       VALIDAR PRODUCTOS
+       ITEMS FINALES DE ENTREGA
     ----------------------------------------- */
 
-    if (
-      !pedido.items ||
-      pedido.items.length === 0
-    ) {
+    const items =
+      entrega.items.map(
+        (item) => {
 
-      return res.status(
-        400
-      ).json({
-        mensaje:
-          "El pedido no tiene productos para facturar.",
-      });
-
-    }
+          const esPeso =
+            item.tipoVenta ===
+            "Peso";
 
 
+          const cantidadSolicitada =
+            Number(
+              item.cantidadSolicitada ||
+              0
+            );
 
 
-    /* -----------------------------------------
-       GENERAR CONSECUTIVO
-    ----------------------------------------- */
+          const pesoReal =
+            esPeso
+              ? Number(
+                  item.pesoReal ||
+                  0
+                )
+              : null;
+
+
+          const cantidadFacturada =
+            esPeso
+              ? pesoReal
+              : cantidadSolicitada;
+
+
+          return {
+
+            producto:
+              item.producto?._id ||
+              item.producto ||
+              null,
+
+            nombre:
+              item.nombre,
+
+            presentacionNombre:
+              item.presentacionNombre ||
+              "",
+
+            unidad:
+              esPeso
+                ? "KG"
+                : (
+                    item.unidad ||
+                    ""
+                  ),
+
+            tipoVenta:
+              item.tipoVenta ||
+              "Unidad",
+
+            cantidadSolicitada,
+
+            pesoReal,
+
+            cantidad:
+              cantidadFacturada,
+
+            precioAplicado:
+              Number(
+                item.precioUnitario ||
+                0
+              ),
+
+            subtotal:
+              Number(
+                item.subtotal ||
+                0
+              ),
+
+          };
+
+        }
+      );
+
 
     const {
       consecutivo,
@@ -908,88 +1077,10 @@ async function crear(
       await generarConsecutivoFactura();
 
 
-    /* -----------------------------------------
-       NOMBRE CLIENTE
-    ----------------------------------------- */
+    const empleado =
+      pedido.empleado ||
+      null;
 
-    const clienteNombre =
-      pedido.cliente
-        ?.nombre ||
-      pedido.cliente
-        ?.razonSocial ||
-      "Cliente";
-
-
-    /* -----------------------------------------
-       PERSONAL DEL PEDIDO
-    ----------------------------------------- */
-
-    const empleadoNombre =
-      obtenerNombrePersonal(
-        pedido.empleado
-      );
-
-
-    const repartidorNombre =
-      obtenerNombrePersonal(
-        pedido.repartidor
-      );
-
-
-    const empacadorNombre =
-      obtenerNombrePersonal(
-        pedido.empacador
-      );
-
-
-    /* -----------------------------------------
-       COPIAR PRODUCTOS DEL PEDIDO
-    ----------------------------------------- */
-
-    const items =
-      pedido.items.map(
-        (item) => ({
-
-          producto:
-            item.producto ||
-            null,
-
-          nombre:
-            item.nombre,
-
-          presentacionNombre:
-            item.presentacionNombre ||
-            "",
-
-          unidad:
-            item.unidad ||
-            "",
-
-          cantidad:
-            Number(
-              item.cantidad ||
-              0
-            ),
-
-          precioAplicado:
-            Number(
-              item.precioAplicado ||
-              0
-            ),
-
-          subtotal:
-            Number(
-              item.subtotal ||
-              0
-            ),
-
-        })
-      );
-
-
-    /* -----------------------------------------
-       CREAR FACTURA
-    ----------------------------------------- */
 
     const factura =
       await Factura.create({
@@ -999,49 +1090,72 @@ async function crear(
         codigo,
 
         pedido:
-          pedido._id,
+          pedidoId,
 
         pedidoCodigo:
-          pedido.codigo,
+          entrega.pedidoCodigo ||
+          pedido.codigo ||
+          "",
+
+        entrega:
+          entrega._id,
+
+        entregaCodigo:
+          entrega.pedidoCodigo ||
+          pedido.codigo ||
+          "",
 
         cliente:
-          pedido.cliente._id,
+          clienteId,
 
-        clienteNombre,
+        clienteNombre:
+          nombreClienteEntrega(
+            entrega
+          ),
 
         clienteDocumento:
-          pedido.cliente
+          entrega.cliente
             ?.documento ||
           "",
 
         clienteTelefono:
-          pedido.cliente
+          entrega.clienteTelefono ||
+          entrega.cliente
             ?.telefono ||
           "",
 
 
         empleado:
-          pedido.empleado
-            ?._id ||
+          empleado?._id ||
+          empleado ||
           null,
 
-        empleadoNombre,
+        empleadoNombre:
+          obtenerNombrePersonal(
+            empleado
+          ),
 
 
         repartidor:
-          pedido.repartidor
-            ?._id ||
+          entrega.repartidor?._id ||
+          entrega.repartidor ||
           null,
 
-        repartidorNombre,
+        repartidorNombre:
+          obtenerNombrePersonal(
+            entrega.repartidor
+          ),
 
 
         empacador:
-          pedido.empacador
-            ?._id ||
+          entrega.empacador?._id ||
+          entrega.empacador ||
           null,
 
-        empacadorNombre,
+        empacadorNombre:
+          obtenerNombrePersonal(
+            entrega.empacador
+          ),
 
 
         items,
@@ -1049,27 +1163,28 @@ async function crear(
 
         subtotal:
           Number(
-            pedido.subtotal ||
+            entrega.subtotal ||
             0
           ),
 
         descuento:
           Number(
-            pedido.descuento ||
+            entrega.descuento ||
             0
           ),
 
-        iva: 0,
+        iva:
+          0,
 
         total:
           Number(
-            pedido.total ||
+            entrega.total ||
             0
           ),
 
 
         metodoPago:
-          pedido.metodoPago ||
+          entrega.metodoPago ||
           "Efectivo",
 
 
@@ -1078,31 +1193,12 @@ async function crear(
 
 
         observaciones:
+          entrega.observaciones ||
           pedido.observaciones ||
           "",
 
 
         creadoPor:
-          req.usuario?._id ||
-          req.user?._id ||
-          null,
-
-      });
-
-    /* -----------------------------------------
-       ACTUALIZAR EL MISMO REGISTRO DE CAJA
-       DEL PEDIDO. NO SUMA LA VENTA OTRA VEZ.
-    ----------------------------------------- */
-
-    try {
-
-      await sincronizarFacturaMovimientoCaja({
-
-        factura,
-
-        pedido,
-
-        usuarioId:
           usuarioActualFactura(
             req
           ),
@@ -1110,15 +1206,25 @@ async function crear(
       });
 
 
-    } catch (
-      errorCaja
-    ) {
+    /* -----------------------------------------
+       ASOCIAR FACTURA AL MISMO MOVIMIENTO DE CAJA
+       SIN DUPLICAR LA VENTA
+    ----------------------------------------- */
 
-      /*
-        Si falla la asociación con Caja,
-        eliminamos la factura recién creada
-        para mantener consistencia.
-      */
+    try {
+
+      await sincronizarFacturaMovimientoCaja({
+        factura,
+        entrega,
+        pedido,
+        usuarioId:
+          usuarioActualFactura(
+            req
+          ),
+      });
+
+
+    } catch (errorCaja) {
 
       await Factura.findByIdAndDelete(
         factura._id
@@ -1129,47 +1235,12 @@ async function crear(
     }
 
 
-
-
-
-    /* -----------------------------------------
-       DEVOLVER FACTURA COMPLETA
-    ----------------------------------------- */
-
     const facturaCreada =
-      await Factura.findById(
-        factura._id
-      )
-
-        .populate(
-          "pedido",
-          "codigo estado fechaEntrega"
+      await populateFactura(
+        Factura.findById(
+          factura._id
         )
-
-        .populate(
-          "cliente",
-          "codigo nombre documento telefono"
-        )
-
-        .populate(
-          "empleado",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "repartidor",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "empacador",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "creadoPor",
-          "nombres apellidos"
-        );
+      );
 
 
     return res.status(
@@ -1178,6 +1249,7 @@ async function crear(
       facturaCreada
     );
 
+
   } catch (error) {
 
     console.error(
@@ -1185,8 +1257,6 @@ async function crear(
       error
     );
 
-
-    /* DUPLICADO */
 
     if (
       error?.code ===
@@ -1197,13 +1267,14 @@ async function crear(
         400
       ).json({
         mensaje:
-          "El pedido ya fue facturado o el consecutivo de factura ya existe.",
+          "La entrega ya fue facturada o el consecutivo de factura ya existe.",
       });
 
     }
 
 
     return res.status(
+      error?.statusCode ||
       500
     ).json({
       mensaje:
@@ -1245,16 +1316,19 @@ async function actualizar(
     }
 
 
-    /*
-      No permitimos cambiar:
-      - pedido
-      - cliente
-      - productos
-      - valores
+    if (
+      req.body.metodoPago ===
+      "Crédito"
+    ) {
 
-      porque son la copia histórica
-      del pedido facturado.
-    */
+      return res.status(
+        400
+      ).json({
+        mensaje:
+          "Las ventas a Crédito se gestionan en Cartera y no deben convertirse desde una factura.",
+      });
+
+    }
 
 
     if (
@@ -1265,12 +1339,9 @@ async function actualizar(
     ) {
 
       await sincronizarMetodoPagoCaja({
-
         factura,
-
         metodoPago:
           req.body.metodoPago,
-
       });
 
 
@@ -1285,11 +1356,6 @@ async function actualizar(
       undefined
     ) {
 
-      /*
-        La anulación debe hacerse por el endpoint
-        específico para que Caja y Facturación
-        siempre queden sincronizadas.
-      */
       if (
         req.body.estado ===
           "Anulada" &&
@@ -1332,29 +1398,36 @@ async function actualizar(
       "Anulada"
     ) {
 
+      const entrega =
+        factura.entrega
+          ? await populateEntregaFacturacion(
+              Entrega.findById(
+                factura.entrega
+              )
+            )
+          : null;
+
+
       const pedido =
+        entrega?.pedido ||
         await Pedido.findById(
           factura.pedido
-        )
-          .populate(
-            "cliente",
-            "codigo nombre razonSocial documento telefono"
-          );
+        );
 
 
-      if (pedido) {
+      if (
+        entrega &&
+        pedido
+      ) {
 
         await sincronizarFacturaMovimientoCaja({
-
           factura,
-
+          entrega,
           pedido,
-
           usuarioId:
             usuarioActualFactura(
               req
             ),
-
         });
 
       }
@@ -1363,39 +1436,17 @@ async function actualizar(
 
 
     const facturaActualizada =
-      await Factura.findById(
-        factura._id
-      )
-
-        .populate(
-          "pedido",
-          "codigo estado fechaEntrega metodoPago"
+      await populateFactura(
+        Factura.findById(
+          factura._id
         )
-
-        .populate(
-          "cliente",
-          "codigo nombre documento telefono"
-        )
-
-        .populate(
-          "empleado",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "repartidor",
-          "codigo nombres apellidos documento cargo"
-        )
-
-        .populate(
-          "empacador",
-          "codigo nombres apellidos documento cargo"
-        );
+      );
 
 
     return res.json(
       facturaActualizada
     );
+
 
   } catch (error) {
 
@@ -1448,10 +1499,6 @@ async function eliminar(
     }
 
 
-    /*
-      La venta del pedido permanece en Caja.
-      Solo retiramos la referencia a la factura.
-    */
     await quitarFacturaMovimientoCaja(
       factura
     );
@@ -1462,8 +1509,9 @@ async function eliminar(
 
     return res.json({
       mensaje:
-        "Factura eliminada correctamente. El pedido continúa registrado en Caja.",
+        "Factura eliminada correctamente. La entrega continúa registrada en Caja sin factura.",
     });
+
 
   } catch (error) {
 
@@ -1499,7 +1547,8 @@ async function anular(
 
     const {
       motivo,
-    } = req.body;
+    } =
+      req.body;
 
 
     if (
@@ -1551,25 +1600,17 @@ async function anular(
 
 
     /*
-      IMPORTANTE:
-      La factura es opcional.
-
-      Anularla NO revierte la venta de Caja,
-      porque la venta corresponde al pedido
-      que ya fue Entregado.
+      Anular la factura NO anula la venta.
+      La Entrega permanece Entregada y Caja conserva el ingreso.
     */
-
     factura.estado =
       "Anulada";
-
 
     factura.motivoAnulacion =
       motivo.trim();
 
-
     factura.fechaAnulacion =
       new Date();
-
 
     factura.fechaReversion =
       null;
@@ -1585,7 +1626,7 @@ async function anular(
 
     return res.json({
       mensaje:
-        "Factura anulada correctamente. El pedido continúa registrado en Caja sin factura activa.",
+        "Factura anulada correctamente. La entrega continúa registrada en Caja sin factura activa.",
 
       factura,
     });
@@ -1614,7 +1655,7 @@ async function anular(
 
 /* =========================================
    REVERTIR ANULACIÓN
-   HABILITA PEDIDO PARA REFACTURAR
+   HABILITA ENTREGA PARA REFACTURAR
 ========================================= */
 
 async function revertir(
@@ -1630,25 +1671,17 @@ async function revertir(
       );
 
 
-    if (
-      !factura
-    ) {
+    if (!factura) {
 
       return res
         .status(404)
         .json({
-
           mensaje:
             "Factura no encontrada.",
-
         });
 
     }
 
-
-    /* -----------------------------------------
-       SOLO FACTURAS ANULADAS
-    ----------------------------------------- */
 
     if (
       factura.estado !==
@@ -1658,18 +1691,12 @@ async function revertir(
       return res
         .status(400)
         .json({
-
           mensaje:
             "Solo se pueden revertir facturas anuladas.",
-
         });
 
     }
 
-
-    /* -----------------------------------------
-       EVITAR REVERTIR DOS VECES
-    ----------------------------------------- */
 
     if (
       factura.fechaReversion
@@ -1678,27 +1705,17 @@ async function revertir(
       return res
         .status(400)
         .json({
-
           mensaje:
-            "Esta factura ya fue revertida y el pedido ya está habilitado para facturar nuevamente.",
-
+            "Esta factura ya fue revertida y la entrega ya está habilitada para facturar nuevamente.",
         });
 
     }
 
 
     /*
-      IMPORTANTE:
-
-      La factura NO vuelve a Emitida.
-
-      Sigue siendo ANULADA para conservar
-      correctamente el historial.
-
-      fechaReversion indica que el pedido
-      puede volver a facturarse.
+      La factura sigue ANULADA.
+      fechaReversion habilita la Entrega para una nueva factura.
     */
-
     factura.fechaReversion =
       new Date();
 
@@ -1707,12 +1724,10 @@ async function revertir(
 
 
     return res.json({
-
       mensaje:
-        `Factura ${factura.codigo} revertida. El pedido ${factura.pedidoCodigo} puede facturarse nuevamente.`,
+        `Factura ${factura.codigo} revertida. La entrega del pedido ${factura.pedidoCodigo} puede facturarse nuevamente.`,
 
       factura,
-
     });
 
 
@@ -1727,10 +1742,8 @@ async function revertir(
     return res
       .status(500)
       .json({
-
         mensaje:
           "Error al revertir la factura.",
-
       });
 
   }
@@ -1743,19 +1756,12 @@ async function revertir(
 ========================================= */
 
 export const facturaController = {
-
   listar,
-
+  listarDisponibles,
   obtenerPorId,
-
   crear,
-
   actualizar,
-
   anular,
-
   revertir,
-
   eliminar,
-
 };

@@ -22,6 +22,12 @@ import egresoIcon
 import cerrarCajaIcon
   from "../assets/icons/Cerrar-caja.png";
 
+import billeteDenominacionIcon
+  from "../assets/icons/Billete.png";
+
+import cerrarModalIcon
+  from "../assets/icons/cerrar.png";
+
 import {
   abrirCaja,
   cerrarCaja,
@@ -35,6 +41,22 @@ import {
 import {
   imprimirCierreCaja,
 } from "../utils/cajaImpresion.js";
+
+import {
+  imprimirPedido,
+} from "../utils/pedido.impresion.js";
+
+import {
+  imprimirFactura,
+} from "../utils/facturaImpresion.js";
+
+import {
+  listarPedidos,
+} from "../services/pedido.service.js";
+
+import {
+  listarFacturas,
+} from "../services/factura.service.js";
 
 import "../styles/caja.css";
 
@@ -134,6 +156,62 @@ const DIAS_SEMANA = [
   "V",
   "S",
 ];
+
+
+const DENOMINACIONES_BILLETES = [
+  {
+    key: "dosMil",
+    valor: 2000,
+    etiqueta: "$ 2.000",
+  },
+  {
+    key: "cincoMil",
+    valor: 5000,
+    etiqueta: "$ 5.000",
+  },
+  {
+    key: "diezMil",
+    valor: 10000,
+    etiqueta: "$ 10.000",
+  },
+  {
+    key: "veinteMil",
+    valor: 20000,
+    etiqueta: "$ 20.000",
+  },
+  {
+    key: "cincuentaMil",
+    valor: 50000,
+    etiqueta: "$ 50.000",
+  },
+  {
+    key: "cienMil",
+    valor: 100000,
+    etiqueta: "$ 100.000",
+  },
+];
+
+
+function conteoBilletesVacio() {
+
+  return DENOMINACIONES_BILLETES
+    .reduce(
+      (
+        acumulado,
+        denominacion
+      ) => {
+
+        acumulado[
+          denominacion.key
+        ] = "";
+
+        return acumulado;
+
+      },
+      {}
+    );
+
+}
 
 
 const ANIO_ACTUAL =
@@ -393,9 +471,11 @@ export default function Caja() {
 
 
   const [
-    efectivoContado,
-    setEfectivoContado,
-  ] = useState("");
+    conteoBilletes,
+    setConteoBilletes,
+  ] = useState(
+    conteoBilletesVacio
+  );
 
 
   const [
@@ -805,6 +885,118 @@ export default function Caja() {
     null;
 
 
+  const efectivoContadoCalculado =
+    useMemo(
+      () => {
+
+        return DENOMINACIONES_BILLETES
+          .reduce(
+            (
+              total,
+              denominacion
+            ) => {
+
+              const cantidad =
+                Number(
+                  conteoBilletes[
+                    denominacion.key
+                  ] ||
+                  0
+                );
+
+
+              return (
+                total +
+                (
+                  Number.isFinite(
+                    cantidad
+                  )
+                    ? cantidad *
+                      denominacion.valor
+                    : 0
+                )
+              );
+
+            },
+            0
+          );
+
+      },
+      [
+        conteoBilletes,
+      ]
+    );
+
+
+  const diferenciaConteoCalculada =
+    useMemo(
+      () => {
+
+        const esperado =
+          Number(
+            resumen.saldoEsperado ??
+            resumen.saldoActual ??
+            0
+          );
+
+
+        return (
+          efectivoContadoCalculado -
+          esperado
+        );
+
+      },
+      [
+        efectivoContadoCalculado,
+        resumen.saldoEsperado,
+        resumen.saldoActual,
+      ]
+    );
+
+
+  const diferenciaConteoClase =
+    diferenciaConteoCalculada ===
+      0
+      ? "caja-diferencia-ok"
+      : diferenciaConteoCalculada >
+          0
+        ? "caja-diferencia-sobra"
+        : "caja-diferencia-falta";
+
+
+  function cambiarCantidadBilletes(
+    key,
+    valor
+  ) {
+
+    if (
+      valor !== "" &&
+      (
+        !/^\d+$/.test(
+          valor
+        ) ||
+        Number(
+          valor
+        ) < 0
+      )
+    ) {
+      return;
+    }
+
+
+    setConteoBilletes(
+      (
+        actual
+      ) => ({
+        ...actual,
+        [key]:
+          valor,
+      })
+    );
+
+  }
+
+
   const diferenciaClase =
     useMemo(
       () => {
@@ -1004,11 +1196,8 @@ export default function Caja() {
 
   function abrirModalCierre() {
 
-    setEfectivoContado(
-      String(
-        resumen.saldoActual ??
-        0
-      )
+    setConteoBilletes(
+      conteoBilletesVacio()
     );
 
     setObservacionCierre(
@@ -1038,10 +1227,32 @@ export default function Caja() {
 
       await cerrarCaja({
 
+        conteoBilletes:
+          DENOMINACIONES_BILLETES
+            .reduce(
+              (
+                acumulado,
+                denominacion
+              ) => {
+
+                acumulado[
+                  denominacion.key
+                ] =
+                  Number(
+                    conteoBilletes[
+                      denominacion.key
+                    ] ||
+                    0
+                  );
+
+                return acumulado;
+
+              },
+              {}
+            ),
+
         efectivoContado:
-          Number(
-            efectivoContado
-          ),
+          efectivoContadoCalculado,
 
         observaciones:
           observacionCierre,
@@ -1089,6 +1300,28 @@ export default function Caja() {
   }
 
 
+  function esOrigenVentaCaja(
+    movimiento
+  ) {
+
+    return (
+      [
+        "Entrega",
+        "Pedido",
+      ].includes(
+        movimiento?.origen
+      ) ||
+      (
+        movimiento?.origen ===
+          "Factura" &&
+        movimiento?.tipo ===
+          "Ingreso"
+      )
+    );
+
+  }
+
+
   const pedidosCaja =
     useMemo(
       () =>
@@ -1098,15 +1331,8 @@ export default function Caja() {
           ) =>
             movimiento.estado !==
               "Anulado" &&
-            (
-              movimiento.origen ===
-                "Pedido" ||
-              (
-                movimiento.origen ===
-                  "Factura" &&
-                movimiento.tipo ===
-                  "Ingreso"
-              )
+            esOrigenVentaCaja(
+              movimiento
             )
         ),
       [
@@ -1124,15 +1350,8 @@ export default function Caja() {
           ) =>
             movimiento.estado !==
               "Anulado" &&
-            !(
-              movimiento.origen ===
-                "Pedido" ||
-              (
-                movimiento.origen ===
-                  "Factura" &&
-                movimiento.tipo ===
-                  "Ingreso"
-              )
+            !esOrigenVentaCaja(
+              movimiento
             )
         ),
       [
@@ -1176,7 +1395,7 @@ export default function Caja() {
     return (
       movimiento.facturaCodigo ||
       movimiento.factura?.codigo ||
-      "—"
+      "Sin factura"
     );
 
   }
@@ -1212,6 +1431,384 @@ export default function Caja() {
   }
 
 
+  function idReferenciaCaja(
+    valor
+  ) {
+
+    if (!valor) {
+      return "";
+    }
+
+
+    if (
+      typeof valor ===
+      "string"
+    ) {
+      return valor;
+    }
+
+
+    return String(
+      valor._id ||
+      ""
+    );
+
+  }
+
+
+  function abrirVentanaImpresionCaja(
+    titulo
+  ) {
+
+    const ventana =
+      window.open(
+        "",
+        "_blank",
+        "width=1000,height=800"
+      );
+
+
+    if (!ventana) {
+
+      setMensaje(
+        "El navegador bloqueó la ventana emergente. Permita ventanas emergentes para WebBuys."
+      );
+
+      setTipoMensaje(
+        "error"
+      );
+
+      return null;
+
+    }
+
+
+    ventana.document.open();
+
+    ventana.document.write(`
+      <!DOCTYPE html>
+      <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <title>${String(
+            titulo ||
+            "Cargando..."
+          )}</title>
+          <style>
+            body {
+              margin: 0;
+              min-height: 100vh;
+              display: grid;
+              place-items: center;
+              background: #f4f7f6;
+              color: #24443a;
+              font-family: Arial, Helvetica, sans-serif;
+            }
+
+            div {
+              padding: 24px 30px;
+              border: 1px solid #dce8e3;
+              border-radius: 14px;
+              background: #ffffff;
+              box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+              font-size: 14px;
+              font-weight: 800;
+            }
+          </style>
+        </head>
+        <body>
+          <div>Cargando ${String(
+            titulo ||
+            "documento"
+          )}...</div>
+        </body>
+      </html>
+    `);
+
+    ventana.document.close();
+
+
+    return ventana;
+
+  }
+
+
+  async function abrirPedidoDesdeCaja(
+    movimiento
+  ) {
+
+    const codigo =
+      pedidoMovimiento(
+        movimiento
+      );
+
+
+    if (
+      !codigo ||
+      codigo ===
+        "—"
+    ) {
+
+      setMensaje(
+        "No fue posible identificar el pedido de esta entrega."
+      );
+
+      setTipoMensaje(
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    const ventana =
+      abrirVentanaImpresionCaja(
+        codigo
+      );
+
+
+    if (!ventana) {
+      return;
+    }
+
+
+    try {
+
+      const respuesta =
+        await listarPedidos();
+
+
+      const pedidos =
+        Array.isArray(
+          respuesta
+        )
+          ? respuesta
+          : respuesta?.pedidos ||
+            respuesta?.data ||
+            [];
+
+
+      const pedidoId =
+        idReferenciaCaja(
+          movimiento.pedido
+        );
+
+
+      const pedido =
+        pedidos.find(
+          (item) =>
+            (
+              pedidoId &&
+              String(
+                item._id
+              ) ===
+                pedidoId
+            ) ||
+            item.codigo ===
+              codigo
+        );
+
+
+      if (!pedido) {
+
+        ventana.close();
+
+
+        setMensaje(
+          `No se encontró el pedido ${codigo}.`
+        );
+
+        setTipoMensaje(
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      const resultado =
+        imprimirPedido(
+          pedido,
+          ventana
+        );
+
+
+      if (
+        resultado?.ok ===
+        false
+      ) {
+
+        if (
+          !ventana.closed
+        ) {
+          ventana.close();
+        }
+
+
+        setMensaje(
+          resultado.mensaje ||
+          "No fue posible abrir la impresión del pedido."
+        );
+
+        setTipoMensaje(
+          resultado.tipo ||
+          "error"
+        );
+
+      }
+
+
+    } catch (error) {
+
+      if (
+        !ventana.closed
+      ) {
+        ventana.close();
+      }
+
+
+      console.error(
+        "Error abriendo pedido desde Caja:",
+        error
+      );
+
+
+      setMensaje(
+        error?.response?.data?.mensaje ||
+        "No fue posible cargar el pedido."
+      );
+
+      setTipoMensaje(
+        "error"
+      );
+
+    }
+
+  }
+
+
+  async function abrirFacturaDesdeCaja(
+    movimiento
+  ) {
+
+    const codigo =
+      facturaMovimiento(
+        movimiento
+      );
+
+
+    if (
+      !codigo ||
+      codigo ===
+        "Sin factura"
+    ) {
+      return;
+    }
+
+
+    const ventana =
+      abrirVentanaImpresionCaja(
+        codigo
+      );
+
+
+    if (!ventana) {
+      return;
+    }
+
+
+    try {
+
+      const respuesta =
+        await listarFacturas();
+
+
+      const facturas =
+        Array.isArray(
+          respuesta
+        )
+          ? respuesta
+          : respuesta?.facturas ||
+            respuesta?.data ||
+            [];
+
+
+      const facturaId =
+        idReferenciaCaja(
+          movimiento.factura
+        );
+
+
+      const factura =
+        facturas.find(
+          (item) =>
+            (
+              facturaId &&
+              String(
+                item._id
+              ) ===
+                facturaId
+            ) ||
+            item.codigo ===
+              codigo
+        );
+
+
+      if (!factura) {
+
+        ventana.close();
+
+
+        setMensaje(
+          `No se encontró la factura ${codigo}.`
+        );
+
+        setTipoMensaje(
+          "error"
+        );
+
+        return;
+
+      }
+
+
+      imprimirFactura(
+        factura,
+        ventana
+      );
+
+
+    } catch (error) {
+
+      if (
+        !ventana.closed
+      ) {
+        ventana.close();
+      }
+
+
+      console.error(
+        "Error abriendo factura desde Caja:",
+        error
+      );
+
+
+      setMensaje(
+        error?.response?.data?.mensaje ||
+        "No fue posible cargar la factura."
+      );
+
+      setTipoMensaje(
+        "error"
+      );
+
+    }
+
+  }
+
+
   function observacionMovimiento(
     movimiento
   ) {
@@ -1224,26 +1821,24 @@ export default function Caja() {
 
 
     if (
-      (
-        movimiento.origen ===
-          "Pedido" ||
-        movimiento.origen ===
-          "Factura"
+      esOrigenVentaCaja(
+        movimiento
       ) &&
       facturaMovimiento(
         movimiento
       ) ===
-        "—"
+        "Sin factura"
     ) {
 
-      return "Pedido sin factura generada";
+      return "Sin factura";
 
     }
 
 
     if (
-      movimiento.origen ===
-      "Pedido"
+      esOrigenVentaCaja(
+        movimiento
+      )
     ) {
 
       return "Factura generada";
@@ -1687,7 +2282,7 @@ export default function Caja() {
                   </h2>
 
                   <p>
-                    Los valores llegan automáticamente desde los pedidos en estado Entregado.
+                    Los valores llegan automáticamente desde Entrega cuando el estado cambia a Entregado.
                   </p>
 
                 </div>
@@ -1737,7 +2332,7 @@ export default function Caja() {
                       resumen
                         .cantidadPedidosEntregados ||
                       0
-                    )} pedidos
+                    )} entregas
                   </small>
 
                 </article>
@@ -1867,7 +2462,7 @@ export default function Caja() {
 
                 <article>
                   <span>
-                    Pedidos en efectivo
+                    Entregas en efectivo
                   </span>
 
                   <strong>
@@ -1978,7 +2573,7 @@ export default function Caja() {
 
 
             {/* =====================================
-                PEDIDOS ENTREGADOS
+                ENTREGAS FINALIZADAS
             ====================================== */}
 
             <section className="caja-movements-card caja-orders-card">
@@ -1988,11 +2583,11 @@ export default function Caja() {
                 <div>
 
                   <h2>
-                    Pedidos entregados
+                    Entregas finalizadas
                   </h2>
 
                   <p>
-                    Cada pedido aparece una sola vez. La factura es opcional y solo complementa el registro.
+                    Cada entrega aparece una sola vez. La factura es opcional y, si se genera después, se agrega al mismo registro.
                   </p>
 
                 </div>
@@ -2034,7 +2629,7 @@ export default function Caja() {
                           colSpan="6"
                           className="caja-empty"
                         >
-                          Aún no hay pedidos entregados en esta caja.
+                          Aún no hay entregas finalizadas en esta caja.
                         </td>
 
                       </tr>
@@ -2053,11 +2648,25 @@ export default function Caja() {
                           >
 
                             <td>
-                              <strong className="caja-order-code">
+
+                              <button
+                                type="button"
+                                className="caja-document-link caja-order-code"
+                                onDoubleClick={() =>
+                                  abrirPedidoDesdeCaja(
+                                    movimiento
+                                  )
+                                }
+                                title="Doble clic para abrir la impresión del pedido"
+                                aria-label={`Abrir impresión del pedido ${pedidoMovimiento(
+                                  movimiento
+                                )}`}
+                              >
                                 {pedidoMovimiento(
                                   movimiento
                                 )}
-                              </strong>
+                              </button>
+
                             </td>
 
 
@@ -2098,16 +2707,32 @@ export default function Caja() {
                               {facturaMovimiento(
                                 movimiento
                               ) ===
-                              "—" ? (
+                              "Sin factura" ? (
+
                                 <span className="caja-no-invoice">
-                                  —
+                                  Sin factura
                                 </span>
+
                               ) : (
-                                <strong className="caja-invoice-code">
+
+                                <button
+                                  type="button"
+                                  className="caja-document-link caja-invoice-code"
+                                  onClick={() =>
+                                    abrirFacturaDesdeCaja(
+                                      movimiento
+                                    )
+                                  }
+                                  title="Abrir factura"
+                                  aria-label={`Abrir factura ${facturaMovimiento(
+                                    movimiento
+                                  )}`}
+                                >
                                   {facturaMovimiento(
                                     movimiento
                                   )}
-                                </strong>
+                                </button>
+
                               )}
 
                             </td>
@@ -2120,7 +2745,7 @@ export default function Caja() {
                                   facturaMovimiento(
                                     movimiento
                                   ) ===
-                                  "—"
+                                  "Sin factura"
                                     ? "caja-observation-warning"
                                     : "caja-observation-ok"
                                 }
@@ -2675,10 +3300,14 @@ export default function Caja() {
                   setModalMovimiento(
                     false
                   )
-                }
-                aria-label="Cerrar"
+                }                aria-label="Cerrar"
               >
-                ×
+                <img
+                  src={
+                    cerrarModalIcon
+                  }
+                  alt=""
+                />
               </button>
 
             </div>
@@ -2811,7 +3440,7 @@ export default function Caja() {
         >
 
           <form
-            className="caja-modal"
+            className="caja-modal caja-modal-cierre"
             onSubmit={
               manejarCerrarCaja
             }
@@ -2843,10 +3472,14 @@ export default function Caja() {
                   setModalCierre(
                     false
                   )
-                }
-                aria-label="Cerrar"
+                }                aria-label="Cerrar"
               >
-                ×
+                <img
+                  src={
+                    cerrarModalIcon
+                  }
+                  alt=""
+                />
               </button>
 
             </div>
@@ -2868,29 +3501,206 @@ export default function Caja() {
             </div>
 
 
-            <label>
+            <section className="caja-denominaciones">
 
-              <span>
-                Efectivo contado
-              </span>
+              <div className="caja-denominaciones-header">
 
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={
-                  efectivoContado
-                }
-                onChange={
-                  (event) =>
-                    setEfectivoContado(
-                      event.target.value
-                    )
-                }
-                required
-              />
+                <div>
 
-            </label>
+                  <span>
+                    Conteo por denominación
+                  </span>
+
+                  <strong>
+                    Billetes
+                  </strong>
+
+                </div>
+
+                <small>
+                  Digite cuántos billetes tiene de cada denominación.
+                </small>
+
+              </div>
+
+
+              <div className="caja-denominaciones-list">
+
+                {DENOMINACIONES_BILLETES.map(
+                  (
+                    denominacion
+                  ) => {
+
+                    const cantidad =
+                      Number(
+                        conteoBilletes[
+                          denominacion.key
+                        ] ||
+                        0
+                      );
+
+
+                    const subtotal =
+                      cantidad *
+                      denominacion.valor;
+
+
+                    return (
+
+                      <div
+                        key={
+                          denominacion.key
+                        }
+                        className="caja-denominacion-row"
+                      >
+
+                        <div className="caja-denominacion-valor">
+
+                          <span>
+                            Billete
+                          </span>
+
+                          <div className="caja-denominacion-valor-line">
+
+                            <img
+                              className="caja-denominacion-icon"
+                              src={
+                                billeteDenominacionIcon
+                              }
+                              alt=""
+                              aria-hidden="true"
+                            />
+
+                            <strong>
+                              {
+                                denominacion.etiqueta
+                              }
+                            </strong>
+
+                          </div>
+
+                        </div>
+
+
+                        <label className="caja-denominacion-cantidad">
+
+                          <span>
+                            Cantidad
+                          </span>
+
+                          <input
+                            type="number"
+                            min="0"
+                            step="1"
+                            inputMode="numeric"
+                            placeholder="0"
+                            value={
+                              conteoBilletes[
+                                denominacion.key
+                              ]
+                            }
+                            onChange={
+                              (
+                                event
+                              ) =>
+                                cambiarCantidadBilletes(
+                                  denominacion.key,
+                                  event.target.value
+                                )
+                            }
+                          />
+
+                        </label>
+
+
+                        <div className="caja-denominacion-subtotal">
+
+                          <span>
+                            Total
+                          </span>
+
+                          <strong>
+                            {
+                              moneda(
+                                subtotal
+                              )
+                            }
+                          </strong>
+
+                        </div>
+
+                      </div>
+
+                    );
+
+                  }
+                )}
+
+              </div>
+
+
+              <div className="caja-conteo-resumen">
+
+                <div>
+
+                  <span>
+                    Efectivo contado
+                  </span>
+
+                  <strong>
+                    {
+                      moneda(
+                        efectivoContadoCalculado
+                      )
+                    }
+                  </strong>
+
+                </div>
+
+
+                <div>
+
+                  <span>
+                    Saldo esperado
+                  </span>
+
+                  <strong>
+                    {
+                      moneda(
+                        resumen.saldoEsperado ??
+                        resumen.saldoActual
+                      )
+                    }
+                  </strong>
+
+                </div>
+
+
+                <div
+                  className={
+                    `caja-conteo-diferencia ${
+                      diferenciaConteoClase
+                    }`
+                  }
+                >
+
+                  <span>
+                    Diferencia
+                  </span>
+
+                  <strong>
+                    {
+                      moneda(
+                        diferenciaConteoCalculada
+                      )
+                    }
+                  </strong>
+
+                </div>
+
+              </div>
+
+            </section>
 
 
             <label>
@@ -3323,10 +4133,14 @@ export default function Caja() {
                   setDetalleCaja(
                     null
                   )
-                }
-                aria-label="Cerrar"
+                }                aria-label="Cerrar"
               >
-                ×
+                <img
+                  src={
+                    cerrarModalIcon
+                  }
+                  alt=""
+                />
               </button>
 
             </div>
@@ -3493,7 +4307,7 @@ export default function Caja() {
 
 
             <div className="caja-detail-section-title">
-              Pedidos entregados
+              Entregas finalizadas
             </div>
 
 
@@ -3525,16 +4339,9 @@ export default function Caja() {
                       ) =>
                         movimiento.estado !==
                           "Anulado" &&
-                        (
-                          movimiento.origen ===
-                            "Pedido" ||
-                          (
-                            movimiento.origen ===
-                              "Factura" &&
-                            movimiento.tipo ===
-                              "Ingreso"
-                          )
-                        )
+                        esOrigenVentaCaja(
+              movimiento
+            )
                     )
                     .length ===
                   0 ? (
@@ -3544,7 +4351,7 @@ export default function Caja() {
                         colSpan="6"
                         className="caja-empty"
                       >
-                        Sin pedidos entregados.
+                        Sin entregas finalizadas.
                       </td>
                     </tr>
 
@@ -3561,16 +4368,9 @@ export default function Caja() {
                         ) =>
                           movimiento.estado !==
                             "Anulado" &&
-                          (
-                            movimiento.origen ===
-                              "Pedido" ||
-                            (
-                              movimiento.origen ===
-                                "Factura" &&
-                              movimiento.tipo ===
-                                "Ingreso"
-                            )
-                          )
+                          esOrigenVentaCaja(
+              movimiento
+            )
                       )
                       .map(
                         (
@@ -3584,11 +4384,25 @@ export default function Caja() {
                           >
 
                             <td>
-                              <strong className="caja-order-code">
+
+                              <button
+                                type="button"
+                                className="caja-document-link caja-order-code"
+                                onDoubleClick={() =>
+                                  abrirPedidoDesdeCaja(
+                                    movimiento
+                                  )
+                                }
+                                title="Doble clic para abrir la impresión del pedido"
+                                aria-label={`Abrir impresión del pedido ${pedidoMovimiento(
+                                  movimiento
+                                )}`}
+                              >
                                 {pedidoMovimiento(
                                   movimiento
                                 )}
-                              </strong>
+                              </button>
+
                             </td>
 
                             <td>
@@ -3603,9 +4417,38 @@ export default function Caja() {
                             </td>
 
                             <td>
+
                               {facturaMovimiento(
                                 movimiento
+                              ) ===
+                              "Sin factura" ? (
+
+                                <span className="caja-no-invoice">
+                                  Sin factura
+                                </span>
+
+                              ) : (
+
+                                <button
+                                  type="button"
+                                  className="caja-document-link caja-invoice-code"
+                                  onClick={() =>
+                                    abrirFacturaDesdeCaja(
+                                      movimiento
+                                    )
+                                  }
+                                  title="Abrir factura"
+                                  aria-label={`Abrir factura ${facturaMovimiento(
+                                    movimiento
+                                  )}`}
+                                >
+                                  {facturaMovimiento(
+                                    movimiento
+                                  )}
+                                </button>
+
                               )}
+
                             </td>
 
                             <td>
@@ -3665,16 +4508,9 @@ export default function Caja() {
                       ) =>
                         movimiento.estado !==
                           "Anulado" &&
-                        !(
-                          movimiento.origen ===
-                            "Pedido" ||
-                          (
-                            movimiento.origen ===
-                              "Factura" &&
-                            movimiento.tipo ===
-                              "Ingreso"
-                          )
-                        )
+                        !esOrigenVentaCaja(
+              movimiento
+            )
                     )
                     .length ===
                   0 ? (
@@ -3701,16 +4537,9 @@ export default function Caja() {
                         ) =>
                           movimiento.estado !==
                             "Anulado" &&
-                          !(
-                            movimiento.origen ===
-                              "Pedido" ||
-                            (
-                              movimiento.origen ===
-                                "Factura" &&
-                              movimiento.tipo ===
-                                "Ingreso"
-                            )
-                          )
+                          !esOrigenVentaCaja(
+              movimiento
+            )
                       )
                       .map(
                         (

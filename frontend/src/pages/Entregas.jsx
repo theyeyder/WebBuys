@@ -3062,26 +3062,6 @@ export default function Entregas() {
                   </label>
 
 
-                  <button
-                    type="button"
-                    className="entregas-footer-icon-btn entregas-close-icon-btn"
-                    data-tooltip="Cerrar"
-                    aria-label="Cerrar"
-                    onClick={
-                      cerrarDetalle
-                    }
-                    disabled={
-                      procesando
-                    }
-                  >
-                    <img
-                      src={
-                        cerrarEntregaIcon
-                      }
-                      alt=""
-                    />
-                  </button>
-
                 </div>
 
               )}

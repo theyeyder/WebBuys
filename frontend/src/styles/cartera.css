@@ -1,0 +1,1907 @@
+.cartera-page {
+  min-height: 100vh;
+  padding-bottom: 64px;
+  box-sizing: border-box;
+
+  background:
+    radial-gradient(circle at 10% 8%, rgba(21, 154, 117, 0.06), transparent 28%),
+    linear-gradient(135deg, #ffffff 0%, #f7fbf9 100%);
+
+  color: #213c32;
+}
+
+
+.cartera-header {
+  position: sticky;
+  top: 0;
+  z-index: 7000;
+
+  min-height: 60px;
+  padding: 8px 18px 8px 68px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  background:
+    linear-gradient(135deg, #0f766e 0%, #159a75 55%, #20afb2 100%);
+
+  box-shadow:
+    0 4px 15px rgba(15, 23, 42, 0.13);
+}
+
+
+.cartera-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
+.cartera-header-left h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 950;
+}
+
+
+.cartera-header-left p {
+  margin: 2px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+.cartera-refresh {
+  min-height: 36px;
+  padding: 0 13px;
+
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 9px;
+
+  background: rgba(255, 255, 255, 0.96);
+  color: #087858;
+
+  font: inherit;
+  font-size: 9px;
+  font-weight: 950;
+
+  cursor: pointer;
+}
+
+
+.cartera-refresh:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+.cartera-content {
+  padding: 14px;
+
+  display: grid;
+  gap: 14px;
+}
+
+
+.cartera-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+
+.cartera-summary-card {
+  min-width: 0;
+  padding: 12px 14px;
+
+  border: 1px solid #dce8e3;
+  border-radius: 12px;
+
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f8fbfa 100%);
+
+  box-shadow:
+    0 5px 15px rgba(15, 23, 42, 0.055);
+}
+
+
+.cartera-summary-card span {
+  display: block;
+  margin-bottom: 5px;
+
+  color: #71857c;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+
+.cartera-summary-card strong {
+  display: block;
+
+  color: #213f34;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+
+.cartera-summary-card small {
+  display: block;
+  margin-top: 4px;
+
+  color: #84958e;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+
+.cartera-summary-card-paid {
+  background: linear-gradient(180deg, #ffffff 0%, #eff9f4 100%);
+}
+
+
+.cartera-summary-card-paid strong {
+  color: #087858;
+}
+
+
+.cartera-summary-card-balance {
+  background: linear-gradient(180deg, #ffffff 0%, #fff9ea 100%);
+}
+
+
+.cartera-summary-card-balance strong {
+  color: #9a6700;
+}
+
+
+.cartera-summary-card-done {
+  background: linear-gradient(180deg, #ffffff 0%, #eefaf4 100%);
+}
+
+
+.cartera-panel {
+  overflow: hidden;
+
+  border: 1px solid #dce7e2;
+  border-radius: 13px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 5px 16px rgba(15, 23, 42, 0.055);
+}
+
+
+.cartera-toolbar {
+  min-height: 58px;
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  border-bottom: 1px solid #e5efea;
+  background: #fbfdfc;
+}
+
+
+.cartera-search {
+  min-width: 280px;
+  max-width: 520px;
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  height: 36px;
+  padding: 0 10px;
+
+  border: 1px solid #d2e1da;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+
+.cartera-search span {
+  color: #667a71;
+  font-size: 20px;
+  line-height: 1;
+}
+
+
+.cartera-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+
+  color: #29473c;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+
+.cartera-filter-buttons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+
+.cartera-filter-buttons button {
+  min-height: 31px;
+  padding: 0 9px;
+
+  border: 1px solid #cbdcd5;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #62756d;
+
+  font: inherit;
+  font-size: 8px;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+
+.cartera-filter-buttons button.active {
+  border-color: #159a75;
+  background: #eaf8f2;
+  color: #087858;
+}
+
+
+.cartera-table-wrap,
+.cartera-history-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+
+.cartera-table {
+  width: 100%;
+  min-width: 980px;
+
+  border-collapse: collapse;
+}
+
+
+.cartera-table thead,
+.cartera-history-table thead {
+  background: #eef5f2;
+}
+
+
+.cartera-table th,
+.cartera-history-table th {
+  padding: 10px 11px;
+
+  color: #51685e;
+  font-size: 8px;
+  font-weight: 950;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+
+.cartera-table td,
+.cartera-history-table td {
+  padding: 10px 11px;
+
+  border-top: 1px solid #edf2f0;
+
+  color: #42584f;
+  font-size: 9px;
+  vertical-align: middle;
+}
+
+
+.cartera-table tbody tr {
+  transition: background 0.14s ease;
+}
+
+
+.cartera-table tbody tr:hover {
+  background: #f7fbf9;
+}
+
+
+.cartera-table td small {
+  display: block;
+  margin-top: 2px;
+
+  color: #81928a;
+  font-size: 7px;
+}
+
+
+.cartera-code,
+.cartera-balance-value {
+  color: #087858;
+  font-weight: 950;
+}
+
+
+.cartera-status {
+  min-height: 24px;
+  padding: 0 8px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+
+  font-size: 7px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+
+.cartera-status-pendiente {
+  border: 1px solid #e7c77f;
+  background: #fff7df;
+  color: #9a6700;
+}
+
+
+.cartera-status-abonada {
+  border: 1px solid #a8c8e7;
+  background: #eef6ff;
+  color: #2c5f91;
+}
+
+
+.cartera-status-pagada {
+  border: 1px solid #9fd5bf;
+  background: #eaf8f1;
+  color: #087858;
+}
+
+
+.cartera-manage-btn,
+.cartera-save-btn,
+.cartera-register-payment,
+.cartera-pay-all {
+  min-height: 31px;
+  padding: 0 10px;
+
+  border-radius: 8px;
+
+  font: inherit;
+  font-size: 8px;
+  font-weight: 950;
+
+  cursor: pointer;
+}
+
+
+.cartera-manage-btn,
+.cartera-save-btn {
+  border: 1px solid #a9d6c6;
+  background: #ffffff;
+  color: #087858;
+}
+
+
+.cartera-register-payment {
+  border: 1px solid #087858;
+  background: linear-gradient(135deg, #087858, #19a678);
+  color: #ffffff;
+}
+
+
+.cartera-pay-all {
+  border: 1px solid #b6d7ca;
+  background: #eff9f4;
+  color: #087858;
+}
+
+
+.cartera-empty {
+  padding: 22px !important;
+  text-align: center !important;
+  color: #7c8f87 !important;
+  font-size: 9px !important;
+  font-weight: 750 !important;
+}
+
+
+.cartera-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 15000;
+
+  padding: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(22, 35, 30, 0.48);
+  backdrop-filter: blur(5px);
+}
+
+
+.cartera-modal {
+  width: min(1120px, 100%);
+  max-height: calc(100vh - 32px);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 17px;
+
+  background: #f7faf8;
+
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.24);
+}
+
+
+.cartera-modal-header {
+  min-height: 70px;
+  padding: 11px 14px 11px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  background: linear-gradient(135deg, #0f766e, #159a75, #20afb2);
+}
+
+
+.cartera-modal-header span {
+  display: block;
+  margin-bottom: 3px;
+
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 8px;
+  font-weight: 900;
+}
+
+
+.cartera-modal-header h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+
+.cartera-modal-close {
+  width: 36px;
+  height: 36px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 9px;
+  background: #ffffff;
+  color: #c62828;
+
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+
+.cartera-modal-body {
+  padding: 12px;
+
+  display: grid;
+  gap: 12px;
+
+  overflow-y: auto;
+}
+
+
+.cartera-modal-loading {
+  min-height: 360px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #70837a;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+.cartera-account-summary {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 7px;
+}
+
+
+.cartera-account-summary > div {
+  min-width: 0;
+  padding: 9px 10px;
+
+  border: 1px solid #dce8e3;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+
+.cartera-account-summary span,
+.cartera-details-grid label > span,
+.cartera-payment-grid label > span {
+  display: block;
+  margin-bottom: 3px;
+
+  color: #7b8c84;
+  font-size: 7px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+
+.cartera-account-summary strong {
+  display: block;
+  color: #29473b;
+  font-size: 9px;
+  font-weight: 950;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.cartera-account-balance {
+  background: #eff9f4 !important;
+}
+
+
+.cartera-account-balance strong {
+  color: #087858 !important;
+  font-size: 13px !important;
+}
+
+
+.cartera-details-grid {
+  padding: 11px;
+
+  display: grid;
+  grid-template-columns: 190px 1fr auto;
+  align-items: end;
+  gap: 9px;
+
+  border: 1px solid #dce7e2;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+
+.cartera-details-grid input,
+.cartera-details-grid textarea,
+.cartera-payment-grid input,
+.cartera-payment-grid select {
+  width: 100%;
+  box-sizing: border-box;
+
+  border: 1px solid #ccdcd5;
+  border-radius: 8px;
+  outline: none;
+
+  background: #ffffff;
+  color: #2c473c;
+
+  font: inherit;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+
+.cartera-details-grid input,
+.cartera-payment-grid input,
+.cartera-payment-grid select {
+  height: 35px;
+  padding: 0 9px;
+}
+
+
+.cartera-details-grid textarea {
+  min-height: 54px;
+  padding: 8px 9px;
+  resize: vertical;
+}
+
+
+.cartera-payment-panel,
+.cartera-history-panel {
+  padding: 11px;
+
+  border: 1px solid #dce7e2;
+  border-radius: 11px;
+  background: #ffffff;
+}
+
+
+.cartera-section-title {
+  margin-bottom: 9px;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+
+.cartera-section-title span {
+  display: block;
+  color: #159a75;
+  font-size: 7px;
+  font-weight: 950;
+  letter-spacing: 0.07em;
+}
+
+
+.cartera-section-title h3 {
+  margin: 2px 0 0;
+  color: #244238;
+  font-size: 13px;
+  font-weight: 950;
+}
+
+
+.cartera-section-title small {
+  color: #7c8e86;
+  font-size: 8px;
+}
+
+
+.cartera-payment-grid {
+  display: grid;
+  grid-template-columns: 180px 180px 1fr 1.2fr;
+  gap: 8px;
+}
+
+
+.cartera-payment-actions {
+  margin-top: 9px;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+
+.cartera-history-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+
+@media (max-width: 1050px) {
+
+  .cartera-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+
+  .cartera-account-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+
+  .cartera-payment-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+
+@media (max-width: 720px) {
+
+  .cartera-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+
+  .cartera-search {
+    min-width: 0;
+    max-width: none;
+  }
+
+
+  .cartera-account-summary,
+  .cartera-summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+
+  .cartera-details-grid,
+  .cartera-payment-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .cartera-summary-grid,
+  .cartera-account-summary {
+    grid-template-columns: 1fr;
+  }
+
+}
+/* =========================================================
+   CARTERA - CONTROLES MEJORADOS
+   Calendario, selects e iconos
+========================================================= */
+
+.cartera-modal-close {
+  padding: 0;
+}
+
+.cartera-modal-close-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+}
+
+.cartera-save-btn {
+  min-width: 132px;
+  height: 36px;
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  border: 1px solid #0f8f6d;
+  background:
+    linear-gradient(
+      135deg,
+      #ffffff 0%,
+      #f1fbf7 100%
+    );
+  color: #087858;
+
+  box-shadow:
+    0 4px 12px
+    rgba(15, 118, 110, 0.10);
+}
+
+.cartera-save-btn:hover:not(:disabled) {
+  border-color: #087858;
+  transform: translateY(-1px);
+  box-shadow:
+    0 7px 17px
+    rgba(15, 118, 110, 0.15);
+}
+
+.cartera-save-btn:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+.cartera-save-icon {
+  width: 19px;
+  height: 19px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+
+/* =========================================================
+   SELECT MEJORADO
+========================================================= */
+
+.cartera-select-mejorado {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.cartera-select-trigger {
+  width: 100%;
+  min-height: 35px;
+  padding: 0 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  border: 1px solid #ccdcd5;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #2c473c;
+
+  font: inherit;
+  font-size: 9px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+.cartera-select-trigger:hover:not(:disabled) {
+  border-color: #8fcab7;
+  background: #fbfefd;
+}
+
+.cartera-select-trigger.open {
+  border-color: #159a75;
+  box-shadow:
+    0 0 0 3px
+    rgba(21, 154, 117, 0.10);
+}
+
+.cartera-select-trigger:disabled {
+  opacity: 0.56;
+  cursor: not-allowed;
+}
+
+.cartera-select-chevron {
+  color: #159a75;
+  font-size: 11px;
+  line-height: 1;
+  transition: transform 0.16s ease;
+}
+
+.cartera-select-trigger.open
+.cartera-select-chevron {
+  transform: rotate(180deg);
+}
+
+.cartera-select-options {
+  position: absolute;
+  z-index: 30050;
+
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+
+  max-height: 210px;
+  overflow-y: auto;
+
+  padding: 5px;
+
+  border: 1px solid #cfe1da;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 14px 34px
+    rgba(15, 23, 42, 0.17);
+}
+
+.cartera-select-option {
+  width: 100%;
+  min-height: 32px;
+  padding: 0 9px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: transparent;
+  color: #3c554b;
+
+  font: inherit;
+  font-size: 9px;
+  font-weight: 800;
+
+  text-align: left;
+  cursor: pointer;
+}
+
+.cartera-select-option:hover {
+  background: #eef9f4;
+  color: #087858;
+}
+
+.cartera-select-option.selected {
+  background:
+    linear-gradient(
+      90deg,
+      #e8f8f1,
+      #eefafa
+    );
+  color: #087858;
+}
+
+.cartera-select-check {
+  color: #159a75;
+  font-weight: 950;
+}
+
+
+/* =========================================================
+   CALENDARIO CARTERA
+  
+   
+========================================================= */
+
+.cartera-date-field {
+  position: relative;
+}
+
+
+.cartera-calendar {
+  position: relative;
+
+  width: 100%;
+}
+
+
+.cartera-calendar-trigger {
+  width: 100%;
+  height: 35px;
+
+  padding:
+    0 8px
+    0 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+
+  border:
+    1px solid
+    rgba(
+      8,
+      116,
+      67,
+      0.32
+    );
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #344054;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+
+.cartera-calendar-trigger:hover:not(:disabled) {
+  border-color:
+    #70bea2;
+}
+
+
+.cartera-calendar-trigger.open {
+  border-color:
+    #159a75;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      21,
+      154,
+      117,
+      0.10
+    );
+}
+
+
+.cartera-calendar-trigger:disabled {
+  opacity: 0.56;
+
+  cursor: not-allowed;
+}
+
+
+.cartera-calendar-value {
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #344054;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  text-transform: capitalize;
+}
+
+
+.cartera-calendar-trigger-icon {
+  width: 18px;
+  height: 18px;
+
+  flex: 0 0 auto;
+
+  object-fit: contain;
+}
+
+
+/* =========================================================
+   OVERLAY
+========================================================= */
+
+.cartera-datepicker-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 120000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 18px;
+
+  box-sizing: border-box;
+
+  background:
+    rgba(
+      15,
+      23,
+      42,
+      0.10
+    );
+}
+
+
+/* =========================================================
+   CAJA DEL CALENDARIO
+========================================================= */
+
+.cartera-datepicker {
+  width: 350px;
+
+  min-height: 365px;
+
+  padding: 18px;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    #e0ebe6;
+
+  border-radius: 13px;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    0 24px 58px
+    rgba(
+      15,
+      23,
+      42,
+      0.16
+    );
+}
+
+
+/* =========================================================
+   CABECERA / MES / AÑO
+========================================================= */
+
+.cartera-datepicker-header {
+  display: grid;
+
+  grid-template-columns:
+    34px
+    1fr
+    34px;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-bottom: 16px;
+}
+
+
+.cartera-datepicker-arrow {
+  width: 32px;
+  height: 32px;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 8px;
+
+  background:
+    transparent;
+
+  color:
+    #12a05c;
+
+  font-size: 24px;
+  font-weight: 900;
+
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+
+.cartera-datepicker-arrow:hover {
+  background:
+    #ecfdf3;
+}
+
+
+.cartera-datepicker-selects {
+  display: grid;
+
+  grid-template-columns:
+    minmax(
+      0,
+      1.25fr
+    )
+    minmax(
+      90px,
+      0.75fr
+    );
+
+  gap: 7px;
+}
+
+
+/* =========================================================
+   SELECTS MEJORADOS MES / AÑO
+========================================================= */
+
+.cartera-datepicker-selects
+.cartera-select-trigger {
+  min-height: 34px;
+  height: 34px;
+
+  padding:
+    0 9px;
+
+  border:
+    1px solid
+    #b9dacc;
+
+  border-radius: 8px;
+
+  background:
+    #ffffff;
+
+  color:
+    #087443;
+
+  font-size: 9px;
+  font-weight: 900;
+}
+
+
+.cartera-datepicker-selects
+.cartera-select-trigger:hover:not(:disabled) {
+  border-color:
+    #70bea2;
+
+  background:
+    #f8fdfb;
+}
+
+
+.cartera-datepicker-selects
+.cartera-select-trigger.open {
+  border-color:
+    #159a75;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(
+      21,
+      154,
+      117,
+      0.09
+    );
+}
+
+
+.cartera-datepicker-selects
+.cartera-select-chevron {
+  width: 22px;
+  height: 22px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 6px;
+
+  background:
+    #eef8f4;
+
+  color:
+    #087443;
+
+  font-size: 8px;
+}
+
+
+.cartera-datepicker-selects
+.cartera-select-options {
+  z-index: 120100;
+
+  max-height: 190px;
+
+  border-radius: 8px;
+}
+
+
+.cartera-datepicker-selects
+.cartera-select-option {
+  min-height: 30px;
+
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   DÍAS DE LA SEMANA
+========================================================= */
+
+.cartera-datepicker-weekdays {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      7,
+      1fr
+    );
+
+  margin-bottom: 7px;
+}
+
+
+.cartera-datepicker-weekdays span {
+  text-align: center;
+
+  color:
+    #19a361;
+
+  font-size: 10px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   DÍAS
+========================================================= */
+
+.cartera-datepicker-days {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      7,
+      1fr
+    );
+
+  row-gap: 5px;
+}
+
+
+.cartera-datepicker-days button {
+  position: relative;
+
+  width: 100%;
+  height: 31px;
+
+  padding: 0;
+
+  border: none;
+
+  background:
+    transparent;
+
+  color:
+    #2c3440;
+
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  z-index: 1;
+
+  transition:
+    background 0.14s ease,
+    color 0.14s ease,
+    transform 0.14s ease;
+}
+
+
+.cartera-datepicker-days button.outside {
+  color:
+    #c3cac6;
+}
+
+
+/* HOVER */
+
+.cartera-datepicker-days
+button:not(.current-week):hover {
+  border-radius: 50%;
+
+  background:
+    #ecfdf3;
+
+  color:
+    #087443;
+
+  transform:
+    translateY(-1px);
+}
+
+
+/* =========================================================
+   SEMANA ACTUAL
+========================================================= */
+
+.cartera-datepicker-days
+button.current-week {
+  border-radius: 0;
+
+  background:
+    #20a05a;
+
+  color:
+    #ffffff;
+}
+
+
+.cartera-datepicker-days
+button.current-week-start {
+  border-radius:
+    18px
+    0
+    0
+    18px;
+}
+
+
+.cartera-datepicker-days
+button.current-week-end {
+  border-radius:
+    0
+    18px
+    18px
+    0;
+}
+
+
+.cartera-datepicker-days
+button.current-week:hover {
+  background:
+    #168b4b;
+
+  color:
+    #ffffff;
+}
+
+
+.cartera-datepicker-days
+button.current-week-start:hover {
+  border-radius:
+    18px
+    0
+    0
+    18px;
+}
+
+
+.cartera-datepicker-days
+button.current-week-end:hover {
+  border-radius:
+    0
+    18px
+    18px
+    0;
+}
+
+
+/* =========================================================
+   DÍA ACTUAL Y DÍA SELECCIONADO
+========================================================= */
+
+.cartera-datepicker-days
+button.today::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  bottom: 3px;
+
+  width: 4px;
+  height: 4px;
+
+  transform:
+    translateX(
+      -50%
+    );
+
+  border-radius: 50%;
+
+  background:
+    currentColor;
+}
+
+
+.cartera-datepicker-days
+button.selected {
+  box-shadow:
+    inset
+    0 0 0 2px
+    #087443;
+}
+
+
+.cartera-datepicker-days
+button.selected.current-week {
+  box-shadow:
+    inset
+    0 0 0 2px
+    #ffffff;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.cartera-datepicker-footer {
+  margin-top: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+}
+
+
+.cartera-datepicker-footer button {
+  height: 36px;
+
+  padding:
+    0 16px;
+
+  border-radius: 7px;
+
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+
+  cursor: pointer;
+}
+
+
+.cartera-datepicker-cancel {
+  border: none;
+
+  background:
+    transparent;
+
+  color:
+    #344054;
+}
+
+
+.cartera-datepicker-cancel:hover {
+  background:
+    #f2f4f7;
+}
+
+
+.cartera-datepicker-done {
+  min-width: 82px;
+
+  border: none;
+
+  background:
+    #20a45c;
+
+  color:
+    #ffffff;
+}
+
+
+.cartera-datepicker-done:hover:not(:disabled) {
+  background:
+    #15864a;
+}
+
+
+.cartera-datepicker-done:disabled {
+  opacity: 0.45;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 480px) {
+
+  .cartera-datepicker {
+    width:
+      min(
+        350px,
+        calc(
+          100vw - 24px
+        )
+      );
+
+    padding:
+      15px
+      12px;
+  }
+
+
+  .cartera-datepicker-days button {
+    height: 29px;
+  }
+
+}
+
+
+/* El select nativo ya no se usa en el recaudo. */
+.cartera-payment-grid select {
+  appearance: none;
+}
+
+
+/* =========================================================
+   RESPONSIVE CONTROLES
+========================================================= */
+
+@media (max-width: 720px) {
+
+  .cartera-save-btn {
+    width: 100%;
+  }
+
+}
+/* =========================================================
+   CARTERA - ESTADOS VISUALES Y VENCIMIENTOS
+========================================================= */
+
+.cartera-status-vencida {
+  border:
+    1px solid
+    #f0a6a6;
+
+  background:
+    #fff0f0;
+
+  color:
+    #b42318;
+}
+
+
+.cartera-row-vencida {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(
+        255,
+        242,
+        242,
+        0.92
+      ),
+      rgba(
+        255,
+        255,
+        255,
+        0
+      )
+    );
+}
+
+
+.cartera-row-vencida:hover {
+  background:
+    #fff5f5 !important;
+}
+
+
+.cartera-due-date {
+  color:
+    #344054;
+
+  font-size:
+    9px;
+
+  font-weight:
+    900;
+}
+
+
+.cartera-due-text {
+  margin-top:
+    3px !important;
+
+  font-size:
+    7px !important;
+
+  font-weight:
+    900 !important;
+}
+
+
+.cartera-due-vencida {
+  color:
+    #b42318 !important;
+}
+
+
+.cartera-due-hoy {
+  color:
+    #b54708 !important;
+}
+
+
+.cartera-due-proxima {
+  color:
+    #c27803 !important;
+}
+
+
+.cartera-due-normal {
+  color:
+    #087858 !important;
+}
+
+
+.cartera-due-pagada {
+  color:
+    #159a75 !important;
+}
+
+
+.cartera-due-sin-fecha {
+  color:
+    #98a2b3 !important;
+}
+
+
+/* =========================================================
+   DETALLE - ESTADO Y VENCIMIENTO
+========================================================= */
+
+.cartera-modal-title-line {
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    6px;
+}
+
+
+.cartera-modal-status {
+  margin:
+    0 !important;
+
+  min-height:
+    23px;
+
+  padding:
+    0 8px;
+
+  border-color:
+    rgba(
+      255,
+      255,
+      255,
+      0.78
+    ) !important;
+
+  background:
+    rgba(183, 52, 52, 0.96) !important;
+
+  font-size:
+    7px !important;
+}
+
+
+.cartera-account-summary {
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(
+        0,
+        1fr
+      )
+    );
+}
+
+
+.cartera-account-due small {
+  display:
+    block;
+
+  margin-top:
+    4px;
+
+  font-size:
+    7px;
+
+  font-weight:
+    900;
+}
+
+
+.cartera-account-due-vencida {
+  border-color:
+    #efb1b1 !important;
+
+  background:
+    #fff5f5 !important;
+}
+
+
+.cartera-account-due-vencida strong,
+.cartera-account-due-vencida small {
+  color:
+    #b42318 !important;
+}
+
+
+.cartera-account-due-hoy {
+  border-color:
+    #f1ca88 !important;
+
+  background:
+    #fff9ea !important;
+}
+
+
+.cartera-account-due-hoy strong,
+.cartera-account-due-hoy small {
+  color:
+    #b54708 !important;
+}
+
+
+.cartera-account-due-proxima {
+  border-color:
+    #ead39a !important;
+
+  background:
+    #fffaeb !important;
+}
+
+
+.cartera-account-due-proxima small {
+  color:
+    #a15c07 !important;
+}
+
+
+.cartera-account-due-normal small {
+  color:
+    #087858 !important;
+}
+
+
+.cartera-account-due-pagada {
+  border-color:
+    #a9d6c6 !important;
+
+  background:
+    #eef9f4 !important;
+}
+
+
+.cartera-account-due-pagada strong,
+.cartera-account-due-pagada small {
+  color:
+    #087858 !important;
+}
+
+
+.cartera-account-due-sin-fecha small {
+  color:
+    #98a2b3 !important;
+}
+
+
+.cartera-account-state {
+  display:
+    flex;
+
+  flex-direction:
+    column;
+
+  justify-content:
+    center;
+}
+
+
+.cartera-account-state
+.cartera-status {
+  align-self:
+    flex-start;
+
+  margin-top:
+    2px;
+}
+
+
+@media (max-width: 1050px) {
+
+  .cartera-account-summary {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(
+          0,
+          1fr
+        )
+      );
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .cartera-account-summary {
+    grid-template-columns:
+      1fr;
+  }
+
+}
+
+

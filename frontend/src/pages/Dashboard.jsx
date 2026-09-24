@@ -8,7 +8,6 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-
 import ModulosMenu
   from "../components/ModulosMenu.jsx";
 
@@ -29,23 +28,29 @@ import {
 } from "../services/categoria.service.js";
 
 import {
-  listarFacturas,
+  listarEntregas,
+} from "../services/entrega.service.js";
+
+import {
+  obtenerResumenCaja,
+  listarMovimientosCaja,
+} from "../services/caja.service.js";
+
+import {
+  listarCartera,
+  obtenerResumenCartera,
+} from "../services/cartera.service.js";
+
+import {
+  listarEntregasFacturables,
 } from "../services/factura.service.js";
-
-import buscarIcon
-  from "../assets/icons/buscar.png";
-
-import cerrarIcon
-  from "../assets/icons/cerrar.png";
 
 import "../styles/dashboard.css";
 
 
-/* =========================================
-   MONEDA
-========================================= */
-
-function moneda(valor) {
+function moneda(
+  valor
+) {
 
   return new Intl.NumberFormat(
     "es-CO",
@@ -55,15 +60,204 @@ function moneda(valor) {
       maximumFractionDigits: 0,
     }
   ).format(
-    Number(valor || 0)
+    Number(
+      valor ||
+      0
+    )
   );
 
 }
 
 
-/* =========================================
-   COMPONENTE
-========================================= */
+function fechaCorta(
+  valor
+) {
+
+  if (!valor) {
+    return "—";
+  }
+
+
+  const fecha =
+    new Date(
+      valor
+    );
+
+
+  if (
+    Number.isNaN(
+      fecha.getTime()
+    )
+  ) {
+    return "—";
+  }
+
+
+  return fecha
+    .toLocaleDateString(
+      "es-CO"
+    );
+
+}
+
+
+function fechaHora(
+  valor
+) {
+
+  if (!valor) {
+    return "—";
+  }
+
+
+  const fecha =
+    new Date(
+      valor
+    );
+
+
+  if (
+    Number.isNaN(
+      fecha.getTime()
+    )
+  ) {
+    return "—";
+  }
+
+
+  return fecha
+    .toLocaleString(
+      "es-CO",
+      {
+        dateStyle: "short",
+        timeStyle: "short",
+      }
+    );
+
+}
+
+
+function normalizarLista(
+  data,
+  claves = []
+) {
+
+  if (
+    Array.isArray(
+      data
+    )
+  ) {
+    return data;
+  }
+
+
+  for (
+    const clave
+    of claves
+  ) {
+
+    if (
+      Array.isArray(
+        data?.[clave]
+      )
+    ) {
+      return data[clave];
+    }
+
+  }
+
+
+  if (
+    Array.isArray(
+      data?.data
+    )
+  ) {
+    return data.data;
+  }
+
+
+  return [];
+
+}
+
+
+function fechaEventoEntrega(
+  entrega
+) {
+
+  return (
+    entrega?.fechaEntregaReal ||
+    entrega?.updatedAt ||
+    entrega?.fechaEntrega ||
+    entrega?.createdAt ||
+    null
+  );
+
+}
+
+
+function estaEntre(
+  valor,
+  inicio,
+  fin
+) {
+
+  if (!valor) {
+    return false;
+  }
+
+
+  const fecha =
+    new Date(
+      valor
+    );
+
+
+  if (
+    Number.isNaN(
+      fecha.getTime()
+    )
+  ) {
+    return false;
+  }
+
+
+  return (
+    fecha >= inicio &&
+    fecha <= fin
+  );
+
+}
+
+
+function claseEstado(
+  estado
+) {
+
+  return String(
+    estado ||
+    ""
+  )
+    .trim()
+    .toLowerCase()
+    .normalize(
+      "NFD"
+    )
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .replace(
+      /[^a-z0-9]+/g,
+      "-"
+    )
+    .replace(
+      /^-+|-+$/g,
+      ""
+    );
+
+}
+
 
 export default function Dashboard() {
 
@@ -96,8 +290,38 @@ export default function Dashboard() {
 
 
   const [
-    facturas,
-    setFacturas,
+    entregas,
+    setEntregas,
+  ] = useState([]);
+
+
+  const [
+    datosCaja,
+    setDatosCaja,
+  ] = useState(null);
+
+
+  const [
+    movimientosCaja,
+    setMovimientosCaja,
+  ] = useState([]);
+
+
+  const [
+    cuentasCartera,
+    setCuentasCartera,
+  ] = useState([]);
+
+
+  const [
+    resumenCartera,
+    setResumenCartera,
+  ] = useState({});
+
+
+  const [
+    facturables,
+    setFacturables,
   ] = useState([]);
 
 
@@ -108,340 +332,224 @@ export default function Dashboard() {
 
 
   const [
-    buscarAbierto,
-    setBuscarAbierto,
+    actualizando,
+    setActualizando,
   ] = useState(false);
 
 
-  const [
-    textoBuscar,
-    setTextoBuscar,
-  ] = useState("");
+  async function cargarDashboard(
+    mostrarCarga = true
+  ) {
 
+    try {
 
-  /* =========================================
-     CARGAR INFORMACIÓN
-  ========================================= */
-
-  useEffect(() => {
-
-    async function cargarDashboard() {
-
-      try {
-
-        setCargando(true);
-
-
-        const resultados =
-          await Promise.allSettled([
-
-            listarPedidos(),
-
-            listarClientes(),
-
-            listarProductos(),
-
-            listarCategorias(),
-
-            listarFacturas(),
-
-          ]);
-
-
-        /* PEDIDOS */
-
-        if (
-          resultados[0].status ===
-          "fulfilled"
-        ) {
-
-          const data =
-            resultados[0].value;
-
-          setPedidos(
-            Array.isArray(data)
-              ? data
-              : data?.pedidos ||
-                data?.data ||
-                []
-          );
-
-        }
-
-
-        /* CLIENTES */
-
-        if (
-          resultados[1].status ===
-          "fulfilled"
-        ) {
-
-          const data =
-            resultados[1].value;
-
-          setClientes(
-            Array.isArray(data)
-              ? data
-              : data?.clientes ||
-                data?.data ||
-                []
-          );
-
-        }
-
-
-        /* PRODUCTOS */
-
-        if (
-          resultados[2].status ===
-          "fulfilled"
-        ) {
-
-          const data =
-            resultados[2].value;
-
-          setProductos(
-            Array.isArray(data)
-              ? data
-              : data?.productos ||
-                data?.data ||
-                []
-          );
-
-        }
-
-
-        /* CATEGORÍAS */
-
-        if (
-          resultados[3].status ===
-          "fulfilled"
-        ) {
-
-          const data =
-            resultados[3].value;
-
-          setCategorias(
-            Array.isArray(data)
-              ? data
-              : data?.categorias ||
-                data?.data ||
-                []
-          );
-
-        }
-
-
-        /* FACTURAS */
-
-        if (
-          resultados[4].status ===
-          "fulfilled"
-        ) {
-
-          const data =
-            resultados[4].value;
-
-          setFacturas(
-            Array.isArray(data)
-              ? data
-              : data?.facturas ||
-                data?.data ||
-                []
-          );
-
-        }
-
-
-      } catch (error) {
-
-        console.error(
-          "Error cargando Dashboard:",
-          error
+      if (
+        mostrarCarga
+      ) {
+        setCargando(
+          true
         );
+      } else {
+        setActualizando(
+          true
+        );
+      }
 
 
-      } finally {
+      const resultados =
+        await Promise.allSettled([
+          listarPedidos(),
+          listarClientes(),
+          listarProductos(),
+          listarCategorias(),
+          listarEntregas(),
+          obtenerResumenCaja(),
+          listarMovimientosCaja(),
+          listarCartera(),
+          obtenerResumenCartera(),
+          listarEntregasFacturables(),
+        ]);
 
-        setCargando(false);
+
+      if (
+        resultados[0].status ===
+          "fulfilled"
+      ) {
+
+        setPedidos(
+          normalizarLista(
+            resultados[0].value,
+            [
+              "pedidos",
+            ]
+          )
+        );
 
       }
 
-    }
+
+      if (
+        resultados[1].status ===
+          "fulfilled"
+      ) {
+
+        setClientes(
+          normalizarLista(
+            resultados[1].value,
+            [
+              "clientes",
+            ]
+          )
+        );
+
+      }
 
 
-    cargarDashboard();
+      if (
+        resultados[2].status ===
+          "fulfilled"
+      ) {
 
-  }, []);
+        setProductos(
+          normalizarLista(
+            resultados[2].value,
+            [
+              "productos",
+            ]
+          )
+        );
 
-
-  /* =========================================
-     FECHA ACTUAL
-  ========================================= */
-
-  const hoy =
-    useMemo(() => {
-
-      const fecha =
-        new Date();
-
-      return {
-        inicio:
-          new Date(
-            fecha.getFullYear(),
-            fecha.getMonth(),
-            fecha.getDate()
-          ),
-
-        fin:
-          new Date(
-            fecha.getFullYear(),
-            fecha.getMonth(),
-            fecha.getDate(),
-            23,
-            59,
-            59,
-            999
-          ),
-      };
-
-    }, []);
+      }
 
 
-  /* =========================================
-     PEDIDOS DE HOY
-  ========================================= */
+      if (
+        resultados[3].status ===
+          "fulfilled"
+      ) {
 
-  const pedidosHoy =
-    useMemo(
-      () =>
-        pedidos.filter(
-          (pedido) => {
+        setCategorias(
+          normalizarLista(
+            resultados[3].value,
+            [
+              "categorias",
+            ]
+          )
+        );
 
-            if (!pedido.createdAt) {
-              return false;
-            }
-
-
-            const fecha =
-              new Date(
-                pedido.createdAt
-              );
+      }
 
 
-            return (
-              fecha >= hoy.inicio &&
-              fecha <= hoy.fin
-            );
+      if (
+        resultados[4].status ===
+          "fulfilled"
+      ) {
 
-          }
-        ),
+        setEntregas(
+          normalizarLista(
+            resultados[4].value,
+            [
+              "entregas",
+            ]
+          )
+        );
 
-      [
-        pedidos,
-        hoy,
-      ]
-    );
-
-
-  /* =========================================
-     FACTURAS VÁLIDAS DE HOY
-  ========================================= */
-
-  const facturasHoy =
-    useMemo(
-      () =>
-        facturas.filter(
-          (factura) => {
-
-            if (
-              !factura.createdAt ||
-              factura.estado ===
-                "Anulada"
-            ) {
-              return false;
-            }
+      }
 
 
-            const fecha =
-              new Date(
-                factura.createdAt
-              );
+      if (
+        resultados[5].status ===
+          "fulfilled"
+      ) {
+
+        setDatosCaja(
+          resultados[5].value ||
+          null
+        );
+
+      }
 
 
-            return (
-              fecha >= hoy.inicio &&
-              fecha <= hoy.fin
-            );
+      if (
+        resultados[6].status ===
+          "fulfilled"
+      ) {
 
-          }
-        ),
+        setMovimientosCaja(
+          normalizarLista(
+            resultados[6].value,
+            [
+              "movimientos",
+            ]
+          )
+        );
 
-      [
-        facturas,
-        hoy,
-      ]
-    );
-
-
-  /* =========================================
-     VENTAS DEL DÍA
-  ========================================= */
-
-  const ventasHoy =
-    useMemo(
-      () =>
-        facturasHoy.reduce(
-          (
-            total,
-            factura
-          ) =>
-            total +
-            Number(
-              factura.total || 0
-            ),
-
-          0
-        ),
-
-      [facturasHoy]
-    );
+      }
 
 
-  /* =========================================
-     VENTAS DE HOY POR TIPO DE PAGO
-  ========================================= */
+      if (
+        resultados[7].status ===
+          "fulfilled"
+      ) {
 
-  const ventasHoyPorPago =
-    useMemo(() => {
+        setCuentasCartera(
+          normalizarLista(
+            resultados[7].value,
+            [
+              "cuentas",
+              "cartera",
+            ]
+          )
+        );
 
-      const resultado = {
-        Efectivo: 0,
-        Transferencia: 0,
-        Crédito: 0,
-      };
+      }
 
 
-      facturasHoy.forEach(
-        (factura) => {
+      if (
+        resultados[8].status ===
+          "fulfilled"
+      ) {
 
-          const metodo =
-            factura.metodoPago ||
-            "Efectivo";
+        setResumenCartera(
+          resultados[8].value ||
+          {}
+        );
 
+      }
+
+
+      if (
+        resultados[9].status ===
+          "fulfilled"
+      ) {
+
+        setFacturables(
+          normalizarLista(
+            resultados[9].value,
+            [
+              "entregas",
+              "disponibles",
+            ]
+          )
+        );
+
+      }
+
+
+      resultados.forEach(
+        (
+          resultado,
+          index
+        ) => {
 
           if (
-            Object.prototype
-              .hasOwnProperty.call(
-                resultado,
-                metodo
-              )
+            resultado.status ===
+              "rejected"
           ) {
 
-            resultado[metodo] +=
-              Number(
-                factura.total || 0
-              );
+            console.warn(
+              `Dashboard: la consulta ${index + 1} no pudo cargarse.`,
+              resultado.reason
+            );
 
           }
 
@@ -449,72 +557,364 @@ export default function Dashboard() {
       );
 
 
-      return resultado;
+    } catch (error) {
 
-    }, [facturasHoy]);
+      console.error(
+        "Error cargando Dashboard:",
+        error
+      );
 
 
-  /* =========================================
-     ESTADOS
-  ========================================= */
+    } finally {
 
-  const pendientes =
-    pedidos.filter(
-      (pedido) =>
-        pedido.estado ===
+      setCargando(
+        false
+      );
+
+      setActualizando(
+        false
+      );
+
+    }
+
+  }
+
+
+  useEffect(
+    () => {
+
+      cargarDashboard();
+
+    },
+    []
+  );
+
+
+  const rangos =
+    useMemo(
+      () => {
+
+        const ahora =
+          new Date();
+
+
+        const inicioHoy =
+          new Date(
+            ahora.getFullYear(),
+            ahora.getMonth(),
+            ahora.getDate()
+          );
+
+
+        const finHoy =
+          new Date(
+            ahora.getFullYear(),
+            ahora.getMonth(),
+            ahora.getDate(),
+            23,
+            59,
+            59,
+            999
+          );
+
+
+        const inicioSemana =
+          new Date(
+            inicioHoy
+          );
+
+
+        inicioSemana.setDate(
+          inicioHoy.getDate() -
+          6
+        );
+
+
+        const inicioMes =
+          new Date(
+            ahora.getFullYear(),
+            ahora.getMonth(),
+            1
+          );
+
+
+        return {
+          ahora,
+          inicioHoy,
+          finHoy,
+          inicioSemana,
+          inicioMes,
+        };
+
+      },
+      []
+    );
+
+
+  const entregasCompletadas =
+    useMemo(
+      () =>
+        entregas.filter(
+          (
+            entrega
+          ) =>
+            entrega.estado ===
+            "Entregado"
+        ),
+      [
+        entregas,
+      ]
+    );
+
+
+  const entregasHoy =
+    useMemo(
+      () =>
+        entregasCompletadas.filter(
+          (
+            entrega
+          ) =>
+            estaEntre(
+              fechaEventoEntrega(
+                entrega
+              ),
+              rangos.inicioHoy,
+              rangos.finHoy
+            )
+        ),
+      [
+        entregasCompletadas,
+        rangos,
+      ]
+    );
+
+
+  const ventasHoy =
+    useMemo(
+      () =>
+        entregasHoy.reduce(
+          (
+            total,
+            entrega
+          ) =>
+            total +
+            Number(
+              entrega.total ||
+              0
+            ),
+          0
+        ),
+      [
+        entregasHoy,
+      ]
+    );
+
+
+  const ventasHoyPorPago =
+    useMemo(
+      () => {
+
+        const resultado = {
+          Efectivo: 0,
+          Transferencia: 0,
+          Crédito: 0,
+        };
+
+
+        entregasHoy.forEach(
+          (
+            entrega
+          ) => {
+
+            const metodo =
+              entrega.metodoPago ||
+              "Efectivo";
+
+
+            if (
+              Object.prototype
+                .hasOwnProperty.call(
+                  resultado,
+                  metodo
+                )
+            ) {
+
+              resultado[
+                metodo
+              ] +=
+                Number(
+                  entrega.total ||
+                  0
+                );
+
+            }
+
+          }
+        );
+
+
+        return resultado;
+
+      },
+      [
+        entregasHoy,
+      ]
+    );
+
+
+  const ventasSemana =
+    useMemo(
+      () =>
+        entregasCompletadas
+          .filter(
+            (
+              entrega
+            ) =>
+              estaEntre(
+                fechaEventoEntrega(
+                  entrega
+                ),
+                rangos.inicioSemana,
+                rangos.finHoy
+              )
+          )
+          .reduce(
+            (
+              total,
+              entrega
+            ) =>
+              total +
+              Number(
+                entrega.total ||
+                0
+              ),
+            0
+          ),
+      [
+        entregasCompletadas,
+        rangos,
+      ]
+    );
+
+
+  const ventasMes =
+    useMemo(
+      () =>
+        entregasCompletadas
+          .filter(
+            (
+              entrega
+            ) =>
+              estaEntre(
+                fechaEventoEntrega(
+                  entrega
+                ),
+                rangos.inicioMes,
+                rangos.finHoy
+              )
+          )
+          .reduce(
+            (
+              total,
+              entrega
+            ) =>
+              total +
+              Number(
+                entrega.total ||
+                0
+              ),
+            0
+          ),
+      [
+        entregasCompletadas,
+        rangos,
+      ]
+    );
+
+
+  const entregasPorPreparar =
+    entregas.filter(
+      (
+        entrega
+      ) =>
+        entrega.estado ===
+        "Por preparar"
+    ).length;
+
+
+  const entregasPendientes =
+    entregas.filter(
+      (
+        entrega
+      ) =>
+        entrega.estado ===
         "Pendiente"
     ).length;
 
 
-  const preparacion =
+  const entregasEnRuta =
+    entregas.filter(
+      (
+        entrega
+      ) =>
+        entrega.estado ===
+        "En ruta"
+    ).length;
+
+
+  const totalPorEntregar =
+    entregasPorPreparar +
+    entregasPendientes +
+    entregasEnRuta;
+
+
+  const pedidosBorrador =
     pedidos.filter(
-      (pedido) =>
+      (
+        pedido
+      ) =>
+        pedido.estado ===
+        "Borrador"
+    ).length;
+
+
+  const pedidosPreparacion =
+    pedidos.filter(
+      (
+        pedido
+      ) =>
         pedido.estado ===
         "En preparación"
     ).length;
 
 
-  const enRuta =
+  const pedidosListos =
     pedidos.filter(
-      (pedido) =>
+      (
+        pedido
+      ) =>
         pedido.estado ===
-        "En ruta"
+        "Listo para entrega"
     ).length;
 
-
-  const entregadosHoy =
-    pedidosHoy.filter(
-      (pedido) =>
-        pedido.estado ===
-        "Entregado"
-    ).length;
-
-
-  const porEntregar =
-    pendientes +
-    preparacion +
-    enRuta;
-
-
-  /* =========================================
-     CLIENTES ACTIVOS
-  ========================================= */
 
   const clientesActivos =
     clientes.filter(
-      (cliente) =>
-        cliente.estado !== false &&
-        cliente.estado !== "Inactivo"
+      (
+        cliente
+      ) =>
+        cliente.estado !==
+          false &&
+        cliente.estado !==
+          "Inactivo"
     ).length;
 
 
-  /* =========================================
-     PRODUCTOS ACTIVOS
-  ========================================= */
-
   const productosActivos =
     productos.filter(
-      (producto) =>
+      (
+        producto
+      ) =>
         producto.estado ===
           "Activo" ||
         producto.estado ===
@@ -522,22 +922,23 @@ export default function Dashboard() {
     );
 
 
-  /* =========================================
-     STOCK BAJO
-  ========================================= */
-
   const stockBajo =
     productosActivos.filter(
-      (producto) => {
+      (
+        producto
+      ) => {
 
         const stock =
           Number(
-            producto.stock || 0
+            producto.stock ||
+            0
           );
+
 
         const minimo =
           Number(
-            producto.stockMinimo || 0
+            producto.stockMinimo ||
+            0
           );
 
 
@@ -550,1118 +951,1271 @@ export default function Dashboard() {
     ).length;
 
 
-  /* =========================================
-     PEDIDOS RECIENTES
-  ========================================= */
+  const saldoCartera =
+    Number(
+      resumenCartera
+        ?.saldoPendiente ??
+      cuentasCartera.reduce(
+        (
+          total,
+          cuenta
+        ) =>
+          total +
+          Number(
+            cuenta.saldoPendiente ||
+            0
+          ),
+        0
+      )
+    );
+
+
+  const totalAbonadoCartera =
+    Number(
+      resumenCartera
+        ?.totalAbonado ??
+      cuentasCartera.reduce(
+        (
+          total,
+          cuenta
+        ) =>
+          total +
+          Number(
+            cuenta.totalAbonado ||
+            0
+          ),
+        0
+      )
+    );
+
+
+  const carteraVencida =
+    useMemo(
+      () => {
+
+        const vencidas =
+          cuentasCartera.filter(
+            (
+              cuenta
+            ) => {
+
+              if (
+                Number(
+                  cuenta.saldoPendiente ||
+                  0
+                ) <= 0 ||
+                !cuenta.fechaVencimiento
+              ) {
+                return false;
+              }
+
+
+              const fecha =
+                new Date(
+                  cuenta.fechaVencimiento
+                );
+
+
+              if (
+                Number.isNaN(
+                  fecha.getTime()
+                )
+              ) {
+                return false;
+              }
+
+
+              fecha.setHours(
+                0,
+                0,
+                0,
+                0
+              );
+
+
+              return (
+                fecha <
+                rangos.inicioHoy
+              );
+
+            }
+          );
+
+
+        return {
+          cantidad:
+            vencidas.length,
+
+          valor:
+            vencidas.reduce(
+              (
+                total,
+                cuenta
+              ) =>
+                total +
+                Number(
+                  cuenta.saldoPendiente ||
+                  0
+                ),
+              0
+            ),
+        };
+
+      },
+      [
+        cuentasCartera,
+        rangos,
+      ]
+    );
+
+
+  const cajaAbierta =
+    Boolean(
+      datosCaja?.abierta
+    );
+
+
+  const cajaActual =
+    datosCaja?.caja ||
+    null;
+
+
+  const resumenCaja =
+    datosCaja?.resumen ||
+    {};
+
+
+  const movimientosHoy =
+    useMemo(
+      () =>
+        movimientosCaja
+          .filter(
+            (
+              movimiento
+            ) =>
+              estaEntre(
+                movimiento.createdAt,
+                rangos.inicioHoy,
+                rangos.finHoy
+              )
+          )
+          .sort(
+            (
+              a,
+              b
+            ) =>
+              new Date(
+                b.createdAt ||
+                0
+              ) -
+              new Date(
+                a.createdAt ||
+                0
+              )
+          ),
+      [
+        movimientosCaja,
+        rangos,
+      ]
+    );
+
+
+  const movimientosRecientes =
+    movimientosHoy.slice(
+      0,
+      6
+    );
+
 
   const pedidosRecientes =
     useMemo(
       () =>
-        [...pedidos]
+        [
+          ...pedidos,
+        ]
           .sort(
-            (a, b) =>
+            (
+              a,
+              b
+            ) =>
               new Date(
-                b.createdAt || 0
+                b.createdAt ||
+                0
               ) -
               new Date(
-                a.createdAt || 0
+                a.createdAt ||
+                0
               )
           )
           .slice(
             0,
             6
           ),
-
-      [pedidos]
+      [
+        pedidos,
+      ]
     );
 
 
-  /* =========================================
-     SEMANA
-  ========================================= */
+  const creditosHoy =
+    entregasHoy.filter(
+      (
+        entrega
+      ) =>
+        entrega.metodoPago ===
+        "Crédito"
+    ).length;
 
-  const ventasSemana =
-    useMemo(() => {
-
-      const ahora =
-        new Date();
-
-
-      const inicio =
-        new Date(
-          ahora.getFullYear(),
-          ahora.getMonth(),
-          ahora.getDate() - 6
-        );
-
-
-      inicio.setHours(
-        0,
-        0,
-        0,
-        0
-      );
-
-
-      return facturas
-        .filter(
-          (factura) => {
-
-            if (
-              !factura.createdAt ||
-              factura.estado ===
-                "Anulada"
-            ) {
-              return false;
-            }
-
-
-            return (
-              new Date(
-                factura.createdAt
-              ) >= inicio
-            );
-
-          }
-        )
-        .reduce(
-          (
-            total,
-            factura
-          ) =>
-            total +
-            Number(
-              factura.total || 0
-            ),
-
-          0
-        );
-
-    }, [facturas]);
-
-
-  /* =========================================
-     MES
-  ========================================= */
-
-  const ventasMes =
-    useMemo(() => {
-
-      const ahora =
-        new Date();
-
-
-      return facturas
-        .filter(
-          (factura) => {
-
-            if (
-              !factura.createdAt ||
-              factura.estado ===
-                "Anulada"
-            ) {
-              return false;
-            }
-
-
-            const fecha =
-              new Date(
-                factura.createdAt
-              );
-
-
-            return (
-              fecha.getMonth() ===
-                ahora.getMonth() &&
-              fecha.getFullYear() ===
-                ahora.getFullYear()
-            );
-
-          }
-        )
-        .reduce(
-          (
-            total,
-            factura
-          ) =>
-            total +
-            Number(
-              factura.total || 0
-            ),
-
-          0
-        );
-
-    }, [facturas]);
-
-
-  /* =========================================
-     BÚSQUEDA GLOBAL
-  ========================================= */
-
-  const resultadosBusqueda =
-    useMemo(() => {
-
-      const texto =
-        textoBuscar
-          .trim()
-          .toLowerCase();
-
-      if (!texto) {
-        return [];
-      }
-
-
-      const resultados = [];
-
-
-      clientes.forEach(
-        (cliente) => {
-
-          const nombre =
-            String(
-              cliente.nombre ||
-              `${cliente.nombres || ""} ${cliente.apellidos || ""}`
-            )
-              .trim()
-              .toLowerCase();
-
-          const documento =
-            String(
-              cliente.documento || ""
-            ).toLowerCase();
-
-          if (
-            nombre.includes(texto) ||
-            documento.includes(texto)
-          ) {
-
-            resultados.push({
-              id: `cliente-${cliente._id}`,
-              tipo: "Cliente",
-              titulo:
-                cliente.nombre ||
-                `${cliente.nombres || ""} ${cliente.apellidos || ""}`.trim() ||
-                "Cliente",
-              detalle:
-                cliente.documento
-                  ? `Documento: ${cliente.documento}`
-                  : "Cliente registrado",
-              ruta: "/clientes",
-            });
-
-          }
-
-        }
-      );
-
-
-      productos.forEach(
-        (producto) => {
-
-          const codigo =
-            String(
-              producto.codigo || ""
-            ).toLowerCase();
-
-          const nombre =
-            String(
-              producto.nombre || ""
-            ).toLowerCase();
-
-          if (
-            codigo.includes(texto) ||
-            nombre.includes(texto)
-          ) {
-
-            resultados.push({
-              id: `producto-${producto._id}`,
-              tipo: "Producto",
-              titulo:
-                producto.nombre ||
-                "Producto",
-              detalle:
-                producto.codigo
-                  ? `Código: ${producto.codigo}`
-                  : "Producto registrado",
-              ruta: "/productos",
-            });
-
-          }
-
-        }
-      );
-
-
-      pedidos.forEach(
-        (pedido) => {
-
-          const codigo =
-            String(
-              pedido.codigo || ""
-            ).toLowerCase();
-
-          const cliente =
-            String(
-              pedido.cliente?.nombre ||
-              pedido.cliente?.nombres ||
-              ""
-            ).toLowerCase();
-
-          if (
-            codigo.includes(texto) ||
-            cliente.includes(texto)
-          ) {
-
-            resultados.push({
-              id: `pedido-${pedido._id}`,
-              tipo: "Pedido",
-              titulo:
-                pedido.codigo ||
-                "Pedido",
-              detalle:
-                pedido.cliente?.nombre ||
-                pedido.cliente?.nombres ||
-                pedido.estado ||
-                "Pedido registrado",
-              ruta: "/pedidos",
-            });
-
-          }
-
-        }
-      );
-
-
-      categorias.forEach(
-        (categoria) => {
-
-          const nombre =
-            String(
-              categoria.nombre || ""
-            ).toLowerCase();
-
-          if (
-            nombre.includes(texto)
-          ) {
-
-            resultados.push({
-              id: `categoria-${categoria._id}`,
-              tipo: "Categoría",
-              titulo:
-                categoria.nombre ||
-                "Categoría",
-              detalle:
-                categoria.estado ||
-                "Categoría registrada",
-              ruta: "/categorias",
-            });
-
-          }
-
-        }
-      );
-
-
-      return resultados.slice(
-        0,
-        30
-      );
-
-    }, [
-      textoBuscar,
-      clientes,
-      productos,
-      pedidos,
-      categorias,
-    ]);
-
-
-  function abrirBuscarGlobal() {
-
-    setTextoBuscar("");
-    setBuscarAbierto(true);
-
-  }
-
-
-  function irAResultado(
-    resultado
-  ) {
-
-    setBuscarAbierto(false);
-    setTextoBuscar("");
-
-    navigate(
-      resultado.ruta
-    );
-
-  }
-
-
-  /* =========================================
-     RENDER
-  ========================================= */
 
   return (
 
     <section className="dashboard-page">
 
+      <header className="dashboard-title-bar">
 
-        {/* CABECERA */}
+        <div className="dashboard-title-left">
 
-        <div className="dashboard-title-bar">
+          <ModulosMenu />
 
-          <div className="dashboard-title-left">
+          <div className="dashboard-title-info">
+            <h2>
+              Dashboard
+            </h2>
 
-            <ModulosMenu />
-
-            <div className="dashboard-title-info">
-
-              <h2>
-                Dashboard
-              </h2>
-
-            </div>
-
-          </div>
-
-
-          <div className="dashboard-title-actions">
-
-            <button
-              type="button"
-              className="dashboard-search-btn"
-              onClick={abrirBuscarGlobal}
-              aria-label="Buscar"
-              data-tooltip="Buscar"
-            >
-              <img
-                src={buscarIcon}
-                alt=""
-              />
-            </button>
-
-
-            <div className="dashboard-date">
-
-              {new Date()
-                .toLocaleDateString(
-                  "es-CO",
-                  {
-                    weekday:
-                      "long",
-                    day:
-                      "numeric",
-                    month:
-                      "long",
-                    year:
-                      "numeric",
-                  }
-                )}
-
-            </div>
-
+            <span>
+              Resumen operativo de WebBuys
+            </span>
           </div>
 
         </div>
 
 
-        {/* CONTENIDO */}
+        <div className="dashboard-title-actions">
 
-        <div className="dashboard-content">
-
-
-          {cargando ? (
-
-            <div className="dashboard-loading">
-
-              Cargando información...
-
-            </div>
-
-          ) : (
-
-            <>
-
-
-              {/* ==========================
-                  MÉTRICAS PRINCIPALES
-              ========================== */}
-
-              <section className="dashboard-metrics">
+          <button
+            type="button"
+            className="dashboard-refresh-btn"
+            onClick={() =>
+              cargarDashboard(
+                false
+              )
+            }
+            disabled={
+              actualizando
+            }
+          >
+            {actualizando
+              ? "Actualizando..."
+              : "Actualizar"}
+          </button>
 
 
-                <button
-                  type="button"
-                  className="dashboard-metric"
-                  onClick={() =>
-                    navigate(
-                      "/pedidos"
-                    )
-                  }
-                >
+          <div className="dashboard-date">
 
-                  <span>
-                    Pedidos hoy
-                  </span>
+            {new Date()
+              .toLocaleDateString(
+                "es-CO",
+                {
+                  weekday:
+                    "long",
+                  day:
+                    "numeric",
+                  month:
+                    "long",
+                  year:
+                    "numeric",
+                }
+              )}
 
-                  <strong>
-                    {
-                      pedidosHoy.length
+          </div>
+
+        </div>
+
+      </header>
+
+
+      <main className="dashboard-content">
+
+        {cargando ? (
+
+          <div className="dashboard-loading">
+            Cargando información del sistema...
+          </div>
+
+        ) : (
+
+          <>
+
+            <section className="dashboard-metrics">
+
+              <button
+                type="button"
+                className="dashboard-metric dashboard-metric-sales"
+                onClick={() =>
+                  navigate(
+                    "/caja"
+                  )
+                }
+              >
+                <span>
+                  Ventas hoy
+                </span>
+
+                <strong>
+                  {moneda(
+                    ventasHoy
+                  )}
+                </strong>
+
+                <small>
+                  {entregasHoy.length} venta(s) entregada(s)
+                </small>
+              </button>
+
+
+              <button
+                type="button"
+                className="dashboard-metric dashboard-metric-delivery"
+                onClick={() =>
+                  navigate(
+                    "/entregas"
+                  )
+                }
+              >
+                <span>
+                  Entregas
+                </span>
+
+                <strong>
+                  {totalPorEntregar}
+                </strong>
+
+                <small>
+                  {entregasHoy.length} entregada(s) hoy
+                </small>
+              </button>
+
+
+              <button
+                type="button"
+                className={
+                  `dashboard-metric dashboard-metric-wallet ${
+                    carteraVencida
+                      .cantidad >
+                    0
+                      ? "dashboard-metric-alert"
+                      : ""
+                  }`
+                }
+                onClick={() =>
+                  navigate(
+                    "/cartera"
+                  )
+                }
+              >
+                <span>
+                  Cartera por cobrar
+                </span>
+
+                <strong>
+                  {moneda(
+                    saldoCartera
+                  )}
+                </strong>
+
+                <small>
+                  {carteraVencida.cantidad} cuenta(s) vencida(s)
+                </small>
+              </button>
+
+
+              <button
+                type="button"
+                className={
+                  `dashboard-metric dashboard-metric-cash ${
+                    cajaAbierta
+                      ? "dashboard-metric-open"
+                      : "dashboard-metric-closed"
+                  }`
+                }
+                onClick={() =>
+                  navigate(
+                    "/caja"
+                  )
+                }
+              >
+                <span>
+                  Caja
+                </span>
+
+                <strong className="dashboard-cash-state">
+                  {cajaAbierta
+                    ? "ABIERTA"
+                    : "CERRADA"}
+                </strong>
+
+                <small>
+                  {cajaAbierta
+                    ? `${cajaActual?.codigo || "Caja"} · ${moneda(
+                        resumenCaja
+                          .saldoActual
+                      )}`
+                    : "Abrir caja para registrar ventas"}
+                </small>
+              </button>
+
+            </section>
+
+
+            <section className="dashboard-alerts">
+
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(
+                    "/facturacion"
+                  )
+                }
+              >
+                <span>
+                  Facturación pendiente
+                </span>
+
+                <strong>
+                  {facturables.length}
+                </strong>
+
+                <small>
+                  Entregas disponibles para facturar
+                </small>
+              </button>
+
+
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(
+                    "/cartera"
+                  )
+                }
+                className={
+                  carteraVencida
+                    .cantidad >
+                  0
+                    ? "warning"
+                    : ""
+                }
+              >
+                <span>
+                  Cartera vencida
+                </span>
+
+                <strong>
+                  {moneda(
+                    carteraVencida.valor
+                  )}
+                </strong>
+
+                <small>
+                  {carteraVencida.cantidad} cuenta(s)
+                </small>
+              </button>
+
+
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(
+                    "/cartera"
+                  )
+                }
+              >
+                <span>
+                  Créditos hoy
+                </span>
+
+                <strong>
+                  {creditosHoy}
+                </strong>
+
+                <small>
+                  {moneda(
+                    ventasHoyPorPago[
+                      "Crédito"
+                    ]
+                  )}
+                </small>
+              </button>
+
+
+              <button
+                type="button"
+                onClick={() =>
+                  navigate(
+                    "/productos"
+                  )
+                }
+                className={
+                  stockBajo >
+                  0
+                    ? "warning"
+                    : ""
+                }
+              >
+                <span>
+                  Stock bajo
+                </span>
+
+                <strong>
+                  {stockBajo}
+                </strong>
+
+                <small>
+                  Producto(s) por revisar
+                </small>
+              </button>
+
+            </section>
+
+
+            <section className="dashboard-grid">
+
+              <article className="dashboard-panel dashboard-recent">
+
+                <header className="dashboard-panel-header">
+
+                  <div>
+                    <h3>
+                      Pedidos recientes
+                    </h3>
+
+                    <span>
+                      Últimos movimientos de Pedidos
+                    </span>
+                  </div>
+
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        "/pedidos"
+                      )
                     }
-                  </strong>
+                  >
+                    Ver pedidos
+                  </button>
 
-                  <small>
-                    Pedidos registrados hoy
-                  </small>
-
-                </button>
+                </header>
 
 
-                <button
-                  type="button"
-                  className="dashboard-metric dashboard-metric-primary"
-                  onClick={() =>
-                    navigate(
-                      "/pedidos"
-                    )
-                  }
-                >
+                <div className="dashboard-recent-list">
 
-                  <span>
-                    Ventas hoy
-                  </span>
+                  {pedidosRecientes.length ===
+                  0 ? (
 
-                  <strong>
-                    {moneda(
-                      ventasHoy
-                    )}
-                  </strong>
-
-                  <small>
-                    Facturas emitidas hoy
-                  </small>
-
-                </button>
-
-
-                <button
-                  type="button"
-                  className="dashboard-metric"
-                  onClick={() =>
-                    navigate(
-                      "/pedidos"
-                    )
-                  }
-                >
-
-                  <span>
-                    Por entregar
-                  </span>
-
-                  <strong>
-                    {
-                      porEntregar
-                    }
-                  </strong>
-
-                  <small>
-                    Pendientes, preparación y ruta
-                  </small>
-
-                </button>
-
-
-                <button
-                  type="button"
-                  className="dashboard-metric"
-                  onClick={() =>
-                    navigate(
-                      "/clientes"
-                    )
-                  }
-                >
-
-                  <span>
-                    Clientes
-                  </span>
-
-                  <strong>
-                    {
-                      clientesActivos
-                    }
-                  </strong>
-
-                  <small>
-                    Clientes activos
-                  </small>
-
-                </button>
-
-              </section>
-
-
-              {/* ==========================
-                  ZONA PRINCIPAL
-              ========================== */}
-
-              <section className="dashboard-grid">
-
-
-                {/* PEDIDOS RECIENTES */}
-
-                <article className="dashboard-panel dashboard-recent">
-
-                  <header className="dashboard-panel-header">
-
-                    <div>
-
-                      <h3>
-                        Pedidos recientes
-                      </h3>
-
-                      <span>
-                        Últimos movimientos
-                      </span>
-
+                    <div className="dashboard-empty">
+                      No hay pedidos registrados.
                     </div>
 
+                  ) : (
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        navigate(
-                          "/pedidos"
-                        )
-                      }
-                    >
-                      Ver pedidos
-                    </button>
+                    pedidosRecientes.map(
+                      (
+                        pedido
+                      ) => (
 
-                  </header>
+                        <div
+                          key={
+                            pedido._id
+                          }
+                          className="dashboard-order"
+                          onDoubleClick={() =>
+                            navigate(
+                              "/pedidos"
+                            )
+                          }
+                        >
 
+                          <div className="dashboard-order-code">
 
-                  <div className="dashboard-recent-list">
-
-
-                    {pedidosRecientes.length ===
-                    0 ? (
-
-                      <div className="dashboard-empty">
-
-                        No hay pedidos registrados.
-
-                      </div>
-
-                    ) : (
-
-                      pedidosRecientes.map(
-                        (pedido) => (
-
-                          <div
-                            key={
-                              pedido._id
-                            }
-                            className="dashboard-order"
-                          >
-
-                            <div className="dashboard-order-code">
-
-                              <strong>
-                                {pedido.codigo ||
-                                  "Pedido"}
-                              </strong>
-
-                              <span>
-
-                                {pedido.createdAt
-                                  ? new Date(
-                                      pedido.createdAt
-                                    )
-                                      .toLocaleDateString(
-                                        "es-CO"
-                                      )
-                                  : ""}
-
-                              </span>
-
-                            </div>
-
-
-                            <div className="dashboard-order-client">
-
-                              <strong>
-
-                                {pedido.cliente
-                                  ?.nombre ||
-                                  "Cliente"}
-
-                              </strong>
-
-                              <span>
-
-                                {pedido.items
-                                  ?.length ||
-                                  0}
-
-                                {" "}
-
-                                producto(s)
-
-                              </span>
-
-                            </div>
-
-
-                            <span
-                              className={`dashboard-order-status dashboard-status-${String(
-                                pedido.estado ||
-                                  ""
-                              )
-                                .toLowerCase()
-                                .replaceAll(
-                                  " ",
-                                  "-"
-                                )
-                                .normalize(
-                                  "NFD"
-                                )
-                                .replace(
-                                  /[\u0300-\u036f]/g,
-                                  ""
-                                )}`}
-                            >
-
-                              {pedido.estado}
-
-                            </span>
-
-
-                            <strong className="dashboard-order-total">
-
-                              {moneda(
-                                pedido.total
-                              )}
-
+                            <strong>
+                              {pedido.codigo ||
+                                "Pedido"}
                             </strong>
+
+                            <span>
+                              {fechaCorta(
+                                pedido.createdAt
+                              )}
+                            </span>
 
                           </div>
 
-                        )
+
+                          <div className="dashboard-order-client">
+
+                            <strong>
+                              {pedido.cliente
+                                ?.nombre ||
+                                pedido.cliente
+                                  ?.nombres ||
+                                "Sin cliente"}
+                            </strong>
+
+                            <span>
+                              {pedido.items
+                                ?.length ||
+                                0} producto(s)
+                            </span>
+
+                          </div>
+
+
+                          <span
+                            className={
+                              `dashboard-order-status dashboard-status-${claseEstado(
+                                pedido.estado
+                              )}`
+                            }
+                          >
+                            {pedido.estado ||
+                              "Sin estado"}
+                          </span>
+
+
+                          <strong className="dashboard-order-total">
+                            {moneda(
+                              pedido.total
+                            )}
+                          </strong>
+
+                        </div>
+
                       )
+                    )
 
-                    )}
+                  )}
 
+                </div>
+
+              </article>
+
+
+              <article className="dashboard-panel">
+
+                <header className="dashboard-panel-header">
+                  <div>
+                    <h3>
+                      Estado de pedidos
+                    </h3>
+
+                    <span>
+                      Flujo actual de preparación
+                    </span>
+                  </div>
+                </header>
+
+
+                <div className="dashboard-status-list dashboard-status-pedidos">
+
+                  <div>
+                    <span>
+                      Borradores
+                    </span>
+
+                    <strong>
+                      {pedidosBorrador}
+                    </strong>
                   </div>
 
-                </article>
 
+                  <div>
+                    <span>
+                      En preparación
+                    </span>
 
-                {/* ESTADO PEDIDOS */}
-
-                <article className="dashboard-panel">
-
-                  <header className="dashboard-panel-header">
-
-                    <div>
-
-                      <h3>
-                        Estado de pedidos
-                      </h3>
-
-                      <span>
-                        Pedidos actuales
-                      </span>
-
-                    </div>
-
-                  </header>
-
-
-                  <div className="dashboard-status-list">
-
-
-                    <div>
-
-                      <span>
-                        Pendientes
-                      </span>
-
-                      <strong>
-                        {pendientes}
-                      </strong>
-
-                    </div>
-
-
-                    <div>
-
-                      <span>
-                        En preparación
-                      </span>
-
-                      <strong>
-                        {preparacion}
-                      </strong>
-
-                    </div>
-
-
-                    <div>
-
-                      <span>
-                        En ruta
-                      </span>
-
-                      <strong>
-                        {enRuta}
-                      </strong>
-
-                    </div>
-
-
-                    <div>
-
-                      <span>
-                        Entregados hoy
-                      </span>
-
-                      <strong>
-                        {entregadosHoy}
-                      </strong>
-
-                    </div>
-
+                    <strong>
+                      {pedidosPreparacion}
+                    </strong>
                   </div>
 
-                </article>
 
+                  <div>
+                    <span>
+                      Listos para entrega
+                    </span>
 
-                {/* RESUMEN VENTAS */}
-
-                <article className="dashboard-panel">
-
-                  <header className="dashboard-panel-header">
-
-                    <div>
-
-                      <h3>
-                        Resumen de ventas
-                      </h3>
-
-                      <span>
-                        Movimiento comercial
-                      </span>
-
-                    </div>
-
-                  </header>
-
-
-                  <div className="dashboard-sales-list">
-
-
-                    <div>
-
-                      <span>
-                        Hoy
-                      </span>
-
-                      <strong>
-                        {moneda(
-                          ventasHoy
-                        )}
-                      </strong>
-
-                    </div>
-
-
-                    <div>
-
-                      <span>
-                        Últimos 7 días
-                      </span>
-
-                      <strong>
-                        {moneda(
-                          ventasSemana
-                        )}
-                      </strong>
-
-                    </div>
-
-
-                    <div>
-
-                      <span>
-                        Este mes
-                      </span>
-
-                      <strong>
-                        {moneda(
-                          ventasMes
-                        )}
-                      </strong>
-
-                    </div>
-
-
-                    <div className="dashboard-sales-payment">
-
-                      <span>
-                        Efectivo hoy
-                      </span>
-
-                      <strong>
-                        {moneda(
-                          ventasHoyPorPago
-                            .Efectivo
-                        )}
-                      </strong>
-
-                    </div>
-
-
-                    <div className="dashboard-sales-payment">
-
-                      <span>
-                        Transferencia hoy
-                      </span>
-
-                      <strong>
-                        {moneda(
-                          ventasHoyPorPago
-                            .Transferencia
-                        )}
-                      </strong>
-
-                    </div>
-
-
-                    <div className="dashboard-sales-payment">
-
-                      <span>
-                        Crédito hoy
-                      </span>
-
-                      <strong>
-                        {moneda(
-                          ventasHoyPorPago[
-                            "Crédito"
-                          ]
-                        )}
-                      </strong>
-
-                    </div>
-
+                    <strong>
+                      {pedidosListos}
+                    </strong>
                   </div>
 
-                </article>
+                </div>
+
+              </article>
 
 
-                {/* INVENTARIO */}
+              <article className="dashboard-panel">
 
-                <article className="dashboard-panel">
+                <header className="dashboard-panel-header">
 
-                  <header className="dashboard-panel-header">
+                  <div>
+                    <h3>
+                      Estado de entregas
+                    </h3>
 
-                    <div>
-
-                      <h3>
-                        Inventario
-                      </h3>
-
-                      <span>
-                        Estado general
-                      </span>
-
-                    </div>
+                    <span>
+                      Operación de despacho
+                    </span>
+                  </div>
 
 
-                    <button
-                      type="button"
-                      onClick={() =>
-                        navigate(
-                          "/productos"
-                        )
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        "/entregas"
+                      )
+                    }
+                  >
+                    Ver entrega
+                  </button>
+
+                </header>
+
+
+                <div className="dashboard-status-list dashboard-status-entregas">
+
+                  <div>
+                    <span>
+                      Por preparar
+                    </span>
+
+                    <strong>
+                      {entregasPorPreparar}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Pendientes
+                    </span>
+
+                    <strong>
+                      {entregasPendientes}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      En ruta
+                    </span>
+
+                    <strong>
+                      {entregasEnRuta}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Entregados hoy
+                    </span>
+
+                    <strong>
+                      {entregasHoy.length}
+                    </strong>
+                  </div>
+
+                </div>
+
+              </article>
+
+
+              <article className="dashboard-panel">
+
+                <header className="dashboard-panel-header">
+
+                  <div>
+                    <h3>
+                      Ventas reales
+                    </h3>
+
+                    <span>
+                      Calculadas desde Entrega
+                    </span>
+                  </div>
+
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        "/caja"
+                      )
+                    }
+                  >
+                    Ver caja
+                  </button>
+
+                </header>
+
+
+                <div className="dashboard-sales-list">
+
+                  <div>
+                    <span>
+                      Hoy
+                    </span>
+
+                    <strong>
+                      {moneda(
+                        ventasHoy
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Últimos 7 días
+                    </span>
+
+                    <strong>
+                      {moneda(
+                        ventasSemana
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Este mes
+                    </span>
+
+                    <strong>
+                      {moneda(
+                        ventasMes
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div className="dashboard-sales-payment">
+                    <span>
+                      Efectivo hoy
+                    </span>
+
+                    <strong>
+                      {moneda(
+                        ventasHoyPorPago
+                          .Efectivo
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div className="dashboard-sales-payment">
+                    <span>
+                      Transferencia hoy
+                    </span>
+
+                    <strong>
+                      {moneda(
+                        ventasHoyPorPago
+                          .Transferencia
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div className="dashboard-sales-payment">
+                    <span>
+                      Crédito hoy
+                    </span>
+
+                    <strong>
+                      {moneda(
+                        ventasHoyPorPago[
+                          "Crédito"
+                        ]
+                      )}
+                    </strong>
+                  </div>
+
+                </div>
+
+              </article>
+
+
+              <article className="dashboard-panel">
+
+                <header className="dashboard-panel-header">
+
+                  <div>
+                    <h3>
+                      Cartera
+                    </h3>
+
+                    <span>
+                      Créditos y recaudo
+                    </span>
+                  </div>
+
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        "/cartera"
+                      )
+                    }
+                  >
+                    Ver cartera
+                  </button>
+
+                </header>
+
+
+                <div className="dashboard-wallet-list">
+
+                  <div>
+                    <span>
+                      Saldo por cobrar
+                    </span>
+
+                    <strong>
+                      {moneda(
+                        saldoCartera
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Total abonado
+                    </span>
+
+                    <strong>
+                      {moneda(
+                        totalAbonadoCartera
+                      )}
+                    </strong>
+                  </div>
+
+
+                  <div
+                    className={
+                      carteraVencida
+                        .cantidad >
+                      0
+                        ? "warning"
+                        : ""
+                    }
+                  >
+                    <span>
+                      Vencida
+                    </span>
+
+                    <strong>
+                      {moneda(
+                        carteraVencida.valor
+                      )}
+                    </strong>
+
+                    <small>
+                      {carteraVencida.cantidad} cuenta(s)
+                    </small>
+                  </div>
+
+
+                  <div>
+                    <span>
+                      Cuentas activas
+                    </span>
+
+                    <strong>
+                      {resumenCartera
+                        ?.pendientes ??
+                        cuentasCartera
+                          .filter(
+                            (
+                              cuenta
+                            ) =>
+                              Number(
+                                cuenta.saldoPendiente ||
+                                0
+                              ) >
+                              0
+                          )
+                          .length}
+                    </strong>
+                  </div>
+
+                </div>
+
+              </article>
+
+
+              <article className="dashboard-panel">
+
+                <header className="dashboard-panel-header">
+
+                  <div>
+                    <h3>
+                      Caja de hoy
+                    </h3>
+
+                    <span>
+                      Estado y movimientos recientes
+                    </span>
+                  </div>
+
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        "/caja"
+                      )
+                    }
+                  >
+                    Ver caja
+                  </button>
+
+                </header>
+
+
+                <div className="dashboard-cash-summary">
+
+                  <div>
+                    <span>
+                      Estado
+                    </span>
+
+                    <strong
+                      className={
+                        cajaAbierta
+                          ? "open"
+                          : "closed"
                       }
                     >
-                      Ver productos
-                    </button>
-
-                  </header>
-
-
-                  <div className="dashboard-inventory-list">
-
-
-                    <div>
-
-                      <span>
-                        Productos activos
-                      </span>
-
-                      <strong>
-                        {
-                          productosActivos
-                            .length
-                        }
-                      </strong>
-
-                    </div>
-
-
-                    <div>
-
-                      <span>
-                        Stock bajo
-                      </span>
-
-                      <strong>
-                        {
-                          stockBajo
-                        }
-                      </strong>
-
-                    </div>
-
-
-                    <div>
-
-                      <span>
-                        Categorías
-                      </span>
-
-                      <strong>
-                        {
-                          categorias.length
-                        }
-                      </strong>
-
-                    </div>
-
+                      {cajaAbierta
+                        ? "Abierta"
+                        : "Cerrada"}
+                    </strong>
                   </div>
 
-                </article>
+
+                  <div>
+                    <span>
+                      Código
+                    </span>
+
+                    <strong>
+                      {cajaActual?.codigo ||
+                        "—"}
+                    </strong>
+                  </div>
 
 
-              </section>
+                  <div>
+                    <span>
+                      Efectivo esperado
+                    </span>
 
-            </>
-
-          )}
-
-        </div>
-
-
-        {/* MODAL BUSCAR GLOBAL */}
-
-        {buscarAbierto && (
-
-          <div className="dashboard-search-overlay">
-
-            <div className="dashboard-search-modal">
-
-              <div className="dashboard-search-header">
-
-                <h3>
-                  Buscar en WebBuys
-                </h3>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setBuscarAbierto(false)
-                  }
-                >
-                  <img
-                    src={cerrarIcon}
-                    alt=""
-                  />
-                </button>
-
-              </div>
+                    <strong>
+                      {moneda(
+                        resumenCaja
+                          .saldoActual
+                      )}
+                    </strong>
+                  </div>
 
 
-              <div className="dashboard-search-box">
+                  <div>
+                    <span>
+                      Ventas en caja
+                    </span>
 
-                <img
-                  src={buscarIcon}
-                  alt=""
-                />
+                    <strong>
+                      {moneda(
+                        resumenCaja
+                          .totalVentasEntregadas
+                      )}
+                    </strong>
+                  </div>
 
-                <input
-                  type="text"
-                  value={textoBuscar}
-                  onChange={(event) =>
-                    setTextoBuscar(
-                      event.target.value
+                </div>
+
+
+                <div className="dashboard-activity-list">
+
+                  {movimientosRecientes
+                    .length ===
+                  0 ? (
+
+                    <div className="dashboard-empty dashboard-empty-small">
+                      No hay movimientos de caja hoy.
+                    </div>
+
+                  ) : (
+
+                    movimientosRecientes.map(
+                      (
+                        movimiento
+                      ) => (
+
+                        <div
+                          key={
+                            movimiento._id
+                          }
+                          className="dashboard-activity"
+                        >
+
+                          <div>
+                            <strong>
+                              {movimiento.concepto ||
+                                movimiento.origen ||
+                                "Movimiento"}
+                            </strong>
+
+                            <span>
+                              {fechaHora(
+                                movimiento.createdAt
+                              )}
+                            </span>
+                          </div>
+
+
+                          <div>
+                            <small>
+                              {movimiento.metodoPago ||
+                                movimiento.tipo ||
+                                ""}
+                            </small>
+
+                            <strong
+                              className={
+                                movimiento.tipo ===
+                                  "Egreso"
+                                  ? "expense"
+                                  : ""
+                              }
+                            >
+                              {movimiento.tipo ===
+                                "Egreso"
+                                ? "− "
+                                : "+ "}
+                              {moneda(
+                                movimiento.valor
+                              )}
+                            </strong>
+                          </div>
+
+                        </div>
+
+                      )
                     )
-                  }
-                  placeholder="Buscar cliente, producto, pedido o categoría..."
-                  autoFocus
-                />
 
-              </div>
+                  )}
+
+                </div>
+
+              </article>
 
 
-              <div className="dashboard-search-results">
+              <article className="dashboard-panel">
 
-                {!textoBuscar.trim() ? (
+                <header className="dashboard-panel-header">
 
-                  <div className="dashboard-search-empty">
-                    Escribe para buscar en WebBuys.
+                  <div>
+                    <h3>
+                      Inventario
+                    </h3>
+
+                    <span>
+                      Estado general
+                    </span>
                   </div>
 
-                ) : resultadosBusqueda.length === 0 ? (
 
-                  <div className="dashboard-search-empty">
-                    No se encontraron resultados.
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        "/productos"
+                      )
+                    }
+                  >
+                    Ver productos
+                  </button>
+
+                </header>
+
+
+                <div className="dashboard-inventory-list">
+
+                  <div>
+                    <span>
+                      Productos activos
+                    </span>
+
+                    <strong>
+                      {productosActivos
+                        .length}
+                    </strong>
                   </div>
 
-                ) : (
 
-                  resultadosBusqueda.map(
-                    (resultado) => (
+                  <div>
+                    <span>
+                      Stock bajo
+                    </span>
 
-                      <button
-                        type="button"
-                        key={resultado.id}
-                        className="dashboard-search-result"
-                        onClick={() =>
-                          irAResultado(
-                            resultado
-                          )
-                        }
-                      >
+                    <strong>
+                      {stockBajo}
+                    </strong>
+                  </div>
 
-                        <span className="dashboard-search-result-type">
-                          {resultado.tipo}
-                        </span>
 
-                        <strong>
-                          {resultado.titulo}
-                        </strong>
+                  <div>
+                    <span>
+                      Categorías
+                    </span>
 
-                        <small>
-                          {resultado.detalle}
-                        </small>
+                    <strong>
+                      {categorias.length}
+                    </strong>
+                  </div>
 
-                      </button>
 
-                    )
-                  )
+                  <div>
+                    <span>
+                      Clientes activos
+                    </span>
 
-                )}
+                    <strong>
+                      {clientesActivos}
+                    </strong>
+                  </div>
 
-              </div>
+                </div>
 
-            </div>
+              </article>
 
-          </div>
+            </section>
+
+          </>
 
         )}
+
+      </main>
 
     </section>
 

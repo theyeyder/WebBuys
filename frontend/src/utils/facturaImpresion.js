@@ -49,14 +49,19 @@ function escaparHTML(valor) {
    IMPRIMIR FACTURA
 ========================================= */
 
-export function imprimirFactura(factura) {
+export function imprimirFactura(
+  factura,
+  ventanaExistente = null
+) {
   if (!factura) return;
 
-  const ventanaImpresion = window.open(
-    "",
-    "_blank",
-    "width=900,height=700"
-  );
+  const ventanaImpresion =
+    ventanaExistente ||
+    window.open(
+      "",
+      "_blank",
+      "width=900,height=700"
+    );
 
   if (!ventanaImpresion) {
     alert(

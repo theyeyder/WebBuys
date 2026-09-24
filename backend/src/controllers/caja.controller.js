@@ -26,7 +26,7 @@ function usuarioActual(req) {
 /* =========================================
    CALCULAR TOTALES REALES DE CAJA
 
-   - Pedido Entregado = venta
+   - Entrega en estado Entregado = venta
    - Efectivo sí afecta dinero físico
    - Transferencia / Crédito no afectan
      el efectivo esperado
@@ -70,8 +70,12 @@ async function calcularTotales(
 
         .filter(
           (movimiento) =>
-            movimiento.origen ===
-            "Pedido" &&
+            [
+              "Entrega",
+              "Pedido",
+            ].includes(
+              movimiento.origen
+            ) &&
             movimiento.pedido
         )
 
@@ -100,6 +104,15 @@ async function calcularTotales(
     0;
 
   let totalIngresosManuales =
+    0;
+
+  let totalRecaudoCartera =
+    0;
+
+  let totalRecaudoCarteraEfectivo =
+    0;
+
+  let totalRecaudoCarteraTransferencia =
     0;
 
   let totalIngresos =
@@ -132,14 +145,18 @@ async function calcularTotales(
 
 
     /* =====================================
-       NUEVA LÓGICA: PEDIDOS ENTREGADOS
+       NUEVA LÓGICA: ENTREGAS FINALIZADAS
     ===================================== */
 
     if (
-      movimiento.origen ===
-      "Pedido" &&
+      [
+        "Entrega",
+        "Pedido",
+      ].includes(
+        movimiento.origen
+      ) &&
       movimiento.tipo ===
-      "Ingreso"
+        "Ingreso"
     ) {
 
       cantidadPedidosEntregados +=
@@ -255,6 +272,50 @@ async function calcularTotales(
 
 
     /* =====================================
+       RECAUDO DE CARTERA
+       No vuelve a contar la venta.
+       Solo registra el dinero efectivamente recibido.
+    ===================================== */
+
+    if (
+      movimiento.origen ===
+        "Cartera" &&
+      movimiento.tipo ===
+        "Ingreso"
+    ) {
+
+      totalRecaudoCartera +=
+        valor;
+
+
+      if (
+        movimiento.metodoPago ===
+        "Efectivo"
+      ) {
+
+        totalRecaudoCarteraEfectivo +=
+          valor;
+
+        totalIngresos +=
+          valor;
+
+      } else if (
+        movimiento.metodoPago ===
+        "Transferencia"
+      ) {
+
+        totalRecaudoCarteraTransferencia +=
+          valor;
+
+      }
+
+
+      continue;
+
+    }
+
+
+    /* =====================================
        INGRESOS / EGRESOS MANUALES,
        AJUSTES Y REVERSOS HISTÓRICOS
     ===================================== */
@@ -342,6 +403,12 @@ async function calcularTotales(
 
     totalIngresosManuales,
 
+    totalRecaudoCartera,
+
+    totalRecaudoCarteraEfectivo,
+
+    totalRecaudoCarteraTransferencia,
+
     totalIngresos,
 
     totalEgresos,
@@ -386,6 +453,15 @@ async function construirResumen(
           0,
 
         totalIngresosManuales:
+          0,
+
+        totalRecaudoCartera:
+          0,
+
+        totalRecaudoCarteraEfectivo:
+          0,
+
+        totalRecaudoCarteraTransferencia:
           0,
 
         totalIngresos:
@@ -769,12 +845,24 @@ async function listarMovimientos(
           "codigo total metodoPago estado"
         )
         .populate(
+          "entrega",
+          "pedidoCodigo estado total metodoPago fechaEntregaReal"
+        )
+        .populate(
           "cliente",
           "codigo nombre razonSocial documento"
         )
         .populate(
           "factura",
           "codigo total estado"
+        )
+        .populate(
+          "cartera",
+          "codigo pedidoCodigo estado saldoPendiente"
+        )
+        .populate(
+          "pagoCartera",
+          "valor metodoPago referencia fechaPago estado"
         )
         .sort({
           createdAt: -1,
@@ -1046,26 +1134,130 @@ async function cerrar(
     }
 
 
-    const efectivoContado =
-      Number(
-        req.body
-          .efectivoContado
-      );
+    const denominaciones = {
+      dosMil:
+        2000,
+
+      cincoMil:
+        5000,
+
+      diezMil:
+        10000,
+
+      veinteMil:
+        20000,
+
+      cincuentaMil:
+        50000,
+
+      cienMil:
+        100000,
+    };
+
+
+    const conteoRecibido =
+      req.body
+        .conteoBilletes;
+
+
+    let conteoBilletes =
+      null;
+
+
+    let efectivoContado =
+      0;
 
 
     if (
-      !Number.isFinite(
-        efectivoContado
-      ) ||
-      efectivoContado < 0
+      conteoRecibido &&
+      typeof conteoRecibido ===
+        "object"
     ) {
 
-      return res
-        .status(400)
-        .json({
-          mensaje:
-            "Debe indicar el efectivo contado al cerrar la caja.",
-        });
+      conteoBilletes =
+        {};
+
+
+      for (
+        const [
+          key,
+          denominacion,
+        ]
+        of Object.entries(
+          denominaciones
+        )
+      ) {
+
+        const cantidad =
+          Number(
+            conteoRecibido[
+              key
+            ] ||
+            0
+          );
+
+
+        if (
+          !Number.isFinite(
+            cantidad
+          ) ||
+          cantidad < 0 ||
+          !Number.isInteger(
+            cantidad
+          )
+        ) {
+
+          return res
+            .status(400)
+            .json({
+              mensaje:
+                "La cantidad de billetes debe ser un número entero igual o mayor que cero.",
+            });
+
+        }
+
+
+        conteoBilletes[
+          key
+        ] =
+          cantidad;
+
+
+        efectivoContado +=
+          cantidad *
+          denominacion;
+
+      }
+
+    } else {
+
+      /*
+        Compatibilidad con cierres anteriores:
+        si un cliente antiguo todavía envía efectivoContado,
+        se conserva el comportamiento previo.
+      */
+      efectivoContado =
+        Number(
+          req.body
+            .efectivoContado
+        );
+
+
+      if (
+        !Number.isFinite(
+          efectivoContado
+        ) ||
+        efectivoContado < 0
+      ) {
+
+        return res
+          .status(400)
+          .json({
+            mensaje:
+              "Debe indicar el efectivo contado al cerrar la caja.",
+          });
+
+      }
 
     }
 
@@ -1114,6 +1306,17 @@ async function cerrar(
 
     caja.efectivoContado =
       efectivoContado;
+
+
+    if (
+      conteoBilletes
+    ) {
+
+      caja.conteoBilletes =
+        conteoBilletes;
+
+    }
+
 
     caja.diferencia =
       efectivoContado -
@@ -1436,12 +1639,24 @@ async function obtenerDetalle(
           "codigo total metodoPago estado"
         )
         .populate(
+          "entrega",
+          "pedidoCodigo estado total metodoPago fechaEntregaReal"
+        )
+        .populate(
           "cliente",
           "codigo nombre razonSocial documento"
         )
         .populate(
           "factura",
           "codigo total estado"
+        )
+        .populate(
+          "cartera",
+          "codigo pedidoCodigo estado saldoPendiente"
+        )
+        .populate(
+          "pagoCartera",
+          "valor metodoPago referencia fechaPago estado"
         )
         .sort({
           createdAt: 1,

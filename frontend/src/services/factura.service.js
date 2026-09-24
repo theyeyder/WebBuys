@@ -19,6 +19,23 @@ export async function listarFacturas() {
 }
 
 
+
+
+/* =========================================
+   LISTAR ENTREGAS FINALIZADAS FACTURABLES
+========================================= */
+
+export async function listarEntregasFacturables() {
+
+  const response =
+    await api.get(
+      `${url}/disponibles`
+    );
+
+  return response.data;
+
+}
+
 /* =========================================
    CREAR FACTURA
 ========================================= */

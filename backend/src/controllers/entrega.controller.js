@@ -7,6 +7,15 @@ import Pedido
 import Empleado
   from "../models/Empleado.js";
 
+import Caja
+  from "../models/Caja.js";
+
+import MovimientoCaja
+  from "../models/MovimientoCaja.js";
+
+import Cartera
+  from "../models/Cartera.js";
+
 
 function usuarioActual(req) {
   return (
@@ -28,6 +37,487 @@ function nombreClientePedido(
     pedido.cliente?.razonSocial ||
     "Cliente"
   );
+
+}
+
+
+async function obtenerCajaAbiertaEntrega() {
+
+  return Caja.findOne({
+    estado:
+      "Abierta",
+  })
+    .sort({
+      fechaApertura: -1,
+    });
+
+}
+
+
+function nombreClienteEntrega(
+  entrega
+) {
+
+  return (
+    entrega?.clienteNombre ||
+    entrega?.cliente?.nombre ||
+    entrega?.cliente?.razonSocial ||
+    "Cliente"
+  );
+
+}
+
+
+function codigoCarteraEntrega(
+  entrega
+) {
+
+  const pedidoCodigo =
+    String(
+      entrega?.pedidoCodigo ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (pedidoCodigo) {
+
+    return `CAR-${pedidoCodigo.replace(
+      /^PED-/,
+      ""
+    )}`;
+
+  }
+
+
+  return `CAR-${String(
+    entrega?._id ||
+    Date.now()
+  ).slice(-6).toUpperCase()}`;
+
+}
+
+
+async function registrarEntregaCreditoEnCartera({
+  entrega,
+  usuarioId = null,
+}) {
+
+  if (
+    !entrega ||
+    entrega.metodoPago !==
+      "Crédito"
+  ) {
+
+    return {
+      cartera: null,
+      creada: false,
+    };
+
+  }
+
+
+  const existente =
+    await Cartera.findOne({
+      entrega:
+        entrega._id,
+    });
+
+
+  if (existente) {
+
+    return {
+      cartera:
+        existente,
+      creada:
+        false,
+    };
+
+  }
+
+
+  const pedidoId =
+    entrega.pedido?._id ||
+    entrega.pedido;
+
+
+  const valor =
+    Number(
+      entrega.total ||
+      0
+    );
+
+
+  if (
+    !pedidoId ||
+    !Number.isFinite(
+      valor
+    ) ||
+    valor <= 0
+  ) {
+
+    const error =
+      new Error(
+        "La entrega a crédito no tiene datos válidos para crear la cuenta de cartera."
+      );
+
+    error.statusCode =
+      400;
+
+    throw error;
+
+  }
+
+
+  try {
+
+    const cartera =
+      await Cartera.create({
+        codigo:
+          codigoCarteraEntrega(
+            entrega
+          ),
+
+        entrega:
+          entrega._id,
+
+        pedido:
+          pedidoId,
+
+        pedidoCodigo:
+          entrega.pedidoCodigo ||
+          "",
+
+        cliente:
+          entrega.cliente?._id ||
+          entrega.cliente ||
+          null,
+
+        clienteCodigo:
+          entrega.clienteCodigo ||
+          "",
+
+        clienteNombre:
+          nombreClienteEntrega(
+            entrega
+          ),
+
+        clienteTelefono:
+          entrega.clienteTelefono ||
+          "",
+
+        fechaEntrega:
+          entrega.fechaEntregaReal ||
+          new Date(),
+
+        valorOriginal:
+          valor,
+
+        totalAbonado:
+          0,
+
+        saldoPendiente:
+          valor,
+
+        metodoPagoOriginal:
+          "Crédito",
+
+        estado:
+          "Pendiente",
+
+        observaciones:
+          entrega.observaciones ||
+          "",
+
+        creadoPor:
+          usuarioId,
+
+        actualizadoPor:
+          usuarioId,
+      });
+
+
+    return {
+      cartera,
+      creada:
+        true,
+    };
+
+  } catch (error) {
+
+    if (
+      error?.code ===
+      11000
+    ) {
+
+      const cartera =
+        await Cartera.findOne({
+          entrega:
+            entrega._id,
+        });
+
+
+      if (cartera) {
+
+        return {
+          cartera,
+          creada:
+            false,
+        };
+
+      }
+
+    }
+
+
+    throw error;
+
+  }
+
+}
+
+
+async function registrarEntregaEntregadaEnCaja({
+  entrega,
+  caja,
+  usuarioId = null,
+}) {
+
+  if (
+    !entrega ||
+    !caja
+  ) {
+
+    const error =
+      new Error(
+        "No fue posible identificar la entrega o la caja abierta."
+      );
+
+    error.statusCode =
+      400;
+
+    throw error;
+
+  }
+
+
+  const pedidoId =
+    entrega.pedido?._id ||
+    entrega.pedido ||
+    null;
+
+
+  if (!pedidoId) {
+
+    const error =
+      new Error(
+        "La entrega no tiene un pedido de origen válido."
+      );
+
+    error.statusCode =
+      400;
+
+    throw error;
+
+  }
+
+
+  const valor =
+    Number(
+      entrega.total ||
+      0
+    );
+
+
+  if (
+    !Number.isFinite(
+      valor
+    ) ||
+    valor <= 0
+  ) {
+
+    const error =
+      new Error(
+        `La entrega del pedido ${entrega.pedidoCodigo} no tiene un total válido para ingresar a Caja.`
+      );
+
+    error.statusCode =
+      400;
+
+    throw error;
+
+  }
+
+
+  /*
+    Conservamos PEDIDO:<id> como clave única para
+    compatibilidad con Facturación y registros históricos.
+    El origen funcional nuevo sí es "Entrega".
+  */
+  const claveUnica =
+    `PEDIDO:${pedidoId}`;
+
+
+  const existente =
+    await MovimientoCaja
+      .findOne({
+        $or: [
+          {
+            pedido:
+              pedidoId,
+          },
+          {
+            claveUnica,
+          },
+        ],
+      })
+      .populate(
+        "caja",
+        "codigo estado"
+      );
+
+
+  if (
+    existente &&
+    existente.estado ===
+      "Activo" &&
+    String(
+      existente.caja?._id ||
+      existente.caja
+    ) !==
+    String(
+      caja._id
+    )
+  ) {
+
+    return existente;
+
+  }
+
+
+  if (
+    existente &&
+    existente.estado ===
+      "Anulado" &&
+    existente.caja?.estado ===
+      "Cerrada" &&
+    String(
+      existente.caja?._id ||
+      existente.caja
+    ) !==
+    String(
+      caja._id
+    )
+  ) {
+
+    const error =
+      new Error(
+        `La venta del pedido ${entrega.pedidoCodigo} ya tuvo movimiento en la caja ${existente.caja.codigo}. No puede reingresarse automáticamente porque esa caja está cerrada.`
+      );
+
+    error.statusCode =
+      400;
+
+    throw error;
+
+  }
+
+
+  const metodoPago =
+    entrega.metodoPago ||
+    "Efectivo";
+
+
+  return MovimientoCaja
+    .findOneAndUpdate(
+      {
+        $or: [
+          {
+            pedido:
+              pedidoId,
+          },
+          {
+            claveUnica,
+          },
+        ],
+      },
+
+      {
+        $set: {
+          caja:
+            caja._id,
+
+          tipo:
+            "Ingreso",
+
+          origen:
+            "Entrega",
+
+          concepto:
+            `Entrega finalizada - ${entrega.pedidoCodigo}`,
+
+          valor,
+
+          pedido:
+            pedidoId,
+
+          pedidoCodigo:
+            entrega.pedidoCodigo ||
+            "",
+
+          entrega:
+            entrega._id,
+
+          entregaCodigo:
+            entrega.pedidoCodigo ||
+            "",
+
+          cliente:
+            entrega.cliente?._id ||
+            entrega.cliente ||
+            null,
+
+          clienteNombre:
+            nombreClienteEntrega(
+              entrega
+            ),
+
+          metodoPago,
+
+          afectaEfectivo:
+            metodoPago ===
+            "Efectivo",
+
+          factura:
+            existente?.factura ||
+            null,
+
+          facturaCodigo:
+            existente?.facturaCodigo ||
+            "",
+
+          observacion:
+            existente?.facturaCodigo
+              ? "Factura generada"
+              : "Sin factura",
+
+          usuario:
+            usuarioId,
+
+          estado:
+            "Activo",
+
+          claveUnica,
+        },
+      },
+
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
+      }
+    );
 
 }
 
@@ -83,21 +573,13 @@ function normalizarItemPedido(
       "",
 
     cantidadSolicitada:
-      esPeso
-        ? Math.max(
-            0,
-            Number(
-              item.cantidad ??
-              0
-            )
-          )
-        : Math.max(
-            1,
-            Number(
-              item.cantidad ??
-              1
-            )
-          ),
+      Math.max(
+        1,
+        Number(
+          item.cantidad ||
+          1
+        )
+      ),
 
     precioUnitario,
 
@@ -555,7 +1037,7 @@ function populateEntrega(
   return query
     .populate(
       "pedido",
-      "codigo estado fechaEntrega observaciones clienteDireccion clienteCiudad zonaDespachoNombre rutaNombre rutaDiasAtencion"
+      "codigo estado fechaEntrega observaciones"
     )
     .populate(
       "cliente",
@@ -1203,6 +1685,46 @@ export const cambiarEstadoEntrega =
       } = req.body;
 
 
+      const estadoAnterior =
+        entrega.estado;
+
+      const fechaEntregaRealAnterior =
+        entrega.fechaEntregaReal;
+
+      const motivoCancelacionAnterior =
+        entrega.motivoCancelacion;
+
+      const motivoNoEntregaAnterior =
+        entrega.motivoNoEntrega;
+
+
+      let cajaEntrega =
+        null;
+
+
+      if (
+        estado ===
+        "Entregado"
+      ) {
+
+        cajaEntrega =
+          await obtenerCajaAbiertaEntrega();
+
+
+        if (!cajaEntrega) {
+
+          return res
+            .status(400)
+            .json({
+              mensaje:
+                "Debe abrir la caja antes de marcar una entrega como Entregado.",
+            });
+
+        }
+
+      }
+
+
       const estadosValidos = [
         "Pendiente",
         "En ruta",
@@ -1361,6 +1883,84 @@ export const cambiarEstadoEntrega =
       await entrega.save();
 
 
+      if (
+        estado ===
+        "Entregado"
+      ) {
+
+        let carteraResultado =
+          null;
+
+
+        try {
+
+          if (
+            entrega.metodoPago ===
+            "Crédito"
+          ) {
+
+            carteraResultado =
+              await registrarEntregaCreditoEnCartera({
+                entrega,
+                usuarioId:
+                  usuarioActual(
+                    req
+                  ),
+              });
+
+          }
+
+
+          await registrarEntregaEntregadaEnCaja({
+            entrega,
+            caja:
+              cajaEntrega,
+            usuarioId:
+              usuarioActual(
+                req
+              ),
+          });
+
+
+        } catch (
+          errorProceso
+        ) {
+
+          if (
+            carteraResultado?.creada &&
+            carteraResultado?.cartera?._id
+          ) {
+
+            await Cartera.findByIdAndDelete(
+              carteraResultado.cartera._id
+            );
+
+          }
+
+
+          entrega.estado =
+            estadoAnterior;
+
+          entrega.fechaEntregaReal =
+            fechaEntregaRealAnterior;
+
+          entrega.motivoCancelacion =
+            motivoCancelacionAnterior;
+
+          entrega.motivoNoEntrega =
+            motivoNoEntregaAnterior;
+
+
+          await entrega.save();
+
+
+          throw errorProceso;
+
+        }
+
+      }
+
+
       const actualizada =
         await populateEntrega(
           Entrega.findById(
@@ -1371,7 +1971,13 @@ export const cambiarEstadoEntrega =
 
       return res.json({
         mensaje:
-          `Estado actualizado a "${estado}".`,
+          estado ===
+            "Entregado"
+            ? entrega.metodoPago ===
+                "Crédito"
+              ? "Entrega marcada como Entregado y registrada en Caja y Cartera correctamente."
+              : "Entrega marcada como Entregado y registrada en Caja correctamente."
+            : `Estado actualizado a "${estado}".`,
 
         entrega:
           actualizada,

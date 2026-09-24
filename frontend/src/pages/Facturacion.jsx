@@ -11,11 +11,8 @@ import ModulosMenu
   from "../components/ModulosMenu.jsx";
 
 import {
-  listarPedidos,
-} from "../services/pedido.service.js";
-
-import {
   listarFacturas,
+  listarEntregasFacturables,
   crearFactura,
   anularFactura,
   revertirFactura,
@@ -42,7 +39,10 @@ function moneda(valor) {
       maximumFractionDigits: 0,
     }
   ).format(
-    Number(valor || 0)
+    Number(
+      valor ||
+      0
+    )
   );
 
 }
@@ -52,21 +52,20 @@ function moneda(valor) {
    FECHA
 ========================================= */
 
-function fechaColombia(fecha) {
+function fechaColombia(valor) {
 
-  if (!fecha) {
+  if (!valor) {
     return "-";
   }
 
 
   return new Date(
-    fecha
+    valor
   ).toLocaleDateString(
     "es-CO"
   );
 
 }
-
 
 
 /* =========================================
@@ -83,29 +82,97 @@ function obtenerNombrePersonal(
 
 
   if (
-    typeof persona === "string"
+    typeof persona ===
+    "string"
   ) {
     return persona;
   }
 
 
+  return (
+    [
+      persona.nombres,
+      persona.apellidos,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .trim() ||
+    persona.nombre ||
+    persona.nombreCompleto ||
+    persona.codigo ||
+    "Sin asignar"
+  );
+
+}
+
+
+/* =========================================
+   ID DE REFERENCIA
+========================================= */
+
+function idReferencia(
+  valor
+) {
+
+  if (!valor) {
+    return "";
+  }
+
+
   if (
-    persona.nombres ||
-    persona.apellidos
+    typeof valor ===
+    "string"
+  ) {
+    return valor;
+  }
+
+
+  return String(
+    valor._id ||
+    ""
+  );
+
+}
+
+
+/* =========================================
+   CANTIDAD FINAL FACTURABLE
+========================================= */
+
+function cantidadFacturableItem(
+  item
+) {
+
+  if (
+    item.tipoVenta ===
+    "Peso"
   ) {
 
-    return `${persona.nombres || ""} ${
-      persona.apellidos || ""
-    }`.trim();
+    return {
+      cantidad:
+        Number(
+          item.pesoReal ||
+          0
+        ),
+
+      unidad:
+        "KG",
+    };
 
   }
 
 
-  return (
-    persona.nombre ||
-    persona.nombreCompleto ||
-    "Sin asignar"
-  );
+  return {
+    cantidad:
+      Number(
+        item.cantidadSolicitada ||
+        0
+      ),
+
+    unidad:
+      item.unidad ||
+      "",
+  };
 
 }
 
@@ -123,14 +190,14 @@ export default function Facturacion() {
 
 
   const [
-    pedidos,
-    setPedidos,
+    entregas,
+    setEntregas,
   ] = useState([]);
 
 
   const [
-    pedidoSeleccionado,
-    setPedidoSeleccionado,
+    entregaSeleccionada,
+    setEntregaSeleccionada,
   ] = useState(null);
 
 
@@ -150,6 +217,18 @@ export default function Facturacion() {
     generando,
     setGenerando,
   ] = useState(false);
+
+
+  const [
+    generandoMultiples,
+    setGenerandoMultiples,
+  ] = useState(false);
+
+
+  const [
+    entregasSeleccionadas,
+    setEntregasSeleccionadas,
+  ] = useState([]);
 
 
   const [
@@ -184,25 +263,25 @@ export default function Facturacion() {
 
 
       const [
-        dataPedidos,
+        dataEntregas,
         dataFacturas,
       ] =
         await Promise.all([
 
-          listarPedidos(),
+          listarEntregasFacturables(),
 
           listarFacturas(),
 
         ]);
 
 
-      const listaPedidos =
+      const listaEntregas =
         Array.isArray(
-          dataPedidos
+          dataEntregas
         )
-          ? dataPedidos
-          : dataPedidos?.pedidos ||
-            dataPedidos?.data ||
+          ? dataEntregas
+          : dataEntregas?.entregas ||
+            dataEntregas?.data ||
             [];
 
 
@@ -216,8 +295,8 @@ export default function Facturacion() {
             [];
 
 
-      setPedidos(
-        listaPedidos
+      setEntregas(
+        listaEntregas
       );
 
 
@@ -256,88 +335,126 @@ export default function Facturacion() {
   }
 
 
-  useEffect(() => {
+  useEffect(
+    () => {
 
-    cargarDatos();
+      cargarDatos();
 
-  }, []);
+    },
+    []
+  );
 
 
   /* =========================================
      CERRAR TOAST
   ========================================= */
 
-  useEffect(() => {
+  useEffect(
+    () => {
 
-    if (!mensaje) {
-      return;
-    }
-
-
-    const timer =
-      setTimeout(
-        () =>
-          setMensaje(""),
-        3000
-      );
+      if (!mensaje) {
+        return undefined;
+      }
 
 
-    return () =>
-      clearTimeout(
-        timer
-      );
+      const timer =
+        setTimeout(
+          () =>
+            setMensaje(
+              ""
+            ),
+          3000
+        );
 
-  }, [
-    mensaje,
-  ]);
+
+      return () =>
+        clearTimeout(
+          timer
+        );
+
+    },
+    [
+      mensaje,
+    ]
+  );
 
 
   /* =========================================
-     PEDIDOS BLOQUEADOS PARA FACTURAR
+     ENTREGAS BLOQUEADAS POR FACTURA
   ========================================= */
 
-  const pedidosFacturados =
+  const referenciasFacturadas =
     useMemo(
-      () =>
-        new Set(
-          facturas
+      () => {
 
-            /*
-              BLOQUEAMOS EL PEDIDO CUANDO:
+        const entregasFacturadas =
+          new Set();
 
-              1. Tiene una factura activa.
 
-              2. Tiene una factura anulada
-                 pero todavía NO se ha
-                 presionado Revertir.
+        const pedidosFacturados =
+          new Set();
 
-              NO BLOQUEAMOS:
 
-              Factura Anulada +
-              fechaReversion existente.
+        facturas
 
-              Eso significa que el pedido
-              puede volver a facturarse.
-            */
+          /*
+            BLOQUEA CUANDO:
+            - factura activa
+            - factura anulada sin Revertir
 
-            .filter(
-              (factura) =>
-                factura.estado !==
-                  "Anulada" ||
-                !factura.fechaReversion
-            )
+            PERMITE NUEVAMENTE:
+            - factura Anulada + fechaReversion
+          */
 
-            .map(
-              (factura) =>
-                factura.pedido?._id ||
-                factura.pedido
-            )
+          .filter(
+            (factura) =>
+              factura.estado !==
+                "Anulada" ||
+              !factura.fechaReversion
+          )
 
-            .filter(
-              Boolean
-            )
-        ),
+          .forEach(
+            (factura) => {
 
+              const entregaId =
+                idReferencia(
+                  factura.entrega
+                );
+
+
+              const pedidoId =
+                idReferencia(
+                  factura.pedido
+                );
+
+
+              if (entregaId) {
+
+                entregasFacturadas.add(
+                  entregaId
+                );
+
+              }
+
+
+              if (pedidoId) {
+
+                pedidosFacturados.add(
+                  pedidoId
+                );
+
+              }
+
+            }
+          );
+
+
+        return {
+          entregasFacturadas,
+          pedidosFacturados,
+        };
+
+      },
       [
         facturas,
       ]
@@ -345,100 +462,230 @@ export default function Facturacion() {
 
 
   /* =========================================
-     PEDIDOS DISPONIBLES PARA FACTURAR
+     ENTREGAS DISPONIBLES PARA FACTURAR
   ========================================= */
 
-  const pedidosDisponibles =
-    useMemo(() => {
+  const entregasDisponibles =
+    useMemo(
+      () => {
 
-      return pedidos.filter(
-        (pedido) =>
-          pedido.estado ===
-            "Entregado" &&
-          !pedidosFacturados.has(
-            pedido._id
+        return entregas.filter(
+          (entrega) => {
+
+            if (
+              entrega.estado !==
+              "Entregado"
+            ) {
+              return false;
+            }
+
+
+            const entregaId =
+              idReferencia(
+                entrega
+              );
+
+
+            const pedidoId =
+              idReferencia(
+                entrega.pedido
+              );
+
+
+            return (
+              !referenciasFacturadas
+                .entregasFacturadas
+                .has(
+                  entregaId
+                ) &&
+              !referenciasFacturadas
+                .pedidosFacturados
+                .has(
+                  pedidoId
+                )
+            );
+
+          }
+        );
+
+      },
+      [
+        entregas,
+        referenciasFacturadas,
+      ]
+    );
+
+
+  useEffect(
+    () => {
+
+      const disponibles =
+        new Set(
+          entregasDisponibles.map(
+            (entrega) =>
+              entrega._id
+          )
+        );
+
+
+      setEntregasSeleccionadas(
+        (actuales) =>
+          actuales.filter(
+            (id) =>
+              disponibles.has(
+                id
+              )
           )
       );
 
-    }, [
-      pedidos,
-      pedidosFacturados,
-    ]);
+    },
+    [
+      entregasDisponibles,
+    ]
+  );
 
 
   /* =========================================
-     FILTRAR PEDIDOS
+     FILTRAR ENTREGAS
   ========================================= */
 
-  const pedidosFiltrados =
-    useMemo(() => {
+  const entregasFiltradas =
+    useMemo(
+      () => {
 
-      const texto =
-        filtro
-          .trim()
-          .toLowerCase();
-
-
-      if (!texto) {
-
-        return pedidosDisponibles;
-
-      }
+        const texto =
+          filtro
+            .trim()
+            .toLowerCase();
 
 
-      return pedidosDisponibles.filter(
-        (pedido) => {
+        if (!texto) {
 
-          const cliente =
-            pedido.cliente ||
-            {};
+          return entregasDisponibles;
 
-
-          const valores = [
-
-            pedido.codigo,
-
-            cliente.nombre,
-
-            cliente.documento,
-
-            cliente.telefono,
-
-            pedido.total,
-
-          ];
+        }
 
 
-          return valores.some(
-            (valor) =>
-              String(
-                valor || ""
-              )
-                .toLowerCase()
-                .includes(
-                  texto
+        return entregasDisponibles.filter(
+          (entrega) => {
+
+            const valores = [
+
+              entrega.pedidoCodigo,
+
+              entrega.clienteCodigo,
+
+              entrega.clienteNombre,
+
+              entrega.cliente
+                ?.documento,
+
+              entrega.clienteTelefono,
+
+              entrega.rutaNombre,
+
+              entrega.zonaDespachoNombre,
+
+              entrega.total,
+
+            ];
+
+
+            return valores.some(
+              (valor) =>
+                String(
+                  valor ||
+                  ""
                 )
+                  .toLowerCase()
+                  .includes(
+                    texto
+                  )
+            );
+
+          }
+        );
+
+      },
+      [
+        entregasDisponibles,
+        filtro,
+      ]
+    );
+
+
+  /* =========================================
+     SELECCIONAR ENTREGA
+  ========================================= */
+
+  function seleccionarEntrega(
+    entrega
+  ) {
+
+    setEntregaSeleccionada(
+      entrega
+    );
+
+  }
+
+
+  /* =========================================
+     SELECCIÓN MÚLTIPLE
+  ========================================= */
+
+  function alternarEntregaMultiple(
+    entregaId
+  ) {
+
+    setEntregasSeleccionadas(
+      (actuales) => {
+
+        if (
+          actuales.includes(
+            entregaId
+          )
+        ) {
+
+          return actuales.filter(
+            (id) =>
+              id !==
+              entregaId
           );
 
         }
+
+
+        return [
+          ...actuales,
+          entregaId,
+        ];
+
+      }
+    );
+
+  }
+
+
+  function seleccionarTodasVisibles() {
+
+    const ids =
+      entregasFiltradas.map(
+        (entrega) =>
+          entrega._id
       );
 
-    }, [
-      pedidosDisponibles,
-      filtro,
-    ]);
+
+    setEntregasSeleccionadas(
+      ids
+    );
+
+  }
 
 
-  /* =========================================
-     SELECCIONAR PEDIDO
-  ========================================= */
+  function limpiarSeleccionMultiple() {
 
-  function seleccionarPedido(
-    pedido
-  ) {
-
-    setPedidoSeleccionado(
-      pedido
+    setEntregasSeleccionadas(
+      []
     );
 
   }
@@ -451,11 +698,11 @@ export default function Facturacion() {
   async function generarFactura() {
 
     if (
-      !pedidoSeleccionado
+      !entregaSeleccionada
     ) {
 
       setMensaje(
-        "Seleccione primero un pedido entregado."
+        "Seleccione primero una entrega finalizada."
       );
 
       setTipoMensaje(
@@ -468,12 +715,12 @@ export default function Facturacion() {
 
 
     if (
-      pedidoSeleccionado.estado !==
+      entregaSeleccionada.estado !==
       "Entregado"
     ) {
 
       setMensaje(
-        "Solo se pueden facturar pedidos entregados."
+        "Solo se pueden facturar entregas con estado Entregado."
       );
 
       setTipoMensaje(
@@ -485,14 +732,34 @@ export default function Facturacion() {
     }
 
 
+    const entregaId =
+      idReferencia(
+        entregaSeleccionada
+      );
+
+
+    const pedidoId =
+      idReferencia(
+        entregaSeleccionada
+          .pedido
+      );
+
+
     if (
-      pedidosFacturados.has(
-        pedidoSeleccionado._id
-      )
+      referenciasFacturadas
+        .entregasFacturadas
+        .has(
+          entregaId
+        ) ||
+      referenciasFacturadas
+        .pedidosFacturados
+        .has(
+          pedidoId
+        )
     ) {
 
       setMensaje(
-        "Este pedido ya tiene una factura generada."
+        "Esta entrega ya tiene una factura generada."
       );
 
       setTipoMensaje(
@@ -506,7 +773,7 @@ export default function Facturacion() {
 
     const confirmar =
       window.confirm(
-        `¿Deseas generar la factura del pedido ${pedidoSeleccionado.codigo}?`
+        `¿Deseas generar la factura de la entrega del pedido ${entregaSeleccionada.pedidoCodigo}?`
       );
 
 
@@ -524,8 +791,8 @@ export default function Facturacion() {
 
       await crearFactura({
 
-        pedido:
-          pedidoSeleccionado._id,
+        entrega:
+          entregaSeleccionada._id,
 
       });
 
@@ -540,7 +807,7 @@ export default function Facturacion() {
       );
 
 
-      setPedidoSeleccionado(
+      setEntregaSeleccionada(
         null
       );
 
@@ -578,6 +845,164 @@ export default function Facturacion() {
   }
 
 
+  /* =========================================
+     GENERAR FACTURAS MÚLTIPLES
+  ========================================= */
+
+  async function generarFacturasMultiples() {
+
+    const seleccionadas =
+      entregasDisponibles.filter(
+        (entrega) =>
+          entregasSeleccionadas.includes(
+            entrega._id
+          )
+      );
+
+
+    if (
+      seleccionadas.length ===
+      0
+    ) {
+
+      setMensaje(
+        "Seleccione al menos una entrega para generar facturas múltiples."
+      );
+
+      setTipoMensaje(
+        "info"
+      );
+
+      return;
+
+    }
+
+
+    const confirmar =
+      window.confirm(
+        `¿Deseas generar ${seleccionadas.length} factura(s)?\n\nCada entrega recibirá su propio consecutivo FAC.`
+      );
+
+
+    if (!confirmar) {
+      return;
+    }
+
+
+    try {
+
+      setGenerandoMultiples(
+        true
+      );
+
+
+      let creadas =
+        0;
+
+
+      const errores =
+        [];
+
+
+      for (
+        const entrega
+        of seleccionadas
+      ) {
+
+        try {
+
+          await crearFactura({
+            entrega:
+              entrega._id,
+          });
+
+
+          creadas +=
+            1;
+
+
+        } catch (error) {
+
+          errores.push({
+            codigo:
+              entrega.pedidoCodigo ||
+              "Entrega",
+
+            mensaje:
+              error?.response?.data?.mensaje ||
+              "No fue posible generar la factura.",
+          });
+
+        }
+
+      }
+
+
+      if (
+        errores.length ===
+        0
+      ) {
+
+        setMensaje(
+          `${creadas} factura(s) generada(s) correctamente.`
+        );
+
+        setTipoMensaje(
+          "success"
+        );
+
+
+      } else if (
+        creadas >
+        0
+      ) {
+
+        setMensaje(
+          `${creadas} factura(s) generada(s). ${errores.length} no pudieron generarse.`
+        );
+
+        setTipoMensaje(
+          "info"
+        );
+
+
+      } else {
+
+        setMensaje(
+          errores[0]?.mensaje ||
+          "No fue posible generar las facturas seleccionadas."
+        );
+
+        setTipoMensaje(
+          "error"
+        );
+
+      }
+
+
+      setEntregasSeleccionadas(
+        []
+      );
+
+
+      setEntregaSeleccionada(
+        null
+      );
+
+
+      await cargarDatos();
+
+
+    } finally {
+
+      setGenerandoMultiples(
+        false
+      );
+
+    }
+
+  }
+
 
   /* =========================================
      ANULAR FACTURA
@@ -593,12 +1018,17 @@ export default function Facturacion() {
       );
 
 
-    if (motivo === null) {
+    if (
+      motivo ===
+      null
+    ) {
       return;
     }
 
 
-    if (!motivo.trim()) {
+    if (
+      !motivo.trim()
+    ) {
 
       setMensaje(
         "Debe indicar el motivo de anulación."
@@ -609,6 +1039,7 @@ export default function Facturacion() {
       );
 
       return;
+
     }
 
 
@@ -674,9 +1105,18 @@ export default function Facturacion() {
     factura
   ) {
 
+    const pedidoCodigo =
+      factura.entrega
+        ?.pedidoCodigo ||
+      factura.pedido
+        ?.codigo ||
+      factura.pedidoCodigo ||
+      "";
+
+
     const confirmar =
       window.confirm(
-        `¿Deseas habilitar nuevamente el pedido ${factura.pedido?.codigo || factura.pedidoCodigo || ""} para generar una nueva factura?\n\nLa factura ${factura.codigo} continuará anulada.`
+        `¿Deseas habilitar nuevamente la entrega del pedido ${pedidoCodigo} para generar una nueva factura?\n\nLa factura ${factura.codigo} continuará anulada.`
       );
 
 
@@ -698,11 +1138,7 @@ export default function Facturacion() {
 
 
       setMensaje(
-        `El pedido ${
-          factura.pedido?.codigo ||
-          factura.pedidoCodigo ||
-          ""
-        } quedó habilitado para generar una nueva factura.`
+        `La entrega del pedido ${pedidoCodigo} quedó habilitada para generar una nueva factura.`
       );
 
       setTipoMensaje(
@@ -751,9 +1187,7 @@ export default function Facturacion() {
     <section className="facturacion-page">
 
 
-      {/* =====================================
-          CABECERA
-      ====================================== */}
+      {/* CABECERA */}
 
       <header className="facturacion-header">
 
@@ -770,84 +1204,141 @@ export default function Facturacion() {
       </header>
 
 
-      {/* =====================================
-          CONTENIDO
-      ====================================== */}
-
       <main className="facturacion-content">
 
 
-        {/* =====================================
-            BARRA DE ACCIONES
-        ====================================== */}
+        {/* BARRA DE ACCIONES */}
 
         <div className="facturacion-actions-bar">
 
           <div>
 
             <h2>
-              Pedidos para facturar
+              Entregas para facturar
             </h2>
 
-            
+            <p>
+              La factura es opcional. Solo aparecen entregas finalizadas.
+            </p>
 
           </div>
 
 
-          <button
-            type="button"
-            className="facturacion-generar-btn"
-            disabled={
-              !pedidoSeleccionado ||
-              generando
-            }
-            onClick={
-              generarFactura
-            }
-          >
+          <div className="facturacion-actions-buttons">
 
-            {generando
-              ? "Generando..."
-              : "Generar factura"}
+            <button
+              type="button"
+              className="facturacion-generar-multiple-btn"
+              disabled={
+                entregasSeleccionadas.length ===
+                  0 ||
+                generandoMultiples ||
+                generando
+              }
+              onClick={
+                generarFacturasMultiples
+              }
+            >
 
-          </button>
+              <span className="facturacion-btn-icon">
+                ▦
+              </span>
+
+              {generandoMultiples
+                ? "Generando..."
+                : `Generar múltiples (${entregasSeleccionadas.length})`}
+
+            </button>
+
+
+            <button
+              type="button"
+              className="facturacion-generar-btn"
+              disabled={
+                !entregaSeleccionada ||
+                generando ||
+                generandoMultiples
+              }
+              onClick={
+                generarFactura
+              }
+            >
+
+              <span className="facturacion-btn-icon">
+                +
+              </span>
+
+              {generando
+                ? "Generando..."
+                : "Generar factura"}
+
+            </button>
+
+          </div>
 
         </div>
 
 
-        {/* =====================================
-            CONTENIDO
-        ===================================== */}
-
         <div className="facturacion-layout">
 
 
-          {/* =====================================
-              PEDIDOS ENTREGADOS
-          ===================================== */}
+          {/* ENTREGAS FINALIZADAS */}
 
           <section className="facturacion-panel facturacion-pedidos-panel">
 
-            <div className="facturacion-panel-header">
+            <div className="facturacion-panel-header facturacion-pendientes-header">
 
               <div>
 
                 <h3>
-                  Pedidos entregados
+                  Entregas finalizadas
                 </h3>
 
                 <span>
                   {
-                    pedidosDisponibles.length
-                  } pendiente(s) por facturar
+                    entregasDisponibles.length
+                  } sin factura
                 </span>
+
+              </div>
+
+
+              <div className="facturacion-selection-tools">
+
+                <button
+                  type="button"
+                  className="facturacion-selection-btn"
+                  onClick={
+                    seleccionarTodasVisibles
+                  }
+                  disabled={
+                    entregasFiltradas.length ===
+                    0
+                  }
+                >
+                  Seleccionar todas
+                </button>
+
+
+                {entregasSeleccionadas.length >
+                  0 && (
+
+                  <button
+                    type="button"
+                    className="facturacion-selection-btn facturacion-selection-clear"
+                    onClick={
+                      limpiarSeleccionMultiple
+                    }
+                  >
+                    Limpiar
+                  </button>
+
+                )}
 
               </div>
 
             </div>
 
-
-            {/* BUSCADOR */}
 
             <div className="facturacion-search">
 
@@ -862,80 +1353,133 @@ export default function Facturacion() {
                       event.target.value
                     )
                 }
-                placeholder="Buscar pedido, cliente o documento..."
+                placeholder="Buscar pedido, cliente, documento o ruta..."
               />
 
             </div>
 
 
-            {/* LISTADO */}
+            <div className="facturacion-selection-summary">
+
+              <span>
+                {
+                  entregasSeleccionadas.length
+                } seleccionada(s)
+              </span>
+
+              <strong>
+                {
+                  entregasFiltradas.length
+                } visible(s)
+              </strong>
+
+            </div>
+
 
             <div className="facturacion-pedidos-list">
 
               {cargando ? (
 
                 <div className="facturacion-empty">
-                  Cargando pedidos...
+                  Cargando entregas...
                 </div>
 
-              ) : pedidosFiltrados.length ===
+              ) : entregasFiltradas.length ===
                 0 ? (
 
                 <div className="facturacion-empty">
 
-                  No hay pedidos entregados pendientes por facturar.
+                  No hay entregas finalizadas pendientes por facturar.
 
                 </div>
 
               ) : (
 
-                pedidosFiltrados.map(
-                  (pedido) => {
-
-                    const cliente =
-                      pedido.cliente ||
-                      {};
-
+                entregasFiltradas.map(
+                  (entrega) => {
 
                     const seleccionado =
-                      pedidoSeleccionado
+                      entregaSeleccionada
                         ?._id ===
-                      pedido._id;
+                      entrega._id;
+
+
+                    const seleccionadoMultiple =
+                      entregasSeleccionadas.includes(
+                        entrega._id
+                      );
 
 
                     return (
 
-                      <button
+                      <article
                         key={
-                          pedido._id
+                          entrega._id
                         }
-                        type="button"
-
                         className={
                           `facturacion-pedido-item ${
                             seleccionado
                               ? "facturacion-pedido-selected"
                               : ""
+                          } ${
+                            seleccionadoMultiple
+                              ? "facturacion-pedido-multi-selected"
+                              : ""
                           }`
                         }
-
-                        onClick={() =>
-                          seleccionarPedido(
-                            pedido
-                          )
-                        }
                       >
+
+                        <button
+                          type="button"
+                          className={
+                            `facturacion-multi-check ${
+                              seleccionadoMultiple
+                                ? "active"
+                                : ""
+                            }`
+                          }
+                          onClick={() =>
+                            alternarEntregaMultiple(
+                              entrega._id
+                            )
+                          }
+                          title={
+                            seleccionadoMultiple
+                              ? "Quitar de facturación múltiple"
+                              : "Agregar a facturación múltiple"
+                          }
+                          aria-label={
+                            seleccionadoMultiple
+                              ? `Quitar ${entrega.pedidoCodigo} de selección múltiple`
+                              : `Seleccionar ${entrega.pedidoCodigo} para facturación múltiple`
+                          }
+                        >
+                          {seleccionadoMultiple
+                            ? "✓"
+                            : ""}
+                        </button>
+
+
+                        <button
+                          type="button"
+                          className="facturacion-pedido-content"
+                          onClick={() =>
+                            seleccionarEntrega(
+                              entrega
+                            )
+                          }
+                        >
 
                         <div className="facturacion-pedido-top">
 
                           <strong>
                             {
-                              pedido.codigo
+                              entrega.pedidoCodigo
                             }
                           </strong>
 
                           <span>
-                            Entregado
+                            Sin factura
                           </span>
 
                         </div>
@@ -943,8 +1487,9 @@ export default function Facturacion() {
 
                         <h4>
 
-                          {cliente.nombre ||
-                            cliente.razonSocial ||
+                          {entrega.clienteNombre ||
+                            entrega.cliente
+                              ?.nombre ||
                             "Cliente"}
 
                         </h4>
@@ -952,7 +1497,9 @@ export default function Facturacion() {
 
                         <small>
 
-                          {cliente.documento ||
+                          {entrega.cliente
+                            ?.documento ||
+                            entrega.clienteCodigo ||
                             "Sin documento"}
 
                         </small>
@@ -962,11 +1509,11 @@ export default function Facturacion() {
 
                           <span>
 
-                            {pedido.createdAt
-                              ? fechaColombia(
-                                  pedido.createdAt
-                                )
-                              : "-"}
+                            {fechaColombia(
+                              entrega.fechaEntregaReal ||
+                              entrega.updatedAt ||
+                              entrega.fechaProgramada
+                            )}
 
                           </span>
 
@@ -974,14 +1521,16 @@ export default function Facturacion() {
                           <strong>
 
                             {moneda(
-                              pedido.total
+                              entrega.total
                             )}
 
                           </strong>
 
                         </div>
 
-                      </button>
+                        </button>
+
+                      </article>
 
                     );
 
@@ -995,21 +1544,21 @@ export default function Facturacion() {
           </section>
 
 
-          {/* =====================================
-              VISTA PREVIA FACTURA
-          ===================================== */}
+          {/* VISTA PREVIA */}
 
           <section className="facturacion-panel facturacion-preview-panel">
 
-            {!pedidoSeleccionado ? (
+            {!entregaSeleccionada ? (
 
               <div className="facturacion-preview-empty">
 
                 <h3>
-                  Selecciona un pedido
+                  Selecciona una entrega
                 </h3>
 
-               
+                <p>
+                  Se usarán los valores finales registrados en Entrega.
+                </p>
 
               </div>
 
@@ -1044,7 +1593,8 @@ export default function Facturacion() {
 
                     <strong>
                       {
-                        pedidoSeleccionado.codigo
+                        entregaSeleccionada
+                          .pedidoCodigo
                       }
                     </strong>
 
@@ -1053,7 +1603,7 @@ export default function Facturacion() {
                 </div>
 
 
-                {/* CLIENTE */}
+                {/* CLIENTE Y ENTREGA */}
 
                 <div className="facturacion-info-grid">
 
@@ -1065,9 +1615,11 @@ export default function Facturacion() {
 
                     <strong>
 
-                      {pedidoSeleccionado
-                        .cliente
-                        ?.nombre ||
+                      {entregaSeleccionada
+                        .clienteNombre ||
+                        entregaSeleccionada
+                          .cliente
+                          ?.nombre ||
                         "Cliente"}
 
                     </strong>
@@ -1083,7 +1635,7 @@ export default function Facturacion() {
 
                     <strong>
 
-                      {pedidoSeleccionado
+                      {entregaSeleccionada
                         .cliente
                         ?.documento ||
                         "-"}
@@ -1102,8 +1654,9 @@ export default function Facturacion() {
                     <strong>
 
                       {obtenerNombrePersonal(
-                        pedidoSeleccionado
-                          .empleado
+                        entregaSeleccionada
+                          .pedido
+                          ?.empleado
                       )}
 
                     </strong>
@@ -1120,7 +1673,7 @@ export default function Facturacion() {
                     <strong>
 
                       {obtenerNombrePersonal(
-                        pedidoSeleccionado
+                        entregaSeleccionada
                           .repartidor
                       )}
 
@@ -1137,10 +1690,10 @@ export default function Facturacion() {
 
                     <strong>
 
-                      {pedidoSeleccionado
+                      {entregaSeleccionada
                         .empacador
                         ? obtenerNombrePersonal(
-                            pedidoSeleccionado
+                            entregaSeleccionada
                               .empacador
                           )
                         : "—"}
@@ -1153,16 +1706,50 @@ export default function Facturacion() {
                   <div>
 
                     <span>
-                      Fecha del pedido
+                      Fecha de entrega
                     </span>
 
                     <strong>
 
                       {fechaColombia(
-                        pedidoSeleccionado
-                          .createdAt
+                        entregaSeleccionada
+                          .fechaEntregaReal ||
+                        entregaSeleccionada
+                          .updatedAt ||
+                        entregaSeleccionada
+                          .fechaProgramada
                       )}
 
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Tipo de pago
+                    </span>
+
+                    <strong>
+
+                      {entregaSeleccionada
+                        .metodoPago ||
+                        "-"}
+
+                    </strong>
+
+                  </div>
+
+
+                  <div>
+
+                    <span>
+                      Estado
+                    </span>
+
+                    <strong>
+                      Entregado
                     </strong>
 
                   </div>
@@ -1175,7 +1762,7 @@ export default function Facturacion() {
                 <div className="facturacion-products">
 
                   <h3>
-                    Productos
+                    Productos finales
                   </h3>
 
 
@@ -1211,84 +1798,93 @@ export default function Facturacion() {
                       <tbody>
 
                         {(
-                          pedidoSeleccionado
+                          entregaSeleccionada
                             .items ||
                           []
                         ).map(
                           (
                             item,
                             index
-                          ) => (
+                          ) => {
 
-                            <tr
-                              key={
-                                item._id ||
-                                index
-                              }
-                            >
-
-                              <td>
-
-                                <strong>
-                                  {
-                                    item.nombre
-                                  }
-                                </strong>
+                            const final =
+                              cantidadFacturableItem(
+                                item
+                              );
 
 
-                                {item.presentacionNombre && (
+                            return (
 
-                                  <small>
-
-                                    {
-                                      item.presentacionNombre
-                                    }
-
-                                  </small>
-
-                                )}
-
-                              </td>
-
-
-                              <td>
-
-                                {
-                                  item.cantidad
-                                }{" "}
-
-                                {
-                                  item.unidad ||
-                                  ""
+                              <tr
+                                key={
+                                  item._id ||
+                                  index
                                 }
+                              >
 
-                              </td>
+                                <td>
 
-
-                              <td>
-
-                                {moneda(
-                                  item.precioAplicado
-                                )}
-
-                              </td>
+                                  <strong>
+                                    {
+                                      item.nombre
+                                    }
+                                  </strong>
 
 
-                              <td>
+                                  {item.presentacionNombre && (
 
-                                <strong>
+                                    <small>
 
-                                  {moneda(
-                                    item.subtotal
+                                      {
+                                        item.presentacionNombre
+                                      }
+
+                                    </small>
+
                                   )}
 
-                                </strong>
+                                </td>
 
-                              </td>
 
-                            </tr>
+                                <td>
 
-                          )
+                                  {
+                                    final.cantidad
+                                  }{" "}
+
+                                  {
+                                    final.unidad
+                                  }
+
+                                </td>
+
+
+                                <td>
+
+                                  {moneda(
+                                    item.precioUnitario
+                                  )}
+
+                                </td>
+
+
+                                <td>
+
+                                  <strong>
+
+                                    {moneda(
+                                      item.subtotal
+                                    )}
+
+                                  </strong>
+
+                                </td>
+
+                              </tr>
+
+                            );
+
+                          }
                         )}
 
                       </tbody>
@@ -1313,7 +1909,7 @@ export default function Facturacion() {
                     <strong>
 
                       {moneda(
-                        pedidoSeleccionado
+                        entregaSeleccionada
                           .subtotal
                       )}
 
@@ -1331,7 +1927,7 @@ export default function Facturacion() {
                     <strong>
 
                       {moneda(
-                        pedidoSeleccionado
+                        entregaSeleccionada
                           .descuento
                       )}
 
@@ -1343,13 +1939,13 @@ export default function Facturacion() {
                   <div className="facturacion-total-final">
 
                     <span>
-                      Total
+                      Total final
                     </span>
 
                     <strong>
 
                       {moneda(
-                        pedidoSeleccionado
+                        entregaSeleccionada
                           .total
                       )}
 
@@ -1368,9 +1964,7 @@ export default function Facturacion() {
         </div>
 
 
-        {/* =====================================
-            FACTURAS GENERADAS
-        ===================================== */}
+        {/* FACTURAS GENERADAS */}
 
         <section className="facturacion-panel facturacion-generadas">
 
@@ -1459,174 +2053,185 @@ export default function Facturacion() {
                 ) : (
 
                   facturas.map(
-                    (factura) => (
+                    (factura) => {
 
-                      <tr
-                        key={
-                          factura._id
-                        }
-                      >
-
-                        <td>
-
-                          <strong className="facturacion-code">
-
-                            {
-                              factura.codigo
-                            }
-
-                          </strong>
-
-                        </td>
+                      const pedidoCodigo =
+                        factura.entrega
+                          ?.pedidoCodigo ||
+                        factura.pedido
+                          ?.codigo ||
+                        factura.pedidoCodigo ||
+                        "-";
 
 
-                        <td>
+                      return (
 
-                          {factura.pedido
-                            ?.codigo ||
-                            "-"}
+                        <tr
+                          key={
+                            factura._id
+                          }
+                        >
 
-                        </td>
+                          <td>
 
+                            <strong className="facturacion-code">
 
-                        <td>
+                              {
+                                factura.codigo
+                              }
 
-                          {factura.cliente
-                            ?.nombre ||
-                            factura.clienteNombre ||
-                            "-"}
+                            </strong>
 
-                        </td>
-
-
-                        <td>
-
-                          {fechaColombia(
-                            factura.createdAt
-                          )}
-
-                        </td>
+                          </td>
 
 
-                        <td>
+                          <td>
 
-                          <strong>
+                            {pedidoCodigo}
 
-                            {moneda(
-                              factura.total
+                          </td>
+
+
+                          <td>
+
+                            {factura.cliente
+                              ?.nombre ||
+                              factura.clienteNombre ||
+                              "-"}
+
+                          </td>
+
+
+                          <td>
+
+                            {fechaColombia(
+                              factura.createdAt
                             )}
 
-                          </strong>
-
-                        </td>
+                          </td>
 
 
-                        <td>
+                          <td>
 
-                          <span
-                            className={
-                              `facturacion-status ${
-                                factura.estado ===
-                                "Anulada"
-                                  ? "facturacion-status-anulada"
-                                  : ""
-                              }`
-                            }
-                          >
+                            <strong>
 
-                            {factura.estado ||
-                              "Emitida"}
+                              {moneda(
+                                factura.total
+                              )}
 
-                          </span>
+                            </strong>
 
-                        </td>
+                          </td>
 
 
-                        <td className="facturacion-print-cell">
+                          <td>
 
-                          <button
-                            type="button"
-                            className="facturacion-action-btn facturacion-action-print"
-                            onClick={() =>
-                              imprimirFactura(
-                                factura
-                              )
-                            }
-                            title="Imprimir factura"
-                            aria-label={`Imprimir factura ${factura.codigo}`}
-                          >
-                            🖨️
-                          </button>
+                            <span
+                              className={
+                                `facturacion-status ${
+                                  factura.estado ===
+                                  "Anulada"
+                                    ? "facturacion-status-anulada"
+                                    : ""
+                                }`
+                              }
+                            >
 
-                        </td>
+                              {factura.estado ||
+                                "Emitida"}
+
+                            </span>
+
+                          </td>
 
 
-                        <td>
+                          <td className="facturacion-print-cell">
 
-                          <div className="facturacion-row-actions">
+                            <button
+                              type="button"
+                              className="facturacion-action-btn facturacion-action-print"
+                              onClick={() =>
+                                imprimirFactura(
+                                  factura
+                                )
+                              }
+                              title="Imprimir factura"
+                              aria-label={`Imprimir factura ${factura.codigo}`}
+                            >
+                              🖨️
+                            </button>
 
-                            {factura.estado ===
-                              "Anulada" &&
-                            !factura.fechaReversion ? (
+                          </td>
 
-                              <button
-                                type="button"
-                                className="facturacion-action-btn facturacion-action-revert"
-                                onClick={() =>
-                                  manejarRevertirFactura(
-                                    factura
-                                  )
-                                }
-                                disabled={
-                                  procesandoFactura ===
-                                  factura._id
-                                }
-                                title="Revertir anulación"
-                                aria-label={`Revertir factura ${factura.codigo}`}
-                              >
-                                ↩️
-                              </button>
 
-                            ) : factura.estado ===
-                              "Anulada" ? (
+                          <td>
 
-                              <span
-                                className="facturacion-action-placeholder"
-                                title="Factura revertida: el pedido ya puede facturarse nuevamente"
-                                aria-label="Factura revertida"
-                              >
-                                ✔️
-                              </span>
+                            <div className="facturacion-row-actions">
 
-                            ) : (
+                              {factura.estado ===
+                                "Anulada" &&
+                              !factura.fechaReversion ? (
 
-                              <button
-                                type="button"
-                                className="facturacion-action-btn facturacion-action-cancel"
-                                onClick={() =>
-                                  manejarAnularFactura(
-                                    factura
-                                  )
-                                }
-                                disabled={
-                                  procesandoFactura ===
-                                  factura._id
-                                }
-                                title="Anular factura"
-                                aria-label={`Anular factura ${factura.codigo}`}
-                              >
-                                🚫
-                              </button>
+                                <button
+                                  type="button"
+                                  className="facturacion-action-btn facturacion-action-revert"
+                                  onClick={() =>
+                                    manejarRevertirFactura(
+                                      factura
+                                    )
+                                  }
+                                  disabled={
+                                    procesandoFactura ===
+                                    factura._id
+                                  }
+                                  title="Revertir anulación"
+                                  aria-label={`Revertir factura ${factura.codigo}`}
+                                >
+                                  ↩️
+                                </button>
 
-                            )}
+                              ) : factura.estado ===
+                                "Anulada" ? (
 
-                          </div>
+                                <span
+                                  className="facturacion-action-placeholder"
+                                  title="Factura revertida: la entrega ya puede facturarse nuevamente"
+                                  aria-label="Factura revertida"
+                                >
+                                  ✔️
+                                </span>
 
-                        </td>
+                              ) : (
 
-                      </tr>
+                                <button
+                                  type="button"
+                                  className="facturacion-action-btn facturacion-action-cancel"
+                                  onClick={() =>
+                                    manejarAnularFactura(
+                                      factura
+                                    )
+                                  }
+                                  disabled={
+                                    procesandoFactura ===
+                                    factura._id
+                                  }
+                                  title="Anular factura"
+                                  aria-label={`Anular factura ${factura.codigo}`}
+                                >
+                                  🚫
+                                </button>
 
-                    )
+                              )}
+
+                            </div>
+
+                          </td>
+
+                        </tr>
+
+                      );
+
+                    }
                   )
 
                 )}

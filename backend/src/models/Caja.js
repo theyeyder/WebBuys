@@ -122,6 +122,51 @@ const cajaSchema =
       },
 
 
+      /* =====================================
+         CONTEO DE BILLETES AL CIERRE
+      ===================================== */
+
+      conteoBilletes: {
+
+        dosMil: {
+          type: Number,
+          default: 0,
+          min: 0,
+        },
+
+        cincoMil: {
+          type: Number,
+          default: 0,
+          min: 0,
+        },
+
+        diezMil: {
+          type: Number,
+          default: 0,
+          min: 0,
+        },
+
+        veinteMil: {
+          type: Number,
+          default: 0,
+          min: 0,
+        },
+
+        cincuentaMil: {
+          type: Number,
+          default: 0,
+          min: 0,
+        },
+
+        cienMil: {
+          type: Number,
+          default: 0,
+          min: 0,
+        },
+
+      },
+
+
       diferencia: {
         type: Number,
         default: null,

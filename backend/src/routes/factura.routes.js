@@ -20,6 +20,17 @@ router.get(
 
 
 /* =========================================
+   ENTREGAS FINALIZADAS DISPONIBLES
+   PARA FACTURACIÓN
+========================================= */
+
+router.get(
+  "/disponibles",
+  facturaController.listarDisponibles
+);
+
+
+/* =========================================
    OBTENER FACTURA POR ID
 ========================================= */
 
@@ -30,7 +41,7 @@ router.get(
 
 
 /* =========================================
-   GENERAR FACTURA DESDE PEDIDO
+   GENERAR FACTURA DESDE ENTREGA
 ========================================= */
 
 router.post(
@@ -47,6 +58,8 @@ router.put(
   "/:id",
   facturaController.actualizar
 );
+
+
 /* =========================================
    ANULAR FACTURA
 ========================================= */
@@ -65,6 +78,7 @@ router.patch(
   "/:id/revertir",
   facturaController.revertir
 );
+
 
 /* =========================================
    ELIMINAR FACTURA

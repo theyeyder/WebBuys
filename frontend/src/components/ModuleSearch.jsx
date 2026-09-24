@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -34,23 +35,28 @@ const MODULOS = [
   },
 
   {
-  nombre: "Pedidos",
-  ruta: "/pedidos",
-},
+    nombre: "Pedidos",
+    ruta: "/pedidos",
+  },
 
-{
-  nombre: "Entrega",
-  ruta: "/entregas",
-},
+  {
+    nombre: "Entrega",
+    ruta: "/entregas",
+  },
 
-{
-  nombre: "Facturación",
-  ruta: "/facturacion",
-},
+  {
+    nombre: "Facturación",
+    ruta: "/facturacion",
+  },
 
   {
     nombre: "Caja",
     ruta: "/caja",
+  },
+
+  {
+    nombre: "Cartera",
+    ruta: "/cartera",
   },
 
   {
@@ -98,79 +104,234 @@ const MODULOS = [
 
 export default function ModuleSearch() {
 
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const [busqueda, setBusqueda] =
-    useState("");
+  const [
+    busqueda,
+    setBusqueda,
+  ] = useState("");
 
-  const [enFoco, setEnFoco] =
-    useState(false);
+  const [
+    enFoco,
+    setEnFoco,
+  ] = useState(false);
+
+  const [
+    hayVentanaEmergente,
+    setHayVentanaEmergente,
+  ] = useState(false);
 
 
-  const resultados = useMemo(() => {
+  /* =========================================================
+     OCULTAR BUSCADOR GLOBAL CUANDO HAYA UN MODAL ABIERTO
+  ========================================================= */
 
-    const texto =
-      busqueda
-        .trim()
-        .toLowerCase();
+  useEffect(() => {
 
-    if (!texto) {
-      return [];
-    }
+    const selectores = [
+      '[class*="modal-overlay"]',
+      '[class*="modal-backdrop"]',
+      '[class*="detail-overlay"]',
+      '[class*="datepicker-overlay"]',
+      '[class*="calendar-overlay"]',
+      '[role="dialog"]',
+      '[aria-modal="true"]',
+    ].join(",");
 
-    const encontrados = [];
 
-    MODULOS.forEach((modulo) => {
+    function estaVisible(
+      elemento
+    ) {
 
-      if (
-        modulo.nombre
-          .toLowerCase()
-          .includes(texto)
-      ) {
-
-        encontrados.push({
-          nombre: modulo.nombre,
-          ruta: modulo.ruta,
-          tipo: "Módulo",
-          padre: "",
-        });
-
+      if (!elemento) {
+        return false;
       }
 
-      modulo.submodulos?.forEach(
-        (submodulo) => {
+
+      const estilo =
+        window.getComputedStyle(
+          elemento
+        );
+
+
+      if (
+        estilo.display ===
+          "none" ||
+        estilo.visibility ===
+          "hidden" ||
+        Number(
+          estilo.opacity
+        ) === 0
+      ) {
+        return false;
+      }
+
+
+      return (
+        elemento.getClientRects()
+          .length > 0
+      );
+
+    }
+
+
+    function revisarVentanas() {
+
+      const elementos =
+        document.querySelectorAll(
+          selectores
+        );
+
+
+      const abierta =
+        Array.from(
+          elementos
+        ).some(
+          estaVisible
+        );
+
+
+      setHayVentanaEmergente(
+        abierta
+      );
+
+    }
+
+
+    revisarVentanas();
+
+
+    const observer =
+      new MutationObserver(
+        revisarVentanas
+      );
+
+
+    observer.observe(
+      document.body,
+      {
+        childList: true,
+        subtree: true,
+        attributes: true,
+
+        attributeFilter: [
+          "class",
+          "style",
+          "hidden",
+          "aria-hidden",
+        ],
+      }
+    );
+
+
+    return () => {
+
+      observer.disconnect();
+
+    };
+
+  }, []);
+
+
+  const resultados =
+    useMemo(() => {
+
+      const texto =
+        busqueda
+          .trim()
+          .toLowerCase();
+
+      if (!texto) {
+        return [];
+      }
+
+
+      const encontrados = [];
+
+
+      MODULOS.forEach(
+        (modulo) => {
 
           if (
-            submodulo.nombre
+            modulo.nombre
               .toLowerCase()
-              .includes(texto)
+              .includes(
+                texto
+              )
           ) {
 
             encontrados.push({
-              nombre: submodulo.nombre,
-              ruta: submodulo.ruta,
-              tipo: "Submódulo",
-              padre: modulo.nombre,
+              nombre:
+                modulo.nombre,
+
+              ruta:
+                modulo.ruta,
+
+              tipo:
+                "Módulo",
+
+              padre:
+                "",
             });
 
           }
 
+
+          modulo.submodulos?.forEach(
+            (submodulo) => {
+
+              if (
+                submodulo.nombre
+                  .toLowerCase()
+                  .includes(
+                    texto
+                  )
+              ) {
+
+                encontrados.push({
+                  nombre:
+                    submodulo.nombre,
+
+                  ruta:
+                    submodulo.ruta,
+
+                  tipo:
+                    "Submódulo",
+
+                  padre:
+                    modulo.nombre,
+                });
+
+              }
+
+            }
+          );
+
         }
       );
 
-    });
 
-    return encontrados;
+      return encontrados;
 
-  }, [busqueda]);
+    }, [busqueda]);
 
 
-  function navegar(ruta) {
+  function navegar(
+    ruta
+  ) {
 
-    navigate(ruta);
+    navigate(
+      ruta
+    );
 
-    setBusqueda("");
-    setEnFoco(false);
+    setBusqueda(
+      ""
+    );
+
+    setEnFoco(
+      false
+    );
 
   }
 
@@ -180,7 +341,21 @@ export default function ModuleSearch() {
   // =========================================================
 
   const mostrarResultados =
-    busqueda.trim().length > 0;
+    busqueda
+      .trim()
+      .length > 0;
+
+
+  /*
+    Si hay una ventana emergente abierta,
+    el buscador global no se renderiza.
+    Al cerrar la ventana vuelve automáticamente.
+  */
+  if (
+    hayVentanaEmergente
+  ) {
+    return null;
+  }
 
 
   return (
@@ -191,7 +366,9 @@ export default function ModuleSearch() {
 
       <div
         className={`module-search-global-box ${
-          enFoco ? "active" : ""
+          enFoco
+            ? "active"
+            : ""
         }`}
       >
 
@@ -205,7 +382,9 @@ export default function ModuleSearch() {
           type="search"
           value={busqueda}
           onFocus={() =>
-            setEnFoco(true)
+            setEnFoco(
+              true
+            )
           }
           onChange={(event) => {
 
@@ -219,9 +398,11 @@ export default function ModuleSearch() {
             if (
               valor.trim()
             ) {
+
               setEnFoco(
                 true
               );
+
             }
 
           }}
@@ -261,7 +442,8 @@ export default function ModuleSearch() {
 
         <div className="module-search-dropdown">
 
-          {resultados.length === 0 ? (
+          {resultados.length ===
+          0 ? (
 
             <div className="module-search-no-results">
               No se encontraron módulos.
@@ -270,31 +452,41 @@ export default function ModuleSearch() {
           ) : (
 
             resultados.map(
-              (resultado) => (
+              (
+                resultado
+              ) => (
 
                 <button
                   type="button"
-                  key={resultado.ruta}
+                  key={
+                    resultado.ruta
+                  }
                   className="module-search-result"
-                  onMouseDown={(event) => {
+                  onMouseDown={
+                    (event) => {
 
-                    event.preventDefault();
+                      event.preventDefault();
 
-                    navegar(
-                      resultado.ruta
-                    );
+                      navegar(
+                        resultado.ruta
+                      );
 
-                  }}
+                    }
+                  }
                 >
 
                   <div className="module-search-result-text">
 
                     <strong>
-                      {resultado.nombre}
+                      {
+                        resultado.nombre
+                      }
                     </strong>
 
                     <span>
-                      {resultado.tipo}
+                      {
+                        resultado.tipo
+                      }
 
                       {resultado.padre &&
                         ` · ${resultado.padre}`}

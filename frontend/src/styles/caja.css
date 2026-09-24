@@ -5770,3 +5770,475 @@ button.selected.current-week::after {
 .caja-header {
   min-height: 62px !important;
 }
+
+/* =========================================================
+   CAJA - CONTEO DE BILLETES AL CIERRE
+   ========================================================= */
+
+.caja-modal-cierre {
+  width:
+    min(
+      760px,
+      100%
+    );
+}
+
+
+.caja-denominaciones {
+  display: grid;
+  gap: 10px;
+}
+
+
+.caja-denominaciones-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+
+  padding:
+    0
+    2px;
+}
+
+
+.caja-denominaciones-header > div {
+  display: grid;
+  gap: 2px;
+}
+
+
+.caja-denominaciones-header span {
+  color: #71817a;
+
+  font-size: 10px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+
+.caja-denominaciones-header strong {
+  color: #243b32;
+
+  font-size: 17px;
+  font-weight: 950;
+}
+
+
+.caja-denominaciones-header small {
+  max-width: 330px;
+
+  color: #7b8c84;
+
+  font-size: 10px;
+  font-weight: 650;
+
+  text-align: right;
+}
+
+
+.caja-denominaciones-list {
+  display: grid;
+  gap: 7px;
+}
+
+
+.caja-denominacion-row {
+  min-height: 60px;
+
+  padding:
+    7px
+    10px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(120px, 0.7fr)
+    minmax(120px, 0.8fr)
+    minmax(150px, 1fr);
+
+  align-items: center;
+  gap: 12px;
+
+  border:
+    1px solid
+    #dfe9e5;
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff 0%,
+      #f8fbfa 100%
+    );
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.caja-denominacion-row:focus-within {
+  border-color:
+    #159a75;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(21, 154, 117, 0.09);
+}
+
+
+.caja-denominacion-valor,
+.caja-denominacion-subtotal {
+  min-width: 0;
+
+  display: grid;
+  gap: 2px;
+}
+
+
+.caja-denominacion-valor span,
+.caja-denominacion-subtotal span,
+.caja-denominacion-cantidad > span {
+  color: #81918a !important;
+
+  font-size: 8px !important;
+  font-weight: 850 !important;
+
+  text-transform: uppercase;
+}
+
+
+.caja-denominacion-valor-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.caja-denominacion-icon {
+  width: 31px;
+  height: 22px;
+
+  display: block;
+
+  object-fit: contain;
+
+  flex-shrink: 0;
+
+  filter:
+    drop-shadow(
+      0 2px 3px
+      rgba(15, 118, 110, 0.14)
+    );
+}
+
+
+.caja-denominacion-valor strong {
+  color: #087858;
+
+  font-size: 14px;
+  font-weight: 950;
+}
+
+
+.caja-denominacion-cantidad {
+  gap: 3px !important;
+}
+
+
+.caja-denominacion-cantidad input {
+  min-height:4px !important;
+
+  padding:
+    6px
+    10px !important;
+
+  text-align: center;
+
+  font-size: 12px !important;
+  font-weight: 520 !important;
+}
+
+
+.caja-denominacion-subtotal {
+  text-align: right;
+}
+
+
+.caja-denominacion-subtotal strong {
+  color: #263f35;
+
+  font-size: 14px;
+  font-weight: 950;
+
+  white-space: nowrap;
+}
+
+
+.caja-conteo-resumen {
+  margin-top: 3px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  border:
+    1px solid
+    #dce8e3;
+
+  border-radius: 12px;
+
+  overflow: hidden;
+
+  background: #ffffff;
+}
+
+
+.caja-conteo-resumen > div {
+  min-width: 0;
+
+  padding:
+    10px
+    10px;
+
+  display: grid;
+  gap: 4px;
+
+  border-right:
+    1px solid
+    #e5eeea;
+}
+
+
+.caja-conteo-resumen > div:last-child {
+  border-right: 0;
+}
+
+
+.caja-conteo-resumen span {
+  color: #788981;
+
+  font-size: 8px;
+  font-weight: 850;
+
+  text-transform: uppercase;
+}
+
+
+.caja-conteo-resumen strong {
+  color: #264137;
+
+  font-size: 16px;
+  font-weight: 950;
+
+  white-space: nowrap;
+}
+
+
+.caja-conteo-resumen > div:first-child {
+  background:
+    linear-gradient(
+      180deg,
+      #f2fbf7,
+      #eaf8f2
+    );
+}
+
+
+.caja-conteo-resumen > div:first-child strong {
+  color: #087858;
+}
+
+
+.caja-conteo-diferencia.caja-diferencia-ok {
+  background: #edf9f2;
+}
+
+
+.caja-conteo-diferencia.caja-diferencia-sobra {
+  background: #fff9e9;
+}
+
+
+.caja-conteo-diferencia.caja-diferencia-falta {
+  background: #fff2f0;
+}
+
+
+@media (max-width: 650px) {
+
+  .caja-denominaciones-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+
+  .caja-denominaciones-header small {
+    text-align: left;
+  }
+
+
+  .caja-denominacion-row {
+    grid-template-columns:
+      minmax(90px, 0.7fr)
+      minmax(95px, 0.7fr)
+      minmax(110px, 1fr);
+
+    gap: 7px;
+  }
+
+
+  .caja-conteo-resumen {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .caja-conteo-resumen > div {
+    border-right: 0;
+    border-bottom:
+      1px solid
+      #e5eeea;
+  }
+
+
+  .caja-conteo-resumen > div:last-child {
+    border-bottom: 0;
+  }
+
+}
+
+/* =========================================================
+   CAJA - ICONO PERSONALIZADO PARA CERRAR MODALES
+   ========================================================= */
+
+.caja-modal-x {
+  background: #ffffff !important;
+
+  border:
+    1px solid
+    #c9d3e7 !important;
+
+  box-shadow:
+    0 4px 12px
+    rgba(15, 23, 42, 0.09);
+}
+
+
+.caja-modal-x:hover {
+  background:
+    #f7f9fd !important;
+
+  border-color:
+    #8495b9 !important;
+
+  transform:
+    translateY(-1px)
+    scale(1.03);
+}
+
+
+.caja-modal-x img {
+  width: 25px;
+  height: 25px;
+
+  display: block;
+
+  object-fit: contain;
+
+  pointer-events: none;
+}
+
+/* =========================================================
+   CAJA - PEDIDO / FACTURA ABRIBLES DESDE ENTREGAS FINALIZADAS
+   ========================================================= */
+
+.caja-document-link {
+  padding: 0;
+
+  border: 0;
+  outline: none;
+
+  background: transparent;
+
+  font: inherit;
+
+  cursor: pointer;
+
+  transition:
+    color 0.15s ease,
+    transform 0.15s ease,
+    text-decoration-color 0.15s ease;
+}
+
+
+.caja-document-link:hover {
+  transform:
+    translateY(-1px);
+
+  text-decoration:
+    underline;
+
+  text-underline-offset:
+    3px;
+}
+
+
+.caja-document-link.caja-order-code {
+  color:
+    #173f34;
+
+  font-weight: 950;
+
+  text-decoration-color:
+    rgba(21, 154, 117, 0.45);
+}
+
+
+.caja-document-link.caja-order-code:hover {
+  color:
+    #087858;
+}
+
+
+.caja-document-link.caja-invoice-code {
+  color:
+    #087858;
+
+  font-weight: 950;
+
+  text-decoration-color:
+    rgba(8, 120, 88, 0.45);
+}
+
+
+.caja-document-link.caja-invoice-code:hover {
+  color:
+    #0b9c70;
+}
+
+
+.caja-no-invoice {
+  color:
+    #8b9a94;
+
+  font-size: 10px;
+  font-weight: 750;
+}
+
+
+.caja-orders-table td:first-child,
+.caja-orders-table td:nth-child(4) {
+  white-space: nowrap;
+}
+
+

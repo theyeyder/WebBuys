@@ -40,6 +40,8 @@ const movimientoCajaSchema =
         */
         enum: [
           "Manual",
+          "Cartera",
+          "Entrega",
           "Pedido",
           "Factura",
           "Anulación factura",
@@ -66,7 +68,7 @@ const movimientoCajaSchema =
 
 
       /* =====================================
-         PEDIDO - FUENTE PRINCIPAL DE LA VENTA
+         PEDIDO - REFERENCIA DE ORIGEN / COMPATIBILIDAD
       ===================================== */
 
       pedido: {
@@ -80,6 +82,28 @@ const movimientoCajaSchema =
 
 
       pedidoCodigo: {
+        type: String,
+        default: "",
+        trim: true,
+        uppercase: true,
+      },
+
+
+      /* =====================================
+         ENTREGA - FUENTE ACTUAL DE LA VENTA
+      ===================================== */
+
+      entrega: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "Entrega",
+
+        default: null,
+      },
+
+
+      entregaCodigo: {
         type: String,
         default: "",
         trim: true,
@@ -135,6 +159,30 @@ const movimientoCajaSchema =
       afectaEfectivo: {
         type: Boolean,
         default: true,
+      },
+
+
+      /* =====================================
+         CARTERA - ABONO DE VENTA A CRÉDITO
+      ===================================== */
+
+      cartera: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "Cartera",
+
+        default: null,
+      },
+
+
+      pagoCartera: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+
+        ref: "PagoCartera",
+
+        default: null,
       },
 
 
@@ -226,7 +274,25 @@ movimientoCajaSchema.index({
 
 
 movimientoCajaSchema.index({
+  entrega: 1,
+  createdAt: -1,
+});
+
+
+movimientoCajaSchema.index({
   factura: 1,
+  createdAt: -1,
+});
+
+
+movimientoCajaSchema.index({
+  cartera: 1,
+  createdAt: -1,
+});
+
+
+movimientoCajaSchema.index({
+  pagoCartera: 1,
   createdAt: -1,
 });
 

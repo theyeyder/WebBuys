@@ -38,6 +38,8 @@ import facturaRoutes from "./routes/factura.routes.js";
 
 import cajaRoutes from "./routes/caja.routes.js";
 
+import carteraRoutes from "./routes/cartera.routes.js";
+
 
 const app = express();
 
@@ -167,6 +169,12 @@ app.use(
 app.use(
   "/api/caja",
   cajaRoutes
+);
+
+
+app.use(
+  "/api/cartera",
+  carteraRoutes
 );
 
 

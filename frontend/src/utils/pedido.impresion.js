@@ -27,7 +27,8 @@
   ========================================= */
 
   export function imprimirPedido(
-    pedido
+    pedido,
+    ventanaExistente = null
   ) {
 
     if (!pedido) {
@@ -148,6 +149,7 @@
     ========================================= */
 
     const ventana =
+      ventanaExistente ||
       window.open(
         "",
         "_blank",
