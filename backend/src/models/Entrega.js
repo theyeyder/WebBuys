@@ -181,6 +181,11 @@ const entregaSchema =
         trim: true,
       },
 
+      rutaDiasAtencion: {
+        type: [String],
+        default: [],
+      },
+
       fechaProgramada: {
         type: Date,
         default: null,

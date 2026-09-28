@@ -841,6 +841,10 @@ async function sincronizarEntregasDesdePedidos() {
         "codigo nombre razonSocial telefono direccion barrio ciudad"
       )
       .populate(
+        "ruta",
+        "codigo nombre descripcion diasAtencion estado"
+      )
+      .populate(
         "items.producto",
         "codigo nombre"
       );
@@ -857,6 +861,42 @@ async function sincronizarEntregasDesdePedidos() {
       });
 
     if (existente) {
+
+      const diasAtencion =
+        (
+          Array.isArray(
+            pedido.rutaDiasAtencion
+          ) &&
+          pedido.rutaDiasAtencion.length > 0
+        )
+          ? pedido.rutaDiasAtencion
+          : (
+              Array.isArray(
+                pedido.ruta?.diasAtencion
+              )
+                ? pedido.ruta.diasAtencion
+                : []
+            );
+
+
+      if (
+        diasAtencion.length > 0 &&
+        (
+          !Array.isArray(
+            existente.rutaDiasAtencion
+          ) ||
+          existente.rutaDiasAtencion.length === 0
+        )
+      ) {
+
+        existente.rutaDiasAtencion =
+          diasAtencion;
+
+        await existente.save();
+
+      }
+
+
       continue;
     }
 
@@ -912,12 +952,30 @@ async function sincronizarEntregasDesdePedidos() {
           "",
 
         ruta:
+          pedido.ruta?._id ||
           pedido.ruta ||
           null,
 
         rutaNombre:
           pedido.rutaNombre ||
+          pedido.ruta?.nombre ||
           "",
+
+        rutaDiasAtencion:
+          (
+            Array.isArray(
+              pedido.rutaDiasAtencion
+            ) &&
+            pedido.rutaDiasAtencion.length > 0
+          )
+            ? pedido.rutaDiasAtencion
+            : (
+                Array.isArray(
+                  pedido.ruta?.diasAtencion
+                )
+                  ? pedido.ruta.diasAtencion
+                  : []
+              ),
 
         fechaProgramada:
           pedido.fechaEntrega ||
@@ -1037,11 +1095,15 @@ function populateEntrega(
   return query
     .populate(
       "pedido",
-      "codigo estado fechaEntrega observaciones"
+      "codigo estado fechaEntrega observaciones ruta rutaNombre rutaDiasAtencion"
     )
     .populate(
       "cliente",
       "codigo nombre razonSocial telefono direccion barrio ciudad"
+    )
+    .populate(
+      "ruta",
+      "codigo nombre descripcion diasAtencion estado"
     )
     .populate(
       "empacador",
