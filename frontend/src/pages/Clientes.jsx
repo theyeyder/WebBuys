@@ -22,15 +22,15 @@ import clientesPrintCss from "../styles/clientes-print.css?inline";
 import ModulosMenu from "../components/ModulosMenu.jsx";
 
 // Iconos
-import buscarIcon from "../assets/icons/buscar.png";
-import guardarIcon from "../assets/icons/guardar.png";
-import nuevoClienteIcon from "../assets/icons/nuevo-cliente.png";
-import editarClienteIcon from "../assets/icons/editar-cliente.png";
-import eliminarClienteIcon from "../assets/icons/eliminar-cliente.png";
-import bloquearIcon from "../assets/icons/bloquear.png";
-import desbloquearIcon from "../assets/icons/desbloquear.png";
-import imprimirIcon from "../assets/icons/imprimir.png";
-import cerrarIcon from "../assets/icons/cerrar.png";
+import buscarIcon from "../assets/icons/buscar.webp";
+import guardarIcon from "../assets/icons/guardar.webp";
+import nuevoClienteIcon from "../assets/icons/nuevo-cliente.webp";
+import editarClienteIcon from "../assets/icons/editar-cliente.webp";
+import eliminarClienteIcon from "../assets/icons/eliminar-cliente.webp";
+import bloquearIcon from "../assets/icons/bloquear.webp";
+import desbloquearIcon from "../assets/icons/desbloquear.webp";
+import imprimirIcon from "../assets/icons/imprimir.webp";
+import cerrarIcon from "../assets/icons/cerrar.webp";
 
 
 /* =========================================

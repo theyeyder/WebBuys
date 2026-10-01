@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "../styles/calendar.css";
-import calendarioIcon from "../assets/icons/calendario.png";
+import calendarioIcon from "../assets/icons/calendario.webp";
 
 const MESES = [
   "ENERO",

@@ -11,22 +11,22 @@ import Toast
   from "../components/Toast.jsx";
 
 import calendarioIcon
-  from "../assets/icons/calendario.png";
+  from "../assets/icons/calendario.webp";
 
 import ingresoIcon
-  from "../assets/icons/Ingresos.png";
+  from "../assets/icons/Ingresos.webp";
 
 import egresoIcon
-  from "../assets/icons/Egresos.png";
+  from "../assets/icons/Egresos.webp";
 
 import cerrarCajaIcon
-  from "../assets/icons/Cerrar-caja.png";
+  from "../assets/icons/Cerrar-caja.webp";
 
 import billeteDenominacionIcon
-  from "../assets/icons/Billete.png";
+  from "../assets/icons/Billete.webp";
 
 import cerrarModalIcon
-  from "../assets/icons/cerrar.png";
+  from "../assets/icons/cerrar.webp";
 
 import {
   abrirCaja,

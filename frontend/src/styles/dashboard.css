@@ -1455,3 +1455,713 @@
   }
 
 }
+/* =========================================================
+   RESUMEN OPERATIVO DEL DÍA
+========================================================= */
+
+.dashboard-day-summary {
+  min-height: 48px;
+
+  margin-bottom: 12px;
+  padding:
+    9px 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  border:
+    1px solid
+    rgba(8, 120, 88, 0.14);
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #f4fbf7,
+      #ffffff
+    );
+
+  box-shadow:
+    0 3px 10px
+    rgba(15, 82, 61, 0.05);
+}
+
+
+.dashboard-day-summary > div {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+
+.dashboard-day-summary strong {
+  color:
+    #0b5b3c;
+
+  font-size: 10px;
+  font-weight: 950;
+}
+
+
+.dashboard-day-summary span,
+.dashboard-day-summary small {
+  color:
+    #70847b;
+
+  font-size: 8px;
+  font-weight: 750;
+}
+
+
+.dashboard-day-summary small {
+  flex-shrink: 0;
+
+  padding:
+    5px 9px;
+
+  border-radius: 999px;
+
+  background:
+    #e8f7ef;
+
+  color:
+    #087858;
+
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   REQUIERE ATENCIÓN
+========================================================= */
+
+.dashboard-attention {
+  margin-bottom: 14px;
+
+  padding:
+    14px;
+
+  border:
+    1px solid
+    rgba(8, 86, 52, 0.12);
+
+  border-radius: 15px;
+
+  background:
+    #ffffff;
+
+  box-shadow:
+    var(--db-shadow-sm);
+}
+
+
+.dashboard-section-heading {
+  margin-bottom: 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+
+.dashboard-section-heading h3 {
+  margin: 0;
+
+  color:
+    #0b4f32;
+
+  font-size: 13px;
+  font-weight: 950;
+}
+
+
+.dashboard-section-heading span {
+  display: block;
+
+  margin-top: 2px;
+
+  color:
+    #73867e;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+
+.dashboard-section-heading > strong {
+  min-width: 29px;
+  height: 29px;
+
+  display: inline-grid;
+  place-items: center;
+
+  border-radius: 999px;
+
+  background:
+    #eef8f3;
+
+  color:
+    #087858;
+
+  font-size: 11px;
+  font-weight: 950;
+}
+
+
+.dashboard-attention-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(
+        165px,
+        1fr
+      )
+    );
+
+  gap: 8px;
+}
+
+
+.dashboard-attention-card {
+  min-width: 0;
+  min-height: 76px;
+
+  padding:
+    10px 11px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+
+  gap: 6px;
+
+  border:
+    1px solid
+    #e0ebe6;
+
+  border-left:
+    4px solid
+    #159a75;
+
+  border-radius: 10px;
+
+  background:
+    #ffffff;
+
+  color:
+    var(--db-ink-900);
+
+  font: inherit;
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+}
+
+
+.dashboard-attention-card:hover {
+  transform:
+    translateY(-2px);
+
+  box-shadow:
+    0 8px 18px
+    rgba(15, 82, 61, 0.10);
+}
+
+
+.dashboard-attention-card > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+}
+
+
+.dashboard-attention-card span {
+  color:
+    #516c61;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  text-transform:
+    uppercase;
+}
+
+
+.dashboard-attention-card strong {
+  color:
+    #0b5b3c;
+
+  font-size: 18px;
+  font-weight: 950;
+}
+
+
+.dashboard-attention-card small {
+  overflow: hidden;
+
+  color:
+    #7c8f87;
+
+  font-size: 8px;
+  font-weight: 700;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+
+.dashboard-attention-warning {
+  border-left-color:
+    #cf7a13;
+
+  background:
+    #fffaf3;
+}
+
+
+.dashboard-attention-danger {
+  border-left-color:
+    #b42318;
+
+  background:
+    #fff6f5;
+}
+
+
+.dashboard-attention-danger strong {
+  color:
+    #a6382e;
+}
+
+
+.dashboard-attention-info {
+  border-left-color:
+    #1e7db7;
+
+  background:
+    #f6fbff;
+}
+
+
+.dashboard-attention-ok {
+  min-height: 66px;
+
+  display: grid;
+  place-items: center;
+
+  border:
+    1px dashed
+    #bddccc;
+
+  border-radius: 10px;
+
+  background:
+    #f5fbf8;
+
+  color:
+    #087858;
+
+  font-size: 9px;
+  font-weight: 850;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   RUTAS DE HOY + COMPARATIVO
+========================================================= */
+
+.dashboard-control-grid {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.45fr)
+    minmax(300px, 0.75fr);
+
+  gap: 14px;
+
+  margin-bottom: 14px;
+}
+
+
+.dashboard-routes-list {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 8px;
+}
+
+
+.dashboard-route-card {
+  min-width: 0;
+
+  padding:
+    10px;
+
+  border:
+    1px solid
+    rgba(8, 120, 88, 0.12);
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f7fcf9
+    );
+}
+
+
+.dashboard-route-main {
+  margin-bottom: 9px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 10px;
+}
+
+
+.dashboard-route-main > div {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+
+.dashboard-route-main strong {
+  overflow: hidden;
+
+  color:
+    #0b5738;
+
+  font-size: 10px;
+  font-weight: 950;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+
+.dashboard-route-main span {
+  overflow: hidden;
+
+  color:
+    #71857c;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+
+.dashboard-route-main b {
+  flex-shrink: 0;
+
+  padding:
+    4px 7px;
+
+  border-radius: 999px;
+
+  background:
+    #e8f7ef;
+
+  color:
+    #087858;
+
+  font-size: 7px;
+  font-weight: 950;
+}
+
+
+.dashboard-route-stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 5px;
+}
+
+
+.dashboard-route-stats > div {
+  min-width: 0;
+
+  padding:
+    6px 7px;
+
+  border-radius: 8px;
+
+  background:
+    #f1f7f4;
+}
+
+
+.dashboard-route-stats span {
+  display: block;
+
+  overflow: hidden;
+
+  margin-bottom: 2px;
+
+  color:
+    #71857c;
+
+  font-size: 6.5px;
+  font-weight: 800;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+
+.dashboard-route-stats strong {
+  color:
+    #0b5738;
+
+  font-size: 11px;
+  font-weight: 950;
+}
+
+
+.dashboard-compare-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+
+.dashboard-compare-item {
+  min-height: 71px;
+
+  padding:
+    9px 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  border:
+    1px solid
+    #e0ebe6;
+
+  border-radius: 10px;
+
+  background:
+    #ffffff;
+}
+
+
+.dashboard-compare-copy {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+
+.dashboard-compare-copy > span {
+  color:
+    #657c72;
+
+  font-size: 8px;
+  font-weight: 900;
+
+  text-transform:
+    uppercase;
+}
+
+
+.dashboard-compare-copy > strong {
+  overflow: hidden;
+
+  color:
+    #0b5738;
+
+  font-size: 16px;
+  font-weight: 950;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+
+.dashboard-compare-copy > small {
+  overflow: hidden;
+
+  color:
+    #88988f;
+
+  font-size: 7px;
+  font-weight: 700;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+}
+
+
+.dashboard-compare-variation {
+  flex-shrink: 0;
+
+  min-width: 60px;
+
+  padding:
+    6px 7px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 4px;
+
+  border-radius: 999px;
+
+  background:
+    #f1f4f3;
+
+  color:
+    #667c73;
+
+  font-size: 8px;
+  font-weight: 950;
+}
+
+
+.dashboard-compare-variation.up {
+  background:
+    #e8f7ef;
+
+  color:
+    #087858;
+}
+
+
+.dashboard-compare-variation.down {
+  background:
+    #fff0ef;
+
+  color:
+    #b42318;
+}
+
+
+.dashboard-compare-variation.neutral {
+  background:
+    #f2f4f3;
+
+  color:
+    #6d7f77;
+}
+
+
+/* =========================================================
+   RESPONSIVE - BLOQUES NUEVOS
+========================================================= */
+
+@media (
+  max-width: 1080px
+) {
+
+  .dashboard-control-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+}
+
+
+@media (
+  max-width: 760px
+) {
+
+  .dashboard-day-summary {
+    align-items:
+      flex-start;
+
+    flex-direction:
+      column;
+  }
+
+
+  .dashboard-routes-list {
+    grid-template-columns:
+      1fr;
+  }
+
+}
+
+
+@media (
+  max-width: 540px
+) {
+
+  .dashboard-attention-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+
+  .dashboard-route-stats {
+    grid-template-columns:
+      1fr;
+  }
+
+}

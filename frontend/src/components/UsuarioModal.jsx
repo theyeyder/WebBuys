@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 
-import guardarIcon from "../assets/icons/guardar.png";
-import resetearIcon from "../assets/icons/resetear.png";
-import bloquearIcon from "../assets/icons/bloquear.png";
-import desbloquearIcon from "../assets/icons/desbloquear.png";
-import cerrarIcon from "../assets/icons/cerrar.png";
+import guardarIcon from "../assets/icons/guardar.webp";
+import resetearIcon from "../assets/icons/resetear.webp";
+import bloquearIcon from "../assets/icons/bloquear.webp";
+import desbloquearIcon from "../assets/icons/desbloquear.webp";
+import cerrarIcon from "../assets/icons/cerrar.webp";
 
-import verIcon from "../assets/icons/ver.png";
-import ocultarIcon from "../assets/icons/ocultar.png";
+import verIcon from "../assets/icons/ver.webp";
+import ocultarIcon from "../assets/icons/ocultar.webp";
 
 
 import "../styles/usuario-modal.css";

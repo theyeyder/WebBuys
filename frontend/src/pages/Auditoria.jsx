@@ -11,10 +11,10 @@ import Toast
   from "../components/Toast.jsx";
 
 import buscarIcon
-  from "../assets/icons/buscar.png";
+  from "../assets/icons/buscar.webp";
 
 import cerrarIcon
-  from "../assets/icons/cerrar.png";
+  from "../assets/icons/cerrar.webp";
 
 import {
   listarAuditoria,

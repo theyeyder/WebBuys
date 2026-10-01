@@ -11,10 +11,10 @@ import {
 } from "../services/configuracion.service.js";
 
 import cerrarSesionIcon
-  from "../assets/icons/cerrar-sesion.png";
+  from "../assets/icons/cerrar-sesion.webp";
 
 import empresaIcon
-  from "../assets/icons/empresa.png";
+  from "../assets/icons/empresa.webp";
 
 import "../styles/user-footer.css";
 

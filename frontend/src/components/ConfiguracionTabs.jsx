@@ -1,9 +1,9 @@
-import usuariosIcon from "../assets/icons/usuarios.png";
-import empresaIcon from "../assets/icons/empresa.png";
-import rutasIcon from "../assets/icons/rutas.png";
-import numeracionIcon from "../assets/icons/numeracion.png";
-import auditoriaIcon from "../assets/icons/auditoria.png";
-import preferenciasIcon from "../assets/icons/preferencias.png";
+import usuariosIcon from "../assets/icons/usuarios.webp";
+import empresaIcon from "../assets/icons/empresa.webp";
+import rutasIcon from "../assets/icons/rutas.webp";
+import numeracionIcon from "../assets/icons/numeracion.webp";
+import auditoriaIcon from "../assets/icons/auditoria.webp";
+import preferenciasIcon from "../assets/icons/preferencias.webp";
 
 const opciones = [
   {

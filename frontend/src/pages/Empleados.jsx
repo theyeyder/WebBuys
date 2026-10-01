@@ -35,34 +35,34 @@ import {
 } from "../utils/empleado.impresion.js";
 
 import empleadosIcon
-  from "../assets/icons/nuevo empleado.png";
+  from "../assets/icons/nuevo empleado.webp";
 
 import editarIcon
-  from "../assets/icons/editar.png";
+  from "../assets/icons/editar.webp";
 
 import bloquearIcon
-  from "../assets/icons/bloquear.png";
+  from "../assets/icons/bloquear.webp";
 
 import desbloquearIcon
-  from "../assets/icons/desbloquear.png";
+  from "../assets/icons/desbloquear.webp";
 
 import eliminarIcon
-  from "../assets/icons/Eliminar ruta.png";
+  from "../assets/icons/Eliminar-ruta.webp";
 
 import buscarIcon
-  from "../assets/icons/buscar.png";
+  from "../assets/icons/buscar.webp";
 
 import imprimirIcon
-  from "../assets/icons/imprimir.png";
+  from "../assets/icons/imprimir.webp";
 
 import guardarIcon
-  from "../assets/icons/guardar.png";
+  from "../assets/icons/guardar.webp";
 
 import cerrarIcon
-  from "../assets/icons/cerrar.png";
+  from "../assets/icons/cerrar.webp";
 
 import calendarioIcon
-  from "../assets/icons/calendario.png";
+  from "../assets/icons/calendario.webp";
 
 
 import "../styles/empleados.css";

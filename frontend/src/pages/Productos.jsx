@@ -28,31 +28,31 @@ import ModulosMenu
   from "../components/ModulosMenu.jsx";
 
 import nuevoProductoIcon
-  from "../assets/icons/nuevo-producto.png";
+  from "../assets/icons/nuevo-producto.webp";
 
 import editarProductoIcon
-  from "../assets/icons/editar-producto.png";
+  from "../assets/icons/editar-producto.webp";
 
 import bloquearIcon
-  from "../assets/icons/bloquear.png";
+  from "../assets/icons/bloquear.webp";
 
 import desbloquearIcon
-  from "../assets/icons/desbloquear.png";
+  from "../assets/icons/desbloquear.webp";
 
 import eliminarProductoIcon
-  from "../assets/icons/eliminar-producto.png";
+  from "../assets/icons/eliminar-producto.webp";
 
 import buscarIcon
-  from "../assets/icons/buscar.png";
+  from "../assets/icons/buscar.webp";
 
 import imprimirIcon
-  from "../assets/icons/imprimir.png";
+  from "../assets/icons/imprimir.webp";
 
 import cerrarIcon
-  from "../assets/icons/cerrar.png";
+  from "../assets/icons/cerrar.webp";
 
 import guardarIcon
-  from "../assets/icons/guardar.png";
+  from "../assets/icons/guardar.webp";
 
 import productosPrintCss
   from "../styles/productos-print.css?inline";

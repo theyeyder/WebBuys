@@ -4,19 +4,19 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import dashboardIcon from "../assets/icons/dashboard.png";
-import clientesIcon from "../assets/icons/clientes.png";
-import categoriasIcon from "../assets/icons/categorias.png";
-import productosIcon from "../assets/icons/productos.png";
-import pedidosIcon from "../assets/icons/pedidos.png";
-import entregaIcon from "../assets/icons/Entrega.png";
-import facturacionIcon from "../assets/icons/facturacion.png";
-import cajaIcon from "../assets/icons/caja.png";
-import carteraIcon from "../assets/icons/Cartera.png";
-import empleadosIcon from "../assets/icons/empleados.png";
-import configuracionIcon from "../assets/icons/configuracion.png";
-import modulosIcon from "../assets/icons/modulos.png";
-import cerrarIcon from "../assets/icons/cerrar.png";
+import dashboardIcon from "../assets/icons/dashboard.webp";
+import clientesIcon from "../assets/icons/clientes.webp";
+import categoriasIcon from "../assets/icons/categorias.webp";
+import productosIcon from "../assets/icons/productos.webp";
+import pedidosIcon from "../assets/icons/pedidos.webp";
+import entregaIcon from "../assets/icons/Entrega.webp";
+import facturacionIcon from "../assets/icons/facturacion.webp";
+import cajaIcon from "../assets/icons/caja.webp";
+import carteraIcon from "../assets/icons/Cartera.webp";
+import empleadosIcon from "../assets/icons/empleados.webp";
+import configuracionIcon from "../assets/icons/configuracion.webp";
+import modulosIcon from "../assets/icons/modulos.webp";
+import cerrarIcon from "../assets/icons/cerrar.webp";
 
 import "../styles/ModulosMenu.css";
 

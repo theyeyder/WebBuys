@@ -10,9 +10,9 @@ import {
   eliminarLogoEmpresa,
 } from "../services/configuracion.service.js";
 
-import subirArchivoIcon from "../assets/icons/subir-archivo.png";
-import guardarIcon from "../assets/icons/guardar.png";
-import eliminarLogoIcon from "../assets/icons/eliminar-logo.png";
+import subirArchivoIcon from "../assets/icons/subir-archivo.webp";
+import guardarIcon from "../assets/icons/guardar.webp";
+import eliminarLogoIcon from "../assets/icons/eliminar-logo.webp";
 import CalendarInput from "../components/CalendarInput.jsx"; 
 import "../styles/empresa.css";
 
@@ -48,7 +48,7 @@ const FORM_INICIAL = {
 
 const API_ORIGIN = (
   import.meta.env.VITE_API_URL ||
-  "http://localhost:5000/api"
+  "http://127.0.0.1:5000/api"
 ).replace(/\/api\/?$/, "");
 
 export default function Empresa() {
@@ -548,7 +548,7 @@ export default function Empresa() {
                       <input
                         ref={inputLogoRef}
                         type="file"
-                        accept=".png,.jpg,.jpeg,.webp"
+                        accept=".webp,.jpg,.jpeg,.webp"
                         hidden
                         onChange={seleccionarLogo}
                       />

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 
-import guardarIcon from "../assets/icons/guardar.png";
-import cerrarIcon from "../assets/icons/cerrar.png";
+import guardarIcon from "../assets/icons/guardar.webp";
+import cerrarIcon from "../assets/icons/cerrar.webp";
 
-import verIcon from "../assets/icons/ver.png";
-import ocultarIcon from "../assets/icons/ocultar.png";
+import verIcon from "../assets/icons/ver.webp";
+import ocultarIcon from "../assets/icons/ocultar.webp";
 
 import "../styles/usuario-modal.css";
 

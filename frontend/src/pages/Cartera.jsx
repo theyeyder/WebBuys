@@ -20,13 +20,13 @@ import {
 } from "../services/cartera.service.js";
 
 import cerrarIcon
-  from "../assets/icons/cerrar.png";
+  from "../assets/icons/cerrar.webp";
 
 import guardarIcon
-  from "../assets/icons/guardar.png";
+  from "../assets/icons/guardar.webp";
 
 import calendarioIcon
-  from "../assets/icons/calendario.png";
+  from "../assets/icons/calendario.webp";
 
 import "../styles/cartera.css";
 

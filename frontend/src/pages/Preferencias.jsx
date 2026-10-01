@@ -10,7 +10,7 @@ import Toast
   from "../components/Toast.jsx";
 
 import guardarIcon
-  from "../assets/icons/guardar.png";
+  from "../assets/icons/guardar.webp";
 
 import {
   obtenerPreferencias,

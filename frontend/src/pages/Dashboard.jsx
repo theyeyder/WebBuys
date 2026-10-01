@@ -45,6 +45,10 @@ import {
   listarEntregasFacturables,
 } from "../services/factura.service.js";
 
+import {
+  listarRutas,
+} from "../services/ruta.service.js";
+
 import "../styles/dashboard.css";
 
 
@@ -259,6 +263,243 @@ function claseEstado(
 }
 
 
+function normalizarComparable(
+  valor
+) {
+
+  return String(
+    valor ||
+    ""
+  )
+    .trim()
+    .toLowerCase()
+    .normalize(
+      "NFD"
+    )
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    );
+
+}
+
+
+function idReferencia(
+  valor
+) {
+
+  if (!valor) {
+    return "";
+  }
+
+
+  if (
+    typeof valor ===
+    "object"
+  ) {
+
+    return String(
+      valor._id ||
+      valor.id ||
+      ""
+    );
+
+  }
+
+
+  return String(
+    valor
+  );
+
+}
+
+
+function coincideRuta(
+  entidad,
+  ruta
+) {
+
+  const rutaId =
+    idReferencia(
+      ruta
+    );
+
+
+  const entidadRutaId =
+    idReferencia(
+      entidad?.ruta
+    );
+
+
+  if (
+    rutaId &&
+    entidadRutaId
+  ) {
+
+    return (
+      rutaId ===
+      entidadRutaId
+    );
+
+  }
+
+
+  const nombreRuta =
+    normalizarComparable(
+      ruta?.nombre
+    );
+
+
+  const nombreEntidad =
+    normalizarComparable(
+      entidad?.rutaNombre ||
+      entidad?.ruta?.nombre
+    );
+
+
+  return Boolean(
+    nombreRuta &&
+    nombreEntidad &&
+    nombreRuta ===
+      nombreEntidad
+  );
+
+}
+
+
+function variacionPorcentual(
+  actual,
+  anterior
+) {
+
+  const valorActual =
+    Number(
+      actual ||
+      0
+    );
+
+
+  const valorAnterior =
+    Number(
+      anterior ||
+      0
+    );
+
+
+  if (
+    valorAnterior === 0
+  ) {
+
+    if (
+      valorActual === 0
+    ) {
+      return {
+        texto:
+          "Sin cambio",
+        tendencia:
+          "neutral",
+      };
+    }
+
+
+    return {
+      texto:
+        "Nuevo",
+      tendencia:
+        "up",
+    };
+
+  }
+
+
+  const porcentaje =
+    (
+      (
+        valorActual -
+        valorAnterior
+      ) /
+      Math.abs(
+        valorAnterior
+      )
+    ) *
+    100;
+
+
+  if (
+    Math.abs(
+      porcentaje
+    ) <
+    0.5
+  ) {
+
+    return {
+      texto:
+        "Sin cambio",
+      tendencia:
+        "neutral",
+    };
+
+  }
+
+
+  return {
+    texto:
+      `${porcentaje > 0 ? "+" : ""}${Math.round(
+        porcentaje
+      )}%`,
+
+    tendencia:
+      porcentaje > 0
+        ? "up"
+        : "down",
+  };
+
+}
+
+
+function variacionCantidad(
+  actual,
+  anterior
+) {
+
+  const diferencia =
+    Number(
+      actual ||
+      0
+    ) -
+    Number(
+      anterior ||
+      0
+    );
+
+
+  if (
+    diferencia === 0
+  ) {
+
+    return {
+      texto:
+        "Sin cambio",
+      tendencia:
+        "neutral",
+    };
+
+  }
+
+
+  return {
+    texto:
+      `${diferencia > 0 ? "+" : ""}${diferencia}`,
+
+    tendencia:
+      diferencia > 0
+        ? "up"
+        : "down",
+  };
+
+}
+
+
 export default function Dashboard() {
 
   const navigate =
@@ -326,6 +567,12 @@ export default function Dashboard() {
 
 
   const [
+    rutas,
+    setRutas,
+  ] = useState([]);
+
+
+  const [
     cargando,
     setCargando,
   ] = useState(true);
@@ -368,6 +615,7 @@ export default function Dashboard() {
           listarCartera(),
           obtenerResumenCartera(),
           listarEntregasFacturables(),
+          listarRutas(),
         ]);
 
 
@@ -535,6 +783,23 @@ export default function Dashboard() {
       }
 
 
+      if (
+        resultados[10].status ===
+          "fulfilled"
+      ) {
+
+        setRutas(
+          normalizarLista(
+            resultados[10].value,
+            [
+              "rutas",
+            ]
+          )
+        );
+
+      }
+
+
       resultados.forEach(
         (
           resultado,
@@ -618,6 +883,30 @@ export default function Dashboard() {
           );
 
 
+        const inicioAyer =
+          new Date(
+            inicioHoy
+          );
+
+
+        inicioAyer.setDate(
+          inicioHoy.getDate() -
+          1
+        );
+
+
+        const finAyer =
+          new Date(
+            inicioAyer.getFullYear(),
+            inicioAyer.getMonth(),
+            inicioAyer.getDate(),
+            23,
+            59,
+            59,
+            999
+          );
+
+
         const inicioSemana =
           new Date(
             inicioHoy
@@ -642,6 +931,8 @@ export default function Dashboard() {
           ahora,
           inicioHoy,
           finHoy,
+          inicioAyer,
+          finAyer,
           inicioSemana,
           inicioMes,
         };
@@ -1167,6 +1458,532 @@ export default function Dashboard() {
     ).length;
 
 
+  const entregasAyer =
+    useMemo(
+      () =>
+        entregasCompletadas.filter(
+          (
+            entrega
+          ) =>
+            estaEntre(
+              fechaEventoEntrega(
+                entrega
+              ),
+              rangos.inicioAyer,
+              rangos.finAyer
+            )
+        ),
+      [
+        entregasCompletadas,
+        rangos,
+      ]
+    );
+
+
+  const ventasAyer =
+    useMemo(
+      () =>
+        entregasAyer.reduce(
+          (
+            total,
+            entrega
+          ) =>
+            total +
+            Number(
+              entrega.total ||
+              0
+            ),
+          0
+        ),
+      [
+        entregasAyer,
+      ]
+    );
+
+
+  const creditosAyer =
+    entregasAyer.filter(
+      (
+        entrega
+      ) =>
+        entrega.metodoPago ===
+        "Crédito"
+    ).length;
+
+
+  const valorCreditoAyer =
+    entregasAyer
+      .filter(
+        (
+          entrega
+        ) =>
+          entrega.metodoPago ===
+          "Crédito"
+      )
+      .reduce(
+        (
+          total,
+          entrega
+        ) =>
+          total +
+          Number(
+            entrega.total ||
+            0
+          ),
+        0
+      );
+
+
+  const comparativos =
+    [
+      {
+        titulo:
+          "Ventas",
+        actual:
+          moneda(
+            ventasHoy
+          ),
+        anterior:
+          moneda(
+            ventasAyer
+          ),
+        ...variacionPorcentual(
+          ventasHoy,
+          ventasAyer
+        ),
+      },
+      {
+        titulo:
+          "Entregas",
+        actual:
+          entregasHoy.length,
+        anterior:
+          entregasAyer.length,
+        ...variacionCantidad(
+          entregasHoy.length,
+          entregasAyer.length
+        ),
+      },
+      {
+        titulo:
+          "Crédito",
+        actual:
+          moneda(
+            ventasHoyPorPago[
+              "Crédito"
+            ]
+          ),
+        anterior:
+          moneda(
+            valorCreditoAyer
+          ),
+        ...variacionPorcentual(
+          ventasHoyPorPago[
+            "Crédito"
+          ],
+          valorCreditoAyer
+        ),
+        detalle:
+          `${creditosHoy} hoy · ${creditosAyer} ayer`,
+      },
+    ];
+
+
+  const entregasAtrasadas =
+    entregas.filter(
+      (
+        entrega
+      ) => {
+
+        if (
+          ![
+            "Por preparar",
+            "Pendiente",
+            "En ruta",
+          ].includes(
+            entrega.estado
+          ) ||
+          !entrega.fechaProgramada
+        ) {
+          return false;
+        }
+
+
+        const fechaProgramada =
+          new Date(
+            entrega.fechaProgramada
+          );
+
+
+        if (
+          Number.isNaN(
+            fechaProgramada.getTime()
+          )
+        ) {
+          return false;
+        }
+
+
+        fechaProgramada.setHours(
+          0,
+          0,
+          0,
+          0
+        );
+
+
+        return (
+          fechaProgramada <
+          rangos.inicioHoy
+        );
+
+      }
+    ).length;
+
+
+  const pedidosListosAnteriores =
+    pedidos.filter(
+      (
+        pedido
+      ) => {
+
+        if (
+          pedido.estado !==
+          "Listo para entrega"
+        ) {
+          return false;
+        }
+
+
+        const fechaCambio =
+          new Date(
+            pedido.updatedAt ||
+            pedido.createdAt ||
+            0
+          );
+
+
+        return (
+          !Number.isNaN(
+            fechaCambio.getTime()
+          ) &&
+          fechaCambio <
+            rangos.inicioHoy
+        );
+
+      }
+    ).length;
+
+
+  const alertasAtencion =
+    [
+      {
+        id:
+          "cartera",
+        titulo:
+          "Cartera vencida",
+        valor:
+          carteraVencida.cantidad,
+        detalle:
+          moneda(
+            carteraVencida.valor
+          ),
+        destino:
+          "/cartera",
+        activa:
+          carteraVencida.cantidad >
+          0,
+        tipo:
+          "danger",
+      },
+      {
+        id:
+          "entregas",
+        titulo:
+          "Entregas atrasadas",
+        valor:
+          entregasAtrasadas,
+        detalle:
+          "Con fecha programada anterior a hoy",
+        destino:
+          "/entregas",
+        activa:
+          entregasAtrasadas >
+          0,
+        tipo:
+          "warning",
+      },
+      {
+        id:
+          "pedidos",
+        titulo:
+          "Pedidos listos anteriores",
+        valor:
+          pedidosListosAnteriores,
+        detalle:
+          "Listos para entrega antes de hoy",
+        destino:
+          "/pedidos",
+        activa:
+          pedidosListosAnteriores >
+          0,
+        tipo:
+          "warning",
+      },
+      {
+        id:
+          "facturacion",
+        titulo:
+          "Facturación pendiente",
+        valor:
+          facturables.length,
+        detalle:
+          "Entregas disponibles para facturar",
+        destino:
+          "/facturacion",
+        activa:
+          facturables.length >
+          0,
+        tipo:
+          "info",
+      },
+      {
+        id:
+          "stock",
+        titulo:
+          "Stock bajo",
+        valor:
+          stockBajo,
+        detalle:
+          "Producto(s) por revisar",
+        destino:
+          "/productos",
+        activa:
+          stockBajo >
+          0,
+        tipo:
+          "warning",
+      },
+      {
+        id:
+          "caja",
+        titulo:
+          "Caja cerrada",
+        valor:
+          !cajaAbierta &&
+          totalPorEntregar >
+            0
+            ? totalPorEntregar
+            : 0,
+        detalle:
+          "Hay entregas pendientes de gestionar",
+        destino:
+          "/caja",
+        activa:
+          !cajaAbierta &&
+          totalPorEntregar >
+            0,
+        tipo:
+          "danger",
+      },
+    ].filter(
+      (
+        alerta
+      ) =>
+        alerta.activa
+    );
+
+
+  const nombresDias = [
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
+  ];
+
+
+  const diaAtencionActual =
+    nombresDias[
+      rangos.ahora.getDay()
+    ];
+
+
+  const rutasHoy =
+    useMemo(
+      () => {
+
+        return rutas
+          .filter(
+            (
+              ruta
+            ) => {
+
+              const activa =
+                ruta.estado !==
+                "Inactiva";
+
+
+              const dias =
+                Array.isArray(
+                  ruta.diasAtencion
+                )
+                  ? ruta.diasAtencion
+                  : [];
+
+
+              return (
+                activa &&
+                dias.some(
+                  (
+                    dia
+                  ) =>
+                    normalizarComparable(
+                      dia
+                    ) ===
+                    normalizarComparable(
+                      diaAtencionActual
+                    )
+                )
+              );
+
+            }
+          )
+          .map(
+            (
+              ruta
+            ) => {
+
+              const zonasRuta =
+                new Set(
+                  (
+                    Array.isArray(
+                      ruta.zonasDespacho
+                    )
+                      ? ruta.zonasDespacho
+                      : []
+                  )
+                    .map(
+                      (
+                        zona
+                      ) =>
+                        idReferencia(
+                          zona
+                        )
+                    )
+                    .filter(
+                      Boolean
+                    )
+                );
+
+
+              const clientesRuta =
+                clientesActivos ===
+                0
+                  ? 0
+                  : clientes.filter(
+                      (
+                        cliente
+                      ) => {
+
+                        const clienteActivo =
+                          cliente.estado !==
+                            false &&
+                          cliente.estado !==
+                            "Inactivo";
+
+
+                        const zonaCliente =
+                          idReferencia(
+                            cliente.zonaDespacho
+                          );
+
+
+                        return (
+                          clienteActivo &&
+                          zonaCliente &&
+                          zonasRuta.has(
+                            zonaCliente
+                          )
+                        );
+
+                      }
+                    ).length;
+
+
+              const pedidosListosRuta =
+                pedidos.filter(
+                  (
+                    pedido
+                  ) =>
+                    pedido.estado ===
+                      "Listo para entrega" &&
+                    coincideRuta(
+                      pedido,
+                      ruta
+                    )
+                ).length;
+
+
+              const entregasPendientesRuta =
+                entregas.filter(
+                  (
+                    entrega
+                  ) =>
+                    [
+                      "Por preparar",
+                      "Pendiente",
+                      "En ruta",
+                    ].includes(
+                      entrega.estado
+                    ) &&
+                    coincideRuta(
+                      entrega,
+                      ruta
+                    )
+                ).length;
+
+
+              return {
+                ...ruta,
+                clientesRuta,
+                pedidosListosRuta,
+                entregasPendientesRuta,
+              };
+
+            }
+          )
+          .sort(
+            (
+              a,
+              b
+            ) =>
+              String(
+                a.nombre ||
+                ""
+              ).localeCompare(
+                String(
+                  b.nombre ||
+                  ""
+                ),
+                "es"
+              )
+          );
+
+      },
+      [
+        rutas,
+        clientes,
+        pedidos,
+        entregas,
+        clientesActivos,
+        diaAtencionActual,
+      ]
+    );
+
+
   return (
 
     <section className="dashboard-page">
@@ -1367,113 +2184,316 @@ export default function Dashboard() {
             </section>
 
 
-            <section className="dashboard-alerts">
+            <section className="dashboard-day-summary">
 
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(
-                    "/facturacion"
-                  )
-                }
-              >
-                <span>
-                  Facturación pendiente
-                </span>
-
+              <div>
                 <strong>
-                  {facturables.length}
+                  Atención de hoy · {diaAtencionActual}
                 </strong>
 
-                <small>
-                  Entregas disponibles para facturar
-                </small>
-              </button>
-
-
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(
-                    "/cartera"
-                  )
-                }
-                className={
-                  carteraVencida
-                    .cantidad >
-                  0
-                    ? "warning"
-                    : ""
-                }
-              >
                 <span>
-                  Cartera vencida
+                  {cajaAbierta
+                    ? `Caja abierta${cajaActual?.codigo ? ` · ${cajaActual.codigo}` : ""}`
+                    : "Caja cerrada"}
+                  {" · "}
+                  {totalPorEntregar} entrega(s) pendiente(s)
+                  {" · "}
+                  {alertasAtencion.length} alerta(s)
                 </span>
+              </div>
+
+              <small>
+                {rutasHoy.length} ruta(s) programada(s) hoy
+              </small>
+
+            </section>
+
+
+            <section className="dashboard-attention">
+
+              <header className="dashboard-section-heading">
+
+                <div>
+                  <h3>
+                    Requiere atención
+                  </h3>
+
+                  <span>
+                    Pendientes que necesitan revisión operativa
+                  </span>
+                </div>
 
                 <strong>
-                  {moneda(
-                    carteraVencida.valor
+                  {alertasAtencion.length}
+                </strong>
+
+              </header>
+
+
+              {alertasAtencion.length ===
+              0 ? (
+
+                <div className="dashboard-attention-ok">
+                  No hay alertas operativas pendientes en este momento.
+                </div>
+
+              ) : (
+
+                <div className="dashboard-attention-grid">
+
+                  {alertasAtencion.map(
+                    (
+                      alerta
+                    ) => (
+
+                      <button
+                        key={
+                          alerta.id
+                        }
+                        type="button"
+                        className={
+                          `dashboard-attention-card dashboard-attention-${alerta.tipo}`
+                        }
+                        onClick={() =>
+                          navigate(
+                            alerta.destino
+                          )
+                        }
+                      >
+
+                        <div>
+                          <span>
+                            {alerta.titulo}
+                          </span>
+
+                          <strong>
+                            {alerta.valor}
+                          </strong>
+                        </div>
+
+                        <small>
+                          {alerta.detalle}
+                        </small>
+
+                      </button>
+
+                    )
                   )}
-                </strong>
 
-                <small>
-                  {carteraVencida.cantidad} cuenta(s)
-                </small>
-              </button>
+                </div>
+
+              )}
+
+            </section>
 
 
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(
-                    "/cartera"
-                  )
-                }
-              >
-                <span>
-                  Créditos hoy
-                </span>
+            <section className="dashboard-control-grid">
 
-                <strong>
-                  {creditosHoy}
-                </strong>
+              <article className="dashboard-panel dashboard-routes-panel">
 
-                <small>
-                  {moneda(
-                    ventasHoyPorPago[
-                      "Crédito"
-                    ]
+                <header className="dashboard-panel-header">
+
+                  <div>
+                    <h3>
+                      Rutas de hoy
+                    </h3>
+
+                    <span>
+                      Atención programada para {diaAtencionActual}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      navigate(
+                        "/entregas"
+                      )
+                    }
+                  >
+                    Ver entregas
+                  </button>
+
+                </header>
+
+
+                {rutasHoy.length ===
+                0 ? (
+
+                  <div className="dashboard-empty dashboard-empty-small">
+                    No hay rutas activas programadas para hoy.
+                  </div>
+
+                ) : (
+
+                  <div className="dashboard-routes-list">
+
+                    {rutasHoy.map(
+                      (
+                        ruta
+                      ) => (
+
+                        <div
+                          key={
+                            ruta._id ||
+                            ruta.codigo ||
+                            ruta.nombre
+                          }
+                          className="dashboard-route-card"
+                        >
+
+                          <div className="dashboard-route-main">
+
+                            <div>
+                              <strong>
+                                {ruta.nombre ||
+                                  "Ruta"}
+                              </strong>
+
+                              <span>
+                                {Array.isArray(
+                                  ruta.diasAtencion
+                                )
+                                  ? ruta.diasAtencion.join(
+                                      " · "
+                                    )
+                                  : diaAtencionActual}
+                              </span>
+                            </div>
+
+                            <b>
+                              {ruta.codigo ||
+                                "Ruta"}
+                            </b>
+
+                          </div>
+
+
+                          <div className="dashboard-route-stats">
+
+                            <div>
+                              <span>
+                                Clientes
+                              </span>
+
+                              <strong>
+                                {ruta.clientesRuta}
+                              </strong>
+                            </div>
+
+                            <div>
+                              <span>
+                                Pedidos listos
+                              </span>
+
+                              <strong>
+                                {ruta.pedidosListosRuta}
+                              </strong>
+                            </div>
+
+                            <div>
+                              <span>
+                                Entregas pendientes
+                              </span>
+
+                              <strong>
+                                {ruta.entregasPendientesRuta}
+                              </strong>
+                            </div>
+
+                          </div>
+
+                        </div>
+
+                      )
+                    )}
+
+                  </div>
+
+                )}
+
+              </article>
+
+
+              <article className="dashboard-panel dashboard-compare-panel">
+
+                <header className="dashboard-panel-header">
+
+                  <div>
+                    <h3>
+                      Hoy vs ayer
+                    </h3>
+
+                    <span>
+                      Comparativo rápido de operación
+                    </span>
+                  </div>
+
+                </header>
+
+
+                <div className="dashboard-compare-list">
+
+                  {comparativos.map(
+                    (
+                      item
+                    ) => (
+
+                      <div
+                        key={
+                          item.titulo
+                        }
+                        className="dashboard-compare-item"
+                      >
+
+                        <div className="dashboard-compare-copy">
+
+                          <span>
+                            {item.titulo}
+                          </span>
+
+                          <strong>
+                            {item.actual}
+                          </strong>
+
+                          <small>
+                            Ayer: {item.anterior}
+                            {item.detalle
+                              ? ` · ${item.detalle}`
+                              : ""}
+                          </small>
+
+                        </div>
+
+
+                        <div
+                          className={
+                            `dashboard-compare-variation ${item.tendencia}`
+                          }
+                        >
+                          <b aria-hidden="true">
+                            {item.tendencia ===
+                            "up"
+                              ? "↑"
+                              : item.tendencia ===
+                                "down"
+                                ? "↓"
+                                : "→"}
+                          </b>
+
+                          <span>
+                            {item.texto}
+                          </span>
+                        </div>
+
+                      </div>
+
+                    )
                   )}
-                </small>
-              </button>
 
+                </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  navigate(
-                    "/productos"
-                  )
-                }
-                className={
-                  stockBajo >
-                  0
-                    ? "warning"
-                    : ""
-                }
-              >
-                <span>
-                  Stock bajo
-                </span>
-
-                <strong>
-                  {stockBajo}
-                </strong>
-
-                <small>
-                  Producto(s) por revisar
-                </small>
-              </button>
+              </article>
 
             </section>
 

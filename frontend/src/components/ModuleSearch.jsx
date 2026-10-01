@@ -8,7 +8,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import buscarIcon from "../assets/icons/buscar.png";
+import buscarIcon from "../assets/icons/buscar.webp";
 
 import "../styles/module-search.css";
 

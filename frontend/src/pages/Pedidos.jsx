@@ -47,28 +47,28 @@ import "../styles/pedidos.css";
 
 
 import pedidosIcon
-  from "../assets/icons/nuevo-pedido.png";
+  from "../assets/icons/nuevo-pedido.webp";
 
 import buscarIcon
-  from "../assets/icons/buscar.png";
+  from "../assets/icons/buscar.webp";
 
 import guardarIcon
-  from "../assets/icons/guardar.png";
+  from "../assets/icons/guardar.webp";
 
 import editarIcon
-  from "../assets/icons/editar-pedido.png";
+  from "../assets/icons/editar-pedido.webp";
 
 import eliminarIcon
-  from "../assets/icons/eliminar-pedido.png";
+  from "../assets/icons/eliminar-pedido.webp";
 
 import imprimirIcon
-  from "../assets/icons/imprimir.png";
+  from "../assets/icons/imprimir.webp";
 
 import imprimirPedidoIcon
-  from "../assets/icons/imprimir-pedido.png";
+  from "../assets/icons/imprimir-pedido.webp";
 
 import cerrarIcon
-  from "../assets/icons/cerrar.png";
+  from "../assets/icons/cerrar.webp";
 
 
 /* =========================================

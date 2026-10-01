@@ -33,16 +33,16 @@ import {
 } from "../utils/entrega.impresion.js";
 
 import imprimirIcon
-  from "../assets/icons/imprimir.png";
+  from "../assets/icons/imprimir.webp";
 
 import imprimirEntregaIcon
-  from "../assets/icons/imprimir-pedido.png";
+  from "../assets/icons/imprimir-pedido.webp";
 
 import guardarEntregaIcon
-  from "../assets/icons/guardar-entrega.png";
+  from "../assets/icons/guardar-entrega.webp";
 
 import cerrarEntregaIcon
-  from "../assets/icons/cerrar-entrega.png";
+  from "../assets/icons/cerrar-entrega.webp";
 
 import "../styles/entregas.css";
 

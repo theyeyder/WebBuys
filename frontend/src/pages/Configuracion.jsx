@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import AppLayout from "../layouts/AppLayout.jsx";
 import SpatialCard from "../components/cards/SpatialCard.jsx";
 
-import usuariosIcon from "../assets/icons/usuarios.png";
-import empresaIcon from "../assets/icons/empresa.png";
-import rutasIcon from "../assets/icons/rutas.png";
-import numeracionIcon from "../assets/icons/numeracion.png";
-import auditoriaIcon from "../assets/icons/auditoria.png";
-import preferenciasIcon from "../assets/icons/preferencias.png";
-import zonasDespachoIcon from "../assets/icons/zonas-despacho.png";
+import usuariosIcon from "../assets/icons/usuarios.webp";
+import empresaIcon from "../assets/icons/empresa.webp";
+import rutasIcon from "../assets/icons/rutas.webp";
+import numeracionIcon from "../assets/icons/numeracion.webp";
+import auditoriaIcon from "../assets/icons/auditoria.webp";
+import preferenciasIcon from "../assets/icons/preferencias.webp";
+import zonasDespachoIcon from "../assets/icons/zonas-despacho.webp";
 
 import "../styles/configuracion.css";
 

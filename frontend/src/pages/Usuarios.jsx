@@ -11,15 +11,15 @@ import CambiarPasswordModal from "../components/CambiarPasswordModal.jsx";
 import Toast from "../components/Toast.jsx";
 import ModulosMenu from "../components/ModulosMenu.jsx";
 
-import editarIcon from "../assets/icons/editar.png";
-import resetearIcon from "../assets/icons/resetear.png";
-import bloquearIcon from "../assets/icons/bloquear.png";
-import desbloquearIcon from "../assets/icons/desbloquear.png";
-import nuevoUsuarioIcon from "../assets/icons/nuevo-usuario.png";
-import cambiarPasswordIcon from "../assets/icons/cambiar-password.png";
-import guardarIcon from "../assets/icons/guardar.png";
-import buscarIcon from "../assets/icons/buscar.png";
-import cerrarIcon from "../assets/icons/cerrar.png";
+import editarIcon from "../assets/icons/editar.webp";
+import resetearIcon from "../assets/icons/resetear.webp";
+import bloquearIcon from "../assets/icons/bloquear.webp";
+import desbloquearIcon from "../assets/icons/desbloquear.webp";
+import nuevoUsuarioIcon from "../assets/icons/nuevo-usuario.webp";
+import cambiarPasswordIcon from "../assets/icons/cambiar-password.webp";
+import guardarIcon from "../assets/icons/guardar.webp";
+import buscarIcon from "../assets/icons/buscar.webp";
+import cerrarIcon from "../assets/icons/cerrar.webp";
 
 import "../styles/usuarios.css";
 

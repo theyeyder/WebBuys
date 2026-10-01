@@ -14,16 +14,16 @@ import {
 import Toast from "../components/Toast.jsx";
 import ModulosMenu from "../components/ModulosMenu.jsx";
 
-import buscarIcon from "../assets/icons/buscar.png";
-import editarIcon from "../assets/icons/Editar-ruta.png";
-import bloquearIcon from "../assets/icons/bloquear.png";
-import desbloquearIcon from "../assets/icons/desbloquear.png";
-import cerrarIcon from "../assets/icons/cerrar.png";
-import guardarIcon from "../assets/icons/guardar.png";
-import cancelarIcon from "../assets/icons/cancelar.png";
-import eliminarIcon from "../assets/icons/Eliminar ruta.png";
-import nuevaZonaIcon from "../assets/icons/nueva-zona.png";
-import imprimirIcon from "../assets/icons/imprimir.png";
+import buscarIcon from "../assets/icons/buscar.webp";
+import editarIcon from "../assets/icons/Editar-ruta.webp";
+import bloquearIcon from "../assets/icons/bloquear.webp";
+import desbloquearIcon from "../assets/icons/desbloquear.webp";
+import cerrarIcon from "../assets/icons/cerrar.webp";
+import guardarIcon from "../assets/icons/guardar.webp";
+import cancelarIcon from "../assets/icons/cancelar.webp";
+import eliminarIcon from "../assets/icons/Eliminar-ruta.webp";
+import nuevaZonaIcon from "../assets/icons/nueva-zona.webp";
+import imprimirIcon from "../assets/icons/imprimir.webp";
 
 import zonasPrintCss from "../styles/zonas-despacho-print.css?inline";
 
