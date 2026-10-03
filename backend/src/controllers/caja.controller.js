@@ -844,10 +844,66 @@ async function listarMovimientos(
           "pedido",
           "codigo total metodoPago estado"
         )
-        .populate(
-          "entrega",
-          "pedidoCodigo estado total metodoPago fechaEntregaReal"
-        )
+        .populate({
+          path:
+            "entrega",
+
+          /*
+            Caja necesita la Entrega completa porque esta es
+            la fuente definitiva de la venta, especialmente
+            en productos por peso: aquí ya existen pesoReal,
+            subtotal y total finales.
+          */
+          populate: [
+            {
+              path:
+                "pedido",
+
+              select:
+                "codigo estado fechaEntrega observaciones ruta rutaNombre rutaDiasAtencion",
+            },
+
+            {
+              path:
+                "cliente",
+
+              select:
+                "codigo nombre razonSocial telefono direccion barrio ciudad",
+            },
+
+            {
+              path:
+                "ruta",
+
+              select:
+                "codigo nombre descripcion diasAtencion estado",
+            },
+
+            {
+              path:
+                "empacador",
+
+              select:
+                "codigo nombres apellidos cargo estado",
+            },
+
+            {
+              path:
+                "repartidor",
+
+              select:
+                "codigo nombres apellidos telefono cargo estado",
+            },
+
+            {
+              path:
+                "items.producto",
+
+              select:
+                "codigo nombre marca",
+            },
+          ],
+        })
         .populate(
           "cliente",
           "codigo nombre razonSocial documento"
@@ -1638,10 +1694,66 @@ async function obtenerDetalle(
           "pedido",
           "codigo total metodoPago estado"
         )
-        .populate(
-          "entrega",
-          "pedidoCodigo estado total metodoPago fechaEntregaReal"
-        )
+        .populate({
+          path:
+            "entrega",
+
+          /*
+            Caja necesita la Entrega completa porque esta es
+            la fuente definitiva de la venta, especialmente
+            en productos por peso: aquí ya existen pesoReal,
+            subtotal y total finales.
+          */
+          populate: [
+            {
+              path:
+                "pedido",
+
+              select:
+                "codigo estado fechaEntrega observaciones ruta rutaNombre rutaDiasAtencion",
+            },
+
+            {
+              path:
+                "cliente",
+
+              select:
+                "codigo nombre razonSocial telefono direccion barrio ciudad",
+            },
+
+            {
+              path:
+                "ruta",
+
+              select:
+                "codigo nombre descripcion diasAtencion estado",
+            },
+
+            {
+              path:
+                "empacador",
+
+              select:
+                "codigo nombres apellidos cargo estado",
+            },
+
+            {
+              path:
+                "repartidor",
+
+              select:
+                "codigo nombres apellidos telefono cargo estado",
+            },
+
+            {
+              path:
+                "items.producto",
+
+              select:
+                "codigo nombre marca",
+            },
+          ],
+        })
         .populate(
           "cliente",
           "codigo nombre razonSocial documento"

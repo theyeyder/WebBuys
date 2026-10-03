@@ -19,6 +19,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 
 import Clientes from "./pages/Clientes.jsx";
 import Productos from "./pages/Productos.jsx";
+import Inventario from "./pages/Inventario.jsx";
 import Categorias from "./pages/Categorias.jsx";
 import Pedidos from "./pages/Pedidos.jsx";
 import Entregas from "./pages/Entregas.jsx";
@@ -79,6 +80,11 @@ function AppContent() {
           <Route
             path="/categorias"
             element={<Categorias />}
+          />
+
+          <Route
+            path="/inventario"
+            element={<Inventario />}
           />
 
           <Route

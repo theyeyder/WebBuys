@@ -16,6 +16,13 @@ import MovimientoCaja
 import Cartera
   from "../models/Cartera.js";
 
+import {
+  reservarStock,
+  liberarReserva,
+  confirmarSalidaEntrega,
+  revertirSalidaEntrega,
+} from "../services/inventario.service.js";
+
 
 function usuarioActual(req) {
   return (
@@ -23,6 +30,568 @@ function usuarioActual(req) {
     req.user?._id ||
     null
   );
+}
+
+
+/* =========================================
+   INVENTARIO DE ENTREGA
+========================================= */
+
+function itemsPesoEntrega(
+  entrega
+) {
+  return (
+    entrega?.items || []
+  ).filter(
+    (item) =>
+      item.tipoVenta ===
+        "Peso" &&
+      Number(item.pesoReal) > 0
+  );
+}
+
+
+function itemsSalidaEntrega(
+  entrega
+) {
+  return (
+    entrega?.items || []
+  )
+    .map(
+      (item) => ({
+        item,
+        cantidad:
+          item.tipoVenta ===
+            "Peso"
+            ? Number(
+                item.pesoReal ||
+                0
+              )
+            : Number(
+                item.cantidadSolicitada ||
+                0
+              ),
+      })
+    )
+    .filter(
+      ({ cantidad }) =>
+        Number.isFinite(
+          cantidad
+        ) &&
+        cantidad > 0
+    );
+}
+
+
+async function reservarPesosEntrega(
+  entrega,
+  req
+) {
+  if (
+    entrega.inventarioPesoReservado
+  ) {
+    return [];
+  }
+
+  const aplicadas = [];
+
+  try {
+    for (
+      const item
+      of itemsPesoEntrega(
+        entrega
+      )
+    ) {
+      const resultado =
+        await reservarStock({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad:
+            item.pesoReal,
+          pedidoId:
+            entrega.pedido,
+          pedidoCodigo:
+            entrega.pedidoCodigo,
+          observaciones:
+            "Reserva automática del peso real al confirmar la entrega.",
+          usuarioId:
+            usuarioActual(req),
+        });
+
+      if (!resultado?.omitido) {
+        aplicadas.push(
+          item
+        );
+      }
+    }
+  } catch (error) {
+    for (
+      const item
+      of aplicadas.reverse()
+    ) {
+      try {
+        await liberarReserva({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad:
+            item.pesoReal,
+          pedidoId:
+            entrega.pedido,
+          pedidoCodigo:
+            entrega.pedidoCodigo,
+          observaciones:
+            "Reversión automática de reserva de peso.",
+          usuarioId:
+            usuarioActual(req),
+        });
+      } catch (
+        errorRollback
+      ) {
+        console.error(
+          "Error revirtiendo reserva de peso:",
+          errorRollback
+        );
+      }
+    }
+
+    throw error;
+  }
+
+  entrega.inventarioPesoReservado =
+    true;
+
+  entrega.fechaReservaInventario =
+    new Date();
+
+  return aplicadas;
+}
+
+
+async function liberarPesosEntrega(
+  entrega,
+  req
+) {
+  if (
+    !entrega.inventarioPesoReservado
+  ) {
+    return;
+  }
+
+  const liberadas = [];
+
+  try {
+    for (
+      const item
+      of itemsPesoEntrega(
+        entrega
+      )
+    ) {
+      const resultado =
+        await liberarReserva({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad:
+            item.pesoReal,
+          pedidoId:
+            entrega.pedido,
+          pedidoCodigo:
+            entrega.pedidoCodigo,
+          observaciones:
+            "Liberación automática de reserva de peso por cancelación de entrega.",
+          usuarioId:
+            usuarioActual(req),
+        });
+
+      if (!resultado?.omitido) {
+        liberadas.push(
+          item
+        );
+      }
+    }
+  } catch (error) {
+    for (
+      const item
+      of liberadas.reverse()
+    ) {
+      try {
+        await reservarStock({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad:
+            item.pesoReal,
+          pedidoId:
+            entrega.pedido,
+          pedidoCodigo:
+            entrega.pedidoCodigo,
+          observaciones:
+            "Restauración automática de reserva de peso.",
+          usuarioId:
+            usuarioActual(req),
+        });
+      } catch (
+        errorRollback
+      ) {
+        console.error(
+          "Error restaurando reserva de peso:",
+          errorRollback
+        );
+      }
+    }
+
+    throw error;
+  }
+
+  entrega.inventarioPesoReservado =
+    false;
+
+  entrega.fechaReservaInventario =
+    null;
+}
+
+
+async function asegurarReservaUnidadesPedidoEntrega(
+  pedido,
+  entrega,
+  req
+) {
+  if (
+    !pedido ||
+    pedido.inventarioReservado
+  ) {
+    return;
+  }
+
+  const items =
+    (pedido.items || [])
+      .filter(
+        (item) =>
+          item.tipoVenta ===
+            "Unidad" &&
+          Number(item.cantidad) > 0
+      );
+
+  const aplicadas = [];
+
+  try {
+    for (
+      const item
+      of items
+    ) {
+      const resultado =
+        await reservarStock({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad:
+            item.cantidad,
+          pedidoId:
+            pedido._id,
+          pedidoCodigo:
+            pedido.codigo ||
+            entrega.pedidoCodigo,
+          observaciones:
+            "Reserva automática de unidades al confirmar la entrega.",
+          usuarioId:
+            usuarioActual(req),
+        });
+
+      if (!resultado?.omitido) {
+        aplicadas.push(
+          item
+        );
+      }
+    }
+
+    pedido.inventarioReservado =
+      true;
+
+    pedido.fechaReservaInventario =
+      new Date();
+
+    await pedido.save();
+
+  } catch (error) {
+
+    for (
+      const item
+      of aplicadas.reverse()
+    ) {
+      try {
+        await liberarReserva({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad:
+            item.cantidad,
+          pedidoId:
+            pedido._id,
+          pedidoCodigo:
+            pedido.codigo ||
+            entrega.pedidoCodigo,
+          observaciones:
+            "Reversión automática de reserva de unidades.",
+          usuarioId:
+            usuarioActual(req),
+        });
+      } catch (
+        errorRollback
+      ) {
+        console.error(
+          "Error revirtiendo reserva de unidades:",
+          errorRollback
+        );
+      }
+    }
+
+    pedido.inventarioReservado =
+      false;
+
+    pedido.fechaReservaInventario =
+      null;
+
+    throw error;
+  }
+}
+
+
+async function liberarUnidadesPedidoEntrega(
+  pedido,
+  entrega,
+  req
+) {
+  if (
+    !pedido?.inventarioReservado
+  ) {
+    return;
+  }
+
+  const items =
+    (pedido.items || [])
+      .filter(
+        (item) =>
+          item.tipoVenta ===
+            "Unidad" &&
+          Number(item.cantidad) > 0
+      );
+
+  const liberadas = [];
+
+  try {
+    for (
+      const item
+      of items
+    ) {
+      const resultado =
+        await liberarReserva({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad:
+            item.cantidad,
+          pedidoId:
+            pedido._id,
+          pedidoCodigo:
+            pedido.codigo ||
+            entrega.pedidoCodigo,
+          observaciones:
+            "Liberación automática de reserva por cancelación de entrega.",
+          usuarioId:
+            usuarioActual(req),
+        });
+
+      if (!resultado?.omitido) {
+        liberadas.push(
+          item
+        );
+      }
+    }
+  } catch (error) {
+    for (
+      const item
+      of liberadas.reverse()
+    ) {
+      try {
+        await reservarStock({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad:
+            item.cantidad,
+          pedidoId:
+            pedido._id,
+          pedidoCodigo:
+            pedido.codigo ||
+            entrega.pedidoCodigo,
+          observaciones:
+            "Restauración automática de reserva por fallo al cancelar entrega.",
+          usuarioId:
+            usuarioActual(req),
+        });
+      } catch (
+        errorRollback
+      ) {
+        console.error(
+          "Error restaurando reserva por cancelación:",
+          errorRollback
+        );
+      }
+    }
+
+    throw error;
+  }
+
+  pedido.inventarioReservado =
+    false;
+
+  pedido.fechaReservaInventario =
+    null;
+}
+
+
+async function descontarInventarioEntrega(
+  entrega,
+  req
+) {
+  const procesadas = [];
+
+  try {
+    for (
+      const {
+        item,
+        cantidad,
+      }
+      of itemsSalidaEntrega(
+        entrega
+      )
+    ) {
+      const resultado =
+        await confirmarSalidaEntrega({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad,
+          pedidoId:
+            entrega.pedido,
+          pedidoCodigo:
+            entrega.pedidoCodigo,
+          entregaId:
+            entrega._id,
+          entregaCodigo:
+            entrega.pedidoCodigo,
+          observaciones:
+            "Salida automática al marcar la entrega como Entregado.",
+          usuarioId:
+            usuarioActual(req),
+        });
+
+      if (!resultado?.omitido) {
+        procesadas.push({
+          item,
+          cantidad,
+        });
+      }
+    }
+  } catch (error) {
+    for (
+      const {
+        item,
+        cantidad,
+      }
+      of procesadas.reverse()
+    ) {
+      try {
+        await revertirSalidaEntrega({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad,
+          pedidoId:
+            entrega.pedido,
+          pedidoCodigo:
+            entrega.pedidoCodigo,
+          entregaId:
+            entrega._id,
+          entregaCodigo:
+            entrega.pedidoCodigo,
+          observaciones:
+            "Reversión automática porque no se pudo completar la salida de toda la entrega.",
+          usuarioId:
+            usuarioActual(req),
+        });
+      } catch (
+        errorRollback
+      ) {
+        console.error(
+          "Error revirtiendo salida parcial de entrega:",
+          errorRollback
+        );
+      }
+    }
+
+    throw error;
+  }
+
+  return procesadas;
+}
+
+
+async function revertirInventarioEntrega(
+  entrega,
+  procesadas,
+  req
+) {
+  for (
+    const {
+      item,
+      cantidad,
+    }
+    of [...procesadas].reverse()
+  ) {
+    await revertirSalidaEntrega({
+      productoId:
+        item.producto,
+      presentacionId:
+        item.presentacionId ||
+        null,
+      cantidad,
+      pedidoId:
+        entrega.pedido,
+      pedidoCodigo:
+        entrega.pedidoCodigo,
+      entregaId:
+        entrega._id,
+      entregaCodigo:
+        entrega.pedidoCodigo,
+      observaciones:
+        "Reversión automática de inventario por fallo al finalizar la entrega.",
+      usuarioId:
+        usuarioActual(req),
+    });
+  }
 }
 
 
@@ -1603,6 +2172,26 @@ export const confirmarEntrega =
       );
 
 
+      const pedidoInventario =
+        await Pedido.findById(
+          entrega.pedido
+        );
+
+
+      await asegurarReservaUnidadesPedidoEntrega(
+        pedidoInventario,
+        entrega,
+        req
+      );
+
+
+      const reservasPesoAplicadas =
+        await reservarPesosEntrega(
+          entrega,
+          req
+        );
+
+
       entrega.confirmada =
         true;
 
@@ -1629,7 +2218,50 @@ export const confirmarEntrega =
         "";
 
 
-      await entrega.save();
+      try {
+
+        await entrega.save();
+
+      } catch (errorGuardado) {
+
+        for (
+          const item
+          of reservasPesoAplicadas.reverse()
+        ) {
+          try {
+            await liberarReserva({
+              productoId:
+                item.producto,
+              presentacionId:
+                item.presentacionId ||
+                null,
+              cantidad:
+                item.pesoReal,
+              pedidoId:
+                entrega.pedido,
+              pedidoCodigo:
+                entrega.pedidoCodigo,
+              observaciones:
+                "Reversión automática porque no se pudo guardar la confirmación de entrega.",
+              usuarioId:
+                usuarioActual(req),
+            });
+          } catch (errorRollback) {
+            console.error(
+              "Error revirtiendo reserva tras fallo al guardar entrega:",
+              errorRollback
+            );
+          }
+        }
+
+        entrega.inventarioPesoReservado =
+          false;
+
+        entrega.fechaReservaInventario =
+          null;
+
+        throw errorGuardado;
+      }
 
 
       const actualizada =
@@ -1747,46 +2379,6 @@ export const cambiarEstadoEntrega =
       } = req.body;
 
 
-      const estadoAnterior =
-        entrega.estado;
-
-      const fechaEntregaRealAnterior =
-        entrega.fechaEntregaReal;
-
-      const motivoCancelacionAnterior =
-        entrega.motivoCancelacion;
-
-      const motivoNoEntregaAnterior =
-        entrega.motivoNoEntrega;
-
-
-      let cajaEntrega =
-        null;
-
-
-      if (
-        estado ===
-        "Entregado"
-      ) {
-
-        cajaEntrega =
-          await obtenerCajaAbiertaEntrega();
-
-
-        if (!cajaEntrega) {
-
-          return res
-            .status(400)
-            .json({
-              mensaje:
-                "Debe abrir la caja antes de marcar una entrega como Entregado.",
-            });
-
-        }
-
-      }
-
-
       const estadosValidos = [
         "Pendiente",
         "En ruta",
@@ -1826,10 +2418,74 @@ export const cambiarEstadoEntrega =
         return res.json({
           mensaje:
             "La entrega ya se encuentra en ese estado.",
-
           entrega:
             actual,
         });
+
+      }
+
+
+      const estadoAnterior =
+        entrega.estado;
+
+      const fechaEntregaRealAnterior =
+        entrega.fechaEntregaReal;
+
+      const motivoCancelacionAnterior =
+        entrega.motivoCancelacion;
+
+      const motivoNoEntregaAnterior =
+        entrega.motivoNoEntrega;
+
+      const inventarioPesoReservadoAnterior =
+        Boolean(
+          entrega.inventarioPesoReservado
+        );
+
+      const inventarioDescontadoAnterior =
+        Boolean(
+          entrega.inventarioDescontado
+        );
+
+      const fechaSalidaInventarioAnterior =
+        entrega.fechaSalidaInventario;
+
+
+      const pedidoInventario =
+        await Pedido.findById(
+          entrega.pedido
+        );
+
+      const pedidoReservaAnterior =
+        Boolean(
+          pedidoInventario
+            ?.inventarioReservado
+        );
+
+
+      let cajaEntrega =
+        null;
+
+
+      if (
+        estado ===
+        "Entregado"
+      ) {
+
+        cajaEntrega =
+          await obtenerCajaAbiertaEntrega();
+
+
+        if (!cajaEntrega) {
+
+          return res
+            .status(400)
+            .json({
+              mensaje:
+                "Debe abrir la caja antes de marcar una entrega como Entregado.",
+            });
+
+        }
 
       }
 
@@ -1920,14 +2576,66 @@ export const cambiarEstadoEntrega =
         }
 
 
+        const pesoEstabaReservado =
+          Boolean(
+            entrega.inventarioPesoReservado
+          );
+
+        await liberarPesosEntrega(
+          entrega,
+          req
+        );
+
+        try {
+
+          await liberarUnidadesPedidoEntrega(
+            pedidoInventario,
+            entrega,
+            req
+          );
+
+        } catch (
+          errorLiberandoUnidades
+        ) {
+
+          if (
+            pesoEstabaReservado
+          ) {
+
+            try {
+              await reservarPesosEntrega(
+                entrega,
+                req
+              );
+            } catch (
+              errorRestaurandoPeso
+            ) {
+              console.error(
+                "Error restaurando la reserva de peso tras fallo de cancelación:",
+                errorRestaurandoPeso
+              );
+            }
+
+          }
+
+          throw errorLiberandoUnidades;
+
+        }
+
+
         entrega.motivoCancelacion =
           motivo;
 
-        /* Compatibilidad */
         entrega.motivoNoEntrega =
           motivo;
 
         entrega.fechaEntregaReal =
+          null;
+
+        entrega.inventarioDescontado =
+          false;
+
+        entrega.fechaSalidaInventario =
           null;
 
       }
@@ -1946,11 +2654,99 @@ export const cambiarEstadoEntrega =
 
 
       if (
+        pedidoInventario &&
+        estado ===
+          "Cancelado"
+      ) {
+
+        await pedidoInventario.save();
+
+      }
+
+
+      let salidasInventario =
+        [];
+
+
+      if (
         estado ===
         "Entregado"
       ) {
 
+        try {
+
+          salidasInventario =
+            await descontarInventarioEntrega(
+              entrega,
+              req
+            );
+
+          entrega.inventarioPesoReservado =
+            false;
+
+          entrega.inventarioDescontado =
+            true;
+
+          entrega.fechaSalidaInventario =
+            new Date();
+
+          if (pedidoInventario) {
+            pedidoInventario.inventarioReservado =
+              false;
+            pedidoInventario.fechaReservaInventario =
+              null;
+          }
+
+          await entrega.save();
+
+          if (pedidoInventario) {
+            await pedidoInventario.save();
+          }
+
+        } catch (
+          errorInventario
+        ) {
+
+          entrega.estado =
+            estadoAnterior;
+
+          entrega.fechaEntregaReal =
+            fechaEntregaRealAnterior;
+
+          entrega.motivoCancelacion =
+            motivoCancelacionAnterior;
+
+          entrega.motivoNoEntrega =
+            motivoNoEntregaAnterior;
+
+          entrega.inventarioPesoReservado =
+            inventarioPesoReservadoAnterior;
+
+          entrega.inventarioDescontado =
+            inventarioDescontadoAnterior;
+
+          entrega.fechaSalidaInventario =
+            fechaSalidaInventarioAnterior;
+
+          if (pedidoInventario) {
+            pedidoInventario.inventarioReservado =
+              pedidoReservaAnterior;
+          }
+
+          await entrega.save();
+
+          if (pedidoInventario) {
+            await pedidoInventario.save();
+          }
+
+          throw errorInventario;
+        }
+
+
         let carteraResultado =
+          null;
+
+        let movimientoCaja =
           null;
 
 
@@ -1973,20 +2769,37 @@ export const cambiarEstadoEntrega =
           }
 
 
-          await registrarEntregaEntregadaEnCaja({
-            entrega,
-            caja:
-              cajaEntrega,
-            usuarioId:
-              usuarioActual(
-                req
-              ),
-          });
+          movimientoCaja =
+            await registrarEntregaEntregadaEnCaja({
+              entrega,
+              caja:
+                cajaEntrega,
+              usuarioId:
+                usuarioActual(
+                  req
+                ),
+            });
 
 
         } catch (
           errorProceso
         ) {
+
+          try {
+            await revertirInventarioEntrega(
+              entrega,
+              salidasInventario,
+              req
+            );
+          } catch (
+            errorRollbackInventario
+          ) {
+            console.error(
+              "Error revirtiendo inventario tras fallo financiero:",
+              errorRollbackInventario
+            );
+          }
+
 
           if (
             carteraResultado?.creada &&
@@ -1995,6 +2808,17 @@ export const cambiarEstadoEntrega =
 
             await Cartera.findByIdAndDelete(
               carteraResultado.cartera._id
+            );
+
+          }
+
+
+          if (
+            movimientoCaja?._id
+          ) {
+
+            await MovimientoCaja.findByIdAndDelete(
+              movimientoCaja._id
             );
 
           }
@@ -2012,8 +2836,26 @@ export const cambiarEstadoEntrega =
           entrega.motivoNoEntrega =
             motivoNoEntregaAnterior;
 
+          entrega.inventarioPesoReservado =
+            inventarioPesoReservadoAnterior;
+
+          entrega.inventarioDescontado =
+            inventarioDescontadoAnterior;
+
+          entrega.fechaSalidaInventario =
+            fechaSalidaInventarioAnterior;
+
+          if (pedidoInventario) {
+            pedidoInventario.inventarioReservado =
+              pedidoReservaAnterior;
+          }
+
 
           await entrega.save();
+
+          if (pedidoInventario) {
+            await pedidoInventario.save();
+          }
 
 
           throw errorProceso;
@@ -2033,14 +2875,7 @@ export const cambiarEstadoEntrega =
 
       return res.json({
         mensaje:
-          estado ===
-            "Entregado"
-            ? entrega.metodoPago ===
-                "Crédito"
-              ? "Entrega marcada como Entregado y registrada en Caja y Cartera correctamente."
-              : "Entrega marcada como Entregado y registrada en Caja correctamente."
-            : `Estado actualizado a "${estado}".`,
-
+          `Estado de la entrega actualizado a ${estado}.`,
         entrega:
           actualizada,
       });
@@ -2053,11 +2888,10 @@ export const cambiarEstadoEntrega =
         error
       );
 
-
       return res
         .status(
           error.statusCode ||
-          500
+          400
         )
         .json({
           mensaje:

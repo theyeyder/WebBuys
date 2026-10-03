@@ -243,6 +243,30 @@ const entregaSchema =
         default: false,
       },
 
+      /* =====================================
+         CONTROL DE INVENTARIO
+      ===================================== */
+
+      inventarioPesoReservado: {
+        type: Boolean,
+        default: false,
+      },
+
+      inventarioDescontado: {
+        type: Boolean,
+        default: false,
+      },
+
+      fechaReservaInventario: {
+        type: Date,
+        default: null,
+      },
+
+      fechaSalidaInventario: {
+        type: Date,
+        default: null,
+      },
+
       fechaPreparacion: {
         type: Date,
         default: null,

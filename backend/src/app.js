@@ -28,6 +28,8 @@ import categoriaRoutes from "./routes/categoria.routes.js";
 
 import productoRoutes from "./routes/producto.routes.js";
 
+import inventarioRoutes from "./routes/inventario.routes.js";
+
 import pedidoRoutes from "./routes/pedido.routes.js";
 
 import entregaRoutes from "./routes/entrega.routes.js";
@@ -144,6 +146,11 @@ app.use(
 app.use(
   "/api/productos",
   productoRoutes
+);
+
+app.use(
+  "/api/inventario",
+  inventarioRoutes
 );
 
 app.use(

@@ -4,6 +4,9 @@ import Pedido
 import Producto
   from "../models/Producto.js";
 
+import Entrega
+  from "../models/Entrega.js";
+
 import Cliente
   from "../models/Cliente.js";
 
@@ -26,6 +29,223 @@ import {
 import {
   calcularPrecioProducto,
 } from "../utils/calcularPrecioProducto.js";
+
+import {
+  reservarStock,
+  liberarReserva,
+} from "../services/inventario.service.js";
+
+
+/* =========================================
+   INVENTARIO DEL PEDIDO
+   RESERVA SOLO PRODUCTOS POR UNIDAD
+========================================= */
+
+function usuarioPedidoActual(req) {
+  return (
+    req.usuario?._id ||
+    req.user?._id ||
+    null
+  );
+}
+
+
+function itemsUnidadPedido(
+  pedido
+) {
+  return (
+    pedido?.items || []
+  ).filter(
+    (item) =>
+      item.tipoVenta ===
+        "Unidad" &&
+      Number(item.cantidad) > 0
+  );
+}
+
+
+async function reservarInventarioPedido(
+  pedido,
+  req
+) {
+  if (
+    pedido.inventarioReservado
+  ) {
+    return;
+  }
+
+  const aplicadas = [];
+
+  try {
+    for (
+      const item
+      of itemsUnidadPedido(
+        pedido
+      )
+    ) {
+      const resultado =
+        await reservarStock({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad:
+            item.cantidad,
+          pedidoId:
+            pedido._id,
+          pedidoCodigo:
+            pedido.codigo,
+          observaciones:
+            "Reserva automática al marcar el pedido como Listo para entrega.",
+          usuarioId:
+            usuarioPedidoActual(
+              req
+            ),
+        });
+
+      if (!resultado?.omitido) {
+        aplicadas.push(
+          item
+        );
+      }
+    }
+  } catch (error) {
+    for (
+      const item
+      of aplicadas.reverse()
+    ) {
+      try {
+        await liberarReserva({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad:
+            item.cantidad,
+          pedidoId:
+            pedido._id,
+          pedidoCodigo:
+            pedido.codigo,
+          observaciones:
+            "Reversión automática porque no se pudo completar la reserva del pedido.",
+          usuarioId:
+            usuarioPedidoActual(
+              req
+            ),
+        });
+      } catch (
+        errorRollback
+      ) {
+        console.error(
+          "Error revirtiendo reserva de pedido:",
+          errorRollback
+        );
+      }
+    }
+
+    throw error;
+  }
+
+  pedido.inventarioReservado =
+    true;
+
+  pedido.fechaReservaInventario =
+    new Date();
+}
+
+
+async function liberarInventarioPedido(
+  pedido,
+  req
+) {
+  if (
+    !pedido.inventarioReservado
+  ) {
+    return;
+  }
+
+  const liberadas = [];
+
+  try {
+    for (
+      const item
+      of itemsUnidadPedido(
+        pedido
+      )
+    ) {
+      const resultado =
+        await liberarReserva({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad:
+            item.cantidad,
+          pedidoId:
+            pedido._id,
+          pedidoCodigo:
+            pedido.codigo,
+          observaciones:
+            "Liberación automática porque el pedido salió de Listo para entrega.",
+          usuarioId:
+            usuarioPedidoActual(
+              req
+            ),
+        });
+
+      if (!resultado?.omitido) {
+        liberadas.push(
+          item
+        );
+      }
+    }
+  } catch (error) {
+    for (
+      const item
+      of liberadas.reverse()
+    ) {
+      try {
+        await reservarStock({
+          productoId:
+            item.producto,
+          presentacionId:
+            item.presentacionId ||
+            null,
+          cantidad:
+            item.cantidad,
+          pedidoId:
+            pedido._id,
+          pedidoCodigo:
+            pedido.codigo,
+          observaciones:
+            "Restauración automática de reserva del pedido.",
+          usuarioId:
+            usuarioPedidoActual(
+              req
+            ),
+        });
+      } catch (
+        errorRollback
+      ) {
+        console.error(
+          "Error restaurando reserva de pedido:",
+          errorRollback
+        );
+      }
+    }
+
+    throw error;
+  }
+
+  pedido.inventarioReservado =
+    false;
+
+  pedido.fechaReservaInventario =
+    null;
+}
 
 
 /* =========================================
@@ -1639,12 +1859,6 @@ export const cambiarEstadoPedido =
       }
 
 
-      /*
-        Los estados del pedido se pueden cambiar libremente.
-        Únicamente para marcarlo como "Listo para entrega"
-        se exige tener un cliente asignado, porque ese es el
-        estado que permite que Entrega lo reciba.
-      */
       if (
         estado ===
           "Listo para entrega" &&
@@ -1681,20 +1895,153 @@ export const cambiarEstadoPedido =
       }
 
 
+      const estadoAnteriorPedido =
+        pedido.estado;
+
+      let accionInventario =
+        "";
+
+
+      /*
+        Si ya existe una entrega confirmada, el pedido debe
+        permanecer en Listo para entrega hasta que la entrega
+        finalice. Así no quedan reservas de peso huérfanas.
+      */
+      if (
+        pedido.estado ===
+          "Listo para entrega" &&
+        estado !==
+          "Listo para entrega"
+      ) {
+
+        const entregaConfirmada =
+          await Entrega.findOne({
+            pedido:
+              pedido._id,
+            confirmada:
+              true,
+            estado: {
+              $nin: [
+                "Cancelado",
+                "Entregado",
+              ],
+            },
+          })
+            .select(
+              "_id estado"
+            )
+            .lean();
+
+
+        if (
+          entregaConfirmada
+        ) {
+
+          return res
+            .status(409)
+            .json({
+              mensaje:
+                "El pedido ya tiene una entrega confirmada. Finaliza o cancela la entrega antes de cambiar el estado del pedido.",
+            });
+
+        }
+
+      }
+
+
+      if (
+        estado ===
+          "Listo para entrega"
+      ) {
+
+        await reservarInventarioPedido(
+          pedido,
+          req
+        );
+
+        accionInventario =
+          "reservar";
+
+      } else if (
+        pedido.estado ===
+          "Listo para entrega"
+      ) {
+
+        await liberarInventarioPedido(
+          pedido,
+          req
+        );
+
+        accionInventario =
+          "liberar";
+
+      }
+
+
       pedido.estado =
         estado;
 
 
-      await pedido.save();
+      try {
+
+        await pedido.save();
+
+      } catch (errorGuardado) {
+
+        try {
+
+          if (
+            accionInventario ===
+            "reservar"
+          ) {
+
+            await liberarInventarioPedido(
+              pedido,
+              req
+            );
+
+          } else if (
+            accionInventario ===
+            "liberar"
+          ) {
+
+            await reservarInventarioPedido(
+              pedido,
+              req
+            );
+
+          }
+
+        } catch (errorRollback) {
+
+          console.error(
+            "Error revirtiendo inventario tras fallo al guardar pedido:",
+            errorRollback
+          );
+
+        }
+
+        pedido.estado =
+          estadoAnteriorPedido;
+
+        throw errorGuardado;
+
+      }
 
 
       return res.json({
 
         mensaje:
-          "Estado del pedido actualizado correctamente.",
+          estado ===
+            "Listo para entrega"
+            ? "Estado actualizado y stock por unidad reservado correctamente."
+            : "Estado del pedido actualizado correctamente.",
 
         estado:
           pedido.estado,
+
+        inventarioReservado:
+          pedido.inventarioReservado,
 
       });
 
@@ -1707,7 +2054,10 @@ export const cambiarEstadoPedido =
 
 
       return res
-        .status(500)
+        .status(
+          error.statusCode ||
+          400
+        )
         .json({
 
           mensaje:

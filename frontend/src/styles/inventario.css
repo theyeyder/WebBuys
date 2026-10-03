@@ -1,0 +1,789 @@
+/* =========================================================
+   INVENTARIO - WEBBUYS
+========================================================= */
+
+.inventario-page {
+  min-height: 100vh;
+  padding: 0 0 70px;
+  box-sizing: border-box;
+  background:
+    radial-gradient(
+      circle at 12% 8%,
+      rgb(241, 255, 241),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 88% 16%,
+      rgba(69, 123, 157, 0.12),
+      transparent 28%
+    ),
+    linear-gradient(
+      135deg,
+      #a8f7e3 0%,
+      #b1cdb7 55%,
+      #99a89b 100%
+    );
+  color: #24372f;
+}
+
+
+/* =========================================================
+   CABECERA
+========================================================= */
+
+.inventario-title-bar {
+  position: sticky;
+  top: 0;
+  z-index: 8000;
+  min-height: 66px;
+  padding: 9px 18px 9px 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  box-sizing: border-box;
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e 0%,
+      #159a75 52%,
+      #20afb2 100%
+    );
+  color: #ffffff;
+  box-shadow:
+    0 6px 18px
+    rgba(15, 23, 42, 0.16);
+}
+
+.inventario-title-left {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.inventario-title-info {
+  min-width: 0;
+}
+
+.inventario-title-info h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.inventario-title-info p {
+  margin: 4px 0 0;
+  color: rgba(255, 255, 255, 0.80);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.inventario-refresh-btn {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 9px;
+  background: #ffffff;
+  color: #087858;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow:
+    0 5px 14px
+    rgba(15, 23, 42, 0.13);
+}
+
+.inventario-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+.inventario-content {
+  width:
+    min(
+      calc(100% - 34px),
+      1500px
+    );
+  margin: 20px auto 0;
+  display: grid;
+  gap: 16px;
+}
+
+
+/* =========================================================
+   RESUMEN
+========================================================= */
+
+.inventario-summary-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  gap: 12px;
+}
+
+.inventario-summary-card {
+  min-height: 88px;
+  padding: 15px 17px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  box-sizing: border-box;
+  border: 1px solid #d7e5df;
+  border-radius: 13px;
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #f3fbf7
+    );
+  box-shadow:
+    0 7px 20px
+    rgba(15, 23, 42, 0.06);
+}
+
+.inventario-summary-card span {
+  color: #6f8279;
+  font-size: 10px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+}
+
+.inventario-summary-card strong {
+  color: #087858;
+  font-size: 23px;
+  font-weight: 950;
+}
+
+.inventario-summary-card.warning {
+  border-color: #ead9a7;
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #fff9e9
+    );
+}
+
+.inventario-summary-card.warning strong {
+  color: #946500;
+}
+
+.inventario-summary-card.danger {
+  border-color: #efcbc7;
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #fff3f1
+    );
+}
+
+.inventario-summary-card.danger strong {
+  color: #b42318;
+}
+
+.inventario-summary-card.value strong {
+  font-size: 20px;
+}
+
+
+/* =========================================================
+   PANEL
+========================================================= */
+
+.inventario-panel {
+  overflow: hidden;
+  border: 1px solid #77857f88;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow:
+    0 10px 28px
+    rgba(15, 23, 42, 0.09);
+}
+
+.inventario-toolbar {
+  padding: 12px;
+  display: grid;
+  grid-template-columns:
+    minmax(280px, 1fr)
+    210px
+    190px
+    max-content;
+  gap: 9px;
+  align-items: center;
+  border-bottom: 1px solid #e3ece8;
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f7faf9
+    );
+}
+
+.inventario-toolbar input,
+.inventario-toolbar select {
+  width: 100%;
+  height: 40px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border: 1px solid #cadad3;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
+  color: #294137;
+  font: inherit;
+  font-size: 11px;
+}
+
+.inventario-toolbar input:focus,
+.inventario-toolbar select:focus {
+  border-color: #159a75;
+  box-shadow:
+    0 0 0 3px
+    rgba(21, 154, 117, 0.10);
+}
+
+.inventario-toolbar-count {
+  min-width: 90px;
+  color: #6c7e77;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: right;
+}
+
+
+/* =========================================================
+   TABLA
+========================================================= */
+
+.inventario-table-wrap {
+  overflow: auto;
+}
+
+.inventario-table {
+  width: 100%;
+  min-width: 1500px;
+  border-collapse: collapse;
+}
+
+.inventario-table th {
+  height: 43px;
+  padding: 0 10px;
+  background: #218476;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.inventario-table td {
+  padding: 10px;
+  border-bottom: 1px solid #e8efec;
+  color: #354b42;
+  font-size: 10px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.inventario-table tbody tr {
+  cursor: pointer;
+  transition:
+    background 0.15s ease;
+}
+
+.inventario-table tbody tr:nth-child(even) {
+  background: #f8fbfa;
+}
+
+.inventario-table tbody tr:hover {
+  background: #edf8f3;
+}
+
+.inventario-table tbody tr.selected {
+  background: #ddf5ea;
+  box-shadow:
+    inset 4px 0 0 #087443;
+}
+
+.inventario-code {
+  color: #087443;
+}
+
+.inventario-money {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.inventario-value {
+  color: #087443 !important;
+}
+
+.inventario-product-cell {
+  min-width: 180px;
+  text-align: left !important;
+}
+
+.inventario-product-cell strong {
+  display: block;
+  color: #20372e;
+  font-size: 11px;
+}
+
+.inventario-product-cell small {
+  display: block;
+  margin-top: 2px;
+  color: #788b83;
+  font-size: 9px;
+}
+
+.inventario-available {
+  color: #087858;
+  font-size: 11px;
+}
+
+.inventario-empty {
+  height: 150px;
+  color: #8b9994 !important;
+  font-size: 11px !important;
+  text-align: center !important;
+}
+
+
+/* =========================================================
+   ESTADOS
+========================================================= */
+
+.inventario-status {
+  display: inline-flex;
+  min-height: 25px;
+  padding: 0 9px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.inventario-status.disponible {
+  border-color: #a8dbc0;
+  background: #e8f8ee;
+  color: #19713f;
+}
+
+.inventario-status.stock-bajo {
+  border-color: #ead593;
+  background: #fff7dc;
+  color: #8b6300;
+}
+
+.inventario-status.agotado {
+  border-color: #edc0bc;
+  background: #fff0ee;
+  color: #b42318;
+}
+
+.inventario-status.sin-control-de-stock {
+  border-color: #d0d8d5;
+  background: #f2f5f4;
+  color: #60716a;
+}
+
+
+/* =========================================================
+   ACCIONES
+========================================================= */
+
+.inventario-actions {
+  min-width: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex-wrap: nowrap;
+}
+
+.inventario-actions button {
+  min-height: 29px;
+  padding: 0 8px;
+  border: 1px solid #bbd9cf;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #087858;
+  font: inherit;
+  font-size: 8px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.inventario-actions button:hover:not(:disabled) {
+  background: #eff9f5;
+  border-color: #77bea6;
+}
+
+.inventario-actions button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.inventario-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 22000;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    rgba(10, 27, 22, 0.54);
+  backdrop-filter: blur(5px);
+}
+
+.inventario-modal {
+  width:
+    min(
+      720px,
+      95vw
+    );
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.50);
+  border-radius: 16px;
+  background: #f8fbfa;
+  box-shadow:
+    0 24px 65px
+    rgba(0, 0, 0, 0.26);
+}
+
+.inventario-modal-large {
+  width:
+    min(
+      1320px,
+      96vw
+    );
+}
+
+.inventario-modal-header {
+  min-height: 60px;
+  padding: 10px 14px 10px 18px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e,
+      #159a75 55%,
+      #20afb2
+    );
+}
+
+.inventario-modal-header span {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.inventario-modal-header h3 {
+  margin: 2px 0 0;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.inventario-modal-header > button {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border: 1px solid rgba(255, 255, 255, 0.40);
+  border-radius: 9px;
+  background: #ffffff;
+  color: #24423a;
+  font-size: 23px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.inventario-modal-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 15px;
+}
+
+.inventario-current-stock {
+  margin-bottom: 13px;
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 9px;
+}
+
+.inventario-current-stock > div {
+  padding: 11px 12px;
+  border: 1px solid #d7e5df;
+  border-radius: 9px;
+  background: #f2f9f6;
+}
+
+.inventario-current-stock span {
+  display: block;
+  margin-bottom: 4px;
+  color: #7b8c85;
+  font-size: 9px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.inventario-current-stock strong {
+  color: #087858;
+  font-size: 15px;
+  font-weight: 950;
+}
+
+
+/* =========================================================
+   FORMULARIOS
+========================================================= */
+
+.inventario-form-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 11px;
+}
+
+.inventario-form-grid label {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #3c5148;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.inventario-form-grid label.full {
+  grid-column: 1 / -1;
+}
+
+.inventario-form-grid input,
+.inventario-form-grid select,
+.inventario-form-grid textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cadbd4;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
+  color: #263c33;
+  font: inherit;
+  font-size: 11px;
+}
+
+.inventario-form-grid input,
+.inventario-form-grid select {
+  height: 39px;
+  padding: 0 10px;
+}
+
+.inventario-form-grid textarea {
+  min-height: 76px;
+  padding: 9px 10px;
+  resize: vertical;
+}
+
+.inventario-form-grid input:focus,
+.inventario-form-grid select:focus,
+.inventario-form-grid textarea:focus {
+  border-color: #159a75;
+  box-shadow:
+    0 0 0 3px
+    rgba(21, 154, 117, 0.10);
+}
+
+
+/* =========================================================
+   PIE MODAL
+========================================================= */
+
+.inventario-modal-footer {
+  min-height: 58px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  border-top: 1px solid #dce7e3;
+  background: #ffffff;
+}
+
+.inventario-modal-footer button {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.inventario-modal-footer button.secondary {
+  border: 1px solid #ccd8d3;
+  background: #ffffff;
+  color: #53675e;
+}
+
+.inventario-modal-footer button.primary {
+  border: 1px solid #087858;
+  background: #087858;
+  color: #ffffff;
+}
+
+.inventario-modal-footer button.primary.danger {
+  border-color: #b42318;
+  background: #b42318;
+}
+
+.inventario-modal-footer button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   MOVIMIENTOS
+========================================================= */
+
+.inventario-movements-wrap {
+  overflow: auto;
+  border: 1px solid #dbe6e2;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.inventario-movements-table {
+  width: 100%;
+  min-width: 1120px;
+  border-collapse: collapse;
+}
+
+.inventario-movements-table th {
+  height: 40px;
+  padding: 0 9px;
+  background: #218476;
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.inventario-movements-table td {
+  padding: 9px;
+  border-bottom: 1px solid #e9efed;
+  color: #40564d;
+  font-size: 9px;
+  text-align: center;
+}
+
+.inventario-movements-table tbody tr:nth-child(even) {
+  background: #f7faf9;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (
+  max-width: 1050px
+) {
+
+  .inventario-summary-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .inventario-toolbar {
+    grid-template-columns:
+      1fr
+      1fr;
+  }
+
+  .inventario-toolbar-count {
+    text-align: left;
+  }
+
+}
+
+
+@media (
+  max-width: 700px
+) {
+
+  .inventario-title-bar {
+    padding-right: 10px;
+  }
+
+  .inventario-title-info p {
+    display: none;
+  }
+
+  .inventario-summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inventario-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .inventario-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .inventario-form-grid label.full {
+    grid-column: auto;
+  }
+
+  .inventario-current-stock {
+    grid-template-columns: 1fr;
+  }
+
+}

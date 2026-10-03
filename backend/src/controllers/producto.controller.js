@@ -11,6 +11,10 @@ import {
   generarConsecutivo,
 } from "../utils/generarConsecutivo.js";
 
+import {
+  registrarStockInicialExistente,
+} from "../services/inventario.service.js";
+
 
 /* =========================================
    LISTAR PRODUCTOS
@@ -268,6 +272,158 @@ function normalizarPresentacionesAdicionales(
             : "Activa",
 
       })
+    );
+
+}
+
+
+/* =========================================
+   PRESENTACIONES AL ACTUALIZAR PRODUCTO
+   PRESERVA IDENTIDAD E INVENTARIO
+========================================= */
+
+function normalizarPresentacionesActualizacion(
+  presentaciones = [],
+  producto
+) {
+
+  if (!Array.isArray(presentaciones)) {
+    return [];
+  }
+
+
+  const existentes =
+    Array.from(
+      producto
+        ?.presentacionesAdicionales ||
+      []
+    );
+
+
+  return presentaciones
+    .filter(
+      (presentacion) =>
+        presentacion.nombre
+          ?.trim()
+    )
+    .map(
+      (presentacion) => {
+
+        const id =
+          presentacion?._id
+            ? String(
+                presentacion._id
+              )
+            : "";
+
+
+        const existente =
+          id
+            ? existentes.find(
+                (actual) =>
+                  String(
+                    actual._id
+                  ) === id
+              )
+            : null;
+
+
+        return {
+
+          ...(
+            existente
+              ? {
+                  _id:
+                    existente._id,
+                }
+              : {}
+          ),
+
+          nombre:
+            presentacion.nombre
+              .trim(),
+
+          tipoVenta:
+            presentacion.tipoVenta ===
+            "Peso"
+              ? "Peso"
+              : "Unidad",
+
+          unidad:
+            presentacion.unidad
+              ?.trim() ||
+            "Unidad",
+
+          precioCompra:
+            Number(
+              presentacion.precioCompra ||
+              0
+            ),
+
+          precioVenta:
+            Number(
+              presentacion.precioVenta ||
+              0
+            ),
+
+          /*
+            INVENTARIO:
+            una edición del producto nunca puede
+            cambiar las existencias ni reservas.
+            Las presentaciones nuevas comienzan en 0.
+          */
+          stock:
+            existente
+              ? Number(
+                  existente.stock ||
+                  0
+                )
+              : 0,
+
+          stockReservado:
+            existente
+              ? Number(
+                  existente.stockReservado ||
+                  0
+                )
+              : 0,
+
+          stockMinimo:
+            Number(
+              presentacion.stockMinimo ??
+              existente?.stockMinimo ??
+              0
+            ),
+
+          controlInventario:
+            existente
+              ? existente.controlInventario !==
+                false
+              : true,
+
+          costoPromedio:
+            existente
+              ? Number(
+                  existente.costoPromedio ||
+                  0
+                )
+              : 0,
+
+          reglasPrecio:
+            normalizarReglasPrecio(
+              presentacion.reglasPrecio ||
+              []
+            ),
+
+          estado:
+            presentacion.estado ===
+            "Inactiva"
+              ? "Inactiva"
+              : "Activa",
+
+        };
+
+      }
     );
 
 }
@@ -754,10 +910,55 @@ export const crearProducto =
         });
 
 
-      await producto.populate(
-        "categoria",
-        "codigo nombre estado"
-      );
+      /* =====================================
+         TRAZABILIDAD DE STOCK INICIAL
+
+         El producto ya fue creado con el stock
+         indicado por el usuario. Desde aquí se
+         registra el movimiento inicial sin volver
+         a sumar existencias. También se inicializa
+         el costo promedio con el precio de compra
+         cuando corresponda.
+      ===================================== */
+
+      await registrarStockInicialExistente({
+        productoId:
+          producto._id,
+
+        usuarioId:
+          req.usuario?._id ||
+          null,
+      });
+
+
+      for (
+        const presentacion
+        of producto.presentacionesAdicionales
+      ) {
+
+        await registrarStockInicialExistente({
+          productoId:
+            producto._id,
+
+          presentacionId:
+            presentacion._id,
+
+          usuarioId:
+            req.usuario?._id ||
+            null,
+        });
+
+      }
+
+
+      const productoCompleto =
+        await Producto.findById(
+          producto._id
+        )
+          .populate(
+            "categoria",
+            "codigo nombre estado"
+          );
 
 
       return res
@@ -767,7 +968,8 @@ export const crearProducto =
           mensaje:
             "Producto creado correctamente.",
 
-          producto,
+          producto:
+            productoCompleto,
 
         });
 
@@ -827,7 +1029,6 @@ export const actualizarProducto =
         precioCompra,
         precioVenta,
 
-        stock,
         stockMinimo,
 
         reglasPrecio = [],
@@ -947,11 +1148,6 @@ export const actualizarProducto =
           precioVenta
         );
 
-      const stockNumero =
-        Number(
-          stock || 0
-        );
-
       const stockMinimoNumero =
         Number(
           stockMinimo || 0
@@ -1020,6 +1216,60 @@ export const actualizarProducto =
       }
 
 
+      /*
+        No permitir que una edición del producto
+        elimine silenciosamente una presentación
+        que todavía tenga inventario.
+      */
+      const idsPresentacionesRecibidas =
+        new Set(
+          presentacionesAdicionales
+            .map(
+              (presentacion) =>
+                presentacion?._id
+                  ? String(
+                      presentacion._id
+                    )
+                  : ""
+            )
+            .filter(Boolean)
+        );
+
+
+      const presentacionConInventarioEliminada =
+        producto.presentacionesAdicionales
+          .find(
+            (presentacion) =>
+              !idsPresentacionesRecibidas.has(
+                String(
+                  presentacion._id
+                )
+              ) &&
+              (
+                Number(
+                  presentacion.stock ||
+                  0
+                ) !== 0 ||
+                Number(
+                  presentacion.stockReservado ||
+                  0
+                ) !== 0
+              )
+          );
+
+
+      if (
+        presentacionConInventarioEliminada
+      ) {
+
+        return res.status(400).json({
+          mensaje:
+            `No puedes eliminar la presentación "${presentacionConInventarioEliminada.nombre}" porque todavía tiene stock físico o reservado. Ajusta primero el inventario a 0.`,
+        });
+
+      }
+
+
       producto.nombre =
         nombreNormalizado;
 
@@ -1048,9 +1298,11 @@ export const actualizarProducto =
       producto.precioVenta =
         precioVentaNumero;
 
-      producto.stock =
-        stockNumero;
-
+      /*
+        El stock físico NO se modifica desde Productos.
+        Se conserva el valor actual y solo cambia
+        mediante el módulo Inventario.
+      */
       producto.stockMinimo =
         stockMinimoNumero;
 
@@ -1060,8 +1312,9 @@ export const actualizarProducto =
         );
 
       producto.presentacionesAdicionales =
-        normalizarPresentacionesAdicionales(
-          presentacionesAdicionales
+        normalizarPresentacionesActualizacion(
+          presentacionesAdicionales,
+          producto
         );
 
       producto.sabores =

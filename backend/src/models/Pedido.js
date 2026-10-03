@@ -413,6 +413,22 @@ const pedidoSchema =
 
 
       /* =====================================
+         RESERVA DE INVENTARIO
+         SOLO PRODUCTOS POR UNIDAD
+      ===================================== */
+
+      inventarioReservado: {
+        type: Boolean,
+        default: false,
+      },
+
+      fechaReservaInventario: {
+        type: Date,
+        default: null,
+      },
+
+
+      /* =====================================
          FECHA DE ENTREGA
       ===================================== */
 

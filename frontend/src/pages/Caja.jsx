@@ -47,6 +47,10 @@ import {
 } from "../utils/pedido.impresion.js";
 
 import {
+  imprimirEntrega,
+} from "../utils/entrega.impresion.js";
+
+import {
   imprimirFactura,
 } from "../utils/facturaImpresion.js";
 
@@ -1537,6 +1541,56 @@ export default function Caja() {
     movimiento
   ) {
 
+    /*
+      Caja representa una venta ya finalizada.
+      Si el movimiento tiene una Entrega asociada,
+      abrimos el comprobante FINAL de Entrega para
+      mostrar peso real, subtotal, descuento y total
+      definitivos.
+
+      Los movimientos históricos sin Entrega conservan
+      como respaldo la impresión original del Pedido.
+    */
+    const entregaFinal =
+      movimiento?.entrega;
+
+
+    if (
+      entregaFinal &&
+      typeof entregaFinal ===
+        "object" &&
+      entregaFinal._id
+    ) {
+
+      const resultado =
+        imprimirEntrega(
+          entregaFinal
+        );
+
+
+      if (
+        resultado?.ok ===
+        false
+      ) {
+
+        setMensaje(
+          resultado.mensaje ||
+          "No fue posible abrir el comprobante final de la entrega."
+        );
+
+        setTipoMensaje(
+          resultado.tipo ||
+          "error"
+        );
+
+      }
+
+
+      return;
+
+    }
+
+
     const codigo =
       pedidoMovimiento(
         movimiento
@@ -2657,8 +2711,8 @@ export default function Caja() {
                                     movimiento
                                   )
                                 }
-                                title="Doble clic para abrir la impresión del pedido"
-                                aria-label={`Abrir impresión del pedido ${pedidoMovimiento(
+                                title="Doble clic para abrir el comprobante final de la venta"
+                                aria-label={`Abrir comprobante final de la venta ${pedidoMovimiento(
                                   movimiento
                                 )}`}
                               >
@@ -4393,8 +4447,8 @@ export default function Caja() {
                                     movimiento
                                   )
                                 }
-                                title="Doble clic para abrir la impresión del pedido"
-                                aria-label={`Abrir impresión del pedido ${pedidoMovimiento(
+                                title="Doble clic para abrir el comprobante final de la venta"
+                                aria-label={`Abrir comprobante final de la venta ${pedidoMovimiento(
                                   movimiento
                                 )}`}
                               >

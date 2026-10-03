@@ -815,6 +815,36 @@ export default function Productos() {
     index
   ) {
 
+    const presentacion =
+      form.presentacionesAdicionales[
+        index
+      ];
+
+
+    if (
+      modoEdicion &&
+      presentacion?._id &&
+      (
+        Number(
+          presentacion.stock ||
+          0
+        ) !== 0 ||
+        Number(
+          presentacion.stockReservado ||
+          0
+        ) !== 0
+      )
+    ) {
+
+      setError(
+        "No puedes eliminar una presentación que todavía tiene stock físico o reservado. Déjala en 0 desde Inventario y vuelve a intentarlo."
+      );
+
+      return;
+
+    }
+
+
     setForm((actual) => ({
       ...actual,
 
@@ -1054,11 +1084,17 @@ export default function Productos() {
             0
           ),
 
-        stock:
-          Number(
-            form.stock ||
-            0
-          ),
+        ...(
+          modoEdicion
+            ? {}
+            : {
+                stock:
+                  Number(
+                    form.stock ||
+                    0
+                  ),
+              }
+        ),
 
         stockMinimo:
           Number(
@@ -1084,6 +1120,15 @@ export default function Productos() {
         presentacionesAdicionales:
           form.presentacionesAdicionales.map(
             (presentacion) => ({
+              ...(
+                presentacion._id
+                  ? {
+                      _id:
+                        presentacion._id,
+                    }
+                  : {}
+              ),
+
               nombre:
                 presentacion.nombre.trim(),
 
@@ -1105,11 +1150,17 @@ export default function Productos() {
                   0
                 ),
 
-              stock:
-                Number(
-                  presentacion.stock ||
-                  0
-                ),
+              ...(
+                modoEdicion
+                  ? {}
+                  : {
+                      stock:
+                        Number(
+                          presentacion.stock ||
+                          0
+                        ),
+                    }
+              ),
 
               stockMinimo:
                 Number(
@@ -2401,7 +2452,9 @@ export default function Productos() {
 
 
                   <label>
-                    Stock inicial
+                    {modoEdicion
+                      ? "Stock actual (gestionar en Inventario)"
+                      : "Stock inicial"}
 
                     <input
                       type="number"
@@ -2410,7 +2463,16 @@ export default function Productos() {
                       value={form.stock}
                       onChange={cambiarCampo}
                       placeholder="0"
+                      disabled={
+                        modoEdicion
+                      }
                     />
+
+                    {modoEdicion && (
+                      <small className="productos-section-help">
+                        Las existencias se modifican desde Inventario mediante Entrada, Salida o Ajuste.
+                      </small>
+                    )}
 
                   </label>
 
@@ -2768,7 +2830,9 @@ export default function Productos() {
 
 
                             <label>
-                              Stock inicial
+                              {modoEdicion
+                                ? "Stock actual (Inventario)"
+                                : "Stock inicial"}
 
                               <input
                                 type="number"
@@ -2782,6 +2846,9 @@ export default function Productos() {
                                     "stock",
                                     event.target.value
                                   )
+                                }
+                                disabled={
+                                  modoEdicion
                                 }
                               />
 

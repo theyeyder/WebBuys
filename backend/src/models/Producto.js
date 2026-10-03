@@ -69,13 +69,34 @@ const presentacionAdicionalSchema =
         min: 0,
       },
 
+      /* =====================================
+         INVENTARIO DE LA PRESENTACIÓN
+      ===================================== */
+
       stock: {
         type: Number,
         default: 0,
         min: 0,
       },
 
+      stockReservado: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
       stockMinimo: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+      controlInventario: {
+        type: Boolean,
+        default: true,
+      },
+
+      costoPromedio: {
         type: Number,
         default: 0,
         min: 0,
@@ -199,7 +220,24 @@ const productoSchema =
         min: 0,
       },
 
+      stockReservado: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
       stockMinimo: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+      controlInventario: {
+        type: Boolean,
+        default: true,
+      },
+
+      costoPromedio: {
         type: Number,
         default: 0,
         min: 0,

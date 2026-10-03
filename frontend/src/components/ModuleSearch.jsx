@@ -35,6 +35,11 @@ const MODULOS = [
   },
 
   {
+    nombre: "Inventario",
+    ruta: "/inventario",
+  },
+
+  {
     nombre: "Pedidos",
     ruta: "/pedidos",
   },
