@@ -22,6 +22,12 @@ import Toast
 import ModulosMenu
   from "../components/ModulosMenu.jsx";
 
+import cerrarIcono
+  from "../assets/icons/cerrar.webp";
+
+import calendarioIcono
+  from "../assets/icons/calendario.webp";
+
 import "../styles/inventario.css";
 
 
@@ -42,6 +48,45 @@ const MOTIVOS_SALIDA = [
   "Corrección",
   "Otro",
 ];
+
+
+const MESES_CALENDARIO = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+];
+
+
+const DIAS_SEMANA = [
+  "D",
+  "L",
+  "M",
+  "M",
+  "J",
+  "V",
+  "S",
+];
+
+
+const ANIO_ACTUAL =
+  new Date().getFullYear();
+
+
+const ANIOS_CALENDARIO =
+  Array.from(
+    { length: 31 },
+    (_, index) =>
+      ANIO_ACTUAL - 15 + index
+  );
 
 
 const FORM_INICIAL = {
@@ -119,6 +164,131 @@ function fechaHora(
 
   return fecha.toLocaleString(
     "es-CO"
+  );
+}
+
+
+function fechaAStringCalendario(
+  fecha
+) {
+  const year =
+    fecha.getFullYear();
+
+  const month =
+    String(
+      fecha.getMonth() + 1
+    ).padStart(2, "0");
+
+  const day =
+    String(
+      fecha.getDate()
+    ).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+
+function stringAFechaCalendario(
+  valor
+) {
+  if (!valor) {
+    return null;
+  }
+
+  const partes =
+    String(valor)
+      .split("-")
+      .map(Number);
+
+  if (
+    partes.length !== 3 ||
+    partes.some(
+      (parte) =>
+        !Number.isFinite(parte)
+    )
+  ) {
+    return null;
+  }
+
+  const [
+    year,
+    month,
+    day,
+  ] = partes;
+
+  const fecha =
+    new Date(
+      year,
+      month - 1,
+      day
+    );
+
+  if (
+    fecha.getFullYear() !== year ||
+    fecha.getMonth() !==
+      month - 1 ||
+    fecha.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return fecha;
+}
+
+
+function fechaBonitaCalendario(
+  valor
+) {
+  const fecha =
+    stringAFechaCalendario(
+      valor
+    );
+
+  if (!fecha) {
+    return "Seleccionar fecha";
+  }
+
+  return fecha.toLocaleDateString(
+    "es-CO",
+    {
+      weekday: "short",
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }
+  );
+}
+
+
+function obtenerDiasCalendario(
+  mesVisible
+) {
+  const primerDia =
+    new Date(
+      mesVisible.getFullYear(),
+      mesVisible.getMonth(),
+      1
+    );
+
+  const inicio =
+    new Date(primerDia);
+
+  inicio.setDate(
+    1 - primerDia.getDay()
+  );
+
+  return Array.from(
+    { length: 42 },
+    (_, index) => {
+      const fecha =
+        new Date(inicio);
+
+      fecha.setDate(
+        inicio.getDate() + index
+      );
+
+      return fecha;
+    }
   );
 }
 
@@ -214,6 +384,26 @@ export default function Inventario() {
     setForm,
   ] = useState(
     FORM_INICIAL
+  );
+
+
+  const [
+    calendarioAbierto,
+    setCalendarioAbierto,
+  ] = useState(false);
+
+
+  const [
+    fechaTemporal,
+    setFechaTemporal,
+  ] = useState("");
+
+
+  const [
+    mesCalendario,
+    setMesCalendario,
+  ] = useState(
+    new Date()
   );
 
 
@@ -528,6 +718,32 @@ export default function Inventario() {
 
 
   /* =========================================
+     FILTROS RÁPIDOS DE ALERTAS
+  ========================================= */
+
+  function aplicarFiltroRapidoEstado(
+    estado
+  ) {
+
+    setBusqueda(
+      ""
+    );
+
+    setFiltroCategoria(
+      ""
+    );
+
+    setFiltroEstado(
+      (actual) =>
+        actual === estado
+          ? ""
+          : estado
+    );
+
+  }
+
+
+  /* =========================================
      MODALES
   ========================================= */
 
@@ -586,6 +802,11 @@ export default function Inventario() {
     setForm({
       ...FORM_INICIAL,
 
+      fechaMovimiento:
+        fechaAStringCalendario(
+          new Date()
+        ),
+
       costoUnitario:
         tipo === "entrada"
           ? String(
@@ -628,6 +849,11 @@ export default function Inventario() {
       return;
     }
 
+    setCalendarioAbierto(
+      false
+    );
+    setFechaTemporal("");
+
     setModal("");
     setForm(
       FORM_INICIAL
@@ -654,6 +880,134 @@ export default function Inventario() {
       })
     );
 
+  }
+
+
+  function abrirCalendario() {
+    const fechaActual =
+      stringAFechaCalendario(
+        form.fechaMovimiento
+      ) ||
+      new Date();
+
+    setFechaTemporal(
+      form.fechaMovimiento ||
+      fechaAStringCalendario(
+        new Date()
+      )
+    );
+
+    setMesCalendario(
+      new Date(
+        fechaActual.getFullYear(),
+        fechaActual.getMonth(),
+        1
+      )
+    );
+
+    setCalendarioAbierto(
+      true
+    );
+  }
+
+
+  function cerrarCalendario() {
+    setCalendarioAbierto(
+      false
+    );
+  }
+
+
+  function aplicarCalendario() {
+    setForm(
+      (actual) => ({
+        ...actual,
+        fechaMovimiento:
+          fechaTemporal,
+      })
+    );
+
+    setCalendarioAbierto(
+      false
+    );
+  }
+
+
+  function seleccionarHoy() {
+    const hoy =
+      new Date();
+
+    setFechaTemporal(
+      fechaAStringCalendario(
+        hoy
+      )
+    );
+
+    setMesCalendario(
+      new Date(
+        hoy.getFullYear(),
+        hoy.getMonth(),
+        1
+      )
+    );
+  }
+
+
+  function limpiarFechaCalendario() {
+    setFechaTemporal("");
+  }
+
+
+  function moverMesCalendario(
+    cantidad
+  ) {
+    setMesCalendario(
+      (actual) =>
+        new Date(
+          actual.getFullYear(),
+          actual.getMonth() +
+            cantidad,
+          1
+        )
+    );
+  }
+
+
+  function cambiarMesCalendario(
+    event
+  ) {
+    const mes =
+      Number(
+        event.target.value
+      );
+
+    setMesCalendario(
+      (actual) =>
+        new Date(
+          actual.getFullYear(),
+          mes,
+          1
+        )
+    );
+  }
+
+
+  function cambiarAnioCalendario(
+    event
+  ) {
+    const year =
+      Number(
+        event.target.value
+      );
+
+    setMesCalendario(
+      (actual) =>
+        new Date(
+          year,
+          actual.getMonth(),
+          1
+        )
+    );
   }
 
 
@@ -1175,23 +1529,65 @@ export default function Inventario() {
             </strong>
           </article>
 
-          <article className="inventario-summary-card warning">
+          <button
+            type="button"
+            className={`inventario-summary-card inventario-summary-button warning ${
+              filtroEstado ===
+              "Stock bajo"
+                ? "active"
+                : ""
+            }`}
+            onClick={() =>
+              aplicarFiltroRapidoEstado(
+                "Stock bajo"
+              )
+            }
+            aria-pressed={
+              filtroEstado ===
+              "Stock bajo"
+            }
+            title="Mostrar productos con stock bajo"
+          >
             <span>
               Stock bajo
             </span>
             <strong>
               {resumen.stockBajo}
             </strong>
-          </article>
+            <small>
+              Ver productos →
+            </small>
+          </button>
 
-          <article className="inventario-summary-card danger">
+          <button
+            type="button"
+            className={`inventario-summary-card inventario-summary-button danger ${
+              filtroEstado ===
+              "Agotado"
+                ? "active"
+                : ""
+            }`}
+            onClick={() =>
+              aplicarFiltroRapidoEstado(
+                "Agotado"
+              )
+            }
+            aria-pressed={
+              filtroEstado ===
+              "Agotado"
+            }
+            title="Mostrar productos agotados"
+          >
             <span>
               Productos agotados
             </span>
             <strong>
               {resumen.agotados}
             </strong>
-          </article>
+            <small>
+              Ver productos →
+            </small>
+          </button>
 
           <article className="inventario-summary-card value">
             <span>
@@ -1206,6 +1602,49 @@ export default function Inventario() {
           </article>
 
         </section>
+
+
+        {(
+          resumen.stockBajo > 0 ||
+          resumen.agotados > 0
+        ) && (
+          <section className="inventario-reposition-alert">
+            <div>
+              <strong>
+                Atención de inventario
+              </strong>
+              <span>
+                {resumen.agotados > 0 && (
+                  <>
+                    {resumen.agotados}
+                    {" "}
+                    {resumen.agotados === 1
+                      ? "producto agotado"
+                      : "productos agotados"}
+                  </>
+                )}
+                {
+                  resumen.agotados > 0 &&
+                  resumen.stockBajo > 0
+                    ? " · "
+                    : ""
+                }
+                {resumen.stockBajo > 0 && (
+                  <>
+                    {resumen.stockBajo}
+                    {" "}
+                    {resumen.stockBajo === 1
+                      ? "producto con stock bajo"
+                      : "productos con stock bajo"}
+                  </>
+                )}
+              </span>
+            </div>
+            <small>
+              Haz clic en las tarjetas de arriba para filtrar rápidamente.
+            </small>
+          </section>
+        )}
 
 
         <section className="inventario-panel">
@@ -1353,13 +1792,23 @@ export default function Inventario() {
 
                       <tr
                         key={fila.id}
-                        className={
+                        className={[
                           seleccionado
                             ?.id ===
                             fila.id
                             ? "selected"
-                            : ""
-                        }
+                            : "",
+                          fila.estado ===
+                          "Agotado"
+                            ? "inventory-row-danger"
+                            : "",
+                          fila.estado ===
+                          "Stock bajo"
+                            ? "inventory-row-warning"
+                            : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
                         onClick={
                           () =>
                             setSeleccionado(
@@ -1598,7 +2047,11 @@ export default function Inventario() {
                 }
                 aria-label="Cerrar"
               >
-                ×
+                <img
+                  src={cerrarIcono}
+                  alt=""
+                  aria-hidden="true"
+                />
               </button>
 
             </div>
@@ -1709,18 +2162,33 @@ export default function Inventario() {
                 </label>
 
 
-                <label>
-                  Fecha
-                  <input
-                    type="date"
-                    name="fechaMovimiento"
-                    value={
-                      form.fechaMovimiento
+                <label className="inventario-date-field">
+                  Fecha del movimiento
+
+                  <button
+                    type="button"
+                    className="inventario-date-trigger"
+                    onClick={
+                      abrirCalendario
                     }
-                    onChange={
-                      cambiarCampo
-                    }
-                  />
+                  >
+                    <img
+                      src={
+                        calendarioIcono
+                      }
+                      alt=""
+                    />
+
+                    <span>
+                      {fechaBonitaCalendario(
+                        form.fechaMovimiento
+                      )}
+                    </span>
+                  </button>
+
+                  <small className="inventario-date-help">
+                    La fecha seleccionada se guardará en el historial.
+                  </small>
                 </label>
 
 
@@ -1815,7 +2283,11 @@ export default function Inventario() {
                 }
                 aria-label="Cerrar"
               >
-                ×
+                <img
+                  src={cerrarIcono}
+                  alt=""
+                  aria-hidden="true"
+                />
               </button>
 
             </div>
@@ -1909,18 +2381,33 @@ export default function Inventario() {
                 </label>
 
 
-                <label>
-                  Fecha
-                  <input
-                    type="date"
-                    name="fechaMovimiento"
-                    value={
-                      form.fechaMovimiento
+                <label className="inventario-date-field">
+                  Fecha del movimiento
+
+                  <button
+                    type="button"
+                    className="inventario-date-trigger"
+                    onClick={
+                      abrirCalendario
                     }
-                    onChange={
-                      cambiarCampo
-                    }
-                  />
+                  >
+                    <img
+                      src={
+                        calendarioIcono
+                      }
+                      alt=""
+                    />
+
+                    <span>
+                      {fechaBonitaCalendario(
+                        form.fechaMovimiento
+                      )}
+                    </span>
+                  </button>
+
+                  <small className="inventario-date-help">
+                    La fecha seleccionada se guardará en el historial.
+                  </small>
                 </label>
 
 
@@ -2015,7 +2502,11 @@ export default function Inventario() {
                 }
                 aria-label="Cerrar"
               >
-                ×
+                <img
+                  src={cerrarIcono}
+                  alt=""
+                  aria-hidden="true"
+                />
               </button>
 
             </div>
@@ -2094,18 +2585,33 @@ export default function Inventario() {
                 </label>
 
 
-                <label>
-                  Fecha
-                  <input
-                    type="date"
-                    name="fechaMovimiento"
-                    value={
-                      form.fechaMovimiento
+                <label className="inventario-date-field">
+                  Fecha del movimiento
+
+                  <button
+                    type="button"
+                    className="inventario-date-trigger"
+                    onClick={
+                      abrirCalendario
                     }
-                    onChange={
-                      cambiarCampo
-                    }
-                  />
+                  >
+                    <img
+                      src={
+                        calendarioIcono
+                      }
+                      alt=""
+                    />
+
+                    <span>
+                      {fechaBonitaCalendario(
+                        form.fechaMovimiento
+                      )}
+                    </span>
+                  </button>
+
+                  <small className="inventario-date-help">
+                    La fecha seleccionada se guardará en el historial.
+                  </small>
                 </label>
 
 
@@ -2192,7 +2698,11 @@ export default function Inventario() {
                 }
                 aria-label="Cerrar"
               >
-                ×
+                <img
+                  src={cerrarIcono}
+                  alt=""
+                  aria-hidden="true"
+                />
               </button>
 
             </div>
@@ -2358,6 +2868,351 @@ export default function Inventario() {
                 }
               >
                 Cerrar
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
+
+      {calendarioAbierto && (
+
+        <div
+          className="inventario-datepicker-overlay"
+          role="presentation"
+          onMouseDown={
+            cerrarCalendario
+          }
+        >
+
+          <div
+            className="inventario-datepicker"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Seleccionar fecha del movimiento"
+            onMouseDown={
+              (event) =>
+                event.stopPropagation()
+            }
+          >
+
+            {/* CABECERA */}
+
+            <div className="inventario-datepicker-header">
+
+              <button
+                type="button"
+                onClick={() =>
+                  moverMesCalendario(
+                    -1
+                  )
+                }
+                aria-label="Mes anterior"
+              >
+                ‹
+              </button>
+
+
+              <div className="inventario-datepicker-selects">
+
+                <select
+                  value={
+                    mesCalendario
+                      .getMonth()
+                  }
+                  onChange={
+                    cambiarMesCalendario
+                  }
+                  aria-label="Mes"
+                >
+
+                  {MESES_CALENDARIO.map(
+                    (
+                      mes,
+                      index
+                    ) => (
+
+                      <option
+                        key={
+                          mes
+                        }
+                        value={
+                          index
+                        }
+                      >
+                        {mes}
+                      </option>
+
+                    )
+                  )}
+
+                </select>
+
+
+                <select
+                  value={
+                    mesCalendario
+                      .getFullYear()
+                  }
+                  onChange={
+                    cambiarAnioCalendario
+                  }
+                  aria-label="Año"
+                >
+
+                  {ANIOS_CALENDARIO.map(
+                    (
+                      year
+                    ) => (
+
+                      <option
+                        key={
+                          year
+                        }
+                        value={
+                          year
+                        }
+                      >
+                        {year}
+                      </option>
+
+                    )
+                  )}
+
+                </select>
+
+              </div>
+
+
+              <button
+                type="button"
+                onClick={() =>
+                  moverMesCalendario(
+                    1
+                  )
+                }
+                aria-label="Mes siguiente"
+              >
+                ›
+              </button>
+
+            </div>
+
+
+            {/* DÍAS DE LA SEMANA */}
+
+            <div className="inventario-datepicker-weekdays">
+
+              {DIAS_SEMANA.map(
+                (
+                  dia,
+                  index
+                ) => (
+
+                  <span
+                    key={
+                      `${dia}-${index}`
+                    }
+                  >
+                    {dia}
+                  </span>
+
+                )
+              )}
+
+            </div>
+
+
+            {/* DÍAS */}
+
+            <div className="inventario-datepicker-days">
+
+              {obtenerDiasCalendario(
+                mesCalendario
+              ).map(
+                (
+                  fecha
+                ) => {
+
+                  const valor =
+                    fechaAStringCalendario(
+                      fecha
+                    );
+
+
+                  const fueraMes =
+                    fecha.getMonth() !==
+                    mesCalendario
+                      .getMonth();
+
+
+                  const seleccionadoFecha =
+                    fechaTemporal ===
+                    valor;
+
+
+                  const hoyFecha =
+                    new Date();
+
+
+                  const inicioSemanaActual =
+                    new Date(
+                      hoyFecha.getFullYear(),
+                      hoyFecha.getMonth(),
+                      hoyFecha.getDate() -
+                        hoyFecha.getDay()
+                    );
+
+
+                  inicioSemanaActual.setHours(
+                    0,
+                    0,
+                    0,
+                    0
+                  );
+
+
+                  const finSemanaActual =
+                    new Date(
+                      inicioSemanaActual
+                    );
+
+
+                  finSemanaActual.setDate(
+                    inicioSemanaActual
+                      .getDate() +
+                      6
+                  );
+
+
+                  finSemanaActual.setHours(
+                    23,
+                    59,
+                    59,
+                    999
+                  );
+
+
+                  const fechaComparar =
+                    new Date(
+                      fecha.getFullYear(),
+                      fecha.getMonth(),
+                      fecha.getDate()
+                    );
+
+
+                  const semanaActual =
+                    fechaComparar >=
+                      inicioSemanaActual &&
+                    fechaComparar <=
+                      finSemanaActual;
+
+
+                  const inicioSemana =
+                    semanaActual &&
+                    fecha.getDay() ===
+                      0;
+
+
+                  const finSemana =
+                    semanaActual &&
+                    fecha.getDay() ===
+                      6;
+
+
+                  return (
+
+                    <button
+                      type="button"
+                      key={
+                        valor
+                      }
+                      className={
+                        [
+                          fueraMes
+                            ? "outside"
+                            : "",
+
+                          semanaActual
+                            ? "current-week"
+                            : "",
+
+                          inicioSemana
+                            ? "current-week-start"
+                            : "",
+
+                          finSemana
+                            ? "current-week-end"
+                            : "",
+
+                          seleccionadoFecha
+                            ? "selected"
+                            : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")
+                      }
+                      onClick={() => {
+
+                        setFechaTemporal(
+                          valor
+                        );
+
+
+                        if (
+                          fueraMes
+                        ) {
+
+                          setMesCalendario(
+                            new Date(
+                              fecha.getFullYear(),
+                              fecha.getMonth(),
+                              1
+                            )
+                          );
+
+                        }
+
+                      }}
+                    >
+                      {fecha.getDate()}
+                    </button>
+
+                  );
+
+                }
+              )}
+
+            </div>
+
+
+            {/* PIE */}
+
+            <div className="inventario-datepicker-footer">
+
+              <button
+                type="button"
+                className="inventario-datepicker-cancel"
+                onClick={
+                  cerrarCalendario
+                }
+              >
+                Cancelar
+              </button>
+
+
+              <button
+                type="button"
+                className="inventario-datepicker-done"
+                onClick={
+                  aplicarCalendario
+                }
+              >
+                Listo
               </button>
 
             </div>

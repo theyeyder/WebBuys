@@ -29,6 +29,64 @@ function redondear(
 }
 
 
+function normalizarFechaMovimiento(
+  valor
+) {
+  if (!valor) {
+    return new Date();
+  }
+
+  if (
+    valor instanceof Date
+  ) {
+    if (
+      Number.isNaN(
+        valor.getTime()
+      )
+    ) {
+      throw new Error(
+        "La fecha del movimiento no es válida."
+      );
+    }
+
+    return valor;
+  }
+
+  const texto =
+    String(valor).trim();
+
+  /*
+   * Los controles de fecha del frontend envían YYYY-MM-DD.
+   * new Date("YYYY-MM-DD") se interpreta como UTC y en Colombia
+   * puede mostrarse como el día anterior. Guardamos la medianoche
+   * de Colombia (-05:00) para conservar exactamente el día elegido.
+   */
+  const esFechaSinHora =
+    /^\d{4}-\d{2}-\d{2}$/.test(
+      texto
+    );
+
+  const fecha =
+    esFechaSinHora
+      ? new Date(
+          `${texto}T00:00:00.000-05:00`
+        )
+      : new Date(texto);
+
+  if (
+    Number.isNaN(
+      fecha.getTime()
+    )
+  ) {
+    throw new Error(
+      "La fecha del movimiento no es válida."
+    );
+  }
+
+  return fecha;
+}
+
+
 function validarCantidadPositiva(
   cantidad,
   tipoVenta = "Unidad"
@@ -208,9 +266,9 @@ function construirDatosBaseMovimiento({
       ).trim(),
 
     fechaMovimiento:
-      fechaMovimiento
-        ? new Date(fechaMovimiento)
-        : new Date(),
+      normalizarFechaMovimiento(
+        fechaMovimiento
+      ),
 
     motivo:
       String(

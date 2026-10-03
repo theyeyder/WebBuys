@@ -39,6 +39,7 @@ import ZonasDespacho from "./pages/ZonasDespacho.jsx";
 
 import UserFooter from "./components/UserFooter.jsx";
 import ModuleSearch from "./components/ModuleSearch.jsx";
+import Notificaciones from "./components/Notificaciones.jsx";
 
 function AppContent() {
   const location = useLocation();
@@ -222,6 +223,7 @@ function AppContent() {
 
       {mostrarFooter && (
         <>
+          <Notificaciones />
           <ModuleSearch />
           <UserFooter />
         </>
