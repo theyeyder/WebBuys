@@ -1,0 +1,219 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  color: #1d2939;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.inventario-print-page {
+  width: 100%;
+  padding: 6px;
+}
+
+.inventario-print-header {
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 2px solid #087f6a;
+}
+
+.inventario-print-header h1 {
+  margin: 0 0 5px;
+  color: #183c32;
+  font-size: 25px;
+  font-weight: 900;
+}
+
+.inventario-print-header p {
+  margin: 0;
+  color: #667085;
+  font-size: 11px;
+}
+
+.inventario-print-kicker {
+  display: block;
+  margin-bottom: 5px;
+  color: #087f6a;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.inventario-print-meta {
+  display: grid;
+  gap: 4px;
+  color: #667085;
+  font-size: 9px;
+  text-align: right;
+}
+
+.inventario-print-meta strong {
+  color: #344054;
+}
+
+.inventario-print-summary,
+.inventario-print-product-summary {
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.inventario-print-summary article,
+.inventario-print-product-summary article {
+  min-height: 62px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid #d7e3de;
+  border-radius: 8px;
+  background: #f8fbfa;
+}
+
+.inventario-print-summary span,
+.inventario-print-product-summary span,
+.inventario-print-detail-grid span {
+  color: #667085;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.inventario-print-summary strong,
+.inventario-print-product-summary strong {
+  color: #08745f;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.inventario-print-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8px;
+}
+
+.inventario-print-table th {
+  padding: 7px 6px;
+  border: 1px solid #087f6a;
+  background: #087f6a;
+  color: #ffffff;
+  font-size: 7px;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.inventario-print-table td {
+  padding: 7px 6px;
+  border: 1px solid #d9e2de;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.inventario-print-table tbody tr:nth-child(even) {
+  background: #f6f9f8;
+}
+
+.inventario-print-table td.code,
+.inventario-print-table td.available {
+  color: #08745f;
+  font-weight: 800;
+}
+
+.inventario-print-table td.product {
+  min-width: 140px;
+  text-align: left;
+}
+
+.inventario-print-table td.product strong,
+.inventario-print-table td.product small {
+  display: block;
+}
+
+.inventario-print-table td.product small {
+  margin-top: 2px;
+  color: #667085;
+  font-size: 7px;
+}
+
+.inventario-print-table td.money {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.inventario-print-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.inventario-print-detail-grid > div {
+  min-height: 76px;
+  padding: 13px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid #d7e3de;
+  border-radius: 9px;
+}
+
+.inventario-print-detail-grid strong {
+  color: #243b33;
+  font-size: 12px;
+}
+
+.inventario-print-footer {
+  margin-top: 24px;
+  padding-top: 10px;
+  border-top: 1px solid #d7dfdb;
+  color: #98a2b3;
+  font-size: 8px;
+  text-align: center;
+}
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 9mm;
+  }
+
+  .inventario-print-table thead {
+    display: table-header-group;
+  }
+
+  .inventario-print-table tr,
+  .inventario-print-summary article,
+  .inventario-print-product-summary article,
+  .inventario-print-detail-grid > div {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .inventario-print-table th {
+    background: #087f6a !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .inventario-print-summary article,
+  .inventario-print-product-summary article {
+    background: #f8fbfa !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

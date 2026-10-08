@@ -1962,6 +1962,7 @@ export default function Inventario() {
           <button
             type="button"
             className="inventario-print-general-btn"
+            title="Imprimir"
             onClick={
               imprimirInventarioGeneral
             }
@@ -1975,7 +1976,7 @@ export default function Inventario() {
               alt=""
               aria-hidden="true"
             />
-            Imprimir general
+           
           </button>
 
           <button
@@ -2468,7 +2469,7 @@ export default function Inventario() {
                                     fila
                                   )
                               }
-                              title="Imprimir inventario individual"
+                              title="Imprimir"
                               aria-label={`Imprimir inventario de ${
                                 fila.producto ||
                                 fila.nombre ||
