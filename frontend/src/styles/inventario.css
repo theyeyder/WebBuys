@@ -101,6 +101,44 @@
   cursor: not-allowed;
 }
 
+.inventario-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inventario-print-general-btn {
+  min-height: 38px;
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.inventario-print-general-btn img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.inventario-print-general-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.23);
+}
+
+.inventario-print-general-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 
 /* =========================================================
    CONTENIDO
@@ -558,6 +596,18 @@
   cursor: not-allowed;
 }
 
+.inventario-actions .inventario-action-icon {
+  width: 30px;
+  min-width: 30px;
+  padding: 0;
+}
+
+.inventario-action-icon img {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+}
+
 
 /* =========================================================
    MODAL
@@ -891,6 +941,22 @@
 
   .inventario-title-info p {
     display: none;
+  }
+
+  .inventario-title-actions {
+    gap: 5px;
+  }
+
+  .inventario-print-general-btn {
+    width: 38px;
+    padding: 0;
+    overflow: hidden;
+    color: transparent;
+    gap: 0;
+  }
+
+  .inventario-print-general-btn img {
+    flex: 0 0 auto;
   }
 
   .inventario-summary-grid {

@@ -198,7 +198,8 @@ function pedidoTieneProductosPorPeso(
 function calcularPrecioVista(
   precioVenta,
   reglasPrecio,
-  cantidad
+  cantidad,
+  tipoVenta = "Unidad"
 ) {
 
   const precioNormal =
@@ -210,6 +211,22 @@ function calcularPrecioVista(
     Number(
       cantidad || 0
     );
+
+
+  if (
+    tipoVenta ===
+    "Peso"
+  ) {
+
+    return {
+      precioNormal,
+      precioAplicado:
+        precioNormal,
+      reglaAplicada:
+        null,
+    };
+
+  }
 
 
   if (
@@ -2079,7 +2096,10 @@ export default function Pedidos() {
 
         origen.reglasPrecio,
 
-        cantidad
+        cantidad,
+
+        origen.tipoVenta ||
+        productoActual.tipoVenta
 
       );
 
@@ -5484,7 +5504,7 @@ export default function Pedidos() {
                         "Peso" && (
 
                         <small>
-                          Puede usar cantidad 0 si aún no conoce las piezas. El peso real se registra en Entrega.
+                          Puede usar cantidad 0 si aún no conoce las piezas. El peso real y la regla de precio por kg se calculan en Entrega.
                         </small>
 
                       )}

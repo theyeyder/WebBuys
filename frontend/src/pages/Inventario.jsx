@@ -31,6 +31,12 @@ import cerrarIcono
 import calendarioIcono
   from "../assets/icons/calendario.webp";
 
+import imprimirIcono
+  from "../assets/icons/imprimir.webp";
+
+import inventarioPrintCss
+  from "../styles/impresiones/inventario-print.css?inline";
+
 import "../styles/inventario.css";
 
 
@@ -1399,6 +1405,448 @@ export default function Inventario() {
 
 
   /* =========================================
+     IMPRESIÓN
+  ========================================= */
+
+  function escaparHtml(valor) {
+
+    return String(valor ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+
+  }
+
+
+  function datosImpresion() {
+
+    const fecha =
+      new Date().toLocaleString(
+        "es-CO",
+        {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        }
+      );
+
+
+    const nombreUsuario =
+      usuario?.nombres ||
+      usuario?.apellidos
+        ? `${usuario?.nombres || ""} ${
+            usuario?.apellidos || ""
+          }`.trim()
+        : usuario?.usuario ||
+          "Usuario";
+
+
+    return {
+      fecha,
+      nombreUsuario,
+    };
+
+  }
+
+
+  function abrirVentanaImpresion(
+    titulo,
+    contenido
+  ) {
+
+    const ventana =
+      window.open(
+        "",
+        "_blank",
+        "width=1280,height=850"
+      );
+
+
+    if (!ventana) {
+      setError(
+        "El navegador bloqueó la ventana de impresión."
+      );
+      return;
+    }
+
+
+    ventana.document.write(`
+      <!DOCTYPE html>
+      <html lang="es">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>${escaparHtml(titulo)}</title>
+          <style>${inventarioPrintCss}</style>
+        </head>
+        <body>
+          ${contenido}
+        </body>
+      </html>
+    `);
+
+    ventana.document.close();
+    ventana.focus();
+
+    setTimeout(
+      () => {
+        ventana.print();
+      },
+      300
+    );
+
+  }
+
+
+  function imprimirInventarioGeneral() {
+
+    if (!inventario.length) {
+      setError(
+        "No hay registros de inventario para imprimir."
+      );
+      return;
+    }
+
+
+    const {
+      fecha,
+      nombreUsuario,
+    } = datosImpresion();
+
+
+    const filas =
+      inventario
+        .map(
+          (fila) => `
+            <tr>
+              <td class="code">
+                ${escaparHtml(
+                  fila.codigo || "-"
+                )}
+              </td>
+              <td class="product">
+                <strong>
+                  ${escaparHtml(
+                    fila.producto ||
+                    fila.nombre ||
+                    "-"
+                  )}
+                </strong>
+                ${fila.presentacion
+                  ? `<small>${escaparHtml(
+                      fila.presentacion
+                    )}</small>`
+                  : ""}
+                ${fila.marca
+                  ? `<small>${escaparHtml(
+                      fila.marca
+                    )}</small>`
+                  : ""}
+              </td>
+              <td>
+                ${escaparHtml(
+                  fila.categoria?.nombre || "-"
+                )}
+              </td>
+              <td>
+                ${escaparHtml(
+                  numero(fila.stock, 4)
+                )}
+                ${escaparHtml(
+                  fila.unidad || ""
+                )}
+              </td>
+              <td>
+                ${escaparHtml(
+                  numero(
+                    fila.stockReservado,
+                    4
+                  )
+                )}
+              </td>
+              <td class="available">
+                ${escaparHtml(
+                  numero(
+                    fila.stockDisponible,
+                    4
+                  )
+                )}
+              </td>
+              <td>
+                ${escaparHtml(
+                  numero(
+                    fila.stockMinimo,
+                    4
+                  )
+                )}
+              </td>
+              <td class="money">
+                ${escaparHtml(
+                  moneda(
+                    fila.costoPromedio
+                  )
+                )}
+              </td>
+              <td class="money">
+                ${escaparHtml(
+                  moneda(
+                    fila.valorInventario
+                  )
+                )}
+              </td>
+              <td>
+                ${escaparHtml(
+                  fila.estado || "-"
+                )}
+              </td>
+            </tr>
+          `
+        )
+        .join("");
+
+
+    abrirVentanaImpresion(
+      "Inventario general",
+      `
+        <main class="inventario-print-page inventario-print-general">
+          <header class="inventario-print-header">
+            <div>
+              <h1>Inventario general</h1>
+              <p>WebBuys - Estado general de existencias</p>
+            </div>
+
+            <div class="inventario-print-meta">
+              <span>
+                <strong>Impreso:</strong>
+                ${escaparHtml(fecha)}
+              </span>
+              <span>
+                <strong>Usuario:</strong>
+                ${escaparHtml(nombreUsuario)}
+              </span>
+            </div>
+          </header>
+
+          <section class="inventario-print-summary">
+            <article>
+              <span>Registros</span>
+              <strong>${inventario.length}</strong>
+            </article>
+            <article>
+              <span>Stock bajo</span>
+              <strong>${Number(
+                resumen.stockBajo || 0
+              )}</strong>
+            </article>
+            <article>
+              <span>Agotados</span>
+              <strong>${Number(
+                resumen.agotados || 0
+              )}</strong>
+            </article>
+            <article>
+              <span>Valor inventario</span>
+              <strong>${escaparHtml(
+                moneda(
+                  resumen.valorTotalInventario
+                )
+              )}</strong>
+            </article>
+          </section>
+
+          <table class="inventario-print-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Producto</th>
+                <th>Categoría</th>
+                <th>Stock físico</th>
+                <th>Reservado</th>
+                <th>Disponible</th>
+                <th>Stock mínimo</th>
+                <th>Costo promedio</th>
+                <th>Valor inventario</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>${filas}</tbody>
+          </table>
+
+          <footer class="inventario-print-footer">
+            WebBuys · Inventario general
+          </footer>
+        </main>
+      `
+    );
+
+  }
+
+
+  function imprimirInventarioIndividual(
+    fila
+  ) {
+
+    if (!fila) {
+      setError(
+        "No fue posible identificar el producto a imprimir."
+      );
+      return;
+    }
+
+
+    const {
+      fecha,
+      nombreUsuario,
+    } = datosImpresion();
+
+
+    const producto =
+      fila.producto ||
+      fila.nombre ||
+      "Producto";
+
+
+    abrirVentanaImpresion(
+      `Inventario - ${producto}`,
+      `
+        <main class="inventario-print-page inventario-print-individual">
+          <header class="inventario-print-header">
+            <div>
+              <span class="inventario-print-kicker">Ficha individual</span>
+              <h1>${escaparHtml(producto)}</h1>
+              <p>
+                Código: <strong>${escaparHtml(
+                  fila.codigo || "-"
+                )}</strong>
+              </p>
+            </div>
+
+            <div class="inventario-print-meta">
+              <span>
+                <strong>Impreso:</strong>
+                ${escaparHtml(fecha)}
+              </span>
+              <span>
+                <strong>Usuario:</strong>
+                ${escaparHtml(nombreUsuario)}
+              </span>
+            </div>
+          </header>
+
+          <section class="inventario-print-product-summary">
+            <article>
+              <span>Stock físico</span>
+              <strong>
+                ${escaparHtml(
+                  numero(fila.stock, 4)
+                )}
+                ${escaparHtml(
+                  fila.unidad || ""
+                )}
+              </strong>
+            </article>
+            <article>
+              <span>Reservado</span>
+              <strong>${escaparHtml(
+                numero(
+                  fila.stockReservado,
+                  4
+                )
+              )}</strong>
+            </article>
+            <article>
+              <span>Disponible</span>
+              <strong>${escaparHtml(
+                numero(
+                  fila.stockDisponible,
+                  4
+                )
+              )}</strong>
+            </article>
+            <article>
+              <span>Estado</span>
+              <strong>${escaparHtml(
+                fila.estado || "-"
+              )}</strong>
+            </article>
+          </section>
+
+          <section class="inventario-print-detail-grid">
+            <div>
+              <span>Categoría</span>
+              <strong>${escaparHtml(
+                fila.categoria?.nombre || "-"
+              )}</strong>
+            </div>
+            <div>
+              <span>Marca</span>
+              <strong>${escaparHtml(
+                fila.marca || "-"
+              )}</strong>
+            </div>
+            <div>
+              <span>Presentación</span>
+              <strong>${escaparHtml(
+                fila.presentacion || "-"
+              )}</strong>
+            </div>
+            <div>
+              <span>Unidad</span>
+              <strong>${escaparHtml(
+                fila.unidad || "-"
+              )}</strong>
+            </div>
+            <div>
+              <span>Stock mínimo</span>
+              <strong>${escaparHtml(
+                numero(
+                  fila.stockMinimo,
+                  4
+                )
+              )}</strong>
+            </div>
+            <div>
+              <span>Costo promedio</span>
+              <strong>${escaparHtml(
+                moneda(
+                  fila.costoPromedio
+                )
+              )}</strong>
+            </div>
+            <div>
+              <span>Valor inventario</span>
+              <strong>${escaparHtml(
+                moneda(
+                  fila.valorInventario
+                )
+              )}</strong>
+            </div>
+            <div>
+              <span>Control de stock</span>
+              <strong>
+                ${fila.controlInventario === false
+                  ? "No"
+                  : "Sí"}
+              </strong>
+            </div>
+          </section>
+
+          <footer class="inventario-print-footer">
+            WebBuys · Ficha individual de inventario
+          </footer>
+        </main>
+      `
+    );
+
+  }
+
+
+  /* =========================================
      MOVIMIENTOS
   ========================================= */
 
@@ -1509,20 +1957,43 @@ export default function Inventario() {
         </div>
 
 
-        <button
-          type="button"
-          className="inventario-refresh-btn"
-          onClick={
-            cargarInventario
-          }
-          disabled={
-            cargando
-          }
-        >
-          {cargando
-            ? "Cargando..."
-            : "Actualizar"}
-        </button>
+        <div className="inventario-title-actions">
+
+          <button
+            type="button"
+            className="inventario-print-general-btn"
+            onClick={
+              imprimirInventarioGeneral
+            }
+            disabled={
+              cargando ||
+              inventario.length === 0
+            }
+          >
+            <img
+              src={imprimirIcono}
+              alt=""
+              aria-hidden="true"
+            />
+            Imprimir general
+          </button>
+
+          <button
+            type="button"
+            className="inventario-refresh-btn"
+            onClick={
+              cargarInventario
+            }
+            disabled={
+              cargando
+            }
+          >
+            {cargando
+              ? "Cargando..."
+              : "Actualizar"}
+          </button>
+
+        </div>
 
       </div>
 
@@ -1987,6 +2458,29 @@ export default function Inventario() {
                                 </button>
                               </>
                             )}
+
+                            <button
+                              type="button"
+                              className="inventario-action-icon"
+                              onClick={
+                                () =>
+                                  imprimirInventarioIndividual(
+                                    fila
+                                  )
+                              }
+                              title="Imprimir inventario individual"
+                              aria-label={`Imprimir inventario de ${
+                                fila.producto ||
+                                fila.nombre ||
+                                fila.codigo
+                              }`}
+                            >
+                              <img
+                                src={imprimirIcono}
+                                alt=""
+                                aria-hidden="true"
+                              />
+                            </button>
 
                             <button
                               type="button"

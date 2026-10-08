@@ -4207,3 +4207,571 @@
     width: 100%;
   }
 }
+
+/* =========================================================
+   EDICIÓN OPERATIVA DE ENTREGA
+========================================================= */
+.entregas-operational-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.entregas-secondary-action,
+.entregas-danger-action {
+  min-height: 40px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.entregas-secondary-action {
+  border: 1px solid #b9d3ca;
+  background: #f5fbf8;
+  color: #17634f;
+}
+
+.entregas-danger-action {
+  border: 1px solid #b42318;
+  background: #b42318;
+  color: #fff;
+}
+
+.entregas-secondary-action:disabled,
+.entregas-danger-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.entregas-price-rule-applied {
+  display: block;
+  margin-top: 3px;
+  color: #087a5b;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   ENTREGA - RESPONSIVE FINAL DEL MODAL GESTIONAR
+   Cabecera / cuerpo con scroll / pie sin superposición
+   ========================================================= */
+
+.entregas-modal-overlay {
+  box-sizing: border-box;
+  padding:
+    clamp(8px, 1.5vw, 18px);
+  overflow: hidden;
+}
+
+.entregas-modal {
+  width:
+    min(
+      1280px,
+      calc(100vw - 2 * clamp(8px, 1.5vw, 18px))
+    );
+  height:
+    min(
+      900px,
+      calc(100dvh - 2 * clamp(8px, 1.5vw, 18px))
+    );
+  max-width: 100%;
+  max-height:
+    calc(
+      100dvh - 2 * clamp(8px, 1.5vw, 18px)
+    );
+  min-height: 0;
+
+  display: grid;
+  grid-template-rows:
+    auto
+    minmax(0, 1fr)
+    auto;
+
+  overflow: hidden;
+}
+
+.entregas-modal-header,
+.entregas-modal-footer {
+  min-width: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.entregas-modal-body {
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+
+  padding:
+    clamp(10px, 1.2vw, 15px);
+
+  align-content: start;
+
+  /* Espacio visual al terminar el contenido.
+     El footer es una fila independiente, nunca tapa el body. */
+  padding-bottom:
+    clamp(18px, 2vw, 28px);
+}
+
+.entregas-modal-footer {
+  min-height: 0;
+  width: 100%;
+  box-sizing: border-box;
+
+  flex-shrink: 0;
+
+  padding:
+    9px
+    clamp(10px, 1.3vw, 16px);
+
+  overflow: visible;
+
+  box-shadow:
+    0 -5px 18px
+    rgba(15, 23, 42, 0.055);
+}
+
+.entregas-before-confirm,
+.entregas-after-confirm {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.entregas-operational-actions,
+.entregas-footer-actions {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.entregas-state-control {
+  min-width: min(240px, 100%);
+  max-width: 100%;
+}
+
+.entregas-state-control > * {
+  min-width: 0;
+}
+
+.entregas-state-trigger {
+  max-width: 100%;
+}
+
+
+/* Cliente / preparación: nunca forzar ancho del modal */
+.entregas-detail-client,
+.entregas-preparation {
+  min-width: 0;
+}
+
+.entregas-detail-client > div,
+.entregas-preparation > label,
+.entregas-observations,
+.entregas-summary {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+
+/* Productos: todos los datos se adaptan al ancho real disponible */
+.entregas-product-v4-card {
+  min-width: 0 !important;
+}
+
+.entregas-product-v4-main,
+.entregas-product-v4-data,
+.entregas-product-v4-data > div {
+  min-width: 0 !important;
+}
+
+.entregas-weight-field-v4,
+.entregas-weight-field {
+  max-width: 100% !important;
+}
+
+
+/* ---------------------------------------------------------
+   TABLET / PORTÁTIL ESTRECHO
+   --------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+
+  .entregas-modal {
+    width:
+      calc(
+        100vw - 20px
+      );
+    height:
+      calc(
+        100dvh - 20px
+      );
+    max-height:
+      calc(
+        100dvh - 20px
+      );
+  }
+
+  .entregas-product-v4-card {
+    grid-template-columns:
+      minmax(190px, 0.9fr)
+      minmax(0, 1.6fr) !important;
+  }
+
+  .entregas-product-v4-data {
+    grid-template-columns:
+      repeat(
+        4,
+        minmax(90px, 1fr)
+      ) !important;
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   TABLET
+   --------------------------------------------------------- */
+
+@media (max-width: 900px) {
+
+  .entregas-modal-overlay {
+    padding: 8px;
+  }
+
+  .entregas-modal {
+    width:
+      calc(
+        100vw - 16px
+      );
+    height:
+      calc(
+        100dvh - 16px
+      );
+    max-height:
+      calc(
+        100dvh - 16px
+      );
+    border-radius: 14px;
+  }
+
+  .entregas-detail-client {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .entregas-preparation {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .entregas-product-v4-card {
+    grid-template-columns:
+      1fr !important;
+    gap: 10px !important;
+  }
+
+  .entregas-product-v4-data {
+    grid-template-columns:
+      repeat(
+        4,
+        minmax(0, 1fr)
+      ) !important;
+  }
+
+  .entregas-after-confirm,
+  .entregas-before-confirm {
+    align-items: stretch;
+  }
+
+  .entregas-operational-actions {
+    flex: 1 1 auto;
+  }
+
+  .entregas-state-control {
+    flex: 0 1 280px;
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   CELULAR / TABLET PEQUEÑA
+   --------------------------------------------------------- */
+
+@media (max-width: 700px) {
+
+  .entregas-modal-overlay {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+
+  .entregas-modal {
+    width: 100vw;
+    height: 100dvh;
+    max-width: none;
+    max-height: 100dvh;
+
+    border: 0;
+    border-radius: 0;
+  }
+
+  .entregas-modal-header {
+    min-height: 56px;
+    padding:
+      8px
+      10px
+      8px
+      14px;
+  }
+
+  .entregas-modal-header h2 {
+    font-size: 17px;
+  }
+
+  .entregas-modal-body {
+    padding:
+      10px
+      10px
+      22px;
+  }
+
+  .entregas-detail-client,
+  .entregas-preparation {
+    grid-template-columns: 1fr;
+  }
+
+  .entregas-section-title {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .entregas-product-v4-data {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      ) !important;
+    gap:
+      10px
+      12px !important;
+  }
+
+  .entregas-weight-field-v4,
+  .entregas-weight-field {
+    width: 100% !important;
+  }
+
+  .entregas-summary {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .entregas-modal-footer {
+    padding:
+      8px
+      10px;
+  }
+
+  .entregas-before-confirm,
+  .entregas-after-confirm {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .entregas-footer-actions,
+  .entregas-operational-actions {
+    width: 100%;
+  }
+
+  .entregas-operational-actions > button,
+  .entregas-confirm {
+    flex:
+      1
+      1
+      150px;
+  }
+
+  .entregas-state-control {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+
+    display: grid;
+    grid-template-columns:
+      auto
+      minmax(0, 1fr);
+  }
+
+  .entregas-state-trigger {
+    width: 100%;
+    min-width: 0;
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   CELULAR ANGOSTO
+   --------------------------------------------------------- */
+
+@media (max-width: 480px) {
+
+  .entregas-modal-header {
+    padding-left: 12px;
+  }
+
+  .entregas-modal-header-close {
+    width: 35px !important;
+    height: 35px !important;
+  }
+
+  .entregas-detail-client > div {
+    padding: 9px;
+  }
+
+  .entregas-product-v4-card {
+    padding:
+      10px
+      9px !important;
+  }
+
+  .entregas-product-v4-data {
+    grid-template-columns:
+      1fr !important;
+  }
+
+  .entregas-product-v4-data > div {
+    padding:
+      7px
+      0;
+    border-top:
+      1px solid
+      #edf2f0;
+  }
+
+  .entregas-product-v4-data > div:first-child {
+    border-top: 0;
+  }
+
+  .entregas-summary > div {
+    gap: 10px;
+  }
+
+  .entregas-footer-actions,
+  .entregas-operational-actions {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr);
+  }
+
+  .entregas-footer-actions > button,
+  .entregas-operational-actions > button,
+  .entregas-danger-action,
+  .entregas-secondary-action,
+  .entregas-confirm {
+    width: 100%;
+  }
+
+  .entregas-state-control {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   PANTALLAS DE POCA ALTURA / ZOOM ALTO
+   --------------------------------------------------------- */
+
+@media (max-height: 720px) and (min-width: 701px) {
+
+  .entregas-modal-overlay {
+    padding: 6px;
+  }
+
+  .entregas-modal {
+    height:
+      calc(
+        100dvh - 12px
+      );
+    max-height:
+      calc(
+        100dvh - 12px
+      );
+  }
+
+  .entregas-modal-header {
+    min-height: 52px;
+    padding:
+      7px
+      12px
+      7px
+      16px;
+  }
+
+  .entregas-modal-header h2 {
+    font-size: 17px;
+  }
+
+  .entregas-modal-body {
+    gap: 9px;
+    padding:
+      9px
+      10px
+      18px;
+  }
+
+  .entregas-detail-client > div {
+    padding: 8px 9px;
+  }
+
+  .entregas-observations textarea {
+    min-height: 56px;
+  }
+
+  .entregas-confirmed-note,
+  .entregas-cancelled-note,
+  .entregas-delivered-note {
+    padding: 8px 10px;
+  }
+
+  .entregas-modal-footer {
+    padding:
+      7px
+      10px;
+  }
+
+}
+
+
+/* Altura extrema: el footer sigue separado y puede desplazarse
+   internamente si las acciones necesitan más espacio. */
+@media (max-height: 520px) {
+
+  .entregas-modal-footer {
+    max-height: 38dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+}
+

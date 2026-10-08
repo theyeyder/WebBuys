@@ -278,13 +278,17 @@ export function imprimirEntrega(
 
   const zonaEntrega =
     pedidoOrigen.zonaDespachoNombre ||
+    pedidoOrigen.zonaDespacho?.nombre ||
     entrega.zonaDespachoNombre ||
+    entrega.zonaDespacho?.nombre ||
     "Sin zona";
 
 
   const rutaEntrega =
     pedidoOrigen.rutaNombre ||
+    pedidoOrigen.ruta?.nombre ||
     entrega.rutaNombre ||
+    entrega.ruta?.nombre ||
     "Sin ruta";
 
 

@@ -9,10 +9,6 @@ import useAutoRefresh
   from "../hooks/useAutoRefresh.js";
 
 import {
-  useAuth,
-} from "../context/AuthContext.jsx";
-
-import {
   createPortal,
 } from "react-dom";
 
@@ -27,16 +23,11 @@ import {
 } from "../services/empleado.service.js";
 
 import {
-  listarProductos,
-} from "../services/producto.service.js";
-
-import {
   listarEntregas,
   obtenerEntrega,
   actualizarPreparacionEntrega,
   confirmarEntrega,
   cambiarEstadoEntrega,
-  cambiarMetodoPagoEntrega,
   reabrirPreparacionEntrega,
   revertirEntregaFinalizada,
 } from "../services/entrega.service.js";
@@ -93,6 +84,31 @@ function moneda(valor) {
       0
     )
   );
+}
+
+
+function precioPesoVista(item, peso) {
+  const pesoNumero = Number(peso || 0);
+  let precio = Number(
+    item?.precioNormal ??
+    item?.precioUnitario ??
+    item?.precioAplicado ??
+    0
+  );
+  let reglaAplicada = null;
+
+  const reglas = Array.isArray(item?.reglasPrecio)
+    ? [...item.reglasPrecio].sort((a, b) => Number(a.desde) - Number(b.desde))
+    : [];
+
+  for (const regla of reglas) {
+    if (pesoNumero >= Number(regla.desde || 0)) {
+      precio = Number(regla.precio || precio);
+      reglaAplicada = regla;
+    }
+  }
+
+  return { precio, reglaAplicada };
 }
 
 
@@ -531,91 +547,7 @@ function EstadoSelect({
 }
 
 
-
-function itemsFormularioDesdeEntrega(
-  entrega
-) {
-
-  return (
-    entrega?.items ||
-    []
-  ).map(
-    (item) => ({
-      key:
-        item._id ||
-        item.id,
-      itemId:
-        item._id ||
-        item.id,
-      nuevo: false,
-      origen:
-        item.origen ||
-        "Pedido",
-      productoId:
-        item.producto?._id ||
-        item.producto?.id ||
-        item.productoId ||
-        "",
-      presentacionId:
-        item.presentacion?._id ||
-        item.presentacion?.id ||
-        item.presentacionId ||
-        "",
-      nombre:
-        item.nombre ||
-        item.producto?.nombre ||
-        "Producto",
-      presentacionNombre:
-        item.presentacionNombre ||
-        item.presentacion?.nombre ||
-        "",
-      tipoVenta:
-        item.tipoVenta ||
-        "Unidad",
-      unidad:
-        item.unidad ||
-        "",
-      cantidadSolicitada:
-        Number(
-          item.cantidadSolicitada ||
-          0
-        ),
-      cantidadReal:
-        item.tipoVenta ===
-        "Peso"
-          ? ""
-          : String(
-              item.cantidadReal ??
-              item.cantidadSolicitada ??
-              1
-            ),
-      pesoReal:
-        item.tipoVenta ===
-        "Peso"
-          ? String(
-              item.pesoReal ??
-              ""
-            )
-          : "",
-      precioUnitario:
-        Number(
-          item.precioUnitario ??
-          item.precioAplicado ??
-          item.precioNormal ??
-          0
-        ),
-    })
-  );
-
-}
-
-
 export default function Entregas() {
-
-  const {
-    esAdministrador,
-  } = useAuth();
-
 
   const [
     entregas,
@@ -625,11 +557,6 @@ export default function Entregas() {
   const [
     repartidores,
     setRepartidores,
-  ] = useState([]);
-
-  const [
-    productos,
-    setProductos,
   ] = useState([]);
 
   const [
@@ -699,39 +626,9 @@ export default function Entregas() {
   ] = useState("");
 
   const [
-    formItems,
-    setFormItems,
-  ] = useState([]);
-
-  const [
-    nuevoProductoId,
-    setNuevoProductoId,
-  ] = useState("");
-
-  const [
-    nuevaPresentacionId,
-    setNuevaPresentacionId,
-  ] = useState("");
-
-  const [
-    nuevaCantidad,
-    setNuevaCantidad,
-  ] = useState("1");
-
-  const [
-    nuevoPeso,
-    setNuevoPeso,
-  ] = useState("");
-
-  const [
-    modalReversion,
-    setModalReversion,
-  ] = useState(false);
-
-  const [
-    motivoReversion,
-    setMotivoReversion,
-  ] = useState("");
+    formPesos,
+    setFormPesos,
+  ] = useState({});
 
   const [
     preparacionSucia,
@@ -769,12 +666,10 @@ export default function Entregas() {
       const [
         dataEntregas,
         dataEmpleados,
-        dataProductos,
       ] =
         await Promise.all([
           listarEntregas(),
           listarEmpleadosPedidos(),
-          listarProductos(),
         ]);
 
       setEntregas(
@@ -812,28 +707,6 @@ export default function Entregas() {
               .trim()
               .toLowerCase() ===
               "repartidor"
-        )
-      );
-
-
-      const listaProductos =
-        Array.isArray(
-          dataProductos
-        )
-          ? dataProductos
-          : dataProductos?.productos ||
-            [];
-
-      setProductos(
-        listaProductos.filter(
-          (producto) =>
-            String(
-              producto.estado ||
-              ""
-            )
-              .trim()
-              .toLowerCase() ===
-              "activo"
         )
       );
 
@@ -969,15 +842,28 @@ export default function Entregas() {
     useMemo(
       () => {
 
+        if (!detalle) {
+          return {
+            subtotal: 0,
+            total: 0,
+            pesosPendientes: 0,
+          };
+        }
+
         let subtotal = 0;
         let pesosPendientes = 0;
 
-        formItems.forEach(
+        (
+          detalle.items ||
+          []
+        ).forEach(
           (item) => {
 
             const precio =
               Number(
-                item.precioUnitario ||
+                item.precioUnitario ??
+                item.precioAplicado ??
+                item.precioNormal ??
                 0
               );
 
@@ -986,12 +872,20 @@ export default function Entregas() {
               "Peso"
             ) {
 
+              const valor =
+                formPesos[
+                  item._id
+                ];
+
               const peso =
                 Number(
-                  item.pesoReal
+                  valor
                 );
 
               if (
+                valor === "" ||
+                valor === null ||
+                valor === undefined ||
                 !Number.isFinite(
                   peso
                 ) ||
@@ -1005,31 +899,25 @@ export default function Entregas() {
 
               }
 
+              const precioPeso =
+                precioPesoVista(
+                  item,
+                  peso
+                ).precio;
+
               subtotal +=
                 peso *
-                precio;
+                precioPeso;
 
-            } else {
-
-              const cantidad =
-                Number(
-                  item.cantidadReal
-                );
-
-              if (
-                Number.isFinite(
-                  cantidad
-                ) &&
-                cantidad > 0
-              ) {
-
-                subtotal +=
-                  cantidad *
-                  precio;
-
-              }
+              return;
 
             }
+
+            subtotal +=
+              Number(
+                item.subtotal ||
+                0
+              );
 
           }
         );
@@ -1047,7 +935,7 @@ export default function Entregas() {
               0,
               subtotal -
               Number(
-                detalle?.descuento ||
+                detalle.descuento ||
                 0
               )
             ).toFixed(
@@ -1064,51 +952,7 @@ export default function Entregas() {
       },
       [
         detalle,
-        formItems,
-      ]
-    );
-
-
-  const productoNuevoSeleccionado =
-    useMemo(
-      () =>
-        productos.find(
-          (producto) =>
-            String(
-              producto._id ||
-              producto.id
-            ) ===
-            String(
-              nuevoProductoId
-            )
-        ) ||
-        null,
-      [
-        productos,
-        nuevoProductoId,
-      ]
-    );
-
-
-  const presentacionesNuevoProducto =
-    useMemo(
-      () =>
-        (
-          productoNuevoSeleccionado
-            ?.presentacionesAdicionales ||
-          []
-        ).filter(
-          (presentacion) =>
-            String(
-              presentacion.estado ||
-              ""
-            )
-              .trim()
-              .toLowerCase() ===
-            "activa"
-        ),
-      [
-        productoNuevoSeleccionado,
+        formPesos,
       ]
     );
 
@@ -1228,26 +1072,30 @@ export default function Entregas() {
         ""
       );
 
-      setFormItems(
-        itemsFormularioDesdeEntrega(
-          data
-        )
+      const pesos = {};
+
+      (
+        data.items ||
+        []
+      ).forEach(
+        (item) => {
+
+          if (
+            item.tipoVenta ===
+            "Peso"
+          ) {
+
+            pesos[item._id] =
+              item.pesoReal ??
+              "";
+
+          }
+
+        }
       );
 
-      setNuevoProductoId(
-        ""
-      );
-
-      setNuevaPresentacionId(
-        ""
-      );
-
-      setNuevaCantidad(
-        "1"
-      );
-
-      setNuevoPeso(
-        ""
+      setFormPesos(
+        pesos
       );
 
       setPreparacionSucia(
@@ -1294,10 +1142,6 @@ export default function Entregas() {
       null
     );
 
-    setFormItems(
-      []
-    );
-
     setPreparacionSucia(
       false
     );
@@ -1309,542 +1153,6 @@ export default function Entregas() {
     setPreparacionSucia(
       true
     );
-  }
-
-
-  function actualizarItemFormulario(
-    key,
-    campo,
-    valor
-  ) {
-
-    setFormItems(
-      (actual) =>
-        actual.map(
-          (item) =>
-            item.key === key
-              ? {
-                  ...item,
-                  [campo]:
-                    valor,
-                }
-              : item
-        )
-    );
-
-    marcarPreparacionSucia();
-
-  }
-
-
-  function quitarItemFormulario(
-    key
-  ) {
-
-    setFormItems(
-      (actual) =>
-        actual.filter(
-          (item) =>
-            item.key !== key
-        )
-    );
-
-    marcarPreparacionSucia();
-
-  }
-
-
-  function agregarProductoFormulario() {
-
-    const producto =
-      productoNuevoSeleccionado;
-
-    if (!producto) {
-
-      setMensaje(
-        "Seleccione un producto."
-      );
-
-      setTipoMensaje(
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    const presentacion =
-      nuevaPresentacionId
-        ? presentacionesNuevoProducto.find(
-            (item) =>
-              String(
-                item._id ||
-                item.id
-              ) ===
-              String(
-                nuevaPresentacionId
-              )
-          )
-        : null;
-
-    const fuente =
-      presentacion ||
-      producto;
-
-    const tipoVenta =
-      fuente.tipoVenta ||
-      producto.tipoVenta ||
-      "Unidad";
-
-    const cantidad =
-      Number(
-        nuevaCantidad
-      );
-
-    const peso =
-      Number(
-        nuevoPeso
-      );
-
-
-    if (
-      tipoVenta !==
-        "Peso" &&
-      (
-        !Number.isInteger(
-          cantidad
-        ) ||
-        cantidad <= 0
-      )
-    ) {
-
-      setMensaje(
-        "La cantidad debe ser un entero mayor que cero."
-      );
-
-      setTipoMensaje(
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    if (
-      tipoVenta ===
-        "Peso" &&
-      (
-        !Number.isFinite(
-          peso
-        ) ||
-        peso <= 0
-      )
-    ) {
-
-      setMensaje(
-        "Registre el peso real del producto."
-      );
-
-      setTipoMensaje(
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    const productoId =
-      producto._id ||
-      producto.id;
-
-    const presentacionId =
-      presentacion
-        ? (
-            presentacion._id ||
-            presentacion.id
-          )
-        : "";
-
-    const duplicado =
-      formItems.some(
-        (item) =>
-          String(
-            item.productoId
-          ) ===
-            String(
-              productoId
-            ) &&
-          String(
-            item.presentacionId ||
-            ""
-          ) ===
-            String(
-              presentacionId ||
-              ""
-            )
-      );
-
-    if (duplicado) {
-
-      setMensaje(
-        "Ese producto/presentación ya está en la entrega. Modifique su cantidad o peso."
-      );
-
-      setTipoMensaje(
-        "info"
-      );
-
-      return;
-
-    }
-
-
-    const key =
-      `nuevo-${Date.now()}-${Math.random()
-        .toString(36)
-        .slice(2, 8)}`;
-
-    setFormItems(
-      (actual) => [
-        ...actual,
-        {
-          key,
-          itemId: null,
-          nuevo: true,
-          origen: "Agregado",
-          productoId,
-          presentacionId,
-          nombre:
-            producto.nombre ||
-            "Producto",
-          presentacionNombre:
-            presentacion?.nombre ||
-            "",
-          tipoVenta,
-          unidad:
-            fuente.unidad ||
-            producto.unidad ||
-            "",
-          cantidadSolicitada: 0,
-          cantidadReal:
-            tipoVenta ===
-              "Peso"
-              ? ""
-              : String(
-                  cantidad
-                ),
-          pesoReal:
-            tipoVenta ===
-              "Peso"
-              ? String(
-                  peso
-                )
-              : "",
-          precioUnitario:
-            Number(
-              fuente.precioVenta ||
-              0
-            ),
-        },
-      ]
-    );
-
-    setNuevoProductoId(
-      ""
-    );
-
-    setNuevaPresentacionId(
-      ""
-    );
-
-    setNuevaCantidad(
-      "1"
-    );
-
-    setNuevoPeso(
-      ""
-    );
-
-    marcarPreparacionSucia();
-
-  }
-
-
-  async function manejarCambioMetodoPago(
-    nuevoMetodo
-  ) {
-
-    setFormMetodoPago(
-      nuevoMetodo
-    );
-
-
-    if (
-      !detalle?.confirmada
-    ) {
-
-      marcarPreparacionSucia();
-
-      return;
-
-    }
-
-
-    if (
-      ![
-        "Pendiente",
-        "En ruta",
-      ].includes(
-        detalle.estado
-      )
-    ) {
-      return;
-    }
-
-
-    try {
-
-      setProcesando(
-        true
-      );
-
-      const respuesta =
-        await cambiarMetodoPagoEntrega(
-          detalle._id,
-          nuevoMetodo
-        );
-
-      setDetalle(
-        respuesta.entrega
-      );
-
-      setMensaje(
-        respuesta.mensaje ||
-        "Tipo de pago actualizado."
-      );
-
-      setTipoMensaje(
-        "success"
-      );
-
-      await cargarDatos({
-        silencioso: true,
-      });
-
-
-    } catch (error) {
-
-      setFormMetodoPago(
-        detalle.metodoPago ||
-        ""
-      );
-
-      setMensaje(
-        error?.response?.data?.mensaje ||
-        "No fue posible cambiar el tipo de pago."
-      );
-
-      setTipoMensaje(
-        "error"
-      );
-
-
-    } finally {
-
-      setProcesando(
-        false
-      );
-
-    }
-
-  }
-
-
-  async function reabrirPreparacionActual() {
-
-    if (!detalle) {
-      return;
-    }
-
-
-    try {
-
-      setProcesando(
-        true
-      );
-
-      const respuesta =
-        await reabrirPreparacionEntrega(
-          detalle._id
-        );
-
-      const actualizada =
-        respuesta.entrega;
-
-      setDetalle(
-        actualizada
-      );
-
-      setFormItems(
-        itemsFormularioDesdeEntrega(
-          actualizada
-        )
-      );
-
-      setPreparacionSucia(
-        false
-      );
-
-      setMensaje(
-        respuesta.mensaje
-      );
-
-      setTipoMensaje(
-        "success"
-      );
-
-      await cargarDatos({
-        silencioso: true,
-      });
-
-
-    } catch (error) {
-
-      setMensaje(
-        error?.response?.data?.mensaje ||
-        "No fue posible reabrir la preparación."
-      );
-
-      setTipoMensaje(
-        "error"
-      );
-
-
-    } finally {
-
-      setProcesando(
-        false
-      );
-
-    }
-
-  }
-
-
-  function abrirReversionEntrega() {
-
-    setMotivoReversion(
-      ""
-    );
-
-    setModalReversion(
-      true
-    );
-
-  }
-
-
-  async function confirmarReversionEntrega() {
-
-    const motivo =
-      motivoReversion.trim();
-
-    if (
-      !detalle ||
-      motivo.length < 5
-    ) {
-
-      setMensaje(
-        "Debe indicar un motivo de al menos 5 caracteres."
-      );
-
-      setTipoMensaje(
-        "error"
-      );
-
-      return;
-
-    }
-
-
-    try {
-
-      setProcesando(
-        true
-      );
-
-      const respuesta =
-        await revertirEntregaFinalizada(
-          detalle._id,
-          motivo
-        );
-
-      const actualizada =
-        respuesta.entrega;
-
-      setDetalle(
-        actualizada
-      );
-
-      setFormItems(
-        itemsFormularioDesdeEntrega(
-          actualizada
-        )
-      );
-
-      setFormMetodoPago(
-        actualizada.metodoPago ||
-        ""
-      );
-
-      setModalReversion(
-        false
-      );
-
-      setMotivoReversion(
-        ""
-      );
-
-      setPreparacionSucia(
-        false
-      );
-
-      setMensaje(
-        respuesta.mensaje
-      );
-
-      setTipoMensaje(
-        "success"
-      );
-
-      await cargarDatos({
-        silencioso: true,
-      });
-
-
-    } catch (error) {
-
-      setMensaje(
-        error?.response?.data?.mensaje ||
-        "No fue posible revertir la entrega."
-      );
-
-      setTipoMensaje(
-        "error"
-      );
-
-
-    } finally {
-
-      setProcesando(
-        false
-      );
-
-    }
-
   }
 
 
@@ -1861,37 +1169,19 @@ export default function Entregas() {
       );
 
       const items =
-        formItems.map(
-          (item) => ({
-            itemId:
-              item.nuevo
-                ? undefined
-                : item.itemId,
-            nuevo:
-              Boolean(
-                item.nuevo
-              ),
-            producto:
-              item.nuevo
-                ? item.productoId
-                : undefined,
-            presentacion:
-              item.nuevo
-                ? (
-                    item.presentacionId ||
-                    null
-                  )
-                : undefined,
-            cantidadReal:
-              item.tipoVenta ===
-              "Peso"
-                ? undefined
-                : item.cantidadReal,
-            pesoReal:
-              item.tipoVenta ===
-              "Peso"
-                ? item.pesoReal
-                : undefined,
+        Object.entries(
+          formPesos
+        ).map(
+          (
+            [
+              itemId,
+              pesoReal,
+            ]
+          ) => ({
+            itemId,
+            id: itemId,
+            _id: itemId,
+            pesoReal,
           })
         );
 
@@ -1920,10 +1210,32 @@ export default function Entregas() {
         actualizada
       );
 
-      setFormItems(
-        itemsFormularioDesdeEntrega(
-          actualizada
-        )
+      const pesosGuardados = {};
+
+      (
+        actualizada?.items ||
+        []
+      ).forEach(
+        (item) => {
+
+          if (
+            item.tipoVenta ===
+            "Peso"
+          ) {
+
+            pesosGuardados[
+              item._id
+            ] =
+              item.pesoReal ??
+              "";
+
+          }
+
+        }
+      );
+
+      setFormPesos(
+        pesosGuardados
       );
 
       setPreparacionSucia(
@@ -1960,6 +1272,111 @@ export default function Entregas() {
 
     }
 
+  }
+
+
+  async function devolverPedidoAEdicion() {
+
+    if (!detalle) {
+      return;
+    }
+
+    const confirmar = window.confirm(
+      `¿Devolver ${detalle.pedidoCodigo || "este pedido"} a Borrador para editar cliente, productos o cantidades desde Pedidos?\n\nSe liberarán las reservas actuales de inventario.`
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    try {
+      setProcesando(true);
+
+      const respuesta =
+        await reabrirPreparacionEntrega(
+          detalle._id
+        );
+
+      setDetalle(
+        respuesta.entrega
+      );
+
+      setPreparacionSucia(false);
+
+      setMensaje(
+        respuesta.mensaje ||
+        "Pedido devuelto a Borrador. Edítelo desde Pedidos."
+      );
+      setTipoMensaje("success");
+
+      await cargarDatos();
+
+    } catch (error) {
+      setMensaje(
+        error?.response?.data?.mensaje ||
+        "No fue posible devolver el pedido a edición."
+      );
+      setTipoMensaje("error");
+    } finally {
+      setProcesando(false);
+    }
+  }
+
+
+  async function revertirEntregaEntregada() {
+
+    if (!detalle) {
+      return;
+    }
+
+    const motivo = window.prompt(
+      `Motivo para revertir ${detalle.pedidoCodigo || "la entrega"}:`
+    );
+
+    if (motivo === null) {
+      return;
+    }
+
+    if (motivo.trim().length < 5) {
+      setMensaje(
+        "El motivo de reversión debe tener al menos 5 caracteres."
+      );
+      setTipoMensaje("error");
+      return;
+    }
+
+    try {
+      setProcesando(true);
+
+      const respuesta =
+        await revertirEntregaFinalizada(
+          detalle._id,
+          motivo.trim()
+        );
+
+      setDetalle(
+        respuesta.entrega
+      );
+
+      setPreparacionSucia(false);
+
+      setMensaje(
+        respuesta.mensaje ||
+        "Entrega revertida. El pedido volvió a Borrador."
+      );
+      setTipoMensaje("success");
+
+      await cargarDatos();
+
+    } catch (error) {
+      setMensaje(
+        error?.response?.data?.mensaje ||
+        "No fue posible revertir la entrega."
+      );
+      setTipoMensaje("error");
+    } finally {
+      setProcesando(false);
+    }
   }
 
 
@@ -2253,6 +1670,16 @@ export default function Entregas() {
   ) {
 
     if (!detalle) {
+      return;
+    }
+
+    if (preparacionSucia) {
+      setMensaje(
+        "Guarde primero los cambios de repartidor, tipo de pago o peso real antes de cambiar el estado."
+      );
+      setTipoMensaje(
+        "error"
+      );
       return;
     }
 
@@ -2720,6 +2147,8 @@ export default function Entregas() {
                         </span>
                         <strong>
                           {entrega.zonaDespachoNombre ||
+                            entrega.zonaDespacho?.nombre ||
+                            entrega.pedido?.zonaDespachoNombre ||
                             "Sin zona"}
                         </strong>
                       </div>
@@ -3188,6 +2617,8 @@ export default function Entregas() {
                   <span>Zona</span>
                   <strong>
                     {detalle.zonaDespachoNombre ||
+                      detalle.zonaDespacho?.nombre ||
+                      detalle.pedido?.zonaDespachoNombre ||
                       "—"}
                   </strong>
                 </div>
@@ -3227,7 +2658,12 @@ export default function Entregas() {
                       formRepartidor
                     }
                     disabled={
-                      detalle.confirmada
+                      [
+                        "Entregado",
+                        "Cancelado",
+                      ].includes(
+                        detalle.estado
+                      )
                     }
                     onChange={
                       (event) => {
@@ -3277,7 +2713,6 @@ export default function Entregas() {
                       formMetodoPago
                     }
                     disabled={
-                      procesando ||
                       [
                         "Entregado",
                         "Cancelado",
@@ -3286,10 +2721,15 @@ export default function Entregas() {
                       )
                     }
                     onChange={
-                      (event) =>
-                        manejarCambioMetodoPago(
+                      (event) => {
+
+                        setFormMetodoPago(
                           event.target.value
-                        )
+                        );
+
+                        marcarPreparacionSucia();
+
+                      }
                     }
                   >
                     <option value="">
@@ -3318,83 +2758,111 @@ export default function Entregas() {
 
                 <div className="entregas-section-title">
 
-                  <div>
-                    <h3>
-                      Productos ({
-                        formItems.length
-                      })
-                    </h3>
+                  <h3>
+                    Productos ({
+                      Array.isArray(
+                        detalle.items
+                      )
+                        ? detalle.items.length
+                        : 0
+                    })
+                  </h3>
 
-                    <span>
-                      Puede ajustar cantidad, peso, quitar productos o agregar otros mientras esté Por preparar.
-                    </span>
-                  </div>
-
-                  {!detalle.confirmada && (
-
-                    <span className="entregas-editable-badge">
-                      Edición habilitada
-                    </span>
-
-                  )}
+                  <span>
+                    Los productos por KG requieren peso real.
+                  </span>
 
                 </div>
 
 
-                {formItems.length > 0 ? (
+                {Array.isArray(
+                  detalle.items
+                ) &&
+                detalle.items.length >
+                  0 ? (
 
                   <div className="entregas-products-v4-list">
 
-                    {formItems.map(
+                    {detalle.items.map(
                       (
                         item,
                         index
                       ) => {
 
+                        const itemId =
+                          `${String(
+                            item._id ||
+                            "sin-id"
+                          )}-${index}`;
+
+                        const pesoTemporal =
+                          formPesos[
+                            item._id
+                          ];
+
                         const esPeso =
                           item.tipoVenta ===
                           "Peso";
 
-                        const cantidad =
+                        const pesoNumero =
                           Number(
-                            item.cantidadReal
+                            pesoTemporal
                           );
 
-                        const peso =
-                          Number(
-                            item.pesoReal
+                        const pesoValido =
+                          !esPeso ||
+                          (
+                            pesoTemporal !== "" &&
+                            pesoTemporal !== undefined &&
+                            pesoTemporal !== null &&
+                            Number.isFinite(
+                              pesoNumero
+                            ) &&
+                            pesoNumero > 0
                           );
+
+                        const precioPesoInfo =
+                          esPeso &&
+                          pesoValido
+                            ? precioPesoVista(
+                                item,
+                                pesoNumero
+                              )
+                            : null;
 
                         const precioUnitario =
-                          Number(
-                            item.precioUnitario ||
-                            0
-                          );
-
-                        const valorReal =
                           esPeso
-                            ? peso
-                            : cantidad;
-
-                        const valorValido =
-                          Number.isFinite(
-                            valorReal
-                          ) &&
-                          valorReal > 0;
+                            ? Number(
+                                precioPesoInfo?.precio ??
+                                item.precioNormal ??
+                                item.precioUnitario ??
+                                0
+                              )
+                            : Number(
+                                item.precioUnitario ??
+                                item.precioAplicado ??
+                                item.precioNormal ??
+                                0
+                              );
 
                         const subtotalVista =
-                          valorValido
-                            ? valorReal *
-                              precioUnitario
-                            : 0;
+                          esPeso
+                            ? (
+                                pesoValido
+                                  ? pesoNumero *
+                                    precioUnitario
+                                  : 0
+                              )
+                            : Number(
+                                item.subtotal ||
+                                0
+                              );
 
                         return (
 
                           <div
-                            key={
-                              item.key
-                            }
-                            className="entregas-product-v4-card entregas-product-edit-card"
+                            key={itemId}
+                            className="entregas-product-v4-card"
                           >
 
                             <div className="entregas-product-v4-main">
@@ -3406,7 +2874,9 @@ export default function Entregas() {
                               <div>
 
                                 <strong>
-                                  {item.nombre}
+                                  {item.nombre ||
+                                    item.producto?.nombre ||
+                                    "Producto"}
                                 </strong>
 
                                 <small>
@@ -3415,45 +2885,13 @@ export default function Entregas() {
                                     ""}
                                 </small>
 
-                                <div className="entregas-item-tags">
-
-                                  {esPeso && (
-                                    <em>
-                                      Venta por peso
-                                    </em>
-                                  )}
-
-                                  {item.origen ===
-                                    "Agregado" && (
-                                    <em className="entregas-added-tag">
-                                      Agregado en Entrega
-                                    </em>
-                                  )}
-
-                                </div>
+                                {esPeso && (
+                                  <em>
+                                    Venta por KG
+                                  </em>
+                                )}
 
                               </div>
-
-
-                              {!detalle.confirmada && (
-
-                                <button
-                                  type="button"
-                                  className="entregas-remove-product"
-                                  onClick={() =>
-                                    quitarItemFormulario(
-                                      item.key
-                                    )
-                                  }
-                                  disabled={
-                                    procesando
-                                  }
-                                  title="Quitar producto de la entrega"
-                                >
-                                  Quitar
-                                </button>
-
-                              )}
 
                             </div>
 
@@ -3462,82 +2900,14 @@ export default function Entregas() {
 
                               <div>
                                 <span>
-                                  Solicitado
+                                  Cantidad
                                 </span>
 
                                 <strong>
-                                  {item.cantidadSolicitada ||
-                                    "—"}
+                                  {item.cantidadSolicitada ??
+                                    item.cantidad ??
+                                    1}
                                 </strong>
-                              </div>
-
-
-                              <div>
-                                <span>
-                                  {esPeso
-                                    ? "Peso real"
-                                    : "Cantidad real"}
-                                </span>
-
-                                {esPeso ? (
-
-                                  <div className="entregas-weight-field entregas-weight-field-v4">
-
-                                    <input
-                                      type="number"
-                                      min="0.001"
-                                      step="0.001"
-                                      placeholder="0.000"
-                                      value={
-                                        item.pesoReal
-                                      }
-                                      disabled={
-                                        detalle.confirmada ||
-                                        procesando
-                                      }
-                                      onChange={
-                                        (event) =>
-                                          actualizarItemFormulario(
-                                            item.key,
-                                            "pesoReal",
-                                            event.target.value
-                                          )
-                                      }
-                                    />
-
-                                    <span>
-                                      {item.unidad ||
-                                        "kg"}
-                                    </span>
-
-                                  </div>
-
-                                ) : (
-
-                                  <input
-                                    type="number"
-                                    min="1"
-                                    step="1"
-                                    className="entregas-quantity-input"
-                                    value={
-                                      item.cantidadReal
-                                    }
-                                    disabled={
-                                      detalle.confirmada ||
-                                      procesando
-                                    }
-                                    onChange={
-                                      (event) =>
-                                        actualizarItemFormulario(
-                                          item.key,
-                                          "cantidadReal",
-                                          event.target.value
-                                        )
-                                    }
-                                  />
-
-                                )}
-
                               </div>
 
 
@@ -3553,11 +2923,80 @@ export default function Entregas() {
                                 </strong>
 
                                 {esPeso && (
-                                  <small>
-                                    por {item.unidad ||
-                                      "kg"}
-                                  </small>
+                                  <>
+                                    <small>
+                                      por KG
+                                    </small>
+
+                                    {precioPesoInfo?.reglaAplicada && (
+                                      <small className="entregas-price-rule-applied">
+                                        Precio especial desde {precioPesoInfo.reglaAplicada.desde} kg
+                                      </small>
+                                    )}
+                                  </>
                                 )}
+                              </div>
+
+
+                              <div>
+                                <span>
+                                  Peso real
+                                </span>
+
+                                {esPeso ? (
+
+                                  <div className="entregas-weight-field entregas-weight-field-v4">
+
+                                    <input
+                                      type="number"
+                                      min="0.001"
+                                      step="0.001"
+                                      placeholder="0.000"
+                                      value={
+                                        pesoTemporal ??
+                                        ""
+                                      }
+                                      disabled={
+                                        [
+                                          "Entregado",
+                                          "Cancelado",
+                                        ].includes(
+                                          detalle.estado
+                                        )
+                                      }
+                                      onChange={
+                                        (event) => {
+
+                                          setFormPesos(
+                                            (
+                                              actual
+                                            ) => ({
+                                              ...actual,
+                                              [item._id]:
+                                                event.target.value,
+                                            })
+                                          );
+
+                                          marcarPreparacionSucia();
+
+                                        }
+                                      }
+                                    />
+
+                                    <span>
+                                      kg
+                                    </span>
+
+                                  </div>
+
+                                ) : (
+
+                                  <strong className="entregas-v4-no-aplica">
+                                    No aplica
+                                  </strong>
+
+                                )}
+
                               </div>
 
 
@@ -3566,10 +3005,11 @@ export default function Entregas() {
                                   Subtotal
                                 </span>
 
-                                {!valorValido ? (
+                                {esPeso &&
+                                !pesoValido ? (
 
                                   <span className="entregas-weight-pending">
-                                    Pendiente
+                                    Pendiente por pesar
                                   </span>
 
                                 ) : (
@@ -3598,255 +3038,14 @@ export default function Entregas() {
                 ) : (
 
                   <div className="entregas-products-v4-empty">
+
                     No hay productos cargados en esta entrega.
-                  </div>
-
-                )}
-
-
-                {!detalle.confirmada && (
-
-                  <div className="entregas-add-product-panel">
-
-                    <div className="entregas-add-product-title">
-
-                      <div>
-                        <strong>
-                          Agregar producto
-                        </strong>
-
-                        <span>
-                          El producto agregado también afectará inventario al confirmar/finalizar la entrega.
-                        </span>
-                      </div>
-
-                    </div>
-
-
-                    <div className="entregas-add-product-grid">
-
-                      <label>
-
-                        <span>
-                          Producto
-                        </span>
-
-                        <select
-                          value={
-                            nuevoProductoId
-                          }
-                          onChange={
-                            (event) => {
-
-                              setNuevoProductoId(
-                                event.target.value
-                              );
-
-                              setNuevaPresentacionId(
-                                ""
-                              );
-
-                              setNuevaCantidad(
-                                "1"
-                              );
-
-                              setNuevoPeso(
-                                ""
-                              );
-
-                            }
-                          }
-                          disabled={
-                            procesando
-                          }
-                        >
-                          <option value="">
-                            Seleccionar producto
-                          </option>
-
-                          {productos.map(
-                            (producto) => (
-                              <option
-                                key={
-                                  producto._id ||
-                                  producto.id
-                                }
-                                value={
-                                  producto._id ||
-                                  producto.id
-                                }
-                              >
-                                {producto.codigo
-                                  ? `${producto.codigo} · `
-                                  : ""}
-                                {producto.nombre}
-                              </option>
-                            )
-                          )}
-
-                        </select>
-
-                      </label>
-
-
-                      <label>
-
-                        <span>
-                          Presentación
-                        </span>
-
-                        <select
-                          value={
-                            nuevaPresentacionId
-                          }
-                          onChange={
-                            (event) => {
-
-                              setNuevaPresentacionId(
-                                event.target.value
-                              );
-
-                              setNuevaCantidad(
-                                "1"
-                              );
-
-                              setNuevoPeso(
-                                ""
-                              );
-
-                            }
-                          }
-                          disabled={
-                            !productoNuevoSeleccionado ||
-                            procesando
-                          }
-                        >
-                          <option value="">
-                            Principal
-                          </option>
-
-                          {presentacionesNuevoProducto.map(
-                            (presentacion) => (
-                              <option
-                                key={
-                                  presentacion._id ||
-                                  presentacion.id
-                                }
-                                value={
-                                  presentacion._id ||
-                                  presentacion.id
-                                }
-                              >
-                                {presentacion.nombre}
-                              </option>
-                            )
-                          )}
-
-                        </select>
-
-                      </label>
-
-
-                      {(
-                        (
-                          nuevaPresentacionId
-                            ? presentacionesNuevoProducto.find(
-                                (item) =>
-                                  String(
-                                    item._id ||
-                                    item.id
-                                  ) ===
-                                  String(
-                                    nuevaPresentacionId
-                                  )
-                              )
-                            : productoNuevoSeleccionado
-                        )?.tipoVenta ||
-                        "Unidad"
-                      ) === "Peso" ? (
-
-                        <label>
-
-                          <span>
-                            Peso real
-                          </span>
-
-                          <input
-                            type="number"
-                            min="0.001"
-                            step="0.001"
-                            placeholder="0.000"
-                            value={
-                              nuevoPeso
-                            }
-                            onChange={
-                              (event) =>
-                                setNuevoPeso(
-                                  event.target.value
-                                )
-                            }
-                            disabled={
-                              !productoNuevoSeleccionado ||
-                              procesando
-                            }
-                          />
-
-                        </label>
-
-                      ) : (
-
-                        <label>
-
-                          <span>
-                            Cantidad
-                          </span>
-
-                          <input
-                            type="number"
-                            min="1"
-                            step="1"
-                            value={
-                              nuevaCantidad
-                            }
-                            onChange={
-                              (event) =>
-                                setNuevaCantidad(
-                                  event.target.value
-                                )
-                            }
-                            disabled={
-                              !productoNuevoSeleccionado ||
-                              procesando
-                            }
-                          />
-
-                        </label>
-
-                      )}
-
-
-                      <button
-                        type="button"
-                        className="entregas-add-product-btn"
-                        onClick={
-                          agregarProductoFormulario
-                        }
-                        disabled={
-                          !productoNuevoSeleccionado ||
-                          procesando
-                        }
-                      >
-                        + Agregar
-                      </button>
-
-                    </div>
 
                   </div>
 
                 )}
 
               </section>
-
 
               <section className="entregas-summary">
 
@@ -4074,6 +3273,66 @@ export default function Entregas() {
 
                 <div className="entregas-after-confirm">
 
+                  {[
+                    "Pendiente",
+                    "En ruta",
+                  ].includes(
+                    detalle.estado
+                  ) && (
+
+                    <div className="entregas-operational-actions">
+
+                      <button
+                        type="button"
+                        className="entregas-confirm"
+                        onClick={
+                          guardarPreparacion
+                        }
+                        disabled={
+                          procesando ||
+                          !preparacionSucia
+                        }
+                      >
+                        Guardar cambios
+                      </button>
+
+                      <button
+                        type="button"
+                        className="entregas-secondary-action"
+                        onClick={
+                          devolverPedidoAEdicion
+                        }
+                        disabled={
+                          procesando
+                        }
+                      >
+                        Editar pedido
+                      </button>
+
+                    </div>
+
+                  )}
+
+
+                  {detalle.estado ===
+                    "Entregado" && (
+
+                    <button
+                      type="button"
+                      className="entregas-danger-action"
+                      onClick={
+                        revertirEntregaEntregada
+                      }
+                      disabled={
+                        procesando
+                      }
+                    >
+                      Revertir entrega
+                    </button>
+
+                  )}
+
+
                   <label className="entregas-state-control">
 
                     <span>
@@ -4104,161 +3363,9 @@ export default function Entregas() {
                   </label>
 
 
-                  <div className="entregas-after-confirm-actions">
-
-                    {[
-                      "Pendiente",
-                      "En ruta",
-                    ].includes(
-                      detalle.estado
-                    ) && (
-
-                      <button
-                        type="button"
-                        className="entregas-reopen-btn"
-                        onClick={
-                          reabrirPreparacionActual
-                        }
-                        disabled={
-                          procesando
-                        }
-                      >
-                        Reabrir preparación
-                      </button>
-
-                    )}
-
-
-                    {esAdministrador &&
-                    detalle.estado ===
-                      "Entregado" && (
-
-                      <button
-                        type="button"
-                        className="entregas-revert-btn"
-                        onClick={
-                          abrirReversionEntrega
-                        }
-                        disabled={
-                          procesando
-                        }
-                      >
-                        Revertir entrega
-                      </button>
-
-                    )}
-
-                  </div>
-
-
                 </div>
 
               )}
-
-            </footer>
-
-          </section>
-
-        </div>
-
-      )}
-
-
-      {modalReversion &&
-        detalle && (
-
-        <div className="entregas-modal-overlay entregas-modal-overlay-top">
-
-          <section className="entregas-cancel-modal entregas-revert-modal">
-
-            <header>
-              <h3>
-                Revertir entrega
-              </h3>
-            </header>
-
-
-            <div>
-
-              <div className="entregas-revert-warning">
-
-                <strong>
-                  {detalle.pedidoCodigo}
-                </strong>
-
-                <p>
-                  La entrega volverá a Por preparar. El inventario se devolverá automáticamente y el movimiento de Caja se anulará si la caja sigue abierta.
-                </p>
-
-                <small>
-                  Si existe una factura vigente, pagos de Cartera o una Caja cerrada relacionada, el sistema bloqueará la reversión e indicará qué debe revertirse primero.
-                </small>
-
-              </div>
-
-
-              <label>
-
-                <span>
-                  Motivo de reversión *
-                </span>
-
-                <textarea
-                  rows="4"
-                  value={
-                    motivoReversion
-                  }
-                  onChange={
-                    (event) =>
-                      setMotivoReversion(
-                        event.target.value
-                      )
-                  }
-                  placeholder="Ejemplo: Se registró una cantidad incorrecta."
-                  disabled={
-                    procesando
-                  }
-                />
-
-              </label>
-
-            </div>
-
-
-            <footer>
-
-              <button
-                type="button"
-                className="entregas-cancel-back"
-                onClick={() =>
-                  setModalReversion(
-                    false
-                  )
-                }
-                disabled={
-                  procesando
-                }
-              >
-                Cancelar
-              </button>
-
-
-              <button
-                type="button"
-                className="entregas-revert-confirm-btn"
-                onClick={
-                  confirmarReversionEntrega
-                }
-                disabled={
-                  procesando ||
-                  motivoReversion.trim()
-                    .length < 5
-                }
-              >
-                {procesando
-                  ? "Revirtiendo..."
-                  : "Revertir entrega"}
-              </button>
 
             </footer>
 
