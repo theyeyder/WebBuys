@@ -8,16 +8,17 @@
     "start": "node src/server.js"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "bcryptjs": "latest",
     "cors": "latest",
     "dotenv": "latest",
     "express": "latest",
     "jsonwebtoken": "latest",
-    "mongoose": "latest",
     "morgan": "latest",
     "multer": "^2.2.0"
   },
   "devDependencies": {
-    "nodemon": "latest"
+    "nodemon": "latest",
+    "prisma": "^6.19.3"
   }
 }
