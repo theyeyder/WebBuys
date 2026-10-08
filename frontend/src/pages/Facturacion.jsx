@@ -168,7 +168,8 @@ function cantidadFacturableItem(
   return {
     cantidad:
       Number(
-        item.cantidadSolicitada ||
+        item.cantidadReal ??
+        item.cantidadSolicitada ??
         0
       ),
 

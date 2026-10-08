@@ -224,9 +224,17 @@ export function imprimirEntrega(
 
             <td class="numero">
               ${escaparHtml(
-                item.cantidadSolicitada ??
-                item.cantidad ??
-                0
+                item.tipoVenta === "Peso"
+                  ? (
+                      item.cantidadSolicitada ??
+                      0
+                    )
+                  : (
+                      item.cantidadReal ??
+                      item.cantidadSolicitada ??
+                      item.cantidad ??
+                      0
+                    )
               )}
             </td>
 

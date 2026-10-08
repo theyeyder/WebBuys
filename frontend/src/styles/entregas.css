@@ -3937,3 +3937,273 @@
     translateY(0);
 }
 
+
+
+/* =========================================================
+   EDICIÓN AVANZADA DE ENTREGA
+========================================================= */
+
+.entregas-editable-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 27px;
+  padding: 0 10px;
+  border: 1px solid #a9d9c8;
+  border-radius: 999px;
+  background: #eaf8f3;
+  color: #0b765b;
+  font-size: 9px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.entregas-product-edit-card {
+  position: relative;
+}
+
+.entregas-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.entregas-added-tag {
+  border: 1px solid #b8d8ef;
+  border-radius: 999px;
+  padding: 2px 7px;
+  background: #eff8ff;
+  color: #175f8d !important;
+  font-style: normal !important;
+}
+
+.entregas-remove-product {
+  margin-left: auto;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid #efc1bd;
+  border-radius: 8px;
+  background: #fff5f4;
+  color: #b42318;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.entregas-remove-product:hover:not(:disabled) {
+  background: #fee9e7;
+}
+
+.entregas-quantity-input {
+  width: 100%;
+  max-width: 110px;
+  height: 35px;
+  box-sizing: border-box;
+  padding: 0 9px;
+  border: 1px solid #cbdcd5;
+  border-radius: 8px;
+  background: #fff;
+  color: #263f35;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.entregas-quantity-input:focus {
+  outline: none;
+  border-color: #159a75;
+  box-shadow: 0 0 0 3px rgba(21, 154, 117, .10);
+}
+
+.entregas-add-product-panel {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px dashed #afd5c7;
+  border-radius: 13px;
+  background: linear-gradient(180deg, #fbfefd, #f2faf7);
+}
+
+.entregas-add-product-title {
+  margin-bottom: 11px;
+}
+
+.entregas-add-product-title strong {
+  display: block;
+  color: #174c3d;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.entregas-add-product-title span {
+  display: block;
+  margin-top: 3px;
+  color: #758980;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.entregas-add-product-grid {
+  display: grid;
+  grid-template-columns: minmax(190px, 1.35fr) minmax(160px, 1fr) minmax(120px, .7fr) auto;
+  gap: 9px;
+  align-items: end;
+}
+
+.entregas-add-product-grid label {
+  min-width: 0;
+}
+
+.entregas-add-product-grid label > span {
+  display: block;
+  margin-bottom: 5px;
+  color: #71847c;
+  font-size: 8px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.entregas-add-product-grid select,
+.entregas-add-product-grid input {
+  width: 100%;
+  height: 36px;
+  box-sizing: border-box;
+  padding: 0 9px;
+  border: 1px solid #cbdcd5;
+  border-radius: 8px;
+  background: #fff;
+  color: #2a4138;
+  font: inherit;
+  font-size: 10px;
+}
+
+.entregas-add-product-btn {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid #0f766e;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0f766e, #159a75);
+  color: #fff;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 950;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.entregas-after-confirm {
+  width: 100%;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.entregas-after-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.entregas-reopen-btn,
+.entregas-revert-btn {
+  min-height: 37px;
+  padding: 0 14px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.entregas-reopen-btn {
+  border: 1px solid #b5d6ca;
+  background: #f2faf7;
+  color: #0b765b;
+}
+
+.entregas-revert-btn,
+.entregas-revert-confirm-btn {
+  border: 1px solid #b42318;
+  background: linear-gradient(135deg, #b42318, #d92d20);
+  color: #fff;
+}
+
+.entregas-revert-confirm-btn {
+  min-height: 37px;
+  padding: 0 14px;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.entregas-revert-warning {
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid #f0c7c2;
+  border-radius: 10px;
+  background: #fff6f5;
+  color: #7c241d;
+}
+
+.entregas-revert-warning strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 13px;
+}
+
+.entregas-revert-warning p {
+  margin: 0 0 7px;
+  line-height: 1.45;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.entregas-revert-warning small {
+  display: block;
+  line-height: 1.45;
+  color: #96544e;
+  font-size: 9px;
+}
+
+.entregas-revert-modal textarea {
+  width: 100%;
+  min-height: 92px;
+  box-sizing: border-box;
+  padding: 10px;
+  resize: vertical;
+  border: 1px solid #d7e2de;
+  border-radius: 9px;
+  background: #fff;
+  color: #2a4138;
+  font: inherit;
+  font-size: 10px;
+}
+
+@media (max-width: 900px) {
+  .entregas-add-product-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .entregas-after-confirm {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .entregas-after-confirm-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 560px) {
+  .entregas-add-product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .entregas-add-product-btn {
+    width: 100%;
+  }
+}

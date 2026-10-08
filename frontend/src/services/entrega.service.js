@@ -85,3 +85,53 @@ export async function cambiarEstadoEntrega(
   return respuesta.data;
 
 }
+
+
+export async function cambiarMetodoPagoEntrega(
+  id,
+  metodoPago
+) {
+
+  const respuesta =
+    await api.patch(
+      `${url}/${id}/metodo-pago`,
+      {
+        metodoPago,
+      }
+    );
+
+  return respuesta.data;
+
+}
+
+
+export async function reabrirPreparacionEntrega(
+  id
+) {
+
+  const respuesta =
+    await api.patch(
+      `${url}/${id}/reabrir-preparacion`
+    );
+
+  return respuesta.data;
+
+}
+
+
+export async function revertirEntregaFinalizada(
+  id,
+  motivo
+) {
+
+  const respuesta =
+    await api.patch(
+      `${url}/${id}/revertir`,
+      {
+        motivo,
+      }
+    );
+
+  return respuesta.data;
+
+}
