@@ -846,6 +846,69 @@ export function imprimirCierreCaja(
       .join("");
 
 
+
+  const denominaciones = [
+    ["$ 2.000", 2000, "billetesDosMil"],
+    ["$ 5.000", 5000, "billetesCincoMil"],
+    ["$ 10.000", 10000, "billetesDiezMil"],
+    ["$ 20.000", 20000, "billetesVeinteMil"],
+    ["$ 50.000", 50000, "billetesCincuentaMil"],
+    ["$ 100.000", 100000, "billetesCienMil"],
+  ];
+
+
+  const filasDenominaciones =
+    denominaciones
+      .map(
+        ([etiqueta, valor, campo]) => {
+
+          const cantidad =
+            Number(
+              caja[campo] ||
+              0
+            );
+
+          if (cantidad <= 0) {
+            return "";
+          }
+
+          return `
+            <tr>
+              <td>
+                ${escaparHTML(etiqueta)}
+              </td>
+              <td class="money">
+                ${cantidad}
+              </td>
+              <td class="money">
+                ${cantidad} × ${escaparHTML(etiqueta)}
+              </td>
+              <td class="money">
+                ${moneda(cantidad * valor)}
+              </td>
+            </tr>
+          `;
+
+        }
+      )
+      .join("");
+
+
+  const totalDenominaciones =
+    denominaciones.reduce(
+      (
+        total,
+        [, valor, campo]
+      ) =>
+        total +
+        Number(
+          caja[campo] ||
+          0
+        ) * valor,
+      0
+    );
+
+
   const diferenciaConciliacion =
     Number(
       resumen
@@ -1187,6 +1250,51 @@ export function imprimirCierreCaja(
             </div>
 
           </section>
+
+
+          <div class="print-section-title">
+            Conteo por denominación
+          </div>
+
+          <table class="denominations">
+
+            <thead>
+              <tr>
+                <th>Denominación</th>
+                <th class="money">Cantidad</th>
+                <th class="money">Operación</th>
+                <th class="money">Subtotal</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              ${
+                filasDenominaciones ||
+                `
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="vacio"
+                    >
+                      Sin billetes registrados
+                    </td>
+                  </tr>
+                `
+              }
+
+              <tr>
+                <td colspan="3">
+                  <strong>Total contado por denominaciones</strong>
+                </td>
+                <td class="money">
+                  <strong>${moneda(totalDenominaciones)}</strong>
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
 
 
           <div class="print-section-title">

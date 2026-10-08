@@ -1,5 +1,9 @@
 import axios from "axios";
 
+import {
+  notificarCambioDatos,
+} from "../utils/dataSync.js";
+
 const api = axios.create({
   baseURL:
     import.meta.env.VITE_API_URL ||
@@ -26,7 +30,33 @@ api.interceptors.request.use((config) => {
 =========================== */
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const metodo =
+      String(
+        response?.config?.method ||
+        ""
+      ).toLowerCase();
+
+    if (
+      [
+        "post",
+        "put",
+        "patch",
+        "delete",
+      ].includes(
+        metodo
+      )
+    ) {
+      notificarCambioDatos({
+        metodo,
+        url:
+          response?.config?.url ||
+          "",
+      });
+    }
+
+    return response;
+  },
 
   (error) => {
     if (

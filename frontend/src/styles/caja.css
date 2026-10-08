@@ -5453,11 +5453,7 @@ button.selected.current-week::after {
   }
 
 }
-/* =========================================================
-   CORRECCIÓN - PANEL DE MÓDULOS
-   Se restaura la geometría original de la cabecera para que
-   ModulosMenu vuelva a quedar centrado como antes.
-   ========================================================= */
+
 
 .caja-header {
   min-height: 50px;
@@ -5492,17 +5488,7 @@ button.selected.current-week::after {
   }
 
 }
-/* =========================================================
-   CORRECCIÓN DEFINITIVA - PANEL DE MÓDULOS EN CAJA
 
-   No usar backdrop-filter en .caja-header:
-   al estar ModulosMenu dentro de la cabecera, ese efecto puede
-   convertir la cabecera en el bloque de referencia del overlay
-   fixed y hacer que el panel aparezca pegado arriba.
-
-   Con esto el overlay vuelve a tomar toda la ventana, igual que
-   en Pedidos, y el panel queda centrado vertical y horizontalmente.
-   ========================================================= */
 
 .caja-header {
   -webkit-backdrop-filter: none !important;
@@ -6242,3 +6228,244 @@ button.selected.current-week::after {
 }
 
 
+
+
+/* =====================================================
+   CIERRE DE CAJA - DESGLOSE DE BILLETES CONTADOS
+===================================================== */
+
+.caja-conteo-cierre {
+  margin-top: 16px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+  border: 1px solid #dce8e3;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 8px 22px rgba(31, 54, 44, 0.05);
+}
+
+.caja-conteo-cierre.is-compact {
+  margin-top: 12px;
+}
+
+.caja-conteo-cierre-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5eeea;
+}
+
+.caja-conteo-cierre-header > div:first-child,
+.caja-conteo-cierre-total {
+  display: grid;
+  gap: 2px;
+}
+
+.caja-conteo-cierre-header span,
+.caja-conteo-cierre-row span {
+  color: #75857e;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+}
+
+.caja-conteo-cierre-header strong {
+  color: #233b31;
+  font-size: 17px;
+  font-weight: 950;
+}
+
+.caja-conteo-cierre-total {
+  text-align: right;
+}
+
+.caja-conteo-cierre-total strong {
+  color: #087858;
+  font-size: 20px;
+}
+
+.caja-conteo-cierre-list {
+  display: grid;
+  gap: 7px;
+}
+
+.caja-conteo-cierre-row {
+  min-height: 58px;
+  padding: 8px 11px;
+  display: grid;
+  grid-template-columns: minmax(150px, .8fr) minmax(170px, 1fr) minmax(150px, .8fr);
+  align-items: center;
+  gap: 14px;
+  border: 1px solid #e2ebe7;
+  border-radius: 11px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfa 100%);
+}
+
+.caja-conteo-cierre-denominacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.caja-conteo-cierre-denominacion img {
+  width: 34px;
+  height: 24px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 3px rgba(15, 118, 110, 0.14));
+}
+
+.caja-conteo-cierre-denominacion strong,
+.caja-conteo-cierre-operacion strong,
+.caja-conteo-cierre-subtotal strong {
+  color: #263f35;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.caja-conteo-cierre-operacion,
+.caja-conteo-cierre-subtotal {
+  display: grid;
+  gap: 2px;
+}
+
+.caja-conteo-cierre-subtotal {
+  text-align: right;
+}
+
+.caja-conteo-cierre-subtotal strong {
+  color: #087858;
+}
+
+.caja-conteo-cierre-vacio {
+  padding: 12px;
+  border-radius: 10px;
+  background: #f7faf8;
+  color: #6d7e76;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .caja-conteo-cierre-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .caja-conteo-cierre-total {
+    text-align: left;
+  }
+
+  .caja-conteo-cierre-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .caja-conteo-cierre-subtotal {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+}
+
+
+/* =========================================================
+   REVERTIR CIERRE DE CAJA
+========================================================= */
+
+.caja-btn-danger {
+  border: 1px solid #b42318;
+  background:
+    linear-gradient(
+      135deg,
+      #b42318,
+      #d92d20
+    );
+  color: #ffffff;
+  box-shadow:
+    0 9px 22px
+    rgba(180, 35, 24, 0.20);
+}
+
+.caja-btn-danger:hover:not(:disabled) {
+  border-color: #912018;
+  background:
+    linear-gradient(
+      135deg,
+      #912018,
+      #b42318
+    );
+}
+
+.caja-reversion-bloqueo {
+  margin-top: 14px;
+  padding: 11px 13px;
+  border: 1px solid #f3d0cc;
+  border-radius: 11px;
+  background: #fff6f5;
+  color: #8f241c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.caja-reversion-modal {
+  max-width: 560px;
+}
+
+.caja-reversion-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: #b42318;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.caja-reversion-warning {
+  margin: 6px 0 16px;
+  padding: 14px 15px;
+  border: 1px solid #f0c9c4;
+  border-radius: 12px;
+  background:
+    linear-gradient(
+      180deg,
+      #fff8f7,
+      #fff3f1
+    );
+  color: #6f1d16;
+}
+
+.caja-reversion-warning strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 16px;
+}
+
+.caja-reversion-warning p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.caja-reversion-modal textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 11px 12px;
+  box-sizing: border-box;
+  resize: vertical;
+  border: 1px solid #d8e2de;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #17352f;
+  font: inherit;
+}
+
+.caja-reversion-modal textarea:focus {
+  outline: none;
+  border-color: #9abdb0;
+  box-shadow:
+    0 0 0 3px
+    rgba(20, 149, 117, 0.10);
+}

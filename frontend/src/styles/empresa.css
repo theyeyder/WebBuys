@@ -479,3 +479,116 @@
     max-width: none;
   }
 }
+/* =========================================================
+   CABECERA PRINCIPAL DEL MÓDULO EMPRESA
+========================================================= */
+
+.empresa-page {
+  width: 100%;
+  min-height: 100%;
+}
+
+.empresa-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 8000;
+
+  width: auto;
+  height: 72px;
+  padding: 8px 24px 8px 70px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e 0%,
+      #159a75 52%,
+      #20afb2 100%
+    );
+
+  box-shadow:
+    0 4px 14px rgba(15, 23, 42, 0.12);
+}
+
+.empresa-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.empresa-topbar-copy {
+  min-width: 0;
+}
+
+.empresa-topbar-copy h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.empresa-topbar-copy p {
+  margin: 2px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.empresa-content {
+  width: 100%;
+  padding: 96px 24px 24px;
+  box-sizing: border-box;
+}
+
+.empresa-content .empresa-module {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+}
+
+.empresa-header {
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e7eeea;
+}
+
+.empresa-header-copy {
+  min-width: 0;
+}
+
+.empresa-header-copy h2 {
+  margin: 6px 0 8px;
+  color: #173c31;
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.empresa-header-copy p {
+  margin: 0;
+  max-width: 720px;
+  color: #667085;
+  line-height: 1.5;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+@media (max-width: 768px) {
+  .empresa-topbar {
+    height: 64px;
+    padding: 9px 12px 9px 60px;
+  }
+
+  .empresa-topbar-copy p {
+    display: none;
+  }
+
+  .empresa-content {
+    padding: 78px 14px 14px;
+  }
+}

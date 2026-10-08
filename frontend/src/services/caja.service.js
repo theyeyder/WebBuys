@@ -109,3 +109,21 @@ export async function obtenerDetalleCaja(
   return response.data;
 
 }
+
+
+export async function revertirCierreCaja(
+  id,
+  motivo
+) {
+
+  const response =
+    await api.post(
+      `${url}/historial/${id}/revertir`,
+      {
+        motivo,
+      }
+    );
+
+  return response.data;
+
+}
