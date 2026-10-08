@@ -3,6 +3,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import ModulosMenu
   from "../components/ModulosMenu.jsx";
 
@@ -67,6 +70,18 @@ export default function Preferencias() {
   useEffect(() => {
     cargarPreferencias();
   }, []);
+
+
+  useAutoRefresh(
+    () => cargarPreferencias(),
+    {
+      intervalMs: 0,
+      onFocus: false,
+      onVisibility: false,
+      shouldRefresh: ({ url = "" } = {}) =>
+        String(url).includes("/preferencias"),
+    }
+  );
 
 
   useEffect(() => {

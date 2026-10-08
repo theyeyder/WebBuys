@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import { useAuth } from "../context/AuthContext.jsx";
 
 import {
@@ -327,6 +330,13 @@ export default function ZonasDespacho() {
   useEffect(() => {
     cargarZonas();
   }, []);
+
+  useAutoRefresh(
+    () => cargarZonas(),
+    {
+      intervalMs: 0,
+    }
+  );
 
   useEffect(() => {
     if (!mensaje && !error) return;

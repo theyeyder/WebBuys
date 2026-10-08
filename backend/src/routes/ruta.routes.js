@@ -7,7 +7,7 @@ import {
   cambiarEstadoRuta,
   eliminarRuta,
   obtenerSiguienteCodigoRuta,
-} from "../controllers/ruta.controller.js";
+} from "../controllers/postgresqlOnly/ruta.controller.js";
 
 import {
   proteger,

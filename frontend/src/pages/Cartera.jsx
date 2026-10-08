@@ -5,6 +5,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import Toast
   from "../components/Toast.jsx";
 
@@ -1585,6 +1588,14 @@ export default function Cartera() {
       cargar();
     },
     []
+  );
+
+
+  useAutoRefresh(
+    () => cargar(),
+    {
+      intervalMs: 0,
+    }
   );
 
 

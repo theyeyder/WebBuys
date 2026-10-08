@@ -7,7 +7,7 @@ import {
   cambiarEstadoZonaDespacho,
   eliminarZonaDespacho,
   obtenerSiguienteCodigoZona,
-} from "../controllers/zonaDespacho.controller.js";
+} from "../controllers/postgresqlOnly/zonaDespacho.controller.js";
 
 import { proteger } from "../middlewares/auth.middleware.js";
 import { soloAdmin } from "../middlewares/role.middleware.js";

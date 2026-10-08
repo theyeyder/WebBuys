@@ -1,15 +1,12 @@
-import Producto
-  from "../models/Producto.js";
-
-import MovimientoInventario
-  from "../models/MovimientoInventario.js";
+import {
+  prisma,
+} from "../config/postgresql.js";
 
 import {
-  obtenerStockDisponible,
   registrarEntrada,
   registrarSalida,
   registrarAjuste,
-} from "../services/inventario.service.js";
+} from "../services/inventarioManualPostgresql.service.js";
 
 import {
   registrarAuditoria,
@@ -45,12 +42,61 @@ function redondear(
 }
 
 
+function pareceObjectIdMongo(
+  valor
+) {
+  return /^[a-f\d]{24}$/i.test(
+    String(valor || "")
+  );
+}
+
+
+function valorId(
+  valor
+) {
+  if (
+    valor === null ||
+    valor === undefined
+  ) {
+    return "";
+  }
+
+  if (
+    typeof valor === "object"
+  ) {
+    return String(
+      valor.postgresId ||
+      valor.legacyMongoId ||
+      valor._id ||
+      valor.id ||
+      ""
+    );
+  }
+
+  return String(valor);
+}
+
+
+function idCompatibilidad(
+  registro
+) {
+  if (!registro) {
+    return null;
+  }
+
+  return (
+    registro.legacyMongoId ||
+    registro.id ||
+    null
+  );
+}
+
+
 function estadoInventario({
   controlInventario,
   disponible,
   stockMinimo,
 }) {
-
   if (
     controlInventario === false
   ) {
@@ -78,7 +124,6 @@ function construirFila({
   producto,
   presentacion = null,
 }) {
-
   const objetivo =
     presentacion ||
     producto;
@@ -120,19 +165,35 @@ function construirFila({
       costoPromedio
     );
 
+  const productoCompatId =
+    idCompatibilidad(
+      producto
+    );
+
+  const presentacionCompatId =
+    idCompatibilidad(
+      presentacion
+    );
+
   return {
     id:
       presentacion
-        ? `${producto._id}:${presentacion._id}`
+        ? `${productoCompatId}:${presentacionCompatId}`
         : String(
-            producto._id
+            productoCompatId
           ),
 
     productoId:
-      producto._id,
+      productoCompatId,
+
+    productoPostgresId:
+      producto.id,
 
     presentacionId:
-      presentacion?._id ||
+      presentacionCompatId,
+
+    presentacionPostgresId:
+      presentacion?.id ||
       null,
 
     esPresentacion:
@@ -165,8 +226,17 @@ function construirFila({
       producto.categoria
         ? {
             _id:
-              producto.categoria._id ||
-              producto.categoria,
+              idCompatibilidad(
+                producto.categoria
+              ),
+
+            id:
+              idCompatibilidad(
+                producto.categoria
+              ),
+
+            postgresId:
+              producto.categoria.id,
 
             codigo:
               producto.categoria.codigo ||
@@ -226,15 +296,248 @@ function construirFila({
 }
 
 
+async function buscarProductoPostgreSQL(
+  id
+) {
+  const valor =
+    valorId(id);
+
+  if (!valor) {
+    return null;
+  }
+
+  return prisma.producto.findUnique({
+    where:
+      pareceObjectIdMongo(
+        valor
+      )
+        ? {
+            legacyMongoId:
+              valor,
+          }
+        : {
+            id:
+              valor,
+          },
+
+    include: {
+      categoria:
+        true,
+
+      presentaciones:
+        true,
+    },
+  });
+}
+
+
+function buscarPresentacionEnProducto(
+  producto,
+  presentacionId
+) {
+  const valor =
+    valorId(
+      presentacionId
+    );
+
+  if (!valor) {
+    return null;
+  }
+
+  return (
+    producto.presentaciones ||
+    []
+  ).find(
+    (presentacion) =>
+      presentacion.id === valor ||
+      presentacion.legacyMongoId === valor
+  ) || null;
+}
+
+
+function normalizarUsuarioMovimiento(
+  usuario
+) {
+  if (!usuario) {
+    return null;
+  }
+
+  return {
+    _id:
+      idCompatibilidad(
+        usuario
+      ),
+
+    id:
+      idCompatibilidad(
+        usuario
+      ),
+
+    postgresId:
+      usuario.id,
+
+    codigo:
+      usuario.codigo,
+
+    nombres:
+      usuario.nombres,
+
+    apellidos:
+      usuario.apellidos,
+
+    usuario:
+      usuario.usuario,
+  };
+}
+
+
+function normalizarMovimientoSalida(
+  movimiento
+) {
+  return {
+    _id:
+      idCompatibilidad(
+        movimiento
+      ),
+
+    id:
+      idCompatibilidad(
+        movimiento
+      ),
+
+    postgresId:
+      movimiento.id,
+
+    producto:
+      idCompatibilidad(
+        movimiento.producto
+      ),
+
+    codigoProducto:
+      movimiento.codigoProducto,
+
+    nombreProducto:
+      movimiento.nombreProducto,
+
+    presentacionId:
+      idCompatibilidad(
+        movimiento.presentacion
+      ),
+
+    presentacionNombre:
+      movimiento.presentacionNombre,
+
+    tipo:
+      movimiento.tipo,
+
+    cantidad:
+      redondear(
+        movimiento.cantidad
+      ),
+
+    unidad:
+      movimiento.unidad,
+
+    tipoVenta:
+      movimiento.tipoVenta,
+
+    stockAnterior:
+      redondear(
+        movimiento.stockAnterior
+      ),
+
+    stockNuevo:
+      redondear(
+        movimiento.stockNuevo
+      ),
+
+    reservadoAnterior:
+      redondear(
+        movimiento.reservadoAnterior
+      ),
+
+    reservadoNuevo:
+      redondear(
+        movimiento.reservadoNuevo
+      ),
+
+    costoUnitario:
+      redondear(
+        movimiento.costoUnitario
+      ),
+
+    costoPromedioAnterior:
+      redondear(
+        movimiento.costoPromedioAnterior
+      ),
+
+    costoPromedioNuevo:
+      redondear(
+        movimiento.costoPromedioNuevo
+      ),
+
+    valorTotal:
+      redondear(
+        movimiento.valorTotal
+      ),
+
+    origen:
+      movimiento.origen,
+
+    pedido:
+      idCompatibilidad(
+        movimiento.pedido
+      ),
+
+    pedidoCodigo:
+      movimiento.pedidoCodigo,
+
+    entrega:
+      idCompatibilidad(
+        movimiento.entrega
+      ),
+
+    entregaCodigo:
+      movimiento.entregaCodigo,
+
+    proveedor:
+      movimiento.proveedor,
+
+    documentoReferencia:
+      movimiento.documentoReferencia,
+
+    fechaMovimiento:
+      movimiento.fechaMovimiento,
+
+    motivo:
+      movimiento.motivo,
+
+    observaciones:
+      movimiento.observaciones,
+
+    usuario:
+      normalizarUsuarioMovimiento(
+        movimiento.usuario
+      ),
+
+    createdAt:
+      movimiento.createdAt,
+
+    updatedAt:
+      movimiento.updatedAt,
+  };
+}
+
+
 /* =========================================
    LISTAR INVENTARIO
+   FUENTE DE LECTURA: POSTGRESQL
 ========================================= */
 
 export const listarInventario =
   async (req, res) => {
 
     try {
-
       const {
         buscar = "",
         estado = "",
@@ -243,16 +546,30 @@ export const listarInventario =
 
 
       const productos =
-        await Producto
-          .find()
-          .populate(
-            "categoria",
-            "codigo nombre estado"
-          )
-          .sort({
-            nombre: 1,
-            codigo: 1,
-          });
+        await prisma.producto.findMany({
+          include: {
+            categoria:
+              true,
+
+            presentaciones: {
+              orderBy: {
+                orden:
+                  "asc",
+              },
+            },
+          },
+
+          orderBy: [
+            {
+              nombre:
+                "asc",
+            },
+            {
+              codigo:
+                "asc",
+            },
+          ],
+        });
 
 
       let filas = [];
@@ -262,7 +579,6 @@ export const listarInventario =
         const producto
         of productos
       ) {
-
         filas.push(
           construirFila({
             producto,
@@ -273,21 +589,17 @@ export const listarInventario =
         for (
           const presentacion
           of (
-            producto
-              .presentacionesAdicionales ||
+            producto.presentaciones ||
             []
           )
         ) {
-
           filas.push(
             construirFila({
               producto,
               presentacion,
             })
           );
-
         }
-
       }
 
 
@@ -300,7 +612,6 @@ export const listarInventario =
 
 
       if (texto) {
-
         filas =
           filas.filter(
             (fila) =>
@@ -324,14 +635,10 @@ export const listarInventario =
                     )
               )
           );
-
       }
 
 
-      if (
-        categoria
-      ) {
-
+      if (categoria) {
         filas =
           filas.filter(
             (fila) =>
@@ -341,28 +648,29 @@ export const listarInventario =
               ) ===
               String(
                 categoria
+              ) ||
+              String(
+                fila.categoria?.postgresId ||
+                ""
+              ) ===
+              String(
+                categoria
               )
           );
-
       }
 
 
-      if (
-        estado
-      ) {
-
+      if (estado) {
         filas =
           filas.filter(
             (fila) =>
               fila.estado ===
               estado
           );
-
       }
 
 
       const resumen = {
-
         productosEnInventario:
           filas.filter(
             (fila) =>
@@ -417,11 +725,9 @@ export const listarInventario =
           filas,
       });
 
-
     } catch (error) {
-
       console.error(
-        "Error listando inventario:",
+        "Error listando inventario PostgreSQL:",
         error
       );
 
@@ -432,38 +738,125 @@ export const listarInventario =
             error.message ||
             "No fue posible cargar el inventario.",
         });
-
     }
-
   };
 
 
 /* =========================================
    CONSULTAR STOCK
+   FUENTE DE LECTURA: POSTGRESQL
 ========================================= */
 
 export const consultarStock =
   async (req, res) => {
 
     try {
-
-      const resultado =
-        await obtenerStockDisponible({
-          productoId:
-            req.params.productoId,
-
-          presentacionId:
-            req.query.presentacionId ||
-            null,
-        });
+      const producto =
+        await buscarProductoPostgreSQL(
+          req.params.productoId
+        );
 
 
-      return res.json(
-        resultado
-      );
+      if (!producto) {
+        return res
+          .status(404)
+          .json({
+            mensaje:
+              "Producto no encontrado.",
+          });
+      }
 
+
+      const presentacionId =
+        req.query.presentacionId ||
+        null;
+
+
+      const presentacion =
+        presentacionId
+          ? buscarPresentacionEnProducto(
+              producto,
+              presentacionId
+            )
+          : null;
+
+
+      if (
+        presentacionId &&
+        !presentacion
+      ) {
+        return res
+          .status(404)
+          .json({
+            mensaje:
+              "La presentación seleccionada no existe.",
+          });
+      }
+
+
+      const objetivo =
+        presentacion ||
+        producto;
+
+
+      const stock =
+        redondear(
+          objetivo.stock || 0
+        );
+
+      const stockReservado =
+        redondear(
+          objetivo.stockReservado || 0
+        );
+
+
+      return res.json({
+        productoId:
+          idCompatibilidad(
+            producto
+          ),
+
+        productoPostgresId:
+          producto.id,
+
+        presentacionId:
+          idCompatibilidad(
+            presentacion
+          ),
+
+        presentacionPostgresId:
+          presentacion?.id ||
+          null,
+
+        controlInventario:
+          objetivo.controlInventario !== false,
+
+        stock,
+
+        stockReservado,
+
+        stockDisponible:
+          redondear(
+            stock -
+            stockReservado
+          ),
+
+        stockMinimo:
+          redondear(
+            objetivo.stockMinimo || 0
+          ),
+
+        costoPromedio:
+          redondear(
+            objetivo.costoPromedio || 0
+          ),
+      });
 
     } catch (error) {
+      console.error(
+        "Error consultando stock PostgreSQL:",
+        error
+      );
 
       return res
         .status(400)
@@ -472,21 +865,19 @@ export const consultarStock =
             error.message ||
             "No fue posible consultar el stock.",
         });
-
     }
-
   };
 
 
 /* =========================================
    MOVIMIENTOS
+   FUENTE DE LECTURA: POSTGRESQL
 ========================================= */
 
 export const listarMovimientos =
   async (req, res) => {
 
     try {
-
       const {
         productoId,
         presentacionId,
@@ -497,23 +888,62 @@ export const listarMovimientos =
       } = req.query;
 
 
-      const filtro = {};
+      const where = {};
 
 
       if (productoId) {
-        filtro.producto =
-          productoId;
+        const producto =
+          await buscarProductoPostgreSQL(
+            productoId
+          );
+
+        if (!producto) {
+          return res.json({
+            movimientos: [],
+          });
+        }
+
+        where.productoId =
+          producto.id;
       }
 
 
       if (presentacionId) {
-        filtro.presentacionId =
-          presentacionId;
+        const valor =
+          valorId(
+            presentacionId
+          );
+
+        const presentacion =
+          pareceObjectIdMongo(
+            valor
+          )
+            ? await prisma.productoPresentacion.findUnique({
+                where: {
+                  legacyMongoId:
+                    valor,
+                },
+              })
+            : await prisma.productoPresentacion.findUnique({
+                where: {
+                  id:
+                    valor,
+                },
+              });
+
+        if (!presentacion) {
+          return res.json({
+            movimientos: [],
+          });
+        }
+
+        where.presentacionId =
+          presentacion.id;
       }
 
 
       if (tipo) {
-        filtro.tipo =
+        where.tipo =
           tipo;
       }
 
@@ -522,38 +952,21 @@ export const listarMovimientos =
         desde ||
         hasta
       ) {
-
-        filtro.fechaMovimiento = {};
+        where.fechaMovimiento = {};
 
         if (desde) {
-          filtro
-            .fechaMovimiento
-            .$gte =
-              new Date(
-                desde
-              );
+          where.fechaMovimiento.gte =
+            new Date(
+              `${desde}T00:00:00.000Z`
+            );
         }
 
         if (hasta) {
-
-          const fechaHasta =
+          where.fechaMovimiento.lte =
             new Date(
-              hasta
+              `${hasta}T00:00:00.000Z`
             );
-
-          fechaHasta.setHours(
-            23,
-            59,
-            59,
-            999
-          );
-
-          filtro
-            .fechaMovimiento
-            .$lte =
-              fechaHasta;
         }
-
       }
 
 
@@ -570,32 +983,52 @@ export const listarMovimientos =
 
 
       const movimientos =
-        await MovimientoInventario
-          .find(
-            filtro
-          )
-          .populate(
-            "usuario",
-            "codigo nombres apellidos usuario"
-          )
-          .sort({
-            fechaMovimiento: -1,
-            createdAt: -1,
-          })
-          .limit(
-            limiteSeguro
-          );
+        await prisma.movimientoInventario.findMany({
+          where,
+
+          include: {
+            producto:
+              true,
+
+            presentacion:
+              true,
+
+            pedido:
+              true,
+
+            entrega:
+              true,
+
+            usuario:
+              true,
+          },
+
+          orderBy: [
+            {
+              fechaMovimiento:
+                "desc",
+            },
+            {
+              createdAt:
+                "desc",
+            },
+          ],
+
+          take:
+            limiteSeguro,
+        });
 
 
       return res.json({
-        movimientos,
+        movimientos:
+          movimientos.map(
+            normalizarMovimientoSalida
+          ),
       });
 
-
     } catch (error) {
-
       console.error(
-        "Error listando movimientos de inventario:",
+        "Error listando movimientos de inventario PostgreSQL:",
         error
       );
 
@@ -606,14 +1039,14 @@ export const listarMovimientos =
             error.message ||
             "No fue posible cargar los movimientos.",
         });
-
     }
-
   };
 
 
 /* =========================================
-   ENTRADA
+   ESCRITURAS
+   TRANSICIÓN: AÚN USAN EL SERVICIO MONGODB.
+   NO CAMBIAR HASTA LA SIGUIENTE FASE.
 ========================================= */
 
 export const crearEntradaInventario =

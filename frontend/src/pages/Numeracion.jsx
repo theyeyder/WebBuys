@@ -3,6 +3,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import ModulosMenu
   from "../components/ModulosMenu.jsx";
 
@@ -38,6 +41,14 @@ export default function Numeracion() {
   useEffect(() => {
     cargarNumeraciones();
   }, []);
+
+
+  useAutoRefresh(
+    () => cargarNumeraciones(),
+    {
+      intervalMs: 0,
+    }
+  );
 
 
   async function cargarNumeraciones() {

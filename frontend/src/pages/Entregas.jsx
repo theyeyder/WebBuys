@@ -5,6 +5,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import {
   createPortal,
 } from "react-dom";
@@ -621,13 +624,17 @@ export default function Entregas() {
   ] = useState(null);
 
 
-  async function cargarDatos() {
+  async function cargarDatos(
+    { silencioso = false } = {}
+  ) {
 
     try {
 
-      setCargando(
-        true
-      );
+      if (!silencioso) {
+        setCargando(
+          true
+        );
+      }
 
       const [
         dataEntregas,
@@ -689,9 +696,11 @@ export default function Entregas() {
 
     } finally {
 
-      setCargando(
-        false
-      );
+      if (!silencioso) {
+        setCargando(
+          false
+        );
+      }
 
     }
 
@@ -703,6 +712,17 @@ export default function Entregas() {
       cargarDatos();
     },
     []
+  );
+
+
+  useAutoRefresh(
+    () =>
+      cargarDatos({
+        silencioso: true,
+      }),
+    {
+      intervalMs: 10000,
+    }
   );
 
 
@@ -1126,6 +1146,8 @@ export default function Entregas() {
             ]
           ) => ({
             itemId,
+            id: itemId,
+            _id: itemId,
             pesoReal,
           })
         );
@@ -1153,6 +1175,34 @@ export default function Entregas() {
 
       setDetalle(
         actualizada
+      );
+
+      const pesosGuardados = {};
+
+      (
+        actualizada?.items ||
+        []
+      ).forEach(
+        (item) => {
+
+          if (
+            item.tipoVenta ===
+            "Peso"
+          ) {
+
+            pesosGuardados[
+              item._id
+            ] =
+              item.pesoReal ??
+              "";
+
+          }
+
+        }
+      );
+
+      setFormPesos(
+        pesosGuardados
       );
 
       setPreparacionSucia(

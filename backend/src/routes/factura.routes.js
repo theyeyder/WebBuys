@@ -2,7 +2,7 @@ import express from "express";
 
 import {
   facturaController,
-} from "../controllers/factura.controller.js";
+} from "../controllers/postgresqlOnly/factura.controller.js";
 
 
 const router =

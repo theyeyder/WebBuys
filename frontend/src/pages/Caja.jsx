@@ -4,6 +4,14 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
+
+import {
+  useAuth,
+} from "../context/AuthContext.jsx";
+
 import ModulosMenu
   from "../components/ModulosMenu.jsx";
 
@@ -36,6 +44,7 @@ import {
   obtenerDetalleCaja,
   obtenerResumenCaja,
   registrarMovimientoCaja,
+  revertirCierreCaja,
 } from "../services/caja.service.js";
 
 import {
@@ -167,31 +176,37 @@ const DENOMINACIONES_BILLETES = [
     key: "dosMil",
     valor: 2000,
     etiqueta: "$ 2.000",
+    campo: "billetesDosMil",
   },
   {
     key: "cincoMil",
     valor: 5000,
     etiqueta: "$ 5.000",
+    campo: "billetesCincoMil",
   },
   {
     key: "diezMil",
     valor: 10000,
     etiqueta: "$ 10.000",
+    campo: "billetesDiezMil",
   },
   {
     key: "veinteMil",
     valor: 20000,
     etiqueta: "$ 20.000",
+    campo: "billetesVeinteMil",
   },
   {
     key: "cincuentaMil",
     valor: 50000,
     etiqueta: "$ 50.000",
+    campo: "billetesCincuentaMil",
   },
   {
     key: "cienMil",
     valor: 100000,
     etiqueta: "$ 100.000",
+    campo: "billetesCienMil",
   },
 ];
 
@@ -214,6 +229,146 @@ function conteoBilletesVacio() {
       },
       {}
     );
+
+}
+
+
+function DetalleConteoBilletes({
+  caja,
+  compacto = false,
+}) {
+
+  if (
+    !caja ||
+    caja.efectivoContado === null ||
+    caja.efectivoContado === undefined
+  ) {
+    return null;
+  }
+
+
+  const filas =
+    DENOMINACIONES_BILLETES
+      .map(
+        (
+          denominacion
+        ) => {
+
+          const cantidad =
+            Number(
+              caja[
+                denominacion.campo
+              ] ||
+              0
+            );
+
+          return {
+            ...denominacion,
+            cantidad,
+            subtotal:
+              cantidad *
+              denominacion.valor,
+          };
+
+        }
+      )
+      .filter(
+        (
+          fila
+        ) =>
+          fila.cantidad > 0
+      );
+
+
+  return (
+
+    <section
+      className={`caja-conteo-cierre ${
+        compacto
+          ? "is-compact"
+          : ""
+      }`}
+    >
+
+      <div className="caja-conteo-cierre-header">
+
+        <div>
+          <span>Arqueo de efectivo</span>
+          <strong>Conteo por denominación</strong>
+        </div>
+
+        <div className="caja-conteo-cierre-total">
+          <span>Total contado</span>
+          <strong>
+            {moneda(
+              caja.efectivoContado
+            )}
+          </strong>
+        </div>
+
+      </div>
+
+
+      {filas.length === 0 ? (
+
+        <div className="caja-conteo-cierre-vacio">
+          No se registraron billetes en el cierre.
+        </div>
+
+      ) : (
+
+        <div className="caja-conteo-cierre-list">
+
+          {filas.map(
+            (
+              fila
+            ) => (
+
+              <div
+                key={fila.key}
+                className="caja-conteo-cierre-row"
+              >
+
+                <div className="caja-conteo-cierre-denominacion">
+                  <img
+                    src={billeteDenominacionIcon}
+                    alt=""
+                  />
+                  <strong>
+                    {fila.etiqueta}
+                  </strong>
+                </div>
+
+                <div className="caja-conteo-cierre-operacion">
+                  <span>
+                    {fila.cantidad} billete{fila.cantidad === 1 ? "" : "s"}
+                  </span>
+                  <strong>
+                    {fila.cantidad} × {fila.etiqueta}
+                  </strong>
+                </div>
+
+                <div className="caja-conteo-cierre-subtotal">
+                  <span>Subtotal</span>
+                  <strong>
+                    {moneda(
+                      fila.subtotal
+                    )}
+                  </strong>
+                </div>
+
+              </div>
+
+            )
+          )}
+
+        </div>
+
+      )}
+
+    </section>
+
+  );
 
 }
 
@@ -392,6 +547,11 @@ function obtenerDiasCalendario(
 
 export default function Caja() {
 
+  const {
+    esAdministrador,
+  } = useAuth();
+
+
   const [
     datosCaja,
     setDatosCaja,
@@ -523,6 +683,24 @@ export default function Caja() {
   const [
     cargandoDetalle,
     setCargandoDetalle,
+  ] = useState(false);
+
+
+  const [
+    modalReversion,
+    setModalReversion,
+  ] = useState(false);
+
+
+  const [
+    motivoReversion,
+    setMotivoReversion,
+  ] = useState("");
+
+
+  const [
+    revirtiendoCierre,
+    setRevirtiendoCierre,
   ] = useState(false);
 
 
@@ -848,6 +1026,14 @@ export default function Caja() {
   }, []);
 
 
+  useAutoRefresh(
+    () => cargarCaja(),
+    {
+      intervalMs: 0,
+    }
+  );
+
+
   useEffect(() => {
 
     if (!mensaje) {
@@ -875,7 +1061,8 @@ export default function Caja() {
 
   const abierta =
     Boolean(
-      datosCaja?.abierta
+      datosCaja?.abierta === true ||
+      datosCaja?.caja?.estado === "Abierta"
     );
 
 
@@ -2008,6 +2195,117 @@ export default function Caja() {
   }
 
 
+  function abrirModalReversion() {
+
+    setMotivoReversion(
+      ""
+    );
+
+    setModalReversion(
+      true
+    );
+
+  }
+
+
+  async function confirmarReversionCierre() {
+
+    const motivo =
+      motivoReversion.trim();
+
+
+    if (
+      motivo.length <
+      5
+    ) {
+
+      setMensaje(
+        "Debe indicar un motivo de reversión de al menos 5 caracteres."
+      );
+
+      setTipoMensaje(
+        "error"
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !detalleCaja?.caja?._id
+    ) {
+      return;
+    }
+
+
+    try {
+
+      setRevirtiendoCierre(
+        true
+      );
+
+
+      const data =
+        await revertirCierreCaja(
+          detalleCaja.caja._id,
+          motivo
+        );
+
+
+      setDatosCaja(
+        data
+      );
+
+      setDetalleCaja(
+        null
+      );
+
+      setModalReversion(
+        false
+      );
+
+      setMotivoReversion(
+        ""
+      );
+
+
+      setMensaje(
+        data?.mensaje ||
+        "El cierre fue revertido correctamente."
+      );
+
+      setTipoMensaje(
+        "success"
+      );
+
+
+      await cargarCaja();
+
+
+    } catch (error) {
+
+      setMensaje(
+        error?.response?.data?.mensaje ||
+        "No fue posible revertir el cierre."
+      );
+
+      setTipoMensaje(
+        "error"
+      );
+
+
+    } finally {
+
+      setRevirtiendoCierre(
+        false
+      );
+
+    }
+
+  }
+
+
   async function imprimirCajaHistorial(
     id
   ) {
@@ -2221,6 +2519,18 @@ export default function Caja() {
                   </div>
 
                 </section>
+
+            )}
+
+
+            {caja &&
+              caja.estado ===
+                "Cerrada" && (
+
+                <DetalleConteoBilletes
+                  caja={caja}
+                  compacto
+                />
 
             )}
 
@@ -4360,6 +4670,13 @@ export default function Caja() {
             </div>
 
 
+            <DetalleConteoBilletes
+              caja={
+                detalleCaja.caja
+              }
+            />
+
+
             <div className="caja-detail-section-title">
               Entregas finalizadas
             </div>
@@ -4638,7 +4955,35 @@ export default function Caja() {
             </div>
 
 
+            {esAdministrador &&
+              detalleCaja?.caja?.estado === "Cerrada" &&
+              !detalleCaja?.puedeRevertirCierre &&
+              detalleCaja?.motivoBloqueoReversion && (
+
+                <div className="caja-reversion-bloqueo">
+                  {detalleCaja.motivoBloqueoReversion}
+                </div>
+
+              )}
+
+
             <div className="caja-modal-actions">
+
+              {esAdministrador &&
+                detalleCaja?.puedeRevertirCierre && (
+
+                  <button
+                    type="button"
+                    className="caja-btn caja-btn-danger"
+                    onClick={
+                      abrirModalReversion
+                    }
+                  >
+                    Revertir cierre
+                  </button>
+
+                )}
+
 
               <button
                 type="button"
@@ -4663,6 +5008,150 @@ export default function Caja() {
                 }
               >
                 Imprimir
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
+
+      {modalReversion && (
+
+        <div
+          className="caja-modal-overlay"
+          onMouseDown={(event) => {
+
+            if (
+              event.target ===
+              event.currentTarget &&
+              !revirtiendoCierre
+            ) {
+
+              setModalReversion(
+                false
+              );
+
+            }
+
+          }}
+        >
+
+          <div
+            className="caja-modal caja-reversion-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="caja-reversion-title"
+          >
+
+            <div className="caja-modal-header">
+
+              <div>
+
+                <span className="caja-reversion-kicker">
+                  Acción administrativa
+                </span>
+
+                <h2 id="caja-reversion-title">
+                  Revertir cierre
+                </h2>
+
+              </div>
+
+
+              <button
+                type="button"
+                className="caja-modal-x"
+                disabled={
+                  revirtiendoCierre
+                }
+                onClick={() =>
+                  setModalReversion(
+                    false
+                  )
+                }
+              >
+                ×
+              </button>
+
+            </div>
+
+
+            <div className="caja-reversion-warning">
+
+              <strong>
+                {detalleCaja?.caja?.codigo}
+              </strong>
+
+              <p>
+                La caja volverá a estado Abierta. No se eliminarán ventas,
+                ingresos, egresos ni movimientos. El cierre anterior y el
+                motivo quedarán registrados en Auditoría.
+              </p>
+
+            </div>
+
+
+            <label className="caja-field">
+
+              <span>
+                Motivo de la reversión *
+              </span>
+
+              <textarea
+                rows="4"
+                value={
+                  motivoReversion
+                }
+                onChange={(event) =>
+                  setMotivoReversion(
+                    event.target.value
+                  )
+                }
+                placeholder="Ejemplo: Se digitó mal la cantidad de billetes de $20.000."
+                disabled={
+                  revirtiendoCierre
+                }
+              />
+
+            </label>
+
+
+            <div className="caja-modal-actions">
+
+              <button
+                type="button"
+                className="caja-btn caja-btn-secondary"
+                disabled={
+                  revirtiendoCierre
+                }
+                onClick={() =>
+                  setModalReversion(
+                    false
+                  )
+                }
+              >
+                Cancelar
+              </button>
+
+
+              <button
+                type="button"
+                className="caja-btn caja-btn-danger"
+                disabled={
+                  revirtiendoCierre ||
+                  motivoReversion.trim().length < 5
+                }
+                onClick={
+                  confirmarReversionCierre
+                }
+              >
+                {revirtiendoCierre
+                  ? "Revirtiendo..."
+                  : "Revertir cierre"}
               </button>
 
             </div>

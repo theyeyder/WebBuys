@@ -3,7 +3,7 @@ import { Router } from "express";
 import {
   clienteController,
   obtenerSiguienteCodigoCliente,
-} from "../controllers/cliente.controller.js";
+} from "../controllers/postgresqlOnly/cliente.controller.js";
 
 import {
   proteger,

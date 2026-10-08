@@ -4,7 +4,7 @@ import {
 
 import {
   listarNumeraciones,
-} from "../controllers/numeracion.controller.js";
+} from "../controllers/postgresqlOnly/numeracion.controller.js";
 
 import {
   proteger,

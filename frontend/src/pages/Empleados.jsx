@@ -4,6 +4,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import {
   createPortal,
 } from "react-dom";
@@ -745,6 +748,18 @@ export default function Empleados() {
 
     },
     []
+  );
+
+
+  useAutoRefresh(
+    () =>
+      Promise.all([
+        cargarEmpleados(),
+        cargarRutas(),
+      ]),
+    {
+      intervalMs: 0,
+    }
   );
 
 

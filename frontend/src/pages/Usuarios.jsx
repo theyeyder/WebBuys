@@ -4,6 +4,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import { useAuth } from "../context/AuthContext.jsx";
 
 import SpatialCard from "../components/cards/SpatialCard.jsx";
@@ -101,6 +104,15 @@ export default function Usuarios() {
 
     iniciar();
   }, []);
+
+  useAutoRefresh(
+    () => cargarUsuarios(),
+    {
+      intervalMs: 0,
+      shouldRefresh: ({ url = "" } = {}) =>
+        String(url).includes("/usuarios"),
+    }
+  );
 
   useEffect(() => {
     if (!mensaje && !error) return;

@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
 import AppLayout from "../layouts/AppLayout.jsx";
 import SpatialCard from "../components/cards/SpatialCard.jsx";
+import ModulosMenu from "../components/ModulosMenu.jsx";
 import Toast from "../components/Toast.jsx"; 
 
 import {
@@ -85,6 +89,17 @@ export default function Empresa() {
   useEffect(() => {
     cargarConfiguracion();
   }, []);
+
+  useAutoRefresh(
+    () => cargarConfiguracion(),
+    {
+      intervalMs: 0,
+      onFocus: false,
+      onVisibility: false,
+      shouldRefresh: ({ url = "" } = {}) =>
+        String(url).includes("/configuracion"),
+    }
+  );
 
   async function cargarConfiguracion() {
     try {
@@ -313,25 +328,43 @@ export default function Empresa() {
   }
 
   return (
-    <AppLayout title="Empresa">
-      <SpatialCard className="empresa-module">
-        <div className="empresa-header">
-          <div>
-            <span className="eyebrow">Información de la empresa</span>
-          </div>
+    <AppLayout>
+      <section className="empresa-page">
+        <header className="empresa-topbar">
+          <div className="empresa-topbar-left">
+            <ModulosMenu />
 
-          {logoSrc && (
-            <div className="empresa-logo-preview">
-              <img
-                src={logoSrc}
-                alt="Logo de la empresa"
-                onError={(event) => {
-                  event.currentTarget.style.display = "none";
-                }}
-              />
+            <div className="empresa-topbar-copy">
+              <h1>Empresa</h1>
+              <p>Información general, facturación e impresión.</p>
             </div>
-          )}
-        </div>
+          </div>
+        </header>
+
+        <main className="empresa-content">
+          <SpatialCard className="empresa-module">
+            <div className="empresa-header">
+              <div className="empresa-header-copy">
+                <span className="eyebrow">Información de la empresa</span>
+                <h2>Identidad y parámetros comerciales</h2>
+                <p>
+                  Administra los datos que identifican a la empresa y la
+                  información utilizada en facturación e impresión.
+                </p>
+              </div>
+
+              {logoSrc && (
+                <div className="empresa-logo-preview">
+                  <img
+                    src={logoSrc}
+                    alt="Logo de la empresa"
+                    onError={(event) => {
+                      event.currentTarget.style.display = "none";
+                    }}
+                  />
+                </div>
+              )}
+            </div>
 
         <div className="empresa-tabs">
           <button
@@ -761,11 +794,13 @@ export default function Empresa() {
         )}
 
      
-        <Toast
-          mensaje={mensaje}
-          error={error}
-        />
-      </SpatialCard>
+            <Toast
+              mensaje={mensaje}
+              error={error}
+            />
+          </SpatialCard>
+        </main>
+      </section>
     </AppLayout>
   );
 }

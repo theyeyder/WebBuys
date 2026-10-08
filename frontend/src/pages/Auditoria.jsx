@@ -4,6 +4,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import ModulosMenu
   from "../components/ModulosMenu.jsx";
 
@@ -128,6 +131,14 @@ export default function Auditoria() {
     desde,
     hasta,
   ]);
+
+
+  useAutoRefresh(
+    () => cargarRegistros(),
+    {
+      intervalMs: 0,
+    }
+  );
 
 
   async function cargarRegistros() {

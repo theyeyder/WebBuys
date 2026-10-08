@@ -8,7 +8,7 @@ import {
   actualizarCategoria,
   cambiarEstadoCategoria,
   eliminarCategoria,
-} from "../controllers/categoria.controller.js";
+} from "../controllers/postgresqlOnly/categoria.controller.js";
 
 import {
   proteger,

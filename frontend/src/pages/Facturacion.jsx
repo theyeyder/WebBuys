@@ -4,6 +4,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import Toast
   from "../components/Toast.jsx";
 
@@ -342,6 +345,14 @@ export default function Facturacion() {
 
     },
     []
+  );
+
+
+  useAutoRefresh(
+    () => cargarDatos(),
+    {
+      intervalMs: 0,
+    }
   );
 
 

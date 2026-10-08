@@ -5,7 +5,7 @@ import {
 import {
   obtenerPreferencias,
   actualizarPreferencias,
-} from "../controllers/preferencia.controller.js";
+} from "../controllers/postgresqlOnly/preferencia.controller.js";
 
 import {
   proteger,

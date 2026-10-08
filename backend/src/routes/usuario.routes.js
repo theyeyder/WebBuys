@@ -8,7 +8,7 @@ import {
   cambiarEstadoUsuario,
   cambiarPassword,
   obtenerSiguienteCodigoUsuario,
-} from "../controllers/usuario.controller.js";
+} from "../controllers/postgresqlOnly/usuario.controller.js";
 
 import { proteger } from "../middlewares/auth.middleware.js";
 import { soloAdmin } from "../middlewares/role.middleware.js";

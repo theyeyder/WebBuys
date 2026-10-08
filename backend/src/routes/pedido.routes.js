@@ -7,7 +7,7 @@ import {
   actualizarPedido,
   cambiarEstadoPedido,
   eliminarPedido,
-} from "../controllers/pedido.controller.js";
+} from "../controllers/postgresqlOnly/pedido.controller.js";
 
 import {
   proteger,

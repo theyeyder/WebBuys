@@ -11,7 +11,7 @@ import {
   actualizarEmpleado,
   cambiarEstadoEmpleado,
   eliminarEmpleado,
-} from "../controllers/empleado.controller.js";
+} from "../controllers/postgresqlOnly/empleado.controller.js";
 
 import {
   proteger,

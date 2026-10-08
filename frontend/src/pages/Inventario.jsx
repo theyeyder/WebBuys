@@ -4,6 +4,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import {
   listarInventario,
   listarMovimientosInventario,
@@ -550,6 +553,14 @@ export default function Inventario() {
     cargarInventario();
 
   }, []);
+
+
+  useAutoRefresh(
+    () => cargarInventario(),
+    {
+      intervalMs: 0,
+    }
+  );
 
 
   useEffect(() => {
@@ -1641,7 +1652,7 @@ export default function Inventario() {
               </span>
             </div>
             <small>
-              Haz clic en las tarjetas de arriba para filtrar rápidamente.
+              Haz clic en la TARJETA PRODUCTOS AGOTADOS para traer los agotados
             </small>
           </section>
         )}

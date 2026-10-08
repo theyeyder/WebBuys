@@ -7,7 +7,7 @@ import {
   actualizarPreparacionEntrega,
   confirmarEntrega,
   cambiarEstadoEntrega,
-} from "../controllers/entrega.controller.js";
+} from "../controllers/postgresqlOnly/entrega.controller.js";
 
 import {
   proteger,

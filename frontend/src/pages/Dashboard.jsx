@@ -4,6 +4,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import {
   useNavigate,
 } from "react-router-dom";
@@ -852,6 +855,14 @@ export default function Dashboard() {
 
     },
     []
+  );
+
+
+  useAutoRefresh(
+    () => cargarDashboard(false),
+    {
+      intervalMs: 15000,
+    }
   );
 
 

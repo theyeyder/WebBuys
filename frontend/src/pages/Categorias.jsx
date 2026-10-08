@@ -5,6 +5,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import {
   listarCategorias,
   obtenerSiguienteCodigoCategoria,
@@ -193,6 +196,14 @@ export default function Categorias() {
     cargarCategorias();
 
   }, []);
+
+
+  useAutoRefresh(
+    () => cargarCategorias(),
+    {
+      intervalMs: 0,
+    }
+  );
 
 
   useEffect(() => {

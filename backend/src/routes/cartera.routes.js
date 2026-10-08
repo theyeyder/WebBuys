@@ -3,7 +3,7 @@ import express
 
 import {
   carteraController,
-} from "../controllers/cartera.controller.js";
+} from "../controllers/postgresqlOnly/cartera.controller.js";
 
 import {
   proteger,

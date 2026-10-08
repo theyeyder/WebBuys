@@ -3,11 +3,16 @@ import express
 
 import {
   cajaController,
-} from "../controllers/caja.controller.js";
+} from "../controllers/postgresqlOnly/caja.controller.js";
 
 import {
   proteger,
 } from "../middlewares/auth.middleware.js";
+
+
+import {
+  soloAdmin,
+} from "../middlewares/role.middleware.js";
 
 
 const router =
@@ -60,6 +65,13 @@ router.get(
 router.get(
   "/historial/:id",
   cajaController.obtenerDetalle
+);
+
+
+router.post(
+  "/historial/:id/revertir",
+  soloAdmin,
+  cajaController.revertirCierre
 );
 
 

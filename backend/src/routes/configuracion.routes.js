@@ -6,7 +6,7 @@ import {
   actualizarConfiguracion, 
   subirLogo,
   eliminarLogo 
-} from '../controllers/configuracion.controller.js';
+} from '../controllers/postgresqlOnly/configuracion.controller.js';
 import uploadLogo from "../middlewares/uploadLogo.middleware.js";
 
 const router = Router();

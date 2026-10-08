@@ -5,6 +5,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import {
   listarProductos,
   obtenerSiguienteCodigoProducto,
@@ -373,6 +376,18 @@ export default function Productos() {
     cargarCategorias();
 
   }, []);
+
+
+  useAutoRefresh(
+    () =>
+      Promise.all([
+        cargarProductos(),
+        cargarCategorias(),
+      ]),
+    {
+      intervalMs: 0,
+    }
+  );
 
 
   useEffect(() => {

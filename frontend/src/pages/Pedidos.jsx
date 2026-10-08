@@ -5,6 +5,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import {
   createPortal,
 } from "react-dom";
@@ -1580,11 +1583,15 @@ export default function Pedidos() {
      CARGAR TODO
   ========================================= */
 
-  async function cargarTodo() {
+  async function cargarTodo(
+    { silencioso = false } = {}
+  ) {
 
     try {
 
-      setCargando(true);
+      if (!silencioso) {
+        setCargando(true);
+      }
 
 
       const [
@@ -1665,7 +1672,9 @@ export default function Pedidos() {
 
     } finally {
 
-      setCargando(false);
+      if (!silencioso) {
+        setCargando(false);
+      }
 
     }
 
@@ -1678,6 +1687,21 @@ export default function Pedidos() {
     cargarEmpleados();
 
   }, []);
+
+
+  useAutoRefresh(
+    async () => {
+      await Promise.all([
+        cargarTodo({
+          silencioso: true,
+        }),
+        cargarEmpleados(),
+      ]);
+    },
+    {
+      intervalMs: 15000,
+    }
+  );
 
 
   /* =========================================

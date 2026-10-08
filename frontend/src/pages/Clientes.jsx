@@ -4,6 +4,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import {
   listarClientes,
   crearCliente,
@@ -253,6 +256,18 @@ export default function Clientes() {
     iniciar();
 
   }, []);
+
+
+  useAutoRefresh(
+    () =>
+      Promise.all([
+        cargarClientes(),
+        cargarZonas(),
+      ]),
+    {
+      intervalMs: 0,
+    }
+  );
 
 
   /* =========================================

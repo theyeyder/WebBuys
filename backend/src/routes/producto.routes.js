@@ -8,7 +8,7 @@ import {
   actualizarProducto,
   cambiarEstadoProducto,
   eliminarProducto,
-} from "../controllers/producto.controller.js";
+} from "../controllers/postgresqlOnly/producto.controller.js";
 
 import {
   proteger,

@@ -5,6 +5,9 @@ import {
   useState,
 } from "react";
 
+import useAutoRefresh
+  from "../hooks/useAutoRefresh.js";
+
 import { useAuth } from "../context/AuthContext.jsx";
 
 import {
@@ -152,6 +155,17 @@ export default function Rutas() {
     cargarZonas();
     nuevaRuta();
   }, []);
+
+  useAutoRefresh(
+    () =>
+      Promise.all([
+        cargarRutas(),
+        cargarZonas(),
+      ]),
+    {
+      intervalMs: 0,
+    }
+  );
 
   /* ===========================
      TOAST 3 SEGUNDOS

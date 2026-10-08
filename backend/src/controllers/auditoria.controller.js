@@ -1,13 +1,88 @@
-import Auditoria
-  from "../models/Auditoria.js";
+import {
+  prisma,
+} from "../config/postgresql.js";
+
+
+/* =========================================================
+   NORMALIZAR SALIDA
+   Mantiene compatibilidad con el frontend existente.
+========================================================= */
+
+function normalizarAuditoria(
+  registro
+) {
+
+  if (!registro) {
+    return null;
+  }
+
+
+  return {
+    _id:
+      registro.legacyMongoId ||
+      registro.id,
+
+    id:
+      registro.id,
+
+    legacyMongoId:
+      registro.legacyMongoId ||
+      null,
+
+    usuario:
+      registro.usuarioId ||
+      null,
+
+    codigoUsuario:
+      registro.codigoUsuario,
+
+    nombreUsuario:
+      registro.nombreUsuario,
+
+    modulo:
+      registro.modulo,
+
+    accion:
+      registro.accion,
+
+    registroId:
+      registro.registroId,
+
+    codigoRegistro:
+      registro.codigoRegistro,
+
+    descripcion:
+      registro.descripcion,
+
+    datosAnteriores:
+      registro.datosAnteriores,
+
+    datosNuevos:
+      registro.datosNuevos,
+
+    ip:
+      registro.ip,
+
+    createdAt:
+      registro.createdAt,
+
+    updatedAt:
+      registro.updatedAt,
+  };
+
+}
 
 
 /* =========================================================
    LISTAR AUDITORÍA
+   FUENTE: POSTGRESQL
 ========================================================= */
 
 export const listarAuditoria =
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
@@ -20,157 +95,139 @@ export const listarAuditoria =
         hasta = "",
         pagina = 1,
         limite = 50,
-      } = req.query;
+      } =
+        req.query;
 
 
-      /* =========================================
-         FILTRO
-      ========================================= */
+      const and =
+        [];
 
-      const filtro = {};
-
-
-      /* MÓDULO */
 
       if (modulo) {
 
-        filtro.modulo = modulo;
+        and.push({
+          modulo,
+        });
 
       }
 
-
-      /* ACCIÓN */
 
       if (accion) {
 
-        filtro.accion = accion;
+        and.push({
+          accion,
+        });
 
       }
 
-
-      /* USUARIO */
 
       if (usuario) {
 
-        filtro.$or = [
-          {
-            codigoUsuario: {
-              $regex: usuario,
-              $options: "i",
+        and.push({
+          OR: [
+            {
+              codigoUsuario: {
+                contains:
+                  usuario,
+
+                mode:
+                  "insensitive",
+              },
             },
-          },
-          {
-            nombreUsuario: {
-              $regex: usuario,
-              $options: "i",
+            {
+              nombreUsuario: {
+                contains:
+                  usuario,
+
+                mode:
+                  "insensitive",
+              },
             },
-          },
-        ];
+          ],
+        });
 
       }
 
-
-      /* =========================================
-         BÚSQUEDA GENERAL
-      ========================================= */
 
       if (buscar) {
 
-        const condicionesBusqueda = [
-          {
-            codigoUsuario: {
-              $regex: buscar,
-              $options: "i",
-            },
-          },
-
-          {
-            nombreUsuario: {
-              $regex: buscar,
-              $options: "i",
-            },
-          },
-
-          {
-            modulo: {
-              $regex: buscar,
-              $options: "i",
-            },
-          },
-
-          {
-            accion: {
-              $regex: buscar,
-              $options: "i",
-            },
-          },
-
-          {
-            codigoRegistro: {
-              $regex: buscar,
-              $options: "i",
-            },
-          },
-
-          {
-            descripcion: {
-              $regex: buscar,
-              $options: "i",
-            },
-          },
-        ];
-
-
-        /*
-          Si ya existe $or por usuario,
-          usamos $and para no sobrescribirlo.
-        */
-
-        if (filtro.$or) {
-
-          const filtroUsuario =
-            filtro.$or;
-
-          delete filtro.$or;
-
-
-          filtro.$and = [
+        and.push({
+          OR: [
             {
-              $or:
-                filtroUsuario,
+              codigoUsuario: {
+                contains:
+                  buscar,
+
+                mode:
+                  "insensitive",
+              },
             },
             {
-              $or:
-                condicionesBusqueda,
+              nombreUsuario: {
+                contains:
+                  buscar,
+
+                mode:
+                  "insensitive",
+              },
             },
-          ];
+            {
+              modulo: {
+                contains:
+                  buscar,
 
-        } else {
+                mode:
+                  "insensitive",
+              },
+            },
+            {
+              accion: {
+                contains:
+                  buscar,
 
-          filtro.$or =
-            condicionesBusqueda;
+                mode:
+                  "insensitive",
+              },
+            },
+            {
+              codigoRegistro: {
+                contains:
+                  buscar,
 
-        }
+                mode:
+                  "insensitive",
+              },
+            },
+            {
+              descripcion: {
+                contains:
+                  buscar,
+
+                mode:
+                  "insensitive",
+              },
+            },
+          ],
+        });
 
       }
 
-
-      /* =========================================
-         FECHAS
-      ========================================= */
 
       if (
         desde ||
         hasta
       ) {
 
-        filtro.createdAt = {};
+        const rango =
+          {};
 
 
         if (desde) {
 
           const fechaDesde =
-            new Date(desde);
+            new Date(
+              desde
+            );
 
           fechaDesde.setHours(
             0,
@@ -179,7 +236,7 @@ export const listarAuditoria =
             0
           );
 
-          filtro.createdAt.$gte =
+          rango.gte =
             fechaDesde;
 
         }
@@ -188,7 +245,9 @@ export const listarAuditoria =
         if (hasta) {
 
           const fechaHasta =
-            new Date(hasta);
+            new Date(
+              hasta
+            );
 
           fechaHasta.setHours(
             23,
@@ -197,21 +256,35 @@ export const listarAuditoria =
             999
           );
 
-          filtro.createdAt.$lte =
+          rango.lte =
             fechaHasta;
 
         }
 
+
+        and.push({
+          createdAt:
+            rango,
+        });
+
       }
 
 
-      /* =========================================
-         PAGINACIÓN
-      ========================================= */
+      const where =
+        and.length
+          ? {
+              AND:
+                and,
+            }
+          : {};
+
 
       const numeroPagina =
         Math.max(
-          Number(pagina) || 1,
+          Number(
+            pagina
+          ) ||
+          1,
           1
         );
 
@@ -219,7 +292,10 @@ export const listarAuditoria =
       const numeroLimite =
         Math.min(
           Math.max(
-            Number(limite) || 50,
+            Number(
+              limite
+            ) ||
+            50,
             1
           ),
           100
@@ -228,14 +304,11 @@ export const listarAuditoria =
 
       const salto =
         (
-          numeroPagina - 1
+          numeroPagina -
+          1
         ) *
         numeroLimite;
 
-
-      /* =========================================
-         CONSULTAR
-      ========================================= */
 
       const [
         registros,
@@ -243,20 +316,24 @@ export const listarAuditoria =
       ] =
         await Promise.all([
 
-          Auditoria
-            .find(filtro)
-            .sort({
-              createdAt: -1,
-            })
-            .skip(salto)
-            .limit(
-              numeroLimite
-            )
-            .lean(),
+          prisma.auditoria.findMany({
+            where,
 
-          Auditoria.countDocuments(
-            filtro
-          ),
+            orderBy: {
+              createdAt:
+                "desc",
+            },
+
+            skip:
+              salto,
+
+            take:
+              numeroLimite,
+          }),
+
+          prisma.auditoria.count({
+            where,
+          }),
 
         ]);
 
@@ -272,8 +349,10 @@ export const listarAuditoria =
 
 
       return res.json({
-
-        registros,
+        registros:
+          registros.map(
+            normalizarAuditoria
+          ),
 
         paginacion: {
           pagina:
@@ -286,14 +365,12 @@ export const listarAuditoria =
 
           totalPaginas,
         },
-
       });
-
 
     } catch (error) {
 
       console.error(
-        "Error listando auditoría:",
+        "Error listando auditoría PostgreSQL:",
         error
       );
 
@@ -311,20 +388,45 @@ export const listarAuditoria =
 
 
 /* =========================================================
-   OBTENER UN REGISTRO DE AUDITORÍA
+   OBTENER UN REGISTRO
+   Acepta UUID PostgreSQL u ObjectId histórico MongoDB.
 ========================================================= */
 
 export const obtenerAuditoriaPorId =
-  async (req, res) => {
+  async (
+    req,
+    res
+  ) => {
 
     try {
 
+      const valor =
+        String(
+          req.params.id ||
+          ""
+        );
+
+
+      const pareceObjectId =
+        /^[a-f\d]{24}$/i.test(
+          valor
+        );
+
+
       const registro =
-        await Auditoria
-          .findById(
-            req.params.id
-          )
-          .lean();
+        pareceObjectId
+          ? await prisma.auditoria.findUnique({
+              where: {
+                legacyMongoId:
+                  valor,
+              },
+            })
+          : await prisma.auditoria.findUnique({
+              where: {
+                id:
+                  valor,
+              },
+            });
 
 
       if (!registro) {
@@ -340,14 +442,15 @@ export const obtenerAuditoriaPorId =
 
 
       return res.json(
-        registro
+        normalizarAuditoria(
+          registro
+        )
       );
-
 
     } catch (error) {
 
       console.error(
-        "Error consultando auditoría:",
+        "Error consultando auditoría PostgreSQL:",
         error
       );
 
