@@ -7,11 +7,18 @@ import {
   actualizarPreparacionEntrega,
   confirmarEntrega,
   cambiarEstadoEntrega,
+  cambiarMetodoPagoEntrega,
+  reabrirPreparacionEntrega,
+  revertirEntregaFinalizada,
 } from "../controllers/postgresqlOnly/entrega.controller.js";
 
 import {
   proteger,
 } from "../middlewares/auth.middleware.js";
+
+import {
+  soloAdmin,
+} from "../middlewares/role.middleware.js";
 
 
 const router =
@@ -42,6 +49,18 @@ router.put(
 
 
 router.patch(
+  "/:id/metodo-pago",
+  cambiarMetodoPagoEntrega
+);
+
+
+router.patch(
+  "/:id/reabrir-preparacion",
+  reabrirPreparacionEntrega
+);
+
+
+router.patch(
   "/:id/confirmar",
   confirmarEntrega
 );
@@ -50,6 +69,13 @@ router.patch(
 router.patch(
   "/:id/estado",
   cambiarEstadoEntrega
+);
+
+
+router.patch(
+  "/:id/revertir",
+  soloAdmin,
+  revertirEntregaFinalizada
 );
 
 

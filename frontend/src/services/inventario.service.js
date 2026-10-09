@@ -126,3 +126,48 @@ export async function registrarAjusteInventario(
 
   return respuesta.data;
 }
+
+
+/* =========================================
+   CIERRES MENSUALES
+========================================= */
+
+export async function listarCierresInventario() {
+
+  const respuesta =
+    await api.get(
+      `${url}/cierres`
+    );
+
+  return respuesta.data;
+}
+
+
+export async function obtenerPeriodoInventario(
+  anio,
+  mes
+) {
+
+  const respuesta =
+    await api.get(
+      `${url}/cierres/${anio}/${mes}`
+    );
+
+  return respuesta.data;
+}
+
+
+export async function cerrarPeriodoInventario(
+  anio,
+  mes,
+  datos = {}
+) {
+
+  const respuesta =
+    await api.post(
+      `${url}/cierres/${anio}/${mes}/cerrar`,
+      datos
+    );
+
+  return respuesta.data;
+}

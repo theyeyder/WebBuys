@@ -10,6 +10,13 @@ import {
   crearAjusteInventario,
 } from "../controllers/inventario.controller.js";
 
+
+import {
+  cerrarPeriodoInventario,
+  listarCierresInventario,
+  obtenerPeriodoInventario,
+} from "../controllers/cierreInventario.controller.js";
+
 import {
   proteger,
 } from "../middlewares/auth.middleware.js";
@@ -42,6 +49,29 @@ router.get(
 router.get(
   "/movimientos",
   listarMovimientos
+);
+
+
+/* =========================================
+   CIERRES MENSUALES
+========================================= */
+
+router.get(
+  "/cierres",
+  listarCierresInventario
+);
+
+
+router.get(
+  "/cierres/:anio/:mes",
+  obtenerPeriodoInventario
+);
+
+
+router.post(
+  "/cierres/:anio/:mes/cerrar",
+  soloAdmin,
+  cerrarPeriodoInventario
 );
 
 
