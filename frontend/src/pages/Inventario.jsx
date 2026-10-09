@@ -25,6 +25,9 @@ import Toast
 import ModulosMenu
   from "../components/ModulosMenu.jsx";
 
+import CierresInventario
+  from "../components/CierresInventario.jsx";
+
 import cerrarIcono
   from "../assets/icons/cerrar.webp";
 
@@ -444,6 +447,12 @@ export default function Inventario() {
     error,
     setError,
   ] = useState("");
+
+
+  const [
+    mostrarCierres,
+    setMostrarCierres,
+  ] = useState(false);
 
 
   /* =========================================
@@ -1961,6 +1970,16 @@ export default function Inventario() {
 
           <button
             type="button"
+            className="inventario-close-month-btn"
+            onClick={() =>
+              setMostrarCierres(true)
+            }
+          >
+            Cierres mensuales
+          </button>
+
+          <button
+            type="button"
             className="inventario-print-general-btn"
             title="Imprimir"
             onClick={
@@ -1976,7 +1995,7 @@ export default function Inventario() {
               alt=""
               aria-hidden="true"
             />
-           
+            
           </button>
 
           <button
@@ -2515,6 +2534,17 @@ export default function Inventario() {
         </section>
 
       </main>
+
+
+      <CierresInventario
+        abierto={mostrarCierres}
+        onClose={() =>
+          setMostrarCierres(false)
+        }
+        esAdmin={esAdmin}
+        onMensaje={setMensaje}
+        onError={setError}
+      />
 
 
       {/* =====================================

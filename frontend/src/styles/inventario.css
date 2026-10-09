@@ -125,13 +125,13 @@
 }
 
 .inventario-print-general-btn img {
-  width: 16px;
-  height: 16px;
+  width: 30px;
+  height: 30px;
   object-fit: contain;
 }
 
 .inventario-print-general-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.23);
+  background: rgb(249, 249, 249);
 }
 
 .inventario-print-general-btn:disabled {
@@ -1409,4 +1409,33 @@ button.selected.current-week::after {
     font-size: 12px;
   }
 
+}
+
+/* =========================================================
+   ACCESO A CIERRES MENSUALES
+========================================================= */
+
+.inventario-close-month-btn {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.inventario-close-month-btn:hover {
+  background: rgba(255, 255, 255, 0.23);
+}
+
+@media (max-width: 720px) {
+  .inventario-close-month-btn {
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 9px;
+  }
 }

@@ -238,6 +238,11 @@ export default function CierresInventario({
     setObservaciones,
   ] = useState("");
 
+  const [
+    detalleTecnico,
+    setDetalleTecnico,
+  ] = useState("");
+
 
   const anios =
     useMemo(
@@ -306,6 +311,8 @@ export default function CierresInventario({
         null
       );
 
+      setDetalleTecnico("");
+
       setObservaciones(
         data?.cierre
           ?.observaciones ||
@@ -350,6 +357,7 @@ export default function CierresInventario({
   useEffect(() => {
     if (!abierto) {
       setBusqueda("");
+      setDetalleTecnico("");
       return;
     }
 
@@ -522,8 +530,6 @@ export default function CierresInventario({
               <td>${escaparHtml(detalle.unidad)}</td>
               <td class="numero">${numero(detalle.stockInicial, 4)}</td>
               <td class="numero">${numero(detalle.entradas, 4)}</td>
-              <td class="numero">${numero(detalle.entregas, 4)}</td>
-              <td class="numero">${numero(detalle.reversiones, 4)}</td>
               <td class="numero fuerte">${numero(detalle.vendidoNeto, 4)}</td>
               <td class="numero">${numero(detalle.otrasSalidas, 4)}</td>
               <td class="numero">${numero(detalle.ajustesPositivos, 4)}</td>
@@ -559,7 +565,7 @@ export default function CierresInventario({
             <section class="resumen">
               <div><span>Productos</span><strong>${numero(cierre.totalProductos, 0)}</strong></div>
               <div><span>Entradas</span><strong>${numero(cierre.totalEntradas, 4)}</strong></div>
-              <div><span>Vendido neto</span><strong>${numero(cierre.totalVendidoNeto, 4)}</strong></div>
+              <div><span>Vendido</span><strong>${numero(cierre.totalVendidoNeto, 4)}</strong></div>
               <div><span>Inventario final</span><strong>${moneda(cierre.valorInventarioFinal)}</strong></div>
             </section>
 
@@ -577,9 +583,7 @@ export default function CierresInventario({
                   <th>Unidad</th>
                   <th>Inicial</th>
                   <th>Entradas</th>
-                  <th>Entregas</th>
-                  <th>Reversiones</th>
-                  <th>Vendido neto</th>
+                  <th>Vendido</th>
                   <th>Otras salidas</th>
                   <th>Ajuste +</th>
                   <th>Ajuste -</th>
@@ -736,7 +740,6 @@ export default function CierresInventario({
               alt=""
               aria-hidden="true"
             />
-            
           </button>
         </div>
 
@@ -790,19 +793,10 @@ export default function CierresInventario({
                     </strong>
                   </article>
                   <article>
-                    <span>Vendido neto</span>
+                    <span>Vendido</span>
                     <strong>
                       {numero(
                         cierre.totalVendidoNeto,
-                        4
-                      )}
-                    </strong>
-                  </article>
-                  <article>
-                    <span>Reversiones</span>
-                    <strong>
-                      {numero(
-                        cierre.totalReversiones,
                         4
                       )}
                     </strong>
@@ -817,7 +811,7 @@ export default function CierresInventario({
                     </strong>
                   </article>
                   <article className="value">
-                    <span>Inventario final</span>
+                    <span>VALOR INVENTARIO FINAL</span>
                     <strong>
                       {moneda(
                         cierre.valorInventarioFinal
@@ -852,7 +846,6 @@ export default function CierresInventario({
                         <th>Inicial</th>
                         <th>Entradas</th>
                         <th>Vendido</th>
-                        <th>Reversiones</th>
                         <th>Otras salidas</th>
                         <th>Ajuste +</th>
                         <th>Ajuste -</th>
@@ -864,7 +857,7 @@ export default function CierresInventario({
                       {detallesFiltrados.length === 0 ? (
                         <tr>
                           <td
-                            colSpan="11"
+                            colSpan="10"
                             className="cierre-inventario-empty"
                           >
                             No hay registros para mostrar.
@@ -895,11 +888,57 @@ export default function CierresInventario({
                                 <small>
                                   {detalle.unidad}
                                 </small>
+
+                                <button
+                                  type="button"
+                                  className="cierre-inventario-detail-toggle"
+                                  aria-expanded={
+                                    detalleTecnico ===
+                                    `${detalle.productoId}:${detalle.presentacionId || "base"}`
+                                  }
+                                  onClick={() =>
+                                    setDetalleTecnico(
+                                      (actual) => {
+                                        const clave =
+                                          `${detalle.productoId}:${detalle.presentacionId || "base"}`;
+
+                                        return actual === clave
+                                          ? ""
+                                          : clave;
+                                      }
+                                    )
+                                  }
+                                >
+                                  {detalleTecnico ===
+                                  `${detalle.productoId}:${detalle.presentacionId || "base"}`
+                                    ? "Ocultar detalle"
+                                    : "Ver detalle"}
+                                </button>
+
+                                {detalleTecnico ===
+                                  `${detalle.productoId}:${detalle.presentacionId || "base"}` && (
+                                  <div className="cierre-inventario-technical-detail">
+                                    <span>
+                                      Salidas aplicadas por entregas:
+                                      <strong>{numero(detalle.entregas, 4)}</strong>
+                                    </span>
+                                    <span>
+                                      Reversiones técnicas:
+                                      <strong>{numero(detalle.reversiones, 4)}</strong>
+                                    </span>
+                                    <span>
+                                      Vendido:
+                                      <strong>{numero(detalle.vendidoNeto, 4)}</strong>
+                                    </span>
+                                    <small>
+                                      Las reversiones técnicas corresponden a correcciones de entregas y no se muestran como devoluciones reales.
+                                    </small>
+                                  </div>
+                                )}
                               </td>
                               <td>{numero(detalle.stockInicial, 4)}</td>
                               <td>{numero(detalle.entradas, 4)}</td>
                               <td className="sold">{numero(detalle.vendidoNeto, 4)}</td>
-                              <td>{numero(detalle.reversiones, 4)}</td>
                               <td>{numero(detalle.otrasSalidas, 4)}</td>
                               <td>{numero(detalle.ajustesPositivos, 4)}</td>
                               <td>{numero(detalle.ajustesNegativos, 4)}</td>
