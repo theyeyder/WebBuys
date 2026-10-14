@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"clave":{"$numberInt":"1"}},"name":"clave_1","background":true,"unique":true}],"uuid":"36737ce1be1140faa1188ffe93d097ae","collectionName":"consecutivos","type":"collection"}

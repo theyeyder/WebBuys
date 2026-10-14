@@ -1,0 +1,147 @@
+{
+  "migratedAt": "2026-10-05T00:24:17.994Z",
+  "sourceDatabase": "WebBuys",
+  "backupUsed": "C:\\Users\\3yD3R\\Desktop\\WebBuys\\WebBuys\\backups\\mongodb_20261004_181948",
+  "sourceCounts": {
+    "usuarios": 2,
+    "auditorias": 111,
+    "categorias": 3,
+    "zonadespachos": 6,
+    "rutas": 1,
+    "clientes": 2,
+    "empleados": 3,
+    "productos": 17,
+    "pedidos": 3,
+    "entregas": 6,
+    "facturas": 0,
+    "movimientoinventarios": 12,
+    "cajas": 1,
+    "movimientocajas": 3,
+    "carteras": 2,
+    "pagocarteras": 3,
+    "configuracions": 1,
+    "preferencias": 1,
+    "consecutivos": 10
+  },
+  "finalCounts": {
+    "usuarios": 2,
+    "auditorias": 111,
+    "categorias": 3,
+    "zonas_despacho": 6,
+    "rutas": 1,
+    "ruta_zonas": 6,
+    "clientes": 2,
+    "empleados": 3,
+    "productos": 17,
+    "producto_presentaciones": 0,
+    "reglas_precio": 20,
+    "pedidos": 3,
+    "pedido_items": 4,
+    "entregas": 3,
+    "entrega_items": 4,
+    "facturas": 0,
+    "factura_items": 0,
+    "movimientos_inventario": 12,
+    "cajas": 1,
+    "movimientos_caja": 3,
+    "carteras": 2,
+    "pagos_cartera": 3,
+    "configuraciones": 1,
+    "preferencias": 1,
+    "consecutivos": 10
+  },
+  "excludedDeliveries": [
+    {
+      "legacyMongoId": "6ac05614c2e913d02597f6d1",
+      "pedidoCodigo": "PED-0004",
+      "clienteNombre": "CLIENTE DE PRUEBA",
+      "estado": "Por preparar",
+      "total": 154500,
+      "problemas": [
+        "pedido inexistente 6ac04afa32b42b1648642b54",
+        "pedidoItemId inexistente 6ac04b0232b42b1648642b8e"
+      ]
+    },
+    {
+      "legacyMongoId": "6ac05614c2e913d02597f6d7",
+      "pedidoCodigo": "PED-0003",
+      "clienteNombre": "EYDER DE JESUS ARROYO VEGA",
+      "estado": "Por preparar",
+      "total": 0,
+      "problemas": [
+        "pedido inexistente 6ac0492032b42b164864285e",
+        "pedidoItemId inexistente 6ac0492032b42b164864285f"
+      ]
+    },
+    {
+      "legacyMongoId": "6ac05614c2e913d02597f6db",
+      "pedidoCodigo": "PED-0002",
+      "clienteNombre": "CLIENTE DE PRUEBA",
+      "estado": "Por preparar",
+      "total": 0,
+      "problemas": [
+        "pedido inexistente 6ac0484832b42b164864245d",
+        "pedidoItemId inexistente 6ac0484832b42b164864245e"
+      ]
+    }
+  ],
+  "preservedHistoricalPortfolios": [
+    {
+      "legacyMongoId": "6ab1d7ef233071a297021265",
+      "codigo": "CAR-0006",
+      "pedidoCodigo": "PED-0006",
+      "legacyEntregaMongoId": "6ab064d53ec4460be2d31473",
+      "legacyPedidoMongoId": "6ab064ce3ec4460be2d313fc",
+      "valorOriginal": 452500,
+      "totalAbonado": 452500,
+      "saldoPendiente": 0,
+      "estado": "Pagada"
+    },
+    {
+      "legacyMongoId": "6ab1d7ef233071a29702126c",
+      "codigo": "CAR-0007",
+      "pedidoCodigo": "PED-0007",
+      "legacyEntregaMongoId": "6ab0963eb1e0ce5105a8f1bd",
+      "legacyPedidoMongoId": "6ab09633b1e0ce5105a8f147",
+      "valorOriginal": 51500,
+      "totalAbonado": 51500,
+      "saldoPendiente": 0,
+      "estado": "Pagada"
+    }
+  ],
+  "preservedHistoricalPayments": [
+    {
+      "legacyMongoId": "6ab1e43c233071a29702192a",
+      "carteraMongoId": "6ab1d7ef233071a297021265",
+      "legacyEntregaMongoId": "6ab064d53ec4460be2d31473",
+      "legacyPedidoMongoId": "6ab064ce3ec4460be2d313fc",
+      "legacyCajaMongoId": "6ab1e434233071a297021912",
+      "legacyMovimientoCajaMongoId": "6ab1e43c233071a29702192c",
+      "valor": 148000,
+      "metodoPago": "Efectivo",
+      "estado": "Activo"
+    },
+    {
+      "legacyMongoId": "6aba7f607189f03fa6e60cc4",
+      "carteraMongoId": "6ab1d7ef233071a297021265",
+      "legacyEntregaMongoId": "6ab064d53ec4460be2d31473",
+      "legacyPedidoMongoId": "6ab064ce3ec4460be2d313fc",
+      "legacyCajaMongoId": "6aba7f267189f03fa6e60862",
+      "legacyMovimientoCajaMongoId": "6aba7f607189f03fa6e60cc6",
+      "valor": 304500,
+      "metodoPago": "Efectivo",
+      "estado": "Activo"
+    },
+    {
+      "legacyMongoId": "6aba7fba7189f03fa6e60e7d",
+      "carteraMongoId": "6ab1d7ef233071a29702126c",
+      "legacyEntregaMongoId": "6ab0963eb1e0ce5105a8f1bd",
+      "legacyPedidoMongoId": "6ab09633b1e0ce5105a8f147",
+      "legacyCajaMongoId": "6aba7f267189f03fa6e60862",
+      "legacyMovimientoCajaMongoId": "6aba7fba7189f03fa6e60e7f",
+      "valor": 51500,
+      "metodoPago": "Efectivo",
+      "estado": "Activo"
+    }
+  ]
+}
