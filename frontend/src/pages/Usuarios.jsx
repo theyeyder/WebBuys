@@ -204,9 +204,9 @@ export default function Usuarios() {
       if (!modulo) continue;
 
       for (const accion of catalogoPermisos.acciones) {
-        if (fila?.[accion] === true) {
+        if (typeof fila?.[accion] === "boolean") {
           if (!mapa[modulo]) mapa[modulo] = {};
-          mapa[modulo][accion] = true;
+          mapa[modulo][accion] = fila[accion];
         }
       }
     }
@@ -243,16 +243,16 @@ export default function Usuarios() {
     return Object.entries(permisosExtras)
       .map(([modulo, acciones]) => {
         const fila = { modulo };
-        let tieneExtras = false;
+        let tieneOverrides = false;
 
         for (const accion of catalogoPermisos.acciones) {
-          if (acciones?.[accion] === true) {
-            fila[accion] = true;
-            tieneExtras = true;
+          if (typeof acciones?.[accion] === "boolean") {
+            fila[accion] = acciones[accion];
+            tieneOverrides = true;
           }
         }
 
-        return tieneExtras ? fila : null;
+        return tieneOverrides ? fila : null;
       })
       .filter(Boolean);
   }
@@ -851,15 +851,31 @@ export default function Usuarios() {
     );
   }
 
+  function permisoPersonalizado(moduloClave, accion) {
+    const valor = permisosExtras?.[moduloClave]?.[accion];
+
+    return typeof valor === "boolean"
+      ? valor
+      : undefined;
+  }
+
   function permisoExtra(moduloClave, accion) {
-    return permisosExtras?.[moduloClave]?.[accion] === true;
+    return permisoPersonalizado(moduloClave, accion) === true;
+  }
+
+  function permisoRetirado(moduloClave, accion) {
+    return permisoPersonalizado(moduloClave, accion) === false;
   }
 
   function permisoEfectivo(moduloClave, accion) {
-    return (
-      permisoPerfiles(moduloClave, accion) ||
-      permisoExtra(moduloClave, accion)
-    );
+    const personalizado =
+      permisoPersonalizado(moduloClave, accion);
+
+    if (typeof personalizado === "boolean") {
+      return personalizado;
+    }
+
+    return permisoPerfiles(moduloClave, accion);
   }
 
   function permisoPerfilActivo(moduloClave, accion) {
@@ -876,27 +892,40 @@ export default function Usuarios() {
 
   function alternarPermisoExtra(moduloClave, accion) {
     /*
-      Un permiso heredado de cualquiera de los perfiles asignados
-      no se puede retirar aquí. Para retirarlo se debe quitar el perfil.
-      Esta pantalla sirve para AGREGAR permisos individuales al usuario.
+      Todos los checks son editables para este usuario.
+
+      - Si el perfil lo concede y se desmarca, guardamos FALSE como excepción.
+      - Si el perfil no lo concede y se marca, guardamos TRUE como excepción.
+      - Si el usuario vuelve al valor original del perfil, eliminamos la excepción.
+
+      Esto NO modifica el perfil general ni afecta a otros usuarios.
     */
-    if (permisoPerfiles(moduloClave, accion)) {
-      return;
-    }
+    const valorBase =
+      permisoPerfiles(moduloClave, accion);
+
+    const valorActual =
+      permisoEfectivo(moduloClave, accion);
+
+    const nuevoValor =
+      !valorActual;
 
     setPermisosExtras((actual) => {
-      const filaActual = actual?.[moduloClave] || {};
-      const yaExiste = filaActual?.[accion] === true;
-      const nuevaFila = {
-        ...filaActual,
-        [accion]: !yaExiste,
+      const filaActual = {
+        ...(actual?.[moduloClave] || {}),
       };
 
-      const tieneAlguno = Object.values(nuevaFila).some(
-        (valor) => valor === true
-      );
+      if (nuevoValor === valorBase) {
+        delete filaActual[accion];
+      } else {
+        filaActual[accion] = nuevoValor;
+      }
 
-      if (!tieneAlguno) {
+      const tieneOverrides =
+        Object.values(filaActual).some(
+          (valor) => typeof valor === "boolean"
+        );
+
+      if (!tieneOverrides) {
         const copia = { ...actual };
         delete copia[moduloClave];
         return copia;
@@ -904,7 +933,7 @@ export default function Usuarios() {
 
       return {
         ...actual,
-        [moduloClave]: nuevaFila,
+        [moduloClave]: filaActual,
       };
     });
   }
@@ -1274,8 +1303,8 @@ export default function Usuarios() {
                 <div>
                   <strong>{perfilActivoNombre}</strong>
                   <span>
-                    Los permisos heredados del perfil aparecen marcados.
-                    Los checks que agregues serán extras solo para este usuario.
+                    Todos los permisos son checks editables. Puedes marcar permisos nuevos
+                    o desmarcar los que vienen por defecto del perfil, únicamente para este usuario.
                   </span>
                 </div>
 
@@ -1289,15 +1318,19 @@ export default function Usuarios() {
               <div className="usuarios-permisos-leyenda">
                 <span>
                   <i className="usuarios-leyenda-check heredado" aria-hidden="true">✓</i>
-                  Heredado de perfiles
+                  Incluido por perfil
                 </span>
                 <span>
                   <i className="usuarios-leyenda-check extra" aria-hidden="true">✓</i>
-                  Extra para este usuario
+                  Agregado para este usuario
+                </span>
+                <span>
+                  <i className="usuarios-leyenda-check retirado" aria-hidden="true"></i>
+                  Quitado para este usuario
                 </span>
                 <span>
                   <i className="usuarios-leyenda-check disponible" aria-hidden="true"></i>
-                  Puedes habilitarlo
+                  Disponible
                 </span>
               </div>
 
@@ -1330,33 +1363,41 @@ export default function Usuarios() {
                             permisoPerfilActivo(modulo.clave, accion);
                           const extra =
                             permisoExtra(modulo.clave, accion);
+                          const retirado =
+                            permisoRetirado(modulo.clave, accion);
                           const efectivo =
                             permisoEfectivo(modulo.clave, accion);
 
                           let titulo =
                             "Haz clic para habilitar este permiso solo para el usuario.";
 
-                          if (heredadoVista) {
+                          if (retirado) {
                             titulo =
-                              "Este permiso viene incluido en el perfil seleccionado.";
+                              "Este permiso fue quitado para este usuario. Haz clic para volver a habilitarlo.";
+                          } else if (extra && !heredadoCombinado) {
+                            titulo =
+                              "Permiso agregado solo para este usuario. Haz clic para retirarlo.";
+                          } else if (heredadoVista) {
+                            titulo =
+                              "Incluido por el perfil seleccionado. Puedes desmarcarlo solo para este usuario.";
                           } else if (heredadoCombinado) {
                             titulo =
-                              "Este permiso ya viene incluido en otro de los perfiles asignados.";
-                          } else if (extra) {
-                            titulo =
-                              "Permiso extra de este usuario. Haz clic para retirarlo.";
+                              "Incluido por otro perfil asignado. Puedes desmarcarlo solo para este usuario.";
                           }
+
+                          const estadoClase =
+                            retirado
+                              ? "retirado"
+                              : extra && !heredadoCombinado
+                                ? "extra"
+                                : heredadoCombinado
+                                  ? "heredado"
+                                  : "disponible";
 
                           return (
                             <td
                               key={`${modulo.clave}-${accion}`}
-                              className={`usuarios-permiso-celda ${
-                                heredadoCombinado
-                                  ? "heredado"
-                                  : extra
-                                    ? "extra"
-                                    : "disponible"
-                              } ${
+                              className={`usuarios-permiso-celda ${estadoClase} ${
                                 heredadoVista ? "heredado-vista" : ""
                               }`}
                               title={titulo}
@@ -1365,7 +1406,7 @@ export default function Usuarios() {
                                 <input
                                   type="checkbox"
                                   checked={efectivo}
-                                  disabled={heredadoCombinado || cargandoPermisosUsuario}
+                                  disabled={cargandoPermisosUsuario}
                                   onChange={() =>
                                     alternarPermisoExtra(modulo.clave, accion)
                                   }
@@ -1384,8 +1425,8 @@ export default function Usuarios() {
 
               <p className="usuarios-perfil-permisos-info">
                 Puedes cambiar entre Bodega, Caja, Ventas y los demás perfiles asignados
-                usando las pestañas superiores. Los permisos extra que marques se guardan
-                únicamente para este usuario y no cambian el perfil de los demás empleados.
+                usando las pestañas superiores. Puedes marcar o desmarcar cualquier permiso;
+                el cambio se guarda únicamente para este usuario y no modifica los perfiles de los demás empleados.
               </p>
             </details>
           )}

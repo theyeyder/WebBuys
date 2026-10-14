@@ -1641,6 +1641,12 @@
   color: #ffffff;
 }
 
+.usuarios-leyenda-check.retirado {
+  border: 1px solid #d92d20;
+
+  background: #ffffff;
+}
+
 .usuarios-leyenda-check.disponible {
   border: 1px solid #9eafa7;
 
@@ -1891,9 +1897,29 @@
   background: #65ab8e;
 }
 
+/* Permiso que venía del perfil pero fue retirado solo para este usuario */
+.usuarios-permiso-celda.retirado
+.usuarios-permiso-check span {
+  border-color: #d92d20;
+  background: #ffffff;
+
+  box-shadow:
+    inset 0 0 0 1px
+    rgba(217, 45, 32, 0.08);
+}
+
+.usuarios-permiso-celda.retirado
+.usuarios-permiso-check:hover span {
+  border-color: #b42318;
+
+  box-shadow:
+    0 3px 8px
+    rgba(180, 35, 24, 0.14);
+}
+
 .usuarios-permiso-celda.heredado
 .usuarios-permiso-check {
-  cursor: default;
+  cursor: pointer;
 }
 
 .usuarios-permiso-check input:focus-visible + span {
