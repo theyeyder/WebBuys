@@ -19,6 +19,10 @@ import ModulosMenu
   from "../components/ModulosMenu.jsx";
 
 import {
+  useAuth,
+} from "../context/AuthContext.jsx";
+
+import {
   listarClientes,
 } from "../services/cliente.service.js";
 
@@ -1001,6 +1005,16 @@ function PedidoSelectVisual({
 ========================================= */
 
 export default function Pedidos() {
+
+  const {
+    usuario,
+  } = useAuth();
+
+
+  const puedeDarDescuento =
+    usuario?.rol ===
+    "Administrador";
+
 
   const [
     pedidos,
@@ -2140,11 +2154,32 @@ export default function Pedidos() {
     );
 
 
+  /*
+    REGLA DE SEGURIDAD:
+    solamente el Administrador puede aplicar o modificar descuentos.
+
+    Si un empleado abre un pedido que ya tenía un descuento autorizado,
+    se conserva ese valor, pero el empleado no puede alterarlo.
+  */
+  const descuentoAplicadoFormulario =
+    puedeDarDescuento
+      ? descuentoNumero
+      : (
+          modoEdicion
+            ? Number(
+                pedidoSeleccionado
+                  ?.descuento ||
+                0
+              )
+            : 0
+        );
+
+
   const totalFormulario =
     Math.max(
       0,
       subtotalFormulario -
-      descuentoNumero
+      descuentoAplicadoFormulario
     );
 
 
@@ -2658,8 +2693,8 @@ export default function Pedidos() {
 
 
     if (
-      descuentoNumero < 0 ||
-      descuentoNumero >
+      descuentoAplicadoFormulario < 0 ||
+      descuentoAplicadoFormulario >
       subtotalFormulario
     ) {
 
@@ -2710,7 +2745,7 @@ export default function Pedidos() {
           null,
 
         descuento:
-          descuentoNumero,
+          descuentoAplicadoFormulario,
 
         observaciones:
           form.observaciones.trim(),
@@ -5906,16 +5941,38 @@ export default function Pedidos() {
 
                       Descuento
 
+                      {!puedeDarDescuento && (
+                        <small>
+                          Solo administrador
+                        </small>
+                      )}
+
                       <input
                         type="number"
                         min="0"
                         value={
                           form.descuento
                         }
+                        disabled={
+                          !puedeDarDescuento ||
+                          pedidoSoloLectura
+                        }
+                        title={
+                          !puedeDarDescuento
+                            ? "Solo el administrador puede aplicar o modificar descuentos."
+                            : ""
+                        }
                         onChange={
                           (
                             event
-                          ) =>
+                          ) => {
+
+                            if (
+                              !puedeDarDescuento
+                            ) {
+                              return;
+                            }
+
                             setForm(
                               (
                                 actual
@@ -5928,7 +5985,9 @@ export default function Pedidos() {
                                     .value,
 
                               })
-                            )
+                            );
+
+                          }
                         }
                         placeholder="0"
                       />

@@ -36,6 +36,13 @@ import {
   obtenerSiguienteCodigoUsuario,
 } from "../services/usuario.service.js";
 
+import {
+  listarPerfiles,
+  listarModulosPermisos,
+  obtenerPermisosUsuario,
+  actualizarPermisosPersonalizados,
+} from "../services/perfilUsuario.service.js";
+
 const FORM_INICIAL = {
   codigo: "",
   documento: "",
@@ -43,6 +50,7 @@ const FORM_INICIAL = {
   apellidos: "",
   usuario: "",
   rol: "Empleado",
+  perfilIds: [],
   password: "",
   repetirPassword: "",
 };
@@ -57,6 +65,20 @@ export default function Usuarios() {
 
   const [modalPasswordAbierto, setModalPasswordAbierto] = useState(false);
   const [usuarioPassword, setUsuarioPassword] = useState(null);
+
+  const [perfiles, setPerfiles] = useState([]);
+  const [catalogoPermisos, setCatalogoPermisos] = useState({
+    acciones: [],
+    modulos: [],
+  });
+
+  /*
+    Permisos extras: son excepciones SOLO para este usuario.
+    No modifican los perfiles Bodega, Caja, Ventas, etc.
+  */
+  const [permisosExtras, setPermisosExtras] = useState({});
+  const [perfilPermisosActivo, setPerfilPermisosActivo] = useState("combinados");
+  const [cargandoPermisosUsuario, setCargandoPermisosUsuario] = useState(false);
 
   const [modalBuscarAbierto, setModalBuscarAbierto] = useState(false);
   const [filtroBuscar, setFiltroBuscar] = useState("");
@@ -85,6 +107,7 @@ export default function Usuarios() {
   useEffect(() => {
     async function iniciar() {
       await cargarUsuarios();
+      await cargarPerfiles();
 
       try {
         const data =
@@ -142,13 +165,159 @@ export default function Usuarios() {
     }
   }
 
+  async function cargarPerfiles() {
+    try {
+      const [listaPerfiles, catalogo] = await Promise.all([
+        listarPerfiles(),
+        listarModulosPermisos(),
+      ]);
+
+      setPerfiles(
+        Array.isArray(listaPerfiles)
+          ? listaPerfiles
+          : []
+      );
+
+      setCatalogoPermisos({
+        acciones: Array.isArray(catalogo?.acciones)
+          ? catalogo.acciones
+          : [],
+        modulos: Array.isArray(catalogo?.modulos)
+          ? catalogo.modulos
+          : [],
+      });
+    } catch (err) {
+      console.error("No fue posible cargar perfiles y permisos:", err);
+
+      setError(
+        err.response?.data?.mensaje ||
+          "No fue posible cargar los perfiles de usuario."
+      );
+    }
+  }
+
+  function normalizarPermisosExtras(personalizados = []) {
+    const mapa = {};
+
+    for (const fila of Array.isArray(personalizados) ? personalizados : []) {
+      const modulo = String(fila?.modulo || "").trim();
+      if (!modulo) continue;
+
+      for (const accion of catalogoPermisos.acciones) {
+        if (fila?.[accion] === true) {
+          if (!mapa[modulo]) mapa[modulo] = {};
+          mapa[modulo][accion] = true;
+        }
+      }
+    }
+
+    return mapa;
+  }
+
+  async function cargarPermisosPersonalizadosUsuario(usuarioId) {
+    if (!usuarioId) {
+      setPermisosExtras({});
+      return;
+    }
+
+    try {
+      setCargandoPermisosUsuario(true);
+
+      const data = await obtenerPermisosUsuario(usuarioId);
+      setPermisosExtras(
+        normalizarPermisosExtras(data?.personalizados)
+      );
+    } catch (err) {
+      console.error("No fue posible cargar los permisos personalizados:", err);
+      setPermisosExtras({});
+      setError(
+        err.response?.data?.mensaje ||
+          "No fue posible cargar los permisos personalizados del usuario."
+      );
+    } finally {
+      setCargandoPermisosUsuario(false);
+    }
+  }
+
+  function construirPayloadPermisosExtras() {
+    return Object.entries(permisosExtras)
+      .map(([modulo, acciones]) => {
+        const fila = { modulo };
+        let tieneExtras = false;
+
+        for (const accion of catalogoPermisos.acciones) {
+          if (acciones?.[accion] === true) {
+            fila[accion] = true;
+            tieneExtras = true;
+          }
+        }
+
+        return tieneExtras ? fila : null;
+      })
+      .filter(Boolean);
+  }
+
   function handleChange(event) {
     const { name, value } = event.target;
 
-    setForm((actual) => ({
-      ...actual,
-      [name]: value,
-    }));
+    if (name === "rol" && value === "Administrador") {
+      setPermisosExtras({});
+      setPerfilPermisosActivo("combinados");
+    }
+
+    setForm((actual) => {
+      if (name === "rol") {
+        return {
+          ...actual,
+          rol: value,
+          perfilIds:
+            value === "Administrador"
+              ? []
+              : actual.perfilIds,
+        };
+      }
+
+      return {
+        ...actual,
+        [name]: value,
+      };
+    });
+  }
+
+  function obtenerPerfilIdsUsuario(usuario = {}) {
+    if (Array.isArray(usuario?.perfilIds)) {
+      return usuario.perfilIds.filter(Boolean);
+    }
+
+    if (Array.isArray(usuario?.perfiles)) {
+      return usuario.perfiles
+        .map((perfil) => perfil?.id)
+        .filter(Boolean);
+    }
+
+    const unico =
+      usuario?.perfilId ||
+      usuario?.perfil?.id ||
+      "";
+
+    return unico ? [unico] : [];
+  }
+
+  function alternarPerfil(perfilId) {
+    setForm((actual) => {
+      const seleccionados = Array.isArray(actual.perfilIds)
+        ? actual.perfilIds
+        : [];
+
+      const existe = seleccionados.includes(perfilId);
+
+      return {
+        ...actual,
+        perfilIds: existe
+          ? seleccionados.filter((id) => id !== perfilId)
+          : [...seleccionados, perfilId],
+      };
+    });
   }
 
   // =========================================================
@@ -160,6 +329,8 @@ export default function Usuarios() {
       setModoEdicion(false);
       setMensaje("");
       setError("");
+      setPermisosExtras({});
+      setPerfilPermisosActivo("combinados");
 
       const data =
         await obtenerSiguienteCodigoUsuario();
@@ -189,7 +360,7 @@ export default function Usuarios() {
   // =========================================================
   // SELECCIONAR DESDE BÚSQUEDA - CON CÓDIGO
   // =========================================================
-  function seleccionarDesdeBusqueda(usuario) {
+  async function seleccionarDesdeBusqueda(usuario) {
     setUsuarioSeleccionado(usuario);
 
     setForm({
@@ -199,11 +370,14 @@ export default function Usuarios() {
       apellidos: usuario.apellidos || "",
       usuario: usuario.usuario || "",
       rol: usuario.rol || "Empleado",
+      perfilIds: obtenerPerfilIdsUsuario(usuario),
       password: "",
       repetirPassword: "",
     });
 
     setModoEdicion(true);
+    setPerfilPermisosActivo("combinados");
+    await cargarPermisosPersonalizadosUsuario(usuario._id || usuario.id);
 
     setModalBuscarAbierto(false);
     setFiltroBuscar("");
@@ -215,7 +389,7 @@ export default function Usuarios() {
   // =========================================================
   // EDITAR USUARIO SELECCIONADO - CON CÓDIGO
   // =========================================================
-  function editarUsuarioSeleccionado() {
+  async function editarUsuarioSeleccionado() {
     if (!usuarioSeleccionado) {
       setError("Seleccione primero un usuario.");
       return;
@@ -228,11 +402,16 @@ export default function Usuarios() {
       apellidos: usuarioSeleccionado.apellidos || "",
       usuario: usuarioSeleccionado.usuario || "",
       rol: usuarioSeleccionado.rol || "Empleado",
+      perfilIds: obtenerPerfilIdsUsuario(usuarioSeleccionado),
       password: "",
       repetirPassword: "",
     });
 
     setModoEdicion(true);
+    setPerfilPermisosActivo("combinados");
+    await cargarPermisosPersonalizadosUsuario(
+      usuarioSeleccionado._id || usuarioSeleccionado.id
+    );
   }
 
   function resetearUsuarioSeleccionado() {
@@ -357,6 +536,21 @@ export default function Usuarios() {
         return;
       }
 
+      if (
+        form.rol === "Empleado" &&
+        (!Array.isArray(form.perfilIds) || form.perfilIds.length === 0)
+      ) {
+        setError(
+          "Seleccione al menos un perfil para el usuario empleado."
+        );
+        return;
+      }
+
+      let usuarioIdGuardado =
+        usuarioSeleccionado?._id ||
+        usuarioSeleccionado?.id ||
+        null;
+
       if (!modoEdicion) {
         if (!form.password) {
           setError("La contraseña es obligatoria.");
@@ -373,25 +567,74 @@ export default function Usuarios() {
           return;
         }
 
-        await crearUsuario(form);
-        setMensaje("Usuario creado correctamente.");
+        const respuesta = await crearUsuario({
+          ...form,
+          perfilIds:
+            form.rol === "Empleado"
+              ? form.perfilIds
+              : [],
+        });
+
+        usuarioIdGuardado =
+          respuesta?.usuario?._id ||
+          respuesta?.usuario?.id ||
+          respuesta?._id ||
+          respuesta?.id ||
+          null;
+
+        if (form.rol === "Empleado" && usuarioIdGuardado) {
+          await actualizarPermisosPersonalizados(
+            usuarioIdGuardado,
+            construirPayloadPermisosExtras()
+          );
+        }
+
+        setMensaje("Usuario y permisos guardados correctamente.");
       } else {
-        await actualizarUsuario(usuarioSeleccionado._id, {
+        /*
+          Si se convierte un Empleado en Administrador, limpiamos antes
+          sus permisos personalizados para que no queden excepciones antiguas.
+        */
+        if (
+          form.rol === "Administrador" &&
+          usuarioSeleccionado?.rol === "Empleado" &&
+          usuarioIdGuardado
+        ) {
+          await actualizarPermisosPersonalizados(
+            usuarioIdGuardado,
+            []
+          );
+        }
+
+        const respuesta = await actualizarUsuario(usuarioIdGuardado, {
           documento: form.documento.trim(),
           nombres: form.nombres.trim(),
           apellidos: form.apellidos.trim(),
           usuario: form.usuario.trim(),
           rol: form.rol,
+          perfilIds:
+            form.rol === "Empleado"
+              ? form.perfilIds
+              : [],
         });
 
-        setMensaje("Usuario actualizado correctamente.");
+        usuarioIdGuardado =
+          respuesta?._id ||
+          respuesta?.id ||
+          usuarioIdGuardado;
+
+        if (form.rol === "Empleado" && usuarioIdGuardado) {
+          await actualizarPermisosPersonalizados(
+            usuarioIdGuardado,
+            construirPayloadPermisosExtras()
+          );
+        }
+
+        setMensaje("Usuario y permisos actualizados correctamente.");
       }
 
       await cargarUsuarios();
 
-      // =========================================================
-      // OBTENER SIGUIENTE CÓDIGO DESPUÉS DE GUARDAR
-      // =========================================================
       let siguienteCodigo = "";
 
       try {
@@ -412,6 +655,8 @@ export default function Usuarios() {
         codigo: siguienteCodigo,
       });
 
+      setPermisosExtras({});
+      setPerfilPermisosActivo("combinados");
       setUsuarioSeleccionado(null);
       setModoEdicion(false);
     } catch (err) {
@@ -570,6 +815,106 @@ export default function Usuarios() {
         );
     }
   });
+
+  const perfilesActivos = perfiles.filter(
+    (perfil) => perfil.estado === "Activo"
+  );
+
+  const perfilesSeleccionados = perfiles.filter(
+    (perfil) =>
+      Array.isArray(form.perfilIds) &&
+      form.perfilIds.includes(perfil.id)
+  );
+
+  const nombreAccion = {
+    ver: "Ver",
+    crear: "Crear",
+    editar: "Editar",
+    eliminar: "Eliminar",
+    imprimir: "Imprimir",
+    anular: "Anular",
+    cambiarEstado: "Cambiar estado",
+    registrarMovimientos: "Movimientos",
+  };
+
+  function permisoPerfil(perfil, moduloClave, accion) {
+    const fila = perfil?.permisos?.find(
+      (permiso) => permiso.modulo === moduloClave
+    );
+
+    return fila?.[accion] === true;
+  }
+
+  function permisoPerfiles(moduloClave, accion) {
+    return perfilesSeleccionados.some((perfil) =>
+      permisoPerfil(perfil, moduloClave, accion)
+    );
+  }
+
+  function permisoExtra(moduloClave, accion) {
+    return permisosExtras?.[moduloClave]?.[accion] === true;
+  }
+
+  function permisoEfectivo(moduloClave, accion) {
+    return (
+      permisoPerfiles(moduloClave, accion) ||
+      permisoExtra(moduloClave, accion)
+    );
+  }
+
+  function permisoPerfilActivo(moduloClave, accion) {
+    if (perfilPermisosActivo === "combinados") {
+      return permisoPerfiles(moduloClave, accion);
+    }
+
+    const perfil = perfilesSeleccionados.find(
+      (item) => item.id === perfilPermisosActivo
+    );
+
+    return permisoPerfil(perfil, moduloClave, accion);
+  }
+
+  function alternarPermisoExtra(moduloClave, accion) {
+    /*
+      Un permiso heredado de cualquiera de los perfiles asignados
+      no se puede retirar aquí. Para retirarlo se debe quitar el perfil.
+      Esta pantalla sirve para AGREGAR permisos individuales al usuario.
+    */
+    if (permisoPerfiles(moduloClave, accion)) {
+      return;
+    }
+
+    setPermisosExtras((actual) => {
+      const filaActual = actual?.[moduloClave] || {};
+      const yaExiste = filaActual?.[accion] === true;
+      const nuevaFila = {
+        ...filaActual,
+        [accion]: !yaExiste,
+      };
+
+      const tieneAlguno = Object.values(nuevaFila).some(
+        (valor) => valor === true
+      );
+
+      if (!tieneAlguno) {
+        const copia = { ...actual };
+        delete copia[moduloClave];
+        return copia;
+      }
+
+      return {
+        ...actual,
+        [moduloClave]: nuevaFila,
+      };
+    });
+  }
+
+  const perfilActivoNombre =
+    perfilPermisosActivo === "combinados"
+      ? "Permisos combinados"
+      : perfilesSeleccionados.find(
+          (perfil) => perfil.id === perfilPermisosActivo
+        )?.nombre || "Perfil";
 
   return (
     <section className="usuarios-module">
@@ -837,6 +1182,214 @@ export default function Usuarios() {
             </select>
           </div>
 
+          {form.rol === "Empleado" ? (
+            <div className="usuarios-field usuarios-field-perfil">
+              <div className="usuarios-perfiles-heading">
+                <div>
+                  <label>Perfiles del empleado *</label>
+                  <small>
+                    Puedes asignar uno o varios. Los permisos se combinan automáticamente.
+                  </small>
+                </div>
+
+                <span className="usuarios-perfiles-contador">
+                  {perfilesSeleccionados.length} seleccionado{perfilesSeleccionados.length === 1 ? "" : "s"}
+                </span>
+              </div>
+
+              <div className="usuarios-perfiles-grid" role="group" aria-label="Perfiles del empleado">
+                {perfilesActivos.map((perfil) => {
+                  const seleccionado = form.perfilIds.includes(perfil.id);
+
+                  return (
+                    <button
+                      key={perfil.id}
+                      type="button"
+                      className={`usuarios-perfil-card ${seleccionado ? "seleccionado" : ""}`}
+                      onClick={() => alternarPerfil(perfil.id)}
+                      aria-pressed={seleccionado}
+                    >
+                      <span className="usuarios-perfil-card-check" aria-hidden="true">
+                        {seleccionado ? "✓" : ""}
+                      </span>
+
+                      <span className="usuarios-perfil-card-contenido">
+                        <strong>{perfil.nombre}</strong>
+                        <small>{perfil.descripcion || "Perfil operativo de WebBuys."}</small>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {perfilesActivos.length === 0 && (
+                <div className="usuarios-perfiles-vacio">
+                  No hay perfiles activos disponibles.
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="usuarios-admin-access-note">
+              <strong>Administrador</strong>
+              <span>
+                Acceso total a WebBuys. No requiere perfiles de empleado.
+              </span>
+            </div>
+          )}
+
+          {form.rol === "Empleado" && perfilesSeleccionados.length > 0 && (
+            <details className="usuarios-perfil-permisos">
+              <summary>
+                Administrar permisos de este usuario
+              </summary>
+
+              <div className="usuarios-permisos-tabs" role="tablist" aria-label="Perfiles asignados">
+                <button
+                  type="button"
+                  className={`usuarios-permisos-tab ${
+                    perfilPermisosActivo === "combinados" ? "activo" : ""
+                  }`}
+                  onClick={() => setPerfilPermisosActivo("combinados")}
+                  aria-pressed={perfilPermisosActivo === "combinados"}
+                >
+                  Combinados
+                </button>
+
+                {perfilesSeleccionados.map((perfil) => (
+                  <button
+                    key={perfil.id}
+                    type="button"
+                    className={`usuarios-permisos-tab ${
+                      perfilPermisosActivo === perfil.id ? "activo" : ""
+                    }`}
+                    onClick={() => setPerfilPermisosActivo(perfil.id)}
+                    aria-pressed={perfilPermisosActivo === perfil.id}
+                  >
+                    {perfil.nombre}
+                  </button>
+                ))}
+              </div>
+
+              <div className="usuarios-permisos-editor-cabecera">
+                <div>
+                  <strong>{perfilActivoNombre}</strong>
+                  <span>
+                    Los permisos heredados del perfil aparecen marcados.
+                    Los checks que agregues serán extras solo para este usuario.
+                  </span>
+                </div>
+
+                {cargandoPermisosUsuario && (
+                  <span className="usuarios-permisos-cargando">
+                    Cargando permisos...
+                  </span>
+                )}
+              </div>
+
+              <div className="usuarios-permisos-leyenda">
+                <span>
+                  <i className="usuarios-leyenda-check heredado" aria-hidden="true">✓</i>
+                  Heredado de perfiles
+                </span>
+                <span>
+                  <i className="usuarios-leyenda-check extra" aria-hidden="true">✓</i>
+                  Extra para este usuario
+                </span>
+                <span>
+                  <i className="usuarios-leyenda-check disponible" aria-hidden="true"></i>
+                  Puedes habilitarlo
+                </span>
+              </div>
+
+              <div className="usuarios-perfil-permisos-table-wrap">
+                <table className="usuarios-perfil-permisos-table usuarios-permisos-editable">
+                  <thead>
+                    <tr>
+                      <th>Módulo</th>
+
+                      {catalogoPermisos.acciones.map((accion) => (
+                        <th key={accion}>
+                          {nombreAccion[accion] || accion}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {catalogoPermisos.modulos.map((modulo) => (
+                      <tr key={modulo.clave}>
+                        <td>
+                          <strong>{modulo.nombre}</strong>
+                          <small>{modulo.grupo}</small>
+                        </td>
+
+                        {catalogoPermisos.acciones.map((accion) => {
+                          const heredadoCombinado =
+                            permisoPerfiles(modulo.clave, accion);
+                          const heredadoVista =
+                            permisoPerfilActivo(modulo.clave, accion);
+                          const extra =
+                            permisoExtra(modulo.clave, accion);
+                          const efectivo =
+                            permisoEfectivo(modulo.clave, accion);
+
+                          let titulo =
+                            "Haz clic para habilitar este permiso solo para el usuario.";
+
+                          if (heredadoVista) {
+                            titulo =
+                              "Este permiso viene incluido en el perfil seleccionado.";
+                          } else if (heredadoCombinado) {
+                            titulo =
+                              "Este permiso ya viene incluido en otro de los perfiles asignados.";
+                          } else if (extra) {
+                            titulo =
+                              "Permiso extra de este usuario. Haz clic para retirarlo.";
+                          }
+
+                          return (
+                            <td
+                              key={`${modulo.clave}-${accion}`}
+                              className={`usuarios-permiso-celda ${
+                                heredadoCombinado
+                                  ? "heredado"
+                                  : extra
+                                    ? "extra"
+                                    : "disponible"
+                              } ${
+                                heredadoVista ? "heredado-vista" : ""
+                              }`}
+                              title={titulo}
+                            >
+                              <label className="usuarios-permiso-check">
+                                <input
+                                  type="checkbox"
+                                  checked={efectivo}
+                                  disabled={heredadoCombinado || cargandoPermisosUsuario}
+                                  onChange={() =>
+                                    alternarPermisoExtra(modulo.clave, accion)
+                                  }
+                                  aria-label={`${modulo.nombre} - ${nombreAccion[accion] || accion}`}
+                                />
+                                <span aria-hidden="true"></span>
+                              </label>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <p className="usuarios-perfil-permisos-info">
+                Puedes cambiar entre Bodega, Caja, Ventas y los demás perfiles asignados
+                usando las pestañas superiores. Los permisos extra que marques se guardan
+                únicamente para este usuario y no cambian el perfil de los demás empleados.
+              </p>
+            </details>
+          )}
+
           {/* =========================================
               CONTRASEÑAS - SOLO EN MODO NUEVO
           ========================================= */}
@@ -993,6 +1546,7 @@ export default function Usuarios() {
                     <th>Usuario</th>
                     <th>Nombre completo</th>
                     <th>Rol</th>
+                    <th>Perfil</th>
                     <th>Estado</th>
                   </tr>
                 </thead>
@@ -1000,7 +1554,7 @@ export default function Usuarios() {
                 <tbody>
                   {usuariosBusqueda.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="usuarios-search-empty">
+                      <td colSpan="7" className="usuarios-search-empty">
                         No se encontraron usuarios.
                       </td>
                     </tr>
@@ -1039,6 +1593,34 @@ export default function Usuarios() {
                           <span className="usuarios-modal-rol">
                             {usuario.rol}
                           </span>
+                        </td>
+
+                        <td>
+                          {usuario.rol === "Administrador" ? (
+                            <span className="usuarios-modal-perfil">
+                              Acceso total
+                            </span>
+                          ) : (
+                            <div className="usuarios-modal-perfiles">
+                              {(Array.isArray(usuario.perfiles) && usuario.perfiles.length > 0
+                                ? usuario.perfiles
+                                : usuario.perfil
+                                  ? [usuario.perfil]
+                                  : []
+                              ).map((perfil) => (
+                                <span
+                                  key={perfil.id || perfil.nombre}
+                                  className="usuarios-modal-perfil"
+                                >
+                                  {perfil.nombre}
+                                </span>
+                              ))}
+
+                              {(!usuario.perfiles?.length && !usuario.perfil) && (
+                                <span className="usuarios-modal-perfil">Sin perfiles</span>
+                              )}
+                            </div>
+                          )}
                         </td>
 
                         <td>

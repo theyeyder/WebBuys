@@ -1,0 +1,19 @@
+WEBBUYS - CIERRE MENSUAL DE INVENTARIO
+
+ORDEN RECOMENDADO:
+1. Aplicar primero la carpeta backend sobre ./backend
+2. Ejecutar dentro de ./backend:
+   npx prisma migrate deploy
+   npx prisma generate
+3. Reiniciar el backend.
+4. Aplicar la carpeta frontend sobre ./frontend
+5. Reiniciar Vite si estaba abierto.
+
+FUNCIONES:
+- Consulta mensual en tiempo real.
+- Cierre definitivo de meses ya finalizados.
+- Inventario inicial, entradas, ventas, reversiones, otras salidas, ajustes e inventario final.
+- Impresion de cierre mensual.
+- Historial de cierres.
+- Bloqueo de movimientos manuales retroactivos en meses cerrados.
+- El stock fisico NO se reinicia a cero al cambiar de mes.

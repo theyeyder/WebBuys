@@ -168,14 +168,6 @@ export default function CambiarPasswordModal({
               <img src={guardarIcon} alt="Guardar" />
             </button>
 
-            <button
-              className="usuario-modal-icon-button usuario-modal-close-button"
-              type="button"
-              title="Cerrar"
-              onClick={onClose}
-            >
-              <img src={cerrarIcon} alt="Cerrar" />
-            </button>
           </div>
         </form>
       </div>

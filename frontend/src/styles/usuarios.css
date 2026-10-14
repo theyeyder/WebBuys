@@ -1105,3 +1105,928 @@
   }
 
 }
+
+
+/* =========================================================
+   PERFILES Y PERMISOS DEL USUARIO
+   Ajustado al diseño actual de Usuarios - WebBuys
+========================================================= */
+
+/* =========================================================
+   BLOQUE DE PERFILES DEL EMPLEADO
+========================================================= */
+
+.usuarios-field-perfil {
+  width: 100%;
+  max-width: 100%;
+
+  margin-top: 4px;
+  padding: 14px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #cfe0d8;
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #fbfefc 0%,
+      #f5faf7 100%
+    );
+
+  box-shadow:
+    0 4px 12px
+    rgba(15, 23, 42, 0.04);
+}
+
+.usuarios-perfiles-heading {
+  width: 100%;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.usuarios-perfiles-heading > div {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.usuarios-perfiles-heading label {
+  margin: 0;
+
+  color: #173f2e;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.usuarios-perfiles-heading small {
+  color: #667085;
+
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.usuarios-perfiles-contador {
+  flex: 0 0 auto;
+
+  padding: 5px 10px;
+
+  border: 1px solid #a8d7c3;
+  border-radius: 999px;
+
+  background: #eef9f4;
+  color: #087443;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   TARJETAS DE PERFILES
+========================================================= */
+
+.usuarios-perfiles-grid {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 9px;
+}
+
+.usuarios-perfil-card {
+  position: relative;
+
+  width: 100%;
+  min-height: 70px;
+
+  padding:
+    11px
+    39px
+    11px
+    12px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #cadad2;
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 10px
+    rgba(15, 23, 42, 0.05);
+
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.usuarios-perfil-card:hover {
+  transform: translateY(-1px);
+
+  border-color: #57aa85;
+
+  box-shadow:
+    0 7px 15px
+    rgba(36, 126, 72, 0.12);
+}
+
+.usuarios-perfil-card.seleccionado {
+  border-color: #0f8a66;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f0fcf6 0%,
+      #e5f8ef 100%
+    );
+
+  box-shadow:
+    0 0 0 2px
+    rgba(15, 138, 102, 0.10),
+    0 6px 15px
+    rgba(36, 126, 72, 0.10);
+}
+
+.usuarios-perfil-card-check {
+  position: absolute;
+
+  top: 10px;
+  right: 10px;
+
+  width: 22px;
+  height: 22px;
+
+  border: 1px solid #b7cbc1;
+  border-radius: 50%;
+
+  background: #ffffff;
+  color: #ffffff;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.usuarios-perfil-card.seleccionado
+.usuarios-perfil-card-check {
+  border-color: #087443;
+  background: #087443;
+}
+
+.usuarios-perfil-card-contenido {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.usuarios-perfil-card-contenido strong {
+  color: #172033;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.usuarios-perfil-card.seleccionado
+.usuarios-perfil-card-contenido strong {
+  color: #087443;
+}
+
+.usuarios-perfil-card-contenido small {
+  color: #667085;
+
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.usuarios-perfiles-vacio {
+  width: 100%;
+
+  padding: 12px;
+
+  box-sizing: border-box;
+
+  border: 1px dashed #c5d3cc;
+  border-radius: 9px;
+
+  background: #fafcfb;
+  color: #667085;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  text-align: center;
+}
+
+/* =========================================================
+   ADMINISTRADOR - ACCESO TOTAL
+========================================================= */
+
+.usuarios-admin-access-note {
+  width: 100%;
+
+  padding: 12px 14px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #b9ddcd;
+  border-radius: 10px;
+
+  background: #eef9f4;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.usuarios-admin-access-note strong {
+  color: #087443;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.usuarios-admin-access-note span {
+  color: #52615a;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   PANEL DE PERMISOS DEL USUARIO
+========================================================= */
+
+.usuarios-perfil-permisos {
+  width: min(
+    700px,
+    calc(100vw - 70px)
+  );
+
+  align-self: center;
+
+  margin-top: 5px;
+
+  overflow: hidden;
+
+  border: 1px solid #b9cec4;
+  border-radius: 11px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 6px 16px
+    rgba(15, 23, 42, 0.06);
+}
+
+.usuarios-perfil-permisos summary {
+  min-height: 42px;
+
+  padding: 10px 13px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f5fbf8 0%,
+      #edf7f2 100%
+    );
+
+  color: #174b36;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  cursor: pointer;
+
+  list-style: none;
+}
+
+.usuarios-perfil-permisos summary::-webkit-details-marker {
+  display: none;
+}
+
+.usuarios-perfil-permisos summary::before {
+  content: "▸";
+
+  margin-right: 7px;
+
+  color: #087443;
+
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.usuarios-perfil-permisos[open] summary::before {
+  content: "▾";
+}
+
+.usuarios-perfil-permisos[open] summary {
+  border-bottom: 1px solid #dce8e2;
+}
+
+/* =========================================================
+   PESTAÑAS - COMBINADOS / BODEGA / CAJA / ETC.
+========================================================= */
+
+.usuarios-permisos-tabs {
+  width: 100%;
+
+  padding: 10px 12px 8px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 7px;
+
+  background: #ffffff;
+}
+
+.usuarios-permisos-tab {
+  min-height: 31px;
+
+  padding: 5px 13px;
+
+  border: 1px solid #bcd9cc;
+  border-radius: 999px;
+
+  background: #f2faf6;
+  color: #176344;
+
+  font: inherit;
+  font-size: 10px;
+  font-weight: 900;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    background 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.usuarios-permisos-tab:hover {
+  transform: translateY(-1px);
+
+  border-color: #57aa85;
+  background: #e8f7ef;
+}
+
+.usuarios-permisos-tab.activo {
+  border-color: #087443;
+
+  background: #087443;
+  color: #ffffff;
+
+  box-shadow:
+    0 4px 10px
+    rgba(8, 116, 67, 0.18);
+}
+
+/* =========================================================
+   CABECERA DEL EDITOR
+========================================================= */
+
+.usuarios-permisos-editor-cabecera {
+  padding: 9px 12px 10px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  border-top: 1px solid #edf2ef;
+
+  background: #ffffff;
+}
+
+.usuarios-permisos-editor-cabecera > div {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+.usuarios-permisos-editor-cabecera strong {
+  color: #173f2e;
+
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.usuarios-permisos-editor-cabecera span {
+  color: #667085;
+
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.usuarios-permisos-cargando {
+  flex: 0 0 auto;
+
+  padding: 4px 8px;
+
+  border-radius: 999px;
+
+  background: #fff8e8;
+  color: #8a6100 !important;
+
+  font-size: 9px !important;
+  font-weight: 800 !important;
+}
+
+/* =========================================================
+   LEYENDA DE CHECKS
+========================================================= */
+
+.usuarios-permisos-leyenda {
+  padding: 8px 12px;
+
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 11px;
+
+  border-top: 1px solid #edf2ef;
+  border-bottom: 1px solid #edf2ef;
+
+  background: #fbfdfc;
+}
+
+.usuarios-permisos-leyenda > span {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 5px;
+
+  color: #52615a;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.usuarios-leyenda-check {
+  width: 17px;
+  height: 17px;
+
+  box-sizing: border-box;
+
+  border-radius: 4px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.usuarios-leyenda-check.heredado {
+  border: 1px solid #087443;
+
+  background: #087443;
+  color: #ffffff;
+}
+
+.usuarios-leyenda-check.extra {
+  border: 1px solid #286f9b;
+
+  background: #286f9b;
+  color: #ffffff;
+}
+
+.usuarios-leyenda-check.disponible {
+  border: 1px solid #9eafa7;
+
+  background: #ffffff;
+}
+
+/* =========================================================
+   TABLA DE PERMISOS
+========================================================= */
+
+.usuarios-perfil-permisos-table-wrap {
+  width: 100%;
+  max-height: 360px;
+
+  overflow: auto;
+
+  background: #ffffff;
+
+  scrollbar-width: thin;
+  scrollbar-color:
+    #8ca69a
+    #edf3f0;
+}
+
+.usuarios-perfil-permisos-table-wrap::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+.usuarios-perfil-permisos-table-wrap::-webkit-scrollbar-track {
+  background: #edf3f0;
+}
+
+.usuarios-perfil-permisos-table-wrap::-webkit-scrollbar-thumb {
+  border: 2px solid #edf3f0;
+  border-radius: 999px;
+
+  background: #8ca69a;
+}
+
+.usuarios-perfil-permisos-table {
+  width: 100%;
+  min-width: 760px;
+
+  border-collapse: separate;
+  border-spacing: 0;
+
+  table-layout: auto;
+}
+
+.usuarios-perfil-permisos-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+}
+
+.usuarios-perfil-permisos-table th {
+  min-width: 76px;
+
+  padding: 9px 8px;
+
+  border-right: 1px solid #dfe9e4;
+  border-bottom: 1px solid #d5e4dd;
+
+  background: #eaf7f1;
+  color: #173f2e;
+
+  text-align: center;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  white-space: nowrap;
+}
+
+.usuarios-perfil-permisos-table td {
+  height: 42px;
+
+  padding: 7px 8px;
+
+  border-right: 1px solid #e5ece8;
+  border-bottom: 1px solid #e5ece8;
+
+  background: #ffffff;
+  color: #344054;
+
+  text-align: center;
+  vertical-align: middle;
+
+  font-size: 10px;
+}
+
+.usuarios-perfil-permisos-table tbody tr:nth-child(even) td {
+  background: #fbfdfc;
+}
+
+.usuarios-perfil-permisos-table tbody tr:hover td {
+  background: #f2faf6;
+}
+
+.usuarios-perfil-permisos-table th:first-child,
+.usuarios-perfil-permisos-table td:first-child {
+  position: sticky;
+  left: 0;
+
+  z-index: 2;
+
+  min-width: 170px;
+  width: 170px;
+
+  text-align: left;
+
+  box-shadow:
+    2px 0 0
+    rgba(223, 233, 228, 0.92);
+}
+
+.usuarios-perfil-permisos-table th:first-child {
+  z-index: 6;
+
+  background: #eaf7f1;
+}
+
+.usuarios-perfil-permisos-table tbody tr:nth-child(even)
+.usuarios-perfil-permisos-table td:first-child {
+  background: #fbfdfc;
+}
+
+.usuarios-perfil-permisos-table tbody tr:hover
+.usuarios-perfil-permisos-table td:first-child {
+  background: #f2faf6;
+}
+
+.usuarios-perfil-permisos-table td:first-child strong,
+.usuarios-perfil-permisos-table td:first-child small {
+  display: block;
+}
+
+.usuarios-perfil-permisos-table td:first-child strong {
+  color: #172033;
+
+  font-size: 10px;
+  font-weight: 900;
+}
+
+.usuarios-perfil-permisos-table td:first-child small {
+  margin-top: 2px;
+
+  color: #98a2b3;
+
+  font-size: 9px;
+  font-weight: 600;
+}
+
+/* =========================================================
+   CHECKS INTERACTIVOS
+========================================================= */
+
+.usuarios-permisos-editable
+ td.usuarios-permiso-celda {
+  padding: 5px 7px;
+}
+
+.usuarios-permiso-check {
+  width: 100%;
+  min-height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+}
+
+.usuarios-permiso-check input {
+  position: absolute;
+
+  opacity: 0;
+
+  pointer-events: none;
+}
+
+.usuarios-permiso-check span {
+  position: relative;
+
+  width: 20px;
+  height: 20px;
+
+  box-sizing: border-box;
+
+  border: 1.5px solid #9eafa7;
+  border-radius: 4px;
+
+  background: #ffffff;
+
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.usuarios-permiso-check:hover span {
+  transform: translateY(-1px);
+
+  border-color: #087443;
+
+  box-shadow:
+    0 3px 8px
+    rgba(8, 116, 67, 0.15);
+}
+
+.usuarios-permiso-check input:checked + span::after {
+  content: "✓";
+
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* Heredado de uno de los perfiles */
+.usuarios-permiso-celda.heredado
+.usuarios-permiso-check span {
+  border-color: #087443;
+  background: #087443;
+}
+
+/* Permiso adicional únicamente de este usuario */
+.usuarios-permiso-celda.extra
+.usuarios-permiso-check span {
+  border-color: #286f9b;
+  background: #286f9b;
+}
+
+/* Si viene de otro perfil asignado se ve más suave */
+.usuarios-permiso-celda.heredado:not(.heredado-vista)
+.usuarios-permiso-check span {
+  border-color: #65ab8e;
+  background: #65ab8e;
+}
+
+.usuarios-permiso-celda.heredado
+.usuarios-permiso-check {
+  cursor: default;
+}
+
+.usuarios-permiso-check input:focus-visible + span {
+  outline:
+    3px solid
+    rgba(8, 116, 67, 0.18);
+
+  outline-offset: 2px;
+}
+
+.usuarios-permiso-check input:disabled + span {
+  opacity: 0.9;
+}
+
+/* =========================================================
+   TEXTO INFERIOR DEL PANEL DE PERMISOS
+========================================================= */
+
+.usuarios-perfil-permisos-info {
+  margin: 0;
+
+  padding: 10px 12px 11px;
+
+  border-top: 1px solid #e5ece8;
+
+  background: #fbfdfc;
+  color: #667085;
+
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* =========================================================
+   PERFILES EN MODAL DE BÚSQUEDA
+========================================================= */
+
+.usuarios-modal-perfiles {
+  max-width: 230px;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+
+  gap: 4px;
+}
+
+.usuarios-modal-perfil {
+  min-height: 23px;
+
+  padding: 3px 8px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #c8ddd3;
+  border-radius: 999px;
+
+  background: #eef8f3;
+  color: #176344;
+
+  display: inline-flex;
+  align-items: center;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   RESPONSIVE - PERFILES Y PERMISOS
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .usuarios-field-perfil {
+    padding: 11px;
+  }
+
+  .usuarios-perfiles-heading {
+    flex-direction: column;
+
+    gap: 7px;
+  }
+
+  .usuarios-perfiles-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .usuarios-perfil-card {
+    min-height: 64px;
+  }
+
+  .usuarios-perfil-permisos {
+    width: 100%;
+  }
+
+  .usuarios-permisos-tabs {
+    flex-wrap: nowrap;
+
+    overflow-x: auto;
+
+    padding-bottom: 9px;
+  }
+
+  .usuarios-permisos-tab {
+    flex: 0 0 auto;
+  }
+
+  .usuarios-permisos-editor-cabecera {
+    flex-direction: column;
+
+    gap: 7px;
+  }
+
+  .usuarios-perfil-permisos-table-wrap {
+    max-height: 290px;
+  }
+
+  .usuarios-perfil-permisos-table {
+    min-width: 710px;
+  }
+
+  .usuarios-perfil-permisos-table th:first-child,
+  .usuarios-perfil-permisos-table td:first-child {
+    min-width: 145px;
+    width: 145px;
+  }
+
+  .usuarios-admin-access-note {
+    padding: 10px 11px;
+  }
+}

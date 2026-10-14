@@ -12,11 +12,10 @@ import {
 } from "./context/AuthContext.jsx";
 
 import PrivateRoute from "./routes/PrivateRoute.jsx";
-import RoleRoute from "./components/RoleRoute.jsx";
+import PermissionRoute from "./components/PermissionRoute.jsx";
 
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-
 import Clientes from "./pages/Clientes.jsx";
 import Productos from "./pages/Productos.jsx";
 import Inventario from "./pages/Inventario.jsx";
@@ -32,14 +31,21 @@ import Rutas from "./pages/Rutas.jsx";
 import Numeracion from "./pages/Numeracion.jsx";
 import Auditoria from "./pages/Auditoria.jsx";
 import Preferencias from "./pages/Preferencias.jsx";
-
 import Configuracion from "./pages/Configuracion.jsx";
 import Usuarios from "./pages/Usuarios.jsx";
 import ZonasDespacho from "./pages/ZonasDespacho.jsx";
+import AccesoDenegado from "./pages/AccesoDenegado.jsx";
 
 import UserFooter from "./components/UserFooter.jsx";
 import ModuleSearch from "./components/ModuleSearch.jsx";
-import Notificaciones from "./components/Notificaciones.jsx";
+
+function ConPermiso({ modulo, children }) {
+  return (
+    <PermissionRoute modulo={modulo}>
+      {children}
+    </PermissionRoute>
+  );
+}
 
 function AppContent() {
   const location = useLocation();
@@ -52,182 +58,204 @@ function AppContent() {
   const mostrarFooter =
     !cargando &&
     isAuthenticated &&
-    location.pathname !== "/login";
+    location.pathname !== "/login" &&
+    location.pathname !== "/sin-acceso";
 
   return (
     <>
       <Routes>
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+        <Route path="/login" element={<Login />} />
 
         <Route element={<PrivateRoute />}>
           <Route
             path="/"
-            element={<Dashboard />}
+            element={
+              <ConPermiso modulo="dashboard">
+                <Dashboard />
+              </ConPermiso>
+            }
           />
 
           <Route
             path="/clientes"
-            element={<Clientes />}
+            element={
+              <ConPermiso modulo="clientes">
+                <Clientes />
+              </ConPermiso>
+            }
           />
 
           <Route
             path="/productos"
-            element={<Productos />}
+            element={
+              <ConPermiso modulo="productos">
+                <Productos />
+              </ConPermiso>
+            }
           />
 
           <Route
             path="/categorias"
-            element={<Categorias />}
+            element={
+              <ConPermiso modulo="categorias">
+                <Categorias />
+              </ConPermiso>
+            }
           />
 
           <Route
             path="/inventario"
-            element={<Inventario />}
+            element={
+              <ConPermiso modulo="inventario">
+                <Inventario />
+              </ConPermiso>
+            }
           />
 
           <Route
             path="/pedidos"
-            element={<Pedidos />}
+            element={
+              <ConPermiso modulo="pedidos">
+                <Pedidos />
+              </ConPermiso>
+            }
           />
 
           <Route
             path="/entregas"
-            element={<Entregas />}
+            element={
+              <ConPermiso modulo="entregas">
+                <Entregas />
+              </ConPermiso>
+            }
           />
 
           <Route
             path="/facturacion"
-            element={<Facturacion />}
+            element={
+              <ConPermiso modulo="facturacion">
+                <Facturacion />
+              </ConPermiso>
+            }
           />
 
           <Route
             path="/caja"
-            element={<Caja />}
+            element={
+              <ConPermiso modulo="caja">
+                <Caja />
+              </ConPermiso>
+            }
           />
 
           <Route
             path="/cartera"
-            element={<Cartera />}
+            element={
+              <ConPermiso modulo="cartera">
+                <Cartera />
+              </ConPermiso>
+            }
           />
-
 
           <Route
             path="/empleados"
-            element={<Empleados />}
+            element={
+              <ConPermiso modulo="empleados">
+                <Empleados />
+              </ConPermiso>
+            }
           />
 
           <Route
             path="/configuracion"
-            element={<Configuracion />}
+            element={
+              <ConPermiso modulo="configuracion">
+                <Configuracion />
+              </ConPermiso>
+            }
           />
-
-          {/* =========================
-              SOLO ADMINISTRADOR
-          ========================= */}
 
           <Route
             path="/configuracion/usuarios"
             element={
-              <RoleRoute
-                roles={["Administrador"]}
-              >
+              <ConPermiso modulo="usuarios">
                 <Usuarios />
-              </RoleRoute>
+              </ConPermiso>
             }
           />
 
           <Route
             path="/configuracion/empresa"
             element={
-              <RoleRoute
-                roles={["Administrador"]}
-              >
+              <ConPermiso modulo="empresa">
                 <Empresa />
-              </RoleRoute>
+              </ConPermiso>
             }
           />
 
           <Route
             path="/configuracion/rutas"
             element={
-              <RoleRoute
-                roles={["Administrador"]}
-              >
+              <ConPermiso modulo="rutas">
                 <Rutas />
-              </RoleRoute>
+              </ConPermiso>
             }
           />
 
           <Route
             path="/configuracion/zonas-despacho"
             element={
-              <RoleRoute
-                roles={["Administrador"]}
-              >
+              <ConPermiso modulo="zonas_despacho">
                 <ZonasDespacho />
-              </RoleRoute>
+              </ConPermiso>
             }
           />
 
           <Route
             path="/configuracion/numeracion"
             element={
-              <RoleRoute
-                roles={["Administrador"]}
-              >
+              <ConPermiso modulo="numeracion">
                 <Numeracion />
-              </RoleRoute>
+              </ConPermiso>
             }
           />
 
           <Route
             path="/configuracion/auditoria"
             element={
-              <RoleRoute
-                roles={["Administrador"]}
-              >
+              <ConPermiso modulo="auditoria">
                 <Auditoria />
-              </RoleRoute>
+              </ConPermiso>
             }
           />
 
           <Route
             path="/configuracion/preferencias"
             element={
-              <RoleRoute
-                roles={["Administrador"]}
-              >
+              <ConPermiso modulo="preferencias">
                 <Preferencias />
-              </RoleRoute>
+              </ConPermiso>
             }
+          />
+
+          <Route
+            path="/sin-acceso"
+            element={<AccesoDenegado />}
           />
         </Route>
 
         <Route
           path="*"
-          element={
-            <Navigate
-              to="/"
-              replace
-            />
-          }
+          element={<Navigate to="/" replace />}
         />
       </Routes>
 
-      {/* =========================
-          PIE GLOBAL DEL USUARIO
-      ========================= */}
-
       {mostrarFooter && (
         <>
-          <Notificaciones />
           <ModuleSearch />
           <UserFooter />
         </>
-      )} 
+      )}
     </>
   );
 }

@@ -1,5 +1,8 @@
 import { useNavigate } from "react-router-dom";
 
+import { useAuth } from "../context/AuthContext.jsx";
+import { puedeVerModulo } from "../utils/permisosUsuario.js";
+
 import AppLayout from "../layouts/AppLayout.jsx";
 import SpatialCard from "../components/cards/SpatialCard.jsx";
 import ModulosMenu from "../components/ModulosMenu.jsx";
@@ -13,117 +16,67 @@ import preferenciasIcon from "../assets/icons/preferencias.webp";
 import zonasDespachoIcon from "../assets/icons/zonas-despacho.webp";
 
 import "../styles/configuracion.css";
+import "../styles/configuracion-cabecera.css";
 
 const opciones = [
-  {
-    nombre: "Usuarios",
-    descripcion: "Usuarios, roles, acceso y contraseñas.",
-    ruta: "/configuracion/usuarios",
-    icono: usuariosIcon,
-  },
-  {
-    nombre: "Empresa",
-    descripcion: "Datos generales, facturación, logo e impresión.",
-    ruta: "/configuracion/empresa",
-    icono: empresaIcon,
-  },
-  {
-    nombre: "Rutas",
-    descripcion: "Rutas operativas y zonas asignadas.",
-    ruta: "/configuracion/rutas",
-    icono: rutasIcon,
-  },
-  {
-    nombre: "Zonas de despacho",
-    descripcion: "Cobertura y organización de las entregas.",
-    ruta: "/configuracion/zonas-despacho",
-    icono: zonasDespachoIcon,
-  },
-  {
-    nombre: "Numeración",
-    descripcion: "Consecutivos usados por los módulos del sistema.",
-    ruta: "/configuracion/numeracion",
-    icono: numeracionIcon,
-  },
-  {
-    nombre: "Auditoría",
-    descripcion: "Historial de acciones y cambios realizados.",
-    ruta: "/configuracion/auditoria",
-    icono: auditoriaIcon,
-  },
-  {
-    nombre: "Preferencias",
-    descripcion: "Opciones generales de funcionamiento y visualización.",
-    ruta: "/configuracion/preferencias",
-    icono: preferenciasIcon,
-  },
+  { nombre: "Usuarios", ruta: "/configuracion/usuarios", modulo: "usuarios", icono: usuariosIcon },
+  { nombre: "Empresa", ruta: "/configuracion/empresa", modulo: "empresa", icono: empresaIcon },
+  { nombre: "Rutas", ruta: "/configuracion/rutas", modulo: "rutas", icono: rutasIcon },
+  { nombre: "Zonas de despacho", ruta: "/configuracion/zonas-despacho", modulo: "zonas_despacho", icono: zonasDespachoIcon },
+  { nombre: "Numeración", ruta: "/configuracion/numeracion", modulo: "numeracion", icono: numeracionIcon },
+  { nombre: "Auditoría", ruta: "/configuracion/auditoria", modulo: "auditoria", icono: auditoriaIcon },
+  { nombre: "Preferencias", ruta: "/configuracion/preferencias", modulo: "preferencias", icono: preferenciasIcon },
 ];
 
 export default function Configuracion() {
   const navigate = useNavigate();
+  const { usuario } = useAuth();
+
+  const opcionesVisibles = opciones.filter((opcion) =>
+    puedeVerModulo(usuario, opcion.modulo)
+  );
 
   return (
-    <AppLayout>
+    <AppLayout title="Configuración">
       <section className="configuracion-page">
-        <header className="configuracion-topbar">
-          <div className="configuracion-topbar-left">
-            <ModulosMenu />
+        <ModulosMenu />
 
-            <div className="configuracion-topbar-copy">
-              <h1>Configuración</h1>
-              <p>Administra los parámetros generales de WebBuys.</p>
-            </div>
+        <header className="configuracion-topbar">
+          <div className="configuracion-topbar-copy">
+            <h1>Configuración</h1>
+            <p>Administración general de WebBuys</p>
           </div>
         </header>
 
-        <main className="configuracion-content">
+        <div className="configuracion-content">
           <SpatialCard className="configuracion-module">
             <div className="configuracion-header">
               <span className="eyebrow">Panel de configuración</span>
-
-              <h2>Administración del sistema</h2>
-
-              <p>
-                Selecciona una opción para gestionar usuarios, empresa,
-                rutas, numeración, auditoría y preferencias.
-              </p>
             </div>
 
             <nav
               className="configuracion-nav"
               aria-label="Módulos de configuración"
             >
-              {opciones.map((opcion) => (
+              {opcionesVisibles.map((opcion) => (
                 <button
                   key={opcion.ruta}
                   className="configuracion-nav-button"
                   type="button"
                   onClick={() => navigate(opcion.ruta)}
                 >
-                  <span className="configuracion-nav-icon-wrap">
-                    <img
-                      src={opcion.icono}
-                      alt=""
-                      className="configuracion-nav-icon"
-                    />
-                  </span>
+                  <img
+                    src={opcion.icono}
+                    alt=""
+                    className="configuracion-nav-icon"
+                  />
 
-                  <span className="configuracion-nav-copy">
-                    <strong>{opcion.nombre}</strong>
-                    <small>{opcion.descripcion}</small>
-                  </span>
-
-                  <span
-                    className="configuracion-nav-arrow"
-                    aria-hidden="true"
-                  >
-                    ›
-                  </span>
+                  <span>{opcion.nombre}</span>
                 </button>
               ))}
             </nav>
           </SpatialCard>
-        </main>
+        </div>
       </section>
     </AppLayout>
   );

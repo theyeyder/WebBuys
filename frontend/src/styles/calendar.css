@@ -79,12 +79,12 @@
   background:
     linear-gradient(142deg,
       rgb(255, 251, 251),
-      rgb(89, 248, 158));
+      rgb(196, 225, 209));
 
   box-shadow:
     0 16px 38px rgba(15, 23, 42, 0.14),
     inset -4px -4px 12px rgba(0, 0, 0, 0.05),
-    inset 4px 4px 10px #ffffff;
+    inset 4px 4px 10px #4e9474;
 
   backdrop-filter: blur(20px);
 }
@@ -208,8 +208,8 @@
 
   background:
     radial-gradient(circle at 28% 17%,
-      #ffa800 0%,
-      #ff4d00 100%);
+      #37cb2c 0%,
+      #2c8d28 100%);
 
   box-shadow:
     1px 8px 11px -1px rgba(223, 81, 21, 0.35);

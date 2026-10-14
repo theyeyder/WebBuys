@@ -1,0 +1,20 @@
+WEBBUYS - FASE 3A: ACCESO POR PERFIL
+
+Esta fase:
+- Oculta del menú los módulos sin permiso VER.
+- Filtra el buscador global por permisos.
+- Filtra las opciones internas de Configuración.
+- Bloquea el acceso por URL manual a módulos no autorizados.
+- Mantiene acceso total para Administrador.
+- Añade una pantalla segura si un empleado queda sin ningún módulo.
+- Protege en backend las operaciones que modifican datos según permisos.
+
+Importante:
+- Los GET del backend se mantienen disponibles para usuarios autenticados en esta fase,
+  porque varias pantallas necesitan datos auxiliares de otros módulos.
+- Los botones Crear/Editar/Eliminar/Anular/Imprimir se terminarán de ocultar/deshabilitar
+  en la Fase 3B, módulo por módulo.
+- Si cambias el perfil de un empleado que ya está conectado, debe cerrar sesión y volver
+  a entrar para cargar los permisos nuevos.
+
+No requiere migración de Prisma.

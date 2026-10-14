@@ -10,6 +10,8 @@ import authRoutes from "./routes/auth.routes.js";
 
 import usuarioRoutes from "./routes/usuario.routes.js";
 
+import perfilUsuarioRoutes from "./routes/perfilUsuario.routes.js";
+
 import configuracionRoutes from "./routes/configuracion.routes.js";
 
 import rutaRoutes from "./routes/ruta.routes.js";
@@ -41,6 +43,9 @@ import facturaRoutes from "./routes/factura.routes.js";
 import cajaRoutes from "./routes/caja.routes.js";
 
 import carteraRoutes from "./routes/cartera.routes.js";
+
+import { proteger } from "./middlewares/auth.middleware.js";
+import { controlarAccesoModulo } from "./middlewares/controlAcceso.middleware.js";
 
 
 const app = express();
@@ -100,87 +105,126 @@ app.use(
 
 app.use(
   "/api/usuarios",
+  proteger,
+  controlarAccesoModulo("usuarios"),
   usuarioRoutes
 );
 
 app.use(
+  "/api/perfiles",
+  perfilUsuarioRoutes
+);
+
+app.use(
   "/api/configuracion",
+  proteger,
+  controlarAccesoModulo("empresa"),
   configuracionRoutes
 );
 
 app.use(
   "/api/rutas",
+  proteger,
+  controlarAccesoModulo("rutas"),
   rutaRoutes
 );
 
 app.use(
   "/api/zonas-despacho",
+  proteger,
+  controlarAccesoModulo("zonas_despacho"),
   zonaDespachoRoutes
 );
 
 app.use(
   "/api/clientes",
+  proteger,
+  controlarAccesoModulo("clientes"),
   clienteRoutes
 );
 
 app.use(
   "/api/numeracion",
+  proteger,
+  controlarAccesoModulo("numeracion"),
   numeracionRoutes
 );
 
 app.use(
   "/api/preferencias",
+  proteger,
+  controlarAccesoModulo("preferencias"),
   preferenciaRoutes
 );
 
 app.use(
   "/api/auditoria",
+  proteger,
+  controlarAccesoModulo("auditoria"),
   auditoriaRoutes
 );
 
 app.use(
   "/api/categorias",
+  proteger,
+  controlarAccesoModulo("categorias"),
   categoriaRoutes
 );
 
 app.use(
   "/api/productos",
+  proteger,
+  controlarAccesoModulo("productos"),
   productoRoutes
 );
 
 app.use(
   "/api/inventario",
+  proteger,
+  controlarAccesoModulo("inventario"),
   inventarioRoutes
 );
 
 app.use(
   "/api/pedidos",
+  proteger,
+  controlarAccesoModulo("pedidos"),
   pedidoRoutes
 );
 
 app.use(
   "/api/entregas",
+  proteger,
+  controlarAccesoModulo("entregas"),
   entregaRoutes
 );
 
 app.use(
   "/api/empleados",
+  proteger,
+  controlarAccesoModulo("empleados"),
   empleadoRoutes
 );
 
 app.use(
   "/api/facturas",
+  proteger,
+  controlarAccesoModulo("facturacion"),
   facturaRoutes
 );
 
 app.use(
   "/api/caja",
+  proteger,
+  controlarAccesoModulo("caja"),
   cajaRoutes
 );
 
 
 app.use(
   "/api/cartera",
+  proteger,
+  controlarAccesoModulo("cartera"),
   carteraRoutes
 );
 

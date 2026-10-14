@@ -1,0 +1,108 @@
+/* =========================================================
+   CONFIGURACIÓN - CABECERA FIJA
+   Complementa configuracion.css sin reemplazar sus estilos.
+========================================================= */
+
+.configuracion-page {
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   CABECERA
+========================================================= */
+
+.configuracion-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 8000;
+
+  width: 100%;
+  min-height: 72px;
+  padding: 10px 24px 10px 84px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e 0%,
+      #159a75 52%,
+      #20afb2 100%
+    );
+
+  color: #ffffff;
+
+  border-bottom:
+    1px solid
+    rgba(255, 255, 255, 0.22);
+
+  box-shadow:
+    0 4px 14px
+    rgba(15, 23, 42, 0.14);
+}
+
+.configuracion-topbar-copy {
+  min-width: 0;
+}
+
+.configuracion-topbar-copy h1 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.configuracion-topbar-copy p {
+  margin: 4px 0 0;
+
+  color:
+    rgba(255, 255, 255, 0.82);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   CONTENIDO DEBAJO DE LA CABECERA
+========================================================= */
+
+.configuracion-content {
+  width: 100%;
+
+  padding-top: 92px;
+
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 768px) {
+  .configuracion-topbar {
+    min-height: 64px;
+    padding: 9px 12px 9px 64px;
+  }
+
+  .configuracion-topbar-copy h1 {
+    font-size: 20px;
+  }
+
+  .configuracion-topbar-copy p {
+    display: none;
+  }
+
+  .configuracion-content {
+    padding-top: 78px;
+  }
+}
