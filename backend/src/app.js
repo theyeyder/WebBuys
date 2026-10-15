@@ -44,7 +44,10 @@ import cajaRoutes from "./routes/caja.routes.js";
 
 import carteraRoutes from "./routes/cartera.routes.js";
 
+import informeRoutes from "./routes/informe.routes.js";
+
 import { proteger } from "./middlewares/auth.middleware.js";
+
 import { controlarAccesoModulo } from "./middlewares/controlAcceso.middleware.js";
 
 
@@ -220,12 +223,21 @@ app.use(
   cajaRoutes
 );
 
-
 app.use(
   "/api/cartera",
   proteger,
   controlarAccesoModulo("cartera"),
   carteraRoutes
+);
+
+/* =========================================
+   INFORMES
+========================================= */
+
+app.use(
+  "/api/informes",
+  proteger,
+  informeRoutes
 );
 
 

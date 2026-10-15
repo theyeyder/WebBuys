@@ -12,10 +12,12 @@
     "bcryptjs": "latest",
     "cors": "latest",
     "dotenv": "latest",
+    "exceljs": "^4.4.0",
     "express": "latest",
     "jsonwebtoken": "latest",
     "morgan": "latest",
-    "multer": "^2.2.0"
+    "multer": "^2.2.0",
+    "pdfmake": "^0.3.11"
   },
   "devDependencies": {
     "nodemon": "latest",

@@ -34,6 +34,7 @@ import Preferencias from "./pages/Preferencias.jsx";
 import Configuracion from "./pages/Configuracion.jsx";
 import Usuarios from "./pages/Usuarios.jsx";
 import ZonasDespacho from "./pages/ZonasDespacho.jsx";
+import Informes from "./pages/Informes.jsx";
 import AccesoDenegado from "./pages/AccesoDenegado.jsx";
 
 import UserFooter from "./components/UserFooter.jsx";
@@ -234,6 +235,15 @@ function AppContent() {
             element={
               <ConPermiso modulo="preferencias">
                 <Preferencias />
+              </ConPermiso>
+            }
+          />
+
+          <Route
+            path="/configuracion/informes"
+            element={
+              <ConPermiso modulo="configuracion">
+                <Informes />
               </ConPermiso>
             }
           />

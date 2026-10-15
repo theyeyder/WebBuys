@@ -14,18 +14,60 @@ import numeracionIcon from "../assets/icons/numeracion.webp";
 import auditoriaIcon from "../assets/icons/auditoria.webp";
 import preferenciasIcon from "../assets/icons/preferencias.webp";
 import zonasDespachoIcon from "../assets/icons/zonas-despacho.webp";
+import informesIcon from "../assets/icons/informes.webp";
 
 import "../styles/configuracion.css";
 import "../styles/configuracion-cabecera.css";
 
 const opciones = [
-  { nombre: "Usuarios", ruta: "/configuracion/usuarios", modulo: "usuarios", icono: usuariosIcon },
-  { nombre: "Empresa", ruta: "/configuracion/empresa", modulo: "empresa", icono: empresaIcon },
-  { nombre: "Rutas", ruta: "/configuracion/rutas", modulo: "rutas", icono: rutasIcon },
-  { nombre: "Zonas de despacho", ruta: "/configuracion/zonas-despacho", modulo: "zonas_despacho", icono: zonasDespachoIcon },
-  { nombre: "Numeración", ruta: "/configuracion/numeracion", modulo: "numeracion", icono: numeracionIcon },
-  { nombre: "Auditoría", ruta: "/configuracion/auditoria", modulo: "auditoria", icono: auditoriaIcon },
-  { nombre: "Preferencias", ruta: "/configuracion/preferencias", modulo: "preferencias", icono: preferenciasIcon },
+  {
+    nombre: "Usuarios",
+    ruta: "/configuracion/usuarios",
+    modulo: "usuarios",
+    icono: usuariosIcon,
+  },
+  {
+    nombre: "Empresa",
+    ruta: "/configuracion/empresa",
+    modulo: "empresa",
+    icono: empresaIcon,
+  },
+  {
+    nombre: "Rutas",
+    ruta: "/configuracion/rutas",
+    modulo: "rutas",
+    icono: rutasIcon,
+  },
+  {
+    nombre: "Zonas de despacho",
+    ruta: "/configuracion/zonas-despacho",
+    modulo: "zonas_despacho",
+    icono: zonasDespachoIcon,
+  },
+  {
+    nombre: "Numeración",
+    ruta: "/configuracion/numeracion",
+    modulo: "numeracion",
+    icono: numeracionIcon,
+  },
+  {
+    nombre: "Auditoría",
+    ruta: "/configuracion/auditoria",
+    modulo: "auditoria",
+    icono: auditoriaIcon,
+  },
+  {
+    nombre: "Preferencias",
+    ruta: "/configuracion/preferencias",
+    modulo: "preferencias",
+    icono: preferenciasIcon,
+  },
+  {
+    nombre: "Informes",
+    ruta: "/configuracion/informes",
+    modulo: "configuracion",
+    icono: informesIcon,
+  },
 ];
 
 export default function Configuracion() {
@@ -51,7 +93,9 @@ export default function Configuracion() {
         <div className="configuracion-content">
           <SpatialCard className="configuracion-module">
             <div className="configuracion-header">
-              <span className="eyebrow">Panel de configuración</span>
+              <span className="eyebrow">
+                Panel de configuración
+              </span>
             </div>
 
             <nav
@@ -71,7 +115,9 @@ export default function Configuracion() {
                     className="configuracion-nav-icon"
                   />
 
-                  <span>{opcion.nombre}</span>
+                  <span>
+                    {opcion.nombre}
+                  </span>
                 </button>
               ))}
             </nav>
