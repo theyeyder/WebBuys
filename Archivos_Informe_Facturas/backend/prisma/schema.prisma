@@ -1,0 +1,1007 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =========================================================
+// WEBBUYS - ESQUEMA POSTGRESQL / PRISMA
+// FASE 1: diseño relacional compatible con el dominio actual
+// =========================================================
+
+model Usuario {
+  id                    String    @id @default(uuid()) @db.Uuid
+  legacyMongoId         String?   @unique @db.VarChar(24)
+  codigo                String?   @unique @db.VarChar(40)
+  nombres               String    @db.VarChar(120)
+  documento             String    @unique @db.VarChar(40)
+  apellidos              String    @db.VarChar(120)
+  usuario               String    @unique @db.VarChar(80)
+  password              String    @db.VarChar(255)
+  rol                    String    @default("Empleado") @db.VarChar(30)
+  perfilId               String?   @db.Uuid
+  estado                 String    @default("Activo") @db.VarChar(30)
+  debeCambiarPassword    Boolean   @default(false)
+  ultimoIngreso          DateTime? @db.Timestamptz(3)
+  creadoPorId            String?   @db.Uuid
+  createdAt              DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt              DateTime  @updatedAt @db.Timestamptz(3)
+
+  creadoPor              Usuario?  @relation("UsuarioCreadoPor", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  usuariosCreados        Usuario[] @relation("UsuarioCreadoPor")
+  perfil                 PerfilUsuario? @relation("UsuarioPerfilPrincipal", fields: [perfilId], references: [id], onDelete: SetNull)
+  perfiles               UsuarioPerfil[]
+  permisosPersonalizados UsuarioPermiso[]
+
+  auditorias             Auditoria[]
+  categoriasCreadas      Categoria[] @relation("CategoriaCreadoPor")
+  productosCreados       Producto[] @relation("ProductoCreadoPor")
+  empleados              Empleado[]
+  rutasResponsable       Ruta[] @relation("RutaUsuarioResponsable")
+  pedidosCreados         Pedido[] @relation("PedidoCreadoPor")
+  entregasConfirmadas    Entrega[] @relation("EntregaConfirmadoPor")
+  entregasActualizadas   Entrega[] @relation("EntregaActualizadoPor")
+  facturasCreadas        Factura[] @relation("FacturaCreadoPor")
+  movimientosInventario  MovimientoInventario[]
+  cajasAbiertas          Caja[] @relation("CajaAbiertoPor")
+  cajasCerradas          Caja[] @relation("CajaCerradoPor")
+  movimientosCaja        MovimientoCaja[]
+  carterasCreadas        Cartera[] @relation("CarteraCreadoPor")
+  carterasActualizadas   Cartera[] @relation("CarteraActualizadoPor")
+  pagosCartera           PagoCartera[]
+
+  @@index([estado])
+  @@index([rol])
+  @@index([perfilId])
+  @@map("usuarios")
+}
+
+
+model PerfilUsuario {
+  id          String   @id @default(uuid()) @db.Uuid
+  codigo      String   @unique @db.VarChar(40)
+  nombre      String   @unique @db.VarChar(120)
+  descripcion String   @default("") @db.Text
+  estado      String   @default("Activo") @db.VarChar(20)
+  esSistema   Boolean  @default(false)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+
+  usuariosPrincipales Usuario[]       @relation("UsuarioPerfilPrincipal")
+  usuarios            UsuarioPerfil[]
+  permisos            PerfilPermiso[]
+
+  @@index([estado])
+  @@map("perfiles_usuario")
+}
+
+
+model UsuarioPerfil {
+  usuarioId  String   @db.Uuid
+  perfilId   String   @db.Uuid
+  asignadoAt DateTime @default(now()) @db.Timestamptz(3)
+
+  usuario Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  perfil  PerfilUsuario @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, perfilId])
+  @@index([perfilId])
+  @@map("usuario_perfiles")
+}
+
+model PerfilPermiso {
+  perfilId             String  @db.Uuid
+  modulo               String  @db.VarChar(60)
+  ver                  Boolean @default(false)
+  crear                Boolean @default(false)
+  editar               Boolean @default(false)
+  eliminar             Boolean @default(false)
+  imprimir             Boolean @default(false)
+  anular               Boolean @default(false)
+  cambiarEstado        Boolean @default(false)
+  registrarMovimientos Boolean @default(false)
+
+  perfil PerfilUsuario @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+
+  @@id([perfilId, modulo])
+  @@index([modulo])
+  @@map("perfil_permisos")
+}
+
+model UsuarioPermiso {
+  usuarioId            String   @db.Uuid
+  modulo               String   @db.VarChar(60)
+  ver                  Boolean?
+  crear                Boolean?
+  editar               Boolean?
+  eliminar             Boolean?
+  imprimir             Boolean?
+  anular               Boolean?
+  cambiarEstado        Boolean?
+  registrarMovimientos Boolean?
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, modulo])
+  @@index([modulo])
+  @@map("usuario_permisos")
+}
+
+model Auditoria {
+  id              String   @id @default(uuid()) @db.Uuid
+  legacyMongoId   String?  @unique @db.VarChar(24)
+  usuarioId       String?  @db.Uuid
+  codigoUsuario   String   @default("") @db.VarChar(40)
+  nombreUsuario   String   @default("") @db.VarChar(250)
+  modulo          String   @db.VarChar(80)
+  accion          String   @db.VarChar(40)
+  registroId      String?  @db.VarChar(64)
+  codigoRegistro  String   @default("") @db.VarChar(80)
+  descripcion     String   @default("") @db.Text
+  datosAnteriores Json?    @db.JsonB
+  datosNuevos     Json?    @db.JsonB
+  ip              String   @default("") @db.VarChar(64)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
+
+  usuario         Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt(sort: Desc)])
+  @@index([modulo])
+  @@index([accion])
+  @@index([usuarioId])
+  @@map("auditorias")
+}
+
+model Categoria {
+  id            String   @id @default(uuid()) @db.Uuid
+  legacyMongoId String?  @unique @db.VarChar(24)
+  codigo        String   @unique @db.VarChar(40)
+  nombre        String   @unique @db.VarChar(120)
+  descripcion   String   @default("") @db.Text
+  estado        String   @default("Activa") @db.VarChar(20)
+  creadoPorId   String?  @db.Uuid
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
+
+  creadoPor     Usuario?  @relation("CategoriaCreadoPor", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  productos     Producto[]
+
+  @@index([estado])
+  @@map("categorias")
+}
+
+model ZonaDespacho {
+  id            String   @id @default(uuid()) @db.Uuid
+  legacyMongoId String?  @unique @db.VarChar(24)
+  codigo        String?  @unique @db.VarChar(40)
+  nombre        String   @unique @db.VarChar(120)
+  descripcion   String   @default("") @db.Text
+  estado        String   @default("Activa") @db.VarChar(20)
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
+
+  clientes      Cliente[]
+  rutas         RutaZona[]
+  pedidos       Pedido[]
+  entregas      Entrega[]
+
+  @@index([estado])
+  @@map("zonas_despacho")
+}
+
+model Ruta {
+  id                   String   @id @default(uuid()) @db.Uuid
+  legacyMongoId        String?  @unique @db.VarChar(24)
+  codigo               String   @unique @db.VarChar(40)
+  nombre               String   @db.VarChar(120)
+  descripcion          String   @default("") @db.Text
+  usuarioResponsableId String?  @db.Uuid
+  diasAtencion         String[] @default([])
+  estado               String   @default("Activa") @db.VarChar(20)
+  createdAt            DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime @updatedAt @db.Timestamptz(3)
+
+  // Conserva el antiguo Ruta.empleado -> Usuario para no perder datos.
+  // La asignación operativa canónica queda en Empleado.rutaAsignadaId.
+  usuarioResponsable   Usuario? @relation("RutaUsuarioResponsable", fields: [usuarioResponsableId], references: [id], onDelete: SetNull)
+  zonas                RutaZona[]
+  empleadosAsignados   Empleado[]
+  pedidos              Pedido[]
+  entregas             Entrega[]
+
+  @@index([nombre])
+  @@index([usuarioResponsableId])
+  @@index([estado])
+  @@map("rutas")
+}
+
+model RutaZona {
+  id       String @id @default(uuid()) @db.Uuid
+  rutaId   String @db.Uuid
+  zonaId   String @db.Uuid
+
+  ruta     Ruta         @relation(fields: [rutaId], references: [id], onDelete: Cascade)
+  zona     ZonaDespacho @relation(fields: [zonaId], references: [id], onDelete: Cascade)
+
+  @@unique([rutaId, zonaId])
+  @@index([zonaId])
+  @@map("ruta_zonas")
+}
+
+model Cliente {
+  id               String   @id @default(uuid()) @db.Uuid
+  legacyMongoId    String?  @unique @db.VarChar(24)
+  codigo           String?  @unique @db.VarChar(40)
+  tipoDocumento    String   @default("CC") @db.VarChar(10)
+  documento        String   @unique @db.VarChar(40)
+  nombre           String   @db.VarChar(180)
+  razonSocial      String   @default("") @db.VarChar(200)
+  telefono         String   @default("") @db.VarChar(40)
+  direccion        String   @default("") @db.VarChar(250)
+  barrio           String   @default("") @db.VarChar(120)
+  zonaDespachoId   String?  @db.Uuid
+  ciudad           String   @default("") @db.VarChar(120)
+  tipoCliente      String   @default("Tienda") @db.VarChar(40)
+  estado           Boolean  @default(true)
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(3)
+
+  zonaDespacho     ZonaDespacho? @relation(fields: [zonaDespachoId], references: [id], onDelete: SetNull)
+  pedidos          Pedido[]
+  entregas         Entrega[]
+  facturas         Factura[]
+  movimientosCaja  MovimientoCaja[]
+  carteras         Cartera[]
+  pagosCartera     PagoCartera[]
+
+  @@index([zonaDespachoId])
+  @@index([estado])
+  @@index([nombre])
+  @@map("clientes")
+}
+
+model Empleado {
+  id             String   @id @default(uuid()) @db.Uuid
+  legacyMongoId  String?  @unique @db.VarChar(24)
+  codigo         String   @unique @db.VarChar(40)
+  tipoDocumento  String   @default("CC") @db.VarChar(20)
+  documento      String   @unique @db.VarChar(40)
+  nombres        String   @db.VarChar(120)
+  apellidos       String   @db.VarChar(120)
+  telefono       String   @default("") @db.VarChar(40)
+  direccion      String   @default("") @db.VarChar(250)
+  ciudad         String   @default("Ibagué") @db.VarChar(120)
+  cargo          String   @db.VarChar(120)
+  fechaIngreso   DateTime @default(now()) @db.Date
+  salario        Decimal  @default(0) @db.Decimal(18, 2)
+  rutaAsignadaId String?  @db.Uuid
+  usuarioId      String?  @db.Uuid
+  estado         String   @default("Activo") @db.VarChar(20)
+  observaciones  String   @default("") @db.Text
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
+
+  rutaAsignada   Ruta?    @relation(fields: [rutaAsignadaId], references: [id], onDelete: SetNull)
+  usuario        Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  pedidosAtendidos  Pedido[]  @relation("PedidoEmpleado")
+  pedidosEmpacados  Pedido[]  @relation("PedidoEmpacador")
+  entregasEmpacadas Entrega[] @relation("EntregaEmpacador")
+  entregasRepartidas Entrega[] @relation("EntregaRepartidor")
+  facturasAtendidas Factura[] @relation("FacturaEmpleado")
+  facturasEmpacadas Factura[] @relation("FacturaEmpacador")
+  facturasRepartidas Factura[] @relation("FacturaRepartidor")
+
+  @@index([nombres, apellidos])
+  @@index([cargo, estado])
+  @@index([rutaAsignadaId])
+  @@index([usuarioId])
+  @@map("empleados")
+}
+
+model Producto {
+  id                 String   @id @default(uuid()) @db.Uuid
+  legacyMongoId      String?  @unique @db.VarChar(24)
+  codigo             String   @unique @db.VarChar(40)
+  nombre             String   @db.VarChar(180)
+  categoriaId        String   @db.Uuid
+  marca              String   @default("") @db.VarChar(120)
+  descripcion        String   @default("") @db.Text
+  tipoVenta          String   @default("Unidad") @db.VarChar(20)
+  unidad             String   @default("Unidad") @db.VarChar(40)
+  precioCompra       Decimal  @default(0) @db.Decimal(18, 2)
+  precioVenta        Decimal  @db.Decimal(18, 2)
+  stock              Decimal  @default(0) @db.Decimal(18, 4)
+  stockReservado     Decimal  @default(0) @db.Decimal(18, 4)
+  stockMinimo        Decimal  @default(0) @db.Decimal(18, 4)
+  controlInventario  Boolean  @default(true)
+  costoPromedio      Decimal  @default(0) @db.Decimal(18, 4)
+  sabores            String[] @default([])
+  imagen             String   @default("") @db.Text
+  estado             String   @default("Activo") @db.VarChar(20)
+  creadoPorId        String?  @db.Uuid
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime @updatedAt @db.Timestamptz(3)
+
+  categoria          Categoria @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  creadoPor          Usuario?  @relation("ProductoCreadoPor", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  reglasPrecio       ReglaPrecio[] @relation("ReglaPrecioProducto")
+  presentaciones     ProductoPresentacion[]
+  pedidoItems        PedidoItem[]
+  entregaItems       EntregaItem[]
+  facturaItems       FacturaItem[]
+  movimientosInventario MovimientoInventario[]
+
+  @@index([categoriaId, nombre])
+  @@index([estado])
+  @@map("productos")
+}
+
+model ProductoPresentacion {
+  id                String   @id @default(uuid()) @db.Uuid
+  legacyMongoId     String?  @unique @db.VarChar(24)
+  productoId        String   @db.Uuid
+  nombre            String   @db.VarChar(180)
+  tipoVenta         String   @default("Unidad") @db.VarChar(20)
+  unidad            String   @db.VarChar(40)
+  precioCompra      Decimal  @default(0) @db.Decimal(18, 2)
+  precioVenta       Decimal  @db.Decimal(18, 2)
+  stock             Decimal  @default(0) @db.Decimal(18, 4)
+  stockReservado    Decimal  @default(0) @db.Decimal(18, 4)
+  stockMinimo       Decimal  @default(0) @db.Decimal(18, 4)
+  controlInventario Boolean  @default(true)
+  costoPromedio     Decimal  @default(0) @db.Decimal(18, 4)
+  estado            String   @default("Activa") @db.VarChar(20)
+  orden             Int      @default(0)
+  createdAt         DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime @updatedAt @db.Timestamptz(3)
+
+  producto          Producto @relation(fields: [productoId], references: [id], onDelete: Cascade)
+  reglasPrecio      ReglaPrecio[] @relation("ReglaPrecioPresentacion")
+  pedidoItems       PedidoItem[]
+  entregaItems      EntregaItem[]
+  movimientosInventario MovimientoInventario[]
+
+  @@unique([productoId, nombre])
+  @@index([productoId, estado])
+  @@map("producto_presentaciones")
+}
+
+model ReglaPrecio {
+  id             String   @id @default(uuid()) @db.Uuid
+  legacyMongoId  String?  @db.VarChar(24)
+  productoId     String?  @db.Uuid
+  presentacionId String?  @db.Uuid
+  desde          Decimal  @db.Decimal(18, 4)
+  precio         Decimal  @db.Decimal(18, 2)
+  orden          Int      @default(0)
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @db.Timestamptz(3)
+
+  producto       Producto? @relation("ReglaPrecioProducto", fields: [productoId], references: [id], onDelete: Cascade)
+  presentacion   ProductoPresentacion? @relation("ReglaPrecioPresentacion", fields: [presentacionId], references: [id], onDelete: Cascade)
+
+  @@index([productoId, desde])
+  @@index([presentacionId, desde])
+  @@map("reglas_precio")
+}
+
+model Pedido {
+  id                     String    @id @default(uuid()) @db.Uuid
+  legacyMongoId          String?   @unique @db.VarChar(24)
+  codigo                 String    @unique @db.VarChar(40)
+  clienteId              String?   @db.Uuid
+  clienteCodigo          String    @default("") @db.VarChar(40)
+  clienteNombre          String    @default("") @db.VarChar(180)
+  clienteRazonSocial     String    @default("") @db.VarChar(200)
+  clienteTelefono        String    @default("") @db.VarChar(40)
+  clienteDireccion       String    @default("") @db.VarChar(250)
+  clienteBarrio          String    @default("") @db.VarChar(120)
+  clienteCiudad          String    @default("") @db.VarChar(120)
+  clienteTipo            String    @default("") @db.VarChar(40)
+  zonaDespachoId         String?   @db.Uuid
+  zonaDespachoCodigo     String    @default("") @db.VarChar(40)
+  zonaDespachoNombre     String    @default("") @db.VarChar(120)
+  rutaId                 String?   @db.Uuid
+  rutaCodigo             String    @default("") @db.VarChar(40)
+  rutaNombre             String    @default("") @db.VarChar(120)
+  rutaDiasAtencion       String[]  @default([])
+  empleadoId             String    @db.Uuid
+  empacadorId            String?   @db.Uuid
+  subtotal               Decimal   @default(0) @db.Decimal(18, 2)
+  descuento              Decimal   @default(0) @db.Decimal(18, 2)
+  total                  Decimal   @default(0) @db.Decimal(18, 2)
+  estado                 String    @default("Borrador") @db.VarChar(40)
+  inventarioReservado    Boolean   @default(false)
+  fechaReservaInventario DateTime? @db.Timestamptz(3)
+  fechaEntrega           DateTime? @db.Date
+  observaciones          String    @default("") @db.Text
+  creadoPorId            String?   @db.Uuid
+  createdAt              DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt              DateTime  @updatedAt @db.Timestamptz(3)
+
+  cliente                Cliente?      @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  zonaDespacho           ZonaDespacho? @relation(fields: [zonaDespachoId], references: [id], onDelete: SetNull)
+  ruta                   Ruta?         @relation(fields: [rutaId], references: [id], onDelete: SetNull)
+  empleado               Empleado      @relation("PedidoEmpleado", fields: [empleadoId], references: [id], onDelete: Restrict)
+  empacador              Empleado?     @relation("PedidoEmpacador", fields: [empacadorId], references: [id], onDelete: SetNull)
+  creadoPor              Usuario?      @relation("PedidoCreadoPor", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  items                  PedidoItem[]
+  entrega                Entrega?
+  facturas               Factura[]
+  movimientosInventario  MovimientoInventario[]
+  movimientosCaja        MovimientoCaja[]
+  carteras               Cartera[]
+  pagosCartera           PagoCartera[]
+
+  @@index([clienteId, createdAt(sort: Desc)])
+  @@index([empleadoId, createdAt(sort: Desc)])
+  @@index([empacadorId, createdAt(sort: Desc)])
+  @@index([estado, createdAt(sort: Desc)])
+  @@index([rutaId])
+  @@index([zonaDespachoId])
+  @@map("pedidos")
+}
+
+model PedidoItem {
+  id                   String   @id @default(uuid()) @db.Uuid
+  legacyMongoId        String?  @unique @db.VarChar(24)
+  pedidoId             String   @db.Uuid
+  productoId           String   @db.Uuid
+  codigoProducto       String   @default("") @db.VarChar(40)
+  nombre               String   @db.VarChar(180)
+  marca                String   @default("") @db.VarChar(120)
+  tipoVenta            String   @db.VarChar(20)
+  unidad               String   @db.VarChar(40)
+  presentacionId       String?  @db.Uuid
+  presentacionNombre   String   @default("") @db.VarChar(180)
+  cantidad             Int
+  precioNormal         Decimal  @db.Decimal(18, 2)
+  precioAplicado       Decimal  @db.Decimal(18, 2)
+  aplicoPrecioCantidad Boolean  @default(false)
+  reglaAplicadaDesde   Decimal? @db.Decimal(18, 4)
+  subtotal             Decimal  @db.Decimal(18, 2)
+  orden                Int      @default(0)
+  createdAt            DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime @updatedAt @db.Timestamptz(3)
+
+  pedido               Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  producto             Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  presentacion         ProductoPresentacion? @relation(fields: [presentacionId], references: [id], onDelete: Restrict)
+  entregaItems         EntregaItem[]
+
+  @@index([pedidoId, orden])
+  @@index([productoId])
+  @@index([presentacionId])
+  @@map("pedido_items")
+}
+
+model Entrega {
+  id                       String    @id @default(uuid()) @db.Uuid
+  legacyMongoId            String?   @unique @db.VarChar(24)
+  pedidoId                 String    @unique @db.Uuid
+  pedidoCodigo             String    @db.VarChar(40)
+  clienteId                String?   @db.Uuid
+  clienteCodigo            String    @default("") @db.VarChar(40)
+  clienteNombre            String    @default("") @db.VarChar(180)
+  clienteTelefono          String    @default("") @db.VarChar(40)
+  clienteDireccion         String    @default("") @db.VarChar(250)
+  clienteBarrio            String    @default("") @db.VarChar(120)
+  clienteCiudad            String    @default("") @db.VarChar(120)
+  zonaDespachoId           String?   @db.Uuid
+  zonaDespachoNombre       String    @default("") @db.VarChar(120)
+  rutaId                   String?   @db.Uuid
+  rutaNombre               String    @default("") @db.VarChar(120)
+  rutaDiasAtencion         String[]  @default([])
+  fechaProgramada          DateTime? @db.Date
+  empacadorId              String?   @db.Uuid
+  repartidorId             String?   @db.Uuid
+  subtotal                 Decimal   @default(0) @db.Decimal(18, 2)
+  descuento                Decimal   @default(0) @db.Decimal(18, 2)
+  total                    Decimal   @default(0) @db.Decimal(18, 2)
+  metodoPago               String    @default("") @db.VarChar(30)
+  confirmada               Boolean   @default(false)
+  preparacionGuardada      Boolean   @default(false)
+  inventarioPesoReservado  Boolean   @default(false)
+  inventarioDescontado     Boolean   @default(false)
+  fechaReservaInventario   DateTime? @db.Timestamptz(3)
+  fechaSalidaInventario    DateTime? @db.Timestamptz(3)
+  fechaPreparacion         DateTime? @db.Timestamptz(3)
+  fechaConfirmacion        DateTime? @db.Timestamptz(3)
+  confirmadoPorId          String?   @db.Uuid
+  estado                   String    @default("Por preparar") @db.VarChar(40)
+  motivoCancelacion        String    @default("") @db.Text
+  motivoNoEntrega          String    @default("") @db.Text
+  observaciones            String    @default("") @db.Text
+  fechaSalida              DateTime? @db.Timestamptz(3)
+  fechaEntregaReal         DateTime? @db.Timestamptz(3)
+  actualizadoPorId         String?   @db.Uuid
+  createdAt                DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt                DateTime  @updatedAt @db.Timestamptz(3)
+
+  pedido                   Pedido        @relation(fields: [pedidoId], references: [id], onDelete: Restrict)
+  cliente                  Cliente?      @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  zonaDespacho             ZonaDespacho? @relation(fields: [zonaDespachoId], references: [id], onDelete: SetNull)
+  ruta                     Ruta?         @relation(fields: [rutaId], references: [id], onDelete: SetNull)
+  empacador                Empleado?     @relation("EntregaEmpacador", fields: [empacadorId], references: [id], onDelete: SetNull)
+  repartidor               Empleado?     @relation("EntregaRepartidor", fields: [repartidorId], references: [id], onDelete: SetNull)
+  confirmadoPor            Usuario?      @relation("EntregaConfirmadoPor", fields: [confirmadoPorId], references: [id], onDelete: SetNull)
+  actualizadoPor           Usuario?      @relation("EntregaActualizadoPor", fields: [actualizadoPorId], references: [id], onDelete: SetNull)
+  items                    EntregaItem[]
+  facturas                 Factura[]
+  movimientosInventario    MovimientoInventario[]
+  movimientosCaja          MovimientoCaja[]
+  cartera                  Cartera?
+  pagosCartera             PagoCartera[]
+
+  @@index([estado, fechaProgramada])
+  @@index([repartidorId, estado])
+  @@index([clienteId])
+  @@map("entregas")
+}
+
+model EntregaItem {
+  id                  String   @id @default(uuid()) @db.Uuid
+  legacyMongoId       String?  @unique @db.VarChar(24)
+  entregaId           String   @db.Uuid
+  pedidoItemId        String?  @db.Uuid
+  productoId          String   @db.Uuid
+  codigoProducto      String   @default("") @db.VarChar(40)
+  nombre              String   @db.VarChar(180)
+  presentacionId      String?  @db.Uuid
+  presentacionNombre  String   @default("") @db.VarChar(180)
+  tipoVenta           String   @db.VarChar(20)
+  unidad              String   @default("") @db.VarChar(40)
+  cantidadSolicitada  Int
+  cantidadReal        Decimal? @db.Decimal(18, 4)
+  precioUnitario      Decimal  @db.Decimal(18, 2)
+  pesoReal            Decimal? @db.Decimal(18, 4)
+  subtotal            Decimal  @default(0) @db.Decimal(18, 2)
+  origen              String   @default("Pedido") @db.VarChar(20)
+  orden               Int      @default(0)
+  createdAt           DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime @updatedAt @db.Timestamptz(3)
+
+  entrega             Entrega  @relation(fields: [entregaId], references: [id], onDelete: Cascade)
+  pedidoItem          PedidoItem? @relation(fields: [pedidoItemId], references: [id], onDelete: Restrict)
+  producto            Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  presentacion        ProductoPresentacion? @relation(fields: [presentacionId], references: [id], onDelete: Restrict)
+
+  @@unique([entregaId, pedidoItemId])
+  @@index([productoId])
+  @@index([presentacionId])
+  @@map("entrega_items")
+}
+
+model Factura {
+  id                 String    @id @default(uuid()) @db.Uuid
+  legacyMongoId      String?   @unique @db.VarChar(24)
+  consecutivo        Int       @unique
+  codigo             String    @unique @db.VarChar(40)
+  pedidoId           String    @db.Uuid
+  pedidoCodigo       String    @db.VarChar(40)
+  entregaId          String?   @db.Uuid
+  entregaCodigo      String    @default("") @db.VarChar(40)
+  clienteId          String    @db.Uuid
+  clienteNombre      String    @db.VarChar(180)
+  clienteDocumento   String    @default("") @db.VarChar(40)
+  clienteTelefono    String    @default("") @db.VarChar(40)
+  empleadoId         String?   @db.Uuid
+  empleadoNombre     String    @default("") @db.VarChar(250)
+  repartidorId       String?   @db.Uuid
+  repartidorNombre   String    @default("") @db.VarChar(250)
+  empacadorId        String?   @db.Uuid
+  empacadorNombre    String    @default("") @db.VarChar(250)
+  subtotal           Decimal   @default(0) @db.Decimal(18, 2)
+  descuento          Decimal   @default(0) @db.Decimal(18, 2)
+  iva                Decimal   @default(0) @db.Decimal(18, 2)
+  total              Decimal   @default(0) @db.Decimal(18, 2)
+  metodoPago         String    @default("Efectivo") @db.VarChar(30)
+  estado             String    @default("Emitida") @db.VarChar(30)
+  motivoAnulacion    String    @default("") @db.Text
+  fechaAnulacion     DateTime? @db.Timestamptz(3)
+  fechaReversion     DateTime? @db.Timestamptz(3)
+  observaciones      String    @default("") @db.Text
+  creadoPorId        String?   @db.Uuid
+  createdAt          DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
+
+  pedido             Pedido    @relation(fields: [pedidoId], references: [id], onDelete: Restrict)
+  entrega            Entrega?  @relation(fields: [entregaId], references: [id], onDelete: SetNull)
+  cliente            Cliente   @relation(fields: [clienteId], references: [id], onDelete: Restrict)
+  empleado           Empleado? @relation("FacturaEmpleado", fields: [empleadoId], references: [id], onDelete: SetNull)
+  repartidor         Empleado? @relation("FacturaRepartidor", fields: [repartidorId], references: [id], onDelete: SetNull)
+  empacador          Empleado? @relation("FacturaEmpacador", fields: [empacadorId], references: [id], onDelete: SetNull)
+  creadoPor          Usuario?  @relation("FacturaCreadoPor", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  items              FacturaItem[]
+  movimientosCaja    MovimientoCaja[]
+
+  @@index([createdAt(sort: Desc)])
+  @@index([pedidoId, createdAt(sort: Desc)])
+  @@index([entregaId, createdAt(sort: Desc)])
+  @@index([clienteId, createdAt(sort: Desc)])
+  @@index([empleadoId, createdAt(sort: Desc)])
+  @@index([repartidorId, createdAt(sort: Desc)])
+  @@index([empacadorId, createdAt(sort: Desc)])
+  @@index([estado])
+  @@map("facturas")
+}
+
+model FacturaItem {
+  id                   String   @id @default(uuid()) @db.Uuid
+  facturaId            String   @db.Uuid
+  productoId           String?  @db.Uuid
+  nombre               String   @db.VarChar(180)
+  presentacionNombre   String   @default("") @db.VarChar(180)
+  unidad               String   @default("") @db.VarChar(40)
+  tipoVenta            String   @default("Unidad") @db.VarChar(20)
+  cantidadSolicitada   Int      @default(0)
+  pesoReal             Decimal? @db.Decimal(18, 4)
+  cantidad             Decimal  @db.Decimal(18, 4)
+  precioAplicado       Decimal  @db.Decimal(18, 2)
+  subtotal             Decimal  @db.Decimal(18, 2)
+  orden                Int      @default(0)
+  createdAt            DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime @updatedAt @db.Timestamptz(3)
+
+  factura              Factura  @relation(fields: [facturaId], references: [id], onDelete: Cascade)
+  producto             Producto? @relation(fields: [productoId], references: [id], onDelete: SetNull)
+
+  @@index([facturaId, orden])
+  @@index([productoId])
+  @@map("factura_items")
+}
+
+model MovimientoInventario {
+  id                    String   @id @default(uuid()) @db.Uuid
+  legacyMongoId         String?  @unique @db.VarChar(24)
+  productoId            String   @db.Uuid
+  codigoProducto        String   @default("") @db.VarChar(40)
+  nombreProducto        String   @default("") @db.VarChar(180)
+  presentacionId        String?  @db.Uuid
+  presentacionNombre    String   @default("") @db.VarChar(180)
+  tipo                  String   @db.VarChar(40)
+  cantidad              Decimal  @db.Decimal(18, 4)
+  unidad                String   @default("") @db.VarChar(40)
+  tipoVenta             String   @default("Unidad") @db.VarChar(20)
+  stockAnterior         Decimal  @default(0) @db.Decimal(18, 4)
+  stockNuevo            Decimal  @default(0) @db.Decimal(18, 4)
+  reservadoAnterior     Decimal  @default(0) @db.Decimal(18, 4)
+  reservadoNuevo        Decimal  @default(0) @db.Decimal(18, 4)
+  costoUnitario         Decimal  @default(0) @db.Decimal(18, 4)
+  costoPromedioAnterior Decimal  @default(0) @db.Decimal(18, 4)
+  costoPromedioNuevo    Decimal  @default(0) @db.Decimal(18, 4)
+  valorTotal            Decimal  @default(0) @db.Decimal(18, 2)
+  origen                String   @default("Manual") @db.VarChar(30)
+  pedidoId              String?  @db.Uuid
+  pedidoCodigo          String   @default("") @db.VarChar(40)
+  entregaId             String?  @db.Uuid
+  entregaCodigo         String   @default("") @db.VarChar(40)
+  proveedor             String   @default("") @db.VarChar(180)
+  documentoReferencia   String   @default("") @db.VarChar(120)
+  fechaMovimiento       DateTime @default(now()) @db.Date
+  motivo                String   @default("") @db.Text
+  observaciones         String   @default("") @db.Text
+  usuarioId             String?  @db.Uuid
+  createdAt             DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime @updatedAt @db.Timestamptz(3)
+
+  producto              Producto @relation(fields: [productoId], references: [id], onDelete: Restrict)
+  presentacion          ProductoPresentacion? @relation(fields: [presentacionId], references: [id], onDelete: Restrict)
+  pedido                Pedido?  @relation(fields: [pedidoId], references: [id], onDelete: SetNull)
+  entrega               Entrega? @relation(fields: [entregaId], references: [id], onDelete: SetNull)
+  usuario               Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([productoId, fechaMovimiento(sort: Desc)])
+  @@index([productoId, presentacionId, fechaMovimiento(sort: Desc)])
+  @@index([pedidoId])
+  @@index([entregaId])
+  @@index([tipo])
+  @@map("movimientos_inventario")
+}
+
+model CierreInventario {
+  id                      String   @id @default(uuid()) @db.Uuid
+  periodo                 String   @unique @db.VarChar(7)
+  anio                    Int
+  mes                     Int
+  fechaInicio             DateTime @db.Date
+  fechaFin                DateTime @db.Date
+  fechaCierre             DateTime? @db.Timestamptz(3)
+  estado                  String   @default("ABIERTO") @db.VarChar(20)
+  cerradoPorId            String?  @db.Uuid
+  cerradoPorNombre        String   @default("") @db.VarChar(250)
+  totalRegistros          Int      @default(0)
+  totalProductos          Int      @default(0)
+  totalEntradas           Decimal  @default(0) @db.Decimal(18, 4)
+  totalEntregas           Decimal  @default(0) @db.Decimal(18, 4)
+  totalReversiones        Decimal  @default(0) @db.Decimal(18, 4)
+  totalVendidoNeto        Decimal  @default(0) @db.Decimal(18, 4)
+  totalOtrasSalidas       Decimal  @default(0) @db.Decimal(18, 4)
+  totalAjustesPositivos   Decimal  @default(0) @db.Decimal(18, 4)
+  totalAjustesNegativos   Decimal  @default(0) @db.Decimal(18, 4)
+  valorInventarioInicial  Decimal  @default(0) @db.Decimal(18, 2)
+  valorInventarioFinal    Decimal  @default(0) @db.Decimal(18, 2)
+  observaciones           String   @default("") @db.Text
+  createdAt               DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt               DateTime @updatedAt @db.Timestamptz(3)
+
+  detalles                CierreInventarioDetalle[]
+
+  @@index([anio, mes])
+  @@index([estado])
+  @@map("cierres_inventario")
+}
+
+model CierreInventarioDetalle {
+  id                       String   @id @default(uuid()) @db.Uuid
+  cierreId                 String   @db.Uuid
+  productoId               String   @db.Uuid
+  presentacionId           String?  @db.Uuid
+  codigo                   String   @default("") @db.VarChar(40)
+  producto                 String   @db.VarChar(180)
+  presentacion             String   @default("") @db.VarChar(180)
+  marca                    String   @default("") @db.VarChar(120)
+  categoria                String   @default("") @db.VarChar(180)
+  tipoVenta                String   @default("Unidad") @db.VarChar(20)
+  unidad                   String   @default("") @db.VarChar(40)
+  controlInventario        Boolean  @default(true)
+  stockInicial             Decimal  @default(0) @db.Decimal(18, 4)
+  reservadoInicial         Decimal  @default(0) @db.Decimal(18, 4)
+  entradas                 Decimal  @default(0) @db.Decimal(18, 4)
+  entregas                 Decimal  @default(0) @db.Decimal(18, 4)
+  reversiones              Decimal  @default(0) @db.Decimal(18, 4)
+  vendidoNeto              Decimal  @default(0) @db.Decimal(18, 4)
+  otrasSalidas             Decimal  @default(0) @db.Decimal(18, 4)
+  ajustesPositivos         Decimal  @default(0) @db.Decimal(18, 4)
+  ajustesNegativos         Decimal  @default(0) @db.Decimal(18, 4)
+  stockFinal               Decimal  @default(0) @db.Decimal(18, 4)
+  reservadoFinal           Decimal  @default(0) @db.Decimal(18, 4)
+  costoPromedioInicial     Decimal  @default(0) @db.Decimal(18, 4)
+  costoPromedioFinal       Decimal  @default(0) @db.Decimal(18, 4)
+  valorInventarioInicial   Decimal  @default(0) @db.Decimal(18, 2)
+  valorInventarioFinal     Decimal  @default(0) @db.Decimal(18, 2)
+  createdAt                DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt                DateTime @updatedAt @db.Timestamptz(3)
+
+  cierre                   CierreInventario @relation(fields: [cierreId], references: [id], onDelete: Cascade)
+
+  @@index([cierreId])
+  @@index([cierreId, productoId, presentacionId])
+  @@index([productoId, presentacionId])
+  @@map("cierre_inventario_detalles")
+}
+
+
+model Caja {
+  id                       String    @id @default(uuid()) @db.Uuid
+  legacyMongoId            String?   @unique @db.VarChar(24)
+  codigo                   String    @unique @db.VarChar(40)
+  fechaApertura            DateTime  @default(now()) @db.Timestamptz(3)
+  fechaCierre              DateTime? @db.Timestamptz(3)
+  saldoInicial             Decimal   @default(0) @db.Decimal(18, 2)
+  cantidadPedidosEntregados Int      @default(0)
+  totalVentasEntregadas    Decimal   @default(0) @db.Decimal(18, 2)
+  totalEfectivoPedidos     Decimal   @default(0) @db.Decimal(18, 2)
+  totalTransferencias      Decimal   @default(0) @db.Decimal(18, 2)
+  totalCredito             Decimal   @default(0) @db.Decimal(18, 2)
+  totalIngresos            Decimal   @default(0) @db.Decimal(18, 2)
+  totalIngresosManuales    Decimal   @default(0) @db.Decimal(18, 2)
+  totalEgresos             Decimal   @default(0) @db.Decimal(18, 2)
+  saldoEsperado            Decimal   @default(0) @db.Decimal(18, 2)
+  efectivoContado          Decimal?  @db.Decimal(18, 2)
+  billetesDosMil           Int       @default(0)
+  billetesCincoMil         Int       @default(0)
+  billetesDiezMil          Int       @default(0)
+  billetesVeinteMil        Int       @default(0)
+  billetesCincuentaMil     Int       @default(0)
+  billetesCienMil          Int       @default(0)
+  diferencia               Decimal?  @db.Decimal(18, 2)
+  estado                   String    @default("Abierta") @db.VarChar(20)
+  observacionesApertura    String    @default("") @db.Text
+  observacionesCierre      String    @default("") @db.Text
+  abiertoPorId             String?   @db.Uuid
+  cerradoPorId             String?   @db.Uuid
+  createdAt                DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt                DateTime  @updatedAt @db.Timestamptz(3)
+
+  abiertoPor                Usuario? @relation("CajaAbiertoPor", fields: [abiertoPorId], references: [id], onDelete: SetNull)
+  cerradoPor                Usuario? @relation("CajaCerradoPor", fields: [cerradoPorId], references: [id], onDelete: SetNull)
+  movimientos               MovimientoCaja[]
+  pagosCartera              PagoCartera[]
+
+  @@index([createdAt(sort: Desc)])
+  @@index([estado])
+  @@map("cajas")
+}
+
+model MovimientoCaja {
+  id              String   @id @default(uuid()) @db.Uuid
+  legacyMongoId   String?  @unique @db.VarChar(24)
+  cajaId          String   @db.Uuid
+  tipo            String   @db.VarChar(20)
+  origen          String   @default("Manual") @db.VarChar(40)
+  concepto        String   @db.Text
+  valor           Decimal  @db.Decimal(18, 2)
+  pedidoId        String?  @db.Uuid
+  pedidoCodigo    String   @default("") @db.VarChar(40)
+  entregaId       String?  @db.Uuid
+  entregaCodigo   String   @default("") @db.VarChar(40)
+  clienteId       String?  @db.Uuid
+  clienteNombre   String   @default("") @db.VarChar(180)
+  metodoPago      String   @default("") @db.VarChar(30)
+  afectaEfectivo  Boolean  @default(true)
+  carteraId       String?  @db.Uuid
+  facturaId       String?  @db.Uuid
+  facturaCodigo   String   @default("") @db.VarChar(40)
+  observacion     String   @default("") @db.Text
+  claveUnica      String?  @unique @db.VarChar(120)
+  usuarioId       String?  @db.Uuid
+  estado          String   @default("Activo") @db.VarChar(20)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
+
+  caja            Caja     @relation(fields: [cajaId], references: [id], onDelete: Restrict)
+  pedido          Pedido?  @relation(fields: [pedidoId], references: [id], onDelete: SetNull)
+  entrega         Entrega? @relation(fields: [entregaId], references: [id], onDelete: SetNull)
+  cliente         Cliente? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  cartera         Cartera? @relation(fields: [carteraId], references: [id], onDelete: SetNull)
+  factura         Factura? @relation(fields: [facturaId], references: [id], onDelete: SetNull)
+  usuario         Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  pagoCartera     PagoCartera?
+
+  @@index([cajaId, createdAt(sort: Desc)])
+  @@index([pedidoId, createdAt(sort: Desc)])
+  @@index([entregaId, createdAt(sort: Desc)])
+  @@index([facturaId, createdAt(sort: Desc)])
+  @@index([carteraId, createdAt(sort: Desc)])
+  @@index([metodoPago, createdAt(sort: Desc)])
+  @@index([tipo, createdAt(sort: Desc)])
+  @@map("movimientos_caja")
+}
+
+model Cartera {
+  id                    String    @id @default(uuid()) @db.Uuid
+  legacyMongoId         String?   @unique @db.VarChar(24)
+  codigo                String    @unique @db.VarChar(40)
+  entregaId             String?   @unique @db.Uuid
+  pedidoId              String?   @db.Uuid
+  legacyEntregaMongoId  String?   @db.VarChar(24)
+  legacyPedidoMongoId   String?   @db.VarChar(24)
+  pedidoCodigo          String    @db.VarChar(40)
+  clienteId           String?   @db.Uuid
+  clienteCodigo       String    @default("") @db.VarChar(40)
+  clienteNombre       String    @default("Cliente") @db.VarChar(180)
+  clienteDocumento    String    @default("") @db.VarChar(40)
+  clienteTelefono     String    @default("") @db.VarChar(40)
+  fechaEntrega        DateTime  @default(now()) @db.Date
+  fechaVencimiento    DateTime? @db.Date
+  valorOriginal       Decimal   @db.Decimal(18, 2)
+  totalAbonado        Decimal   @default(0) @db.Decimal(18, 2)
+  saldoPendiente      Decimal   @db.Decimal(18, 2)
+  metodoPagoOriginal  String    @default("Crédito") @db.VarChar(30)
+  estado              String    @default("Pendiente") @db.VarChar(20)
+  observaciones       String    @default("") @db.Text
+  creadoPorId         String?   @db.Uuid
+  actualizadoPorId    String?   @db.Uuid
+  createdAt           DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime  @updatedAt @db.Timestamptz(3)
+
+  entrega             Entrega?  @relation(fields: [entregaId], references: [id], onDelete: Restrict)
+  pedido              Pedido?   @relation(fields: [pedidoId], references: [id], onDelete: Restrict)
+  cliente             Cliente?  @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  creadoPor           Usuario?  @relation("CarteraCreadoPor", fields: [creadoPorId], references: [id], onDelete: SetNull)
+  actualizadoPor      Usuario?  @relation("CarteraActualizadoPor", fields: [actualizadoPorId], references: [id], onDelete: SetNull)
+  pagos               PagoCartera[]
+  movimientosCaja     MovimientoCaja[]
+
+  @@index([estado, fechaEntrega(sort: Desc)])
+  @@index([clienteId, estado])
+  @@index([pedidoCodigo])
+  @@map("carteras")
+}
+
+model PagoCartera {
+  id                           String   @id @default(uuid()) @db.Uuid
+  legacyMongoId                String?  @unique @db.VarChar(24)
+  carteraId                    String   @db.Uuid
+  entregaId                    String?  @db.Uuid
+  pedidoId                     String?  @db.Uuid
+  clienteId                    String?  @db.Uuid
+  cajaId                       String?  @db.Uuid
+  movimientoCajaId             String?  @unique @db.Uuid
+  legacyEntregaMongoId         String?  @db.VarChar(24)
+  legacyPedidoMongoId          String?  @db.VarChar(24)
+  legacyCajaMongoId            String?  @db.VarChar(24)
+  legacyMovimientoCajaMongoId  String?  @db.VarChar(24)
+  valor            Decimal  @db.Decimal(18, 2)
+  metodoPago       String   @db.VarChar(30)
+  referencia       String   @default("") @db.VarChar(120)
+  observacion      String   @default("") @db.Text
+  fechaPago        DateTime @default(now()) @db.Timestamptz(3)
+  usuarioId        String?  @db.Uuid
+  estado           String   @default("Activo") @db.VarChar(20)
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime @updatedAt @db.Timestamptz(3)
+
+  cartera          Cartera  @relation(fields: [carteraId], references: [id], onDelete: Restrict)
+  entrega          Entrega? @relation(fields: [entregaId], references: [id], onDelete: Restrict)
+  pedido           Pedido?  @relation(fields: [pedidoId], references: [id], onDelete: Restrict)
+  cliente          Cliente? @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  caja             Caja?    @relation(fields: [cajaId], references: [id], onDelete: Restrict)
+  movimientoCaja   MovimientoCaja? @relation(fields: [movimientoCajaId], references: [id], onDelete: SetNull)
+  usuario          Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([carteraId, fechaPago(sort: Desc)])
+  @@index([cajaId, fechaPago(sort: Desc)])
+  @@index([pedidoId])
+  @@index([entregaId])
+  @@map("pagos_cartera")
+}
+
+model Configuracion {
+  id                    String    @id @default(uuid()) @db.Uuid
+  legacyMongoId         String?   @unique @db.VarChar(24)
+  clave                 String    @unique @default("principal") @db.VarChar(30)
+  nombreComercial       String    @default("") @db.VarChar(180)
+  razonSocial           String    @default("") @db.VarChar(200)
+  nit                   String    @default("") @db.VarChar(40)
+  regimenTributario     String    @default("") @db.VarChar(120)
+  direccion             String    @default("") @db.VarChar(250)
+  ciudad                String    @default("") @db.VarChar(120)
+  departamento          String    @default("") @db.VarChar(120)
+  pais                  String    @default("Colombia") @db.VarChar(120)
+  telefono              String    @default("") @db.VarChar(40)
+  celular               String    @default("") @db.VarChar(40)
+  whatsapp              String    @default("") @db.VarChar(40)
+  correo                String    @default("") @db.VarChar(180)
+  paginaWeb             String    @default("") @db.VarChar(250)
+  logo                  String    @default("") @db.Text
+  prefijoFactura        String    @default("FAC") @db.VarChar(20)
+  resolucionDIAN        String    @default("") @db.VarChar(120)
+  fechaResolucionDIAN   DateTime? @db.Date
+  vigenciaDesde         DateTime? @db.Date
+  vigenciaHasta         DateTime? @db.Date
+  rangoAutorizadoDesde  Int       @default(1)
+  rangoAutorizadoHasta  Int       @default(999999)
+  consecutivoActual     Int       @default(1)
+  iva                   Decimal   @default(19) @db.Decimal(5, 2)
+  piePaginaFactura      String    @default("") @db.Text
+  observacionesFactura  String    @default("") @db.Text
+  consecutivoRuta       Int       @default(0)
+  createdAt             DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @db.Timestamptz(3)
+
+  @@map("configuraciones")
+}
+
+model Preferencia {
+  id                         String   @id @default(uuid()) @db.Uuid
+  legacyMongoId              String?  @unique @db.VarChar(24)
+  clave                      String   @unique @default("principal") @db.VarChar(30)
+  moneda                     String   @default("COP") @db.VarChar(10)
+  simboloMoneda              String   @default("$") @db.VarChar(10)
+  decimales                  Int      @default(0)
+  formatoFecha               String   @default("DD/MM/YYYY") @db.VarChar(20)
+  permitirInventarioNegativo Boolean  @default(false)
+  confirmarAntesEliminar     Boolean  @default(true)
+  createdAt                  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt                  DateTime @updatedAt @db.Timestamptz(3)
+
+  @@map("preferencias")
+}
+
+model Consecutivo {
+  id            String   @id @default(uuid()) @db.Uuid
+  legacyMongoId String?  @unique @db.VarChar(24)
+  clave         String   @unique @db.VarChar(80)
+  ultimoNumero  Int      @default(0)
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(3)
+
+  @@map("consecutivos")
+}

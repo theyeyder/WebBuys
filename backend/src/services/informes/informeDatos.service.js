@@ -728,6 +728,341 @@ export async function obtenerInformeVentas({
 
 
 /* =========================================================
+   FACTURAS
+   Incluye facturas vigentes y anuladas del período.
+   Los totales monetarios "facturados" solo suman vigentes.
+========================================================= */
+
+export async function obtenerInformeFacturas({
+  desde,
+  hasta,
+}) {
+  const facturas =
+    await prisma.factura.findMany({
+
+      where: {
+        createdAt:
+          rangoTimestamp(
+            desde,
+            hasta
+          ),
+      },
+
+      orderBy: {
+        createdAt:
+          "asc",
+      },
+
+      select: {
+        codigo:
+          true,
+
+        pedidoCodigo:
+          true,
+
+        clienteNombre:
+          true,
+
+        clienteDocumento:
+          true,
+
+        metodoPago:
+          true,
+
+        subtotal:
+          true,
+
+        descuento:
+          true,
+
+        iva:
+          true,
+
+        total:
+          true,
+
+        estado:
+          true,
+
+        fechaAnulacion:
+          true,
+
+        createdAt:
+          true,
+
+        creadoPor: {
+          select: {
+            nombres:
+              true,
+
+            apellidos:
+              true,
+
+            usuario:
+              true,
+          },
+        },
+      },
+    });
+
+
+  const filas =
+    facturas.map(
+      (factura) => {
+
+        const anulada =
+          Boolean(
+            factura.fechaAnulacion
+          ) ||
+          String(
+            factura.estado || ""
+          )
+            .trim()
+            .toLowerCase() ===
+            "anulada";
+
+
+        const nombreUsuario =
+          [
+            factura
+              .creadoPor
+              ?.nombres,
+
+            factura
+              .creadoPor
+              ?.apellidos,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .trim() ||
+          factura
+            .creadoPor
+            ?.usuario ||
+          "";
+
+
+        return {
+
+          fecha:
+            fechaBogota(
+              factura.createdAt
+            ),
+
+          factura:
+            factura.codigo,
+
+          pedido:
+            factura.pedidoCodigo,
+
+          cliente:
+            factura.clienteNombre,
+
+          documento:
+            factura.clienteDocumento,
+
+          metodoPago:
+            factura.metodoPago,
+
+          subtotal:
+            numero(
+              factura.subtotal
+            ),
+
+          descuento:
+            numero(
+              factura.descuento
+            ),
+
+          iva:
+            numero(
+              factura.iva
+            ),
+
+          total:
+            numero(
+              factura.total
+            ),
+
+          estado:
+            factura.estado,
+
+          generadoPor:
+            nombreUsuario,
+
+          /* Dato auxiliar para exportaciones.
+             No se muestra como columna. */
+          anulada,
+        };
+
+      }
+    );
+
+
+  const vigentes =
+    filas.filter(
+      (fila) =>
+        !fila.anulada
+    );
+
+
+  const anuladas =
+    filas.filter(
+      (fila) =>
+        fila.anulada
+    );
+
+
+  const totalFacturado =
+    vigentes.reduce(
+      (
+        acumulado,
+        fila
+      ) =>
+        acumulado +
+        numero(
+          fila.total
+        ),
+      0
+    );
+
+
+  const totalDescuentos =
+    vigentes.reduce(
+      (
+        acumulado,
+        fila
+      ) =>
+        acumulado +
+        numero(
+          fila.descuento
+        ),
+      0
+    );
+
+
+  const valorAnulado =
+    anuladas.reduce(
+      (
+        acumulado,
+        fila
+      ) =>
+        acumulado +
+        numero(
+          fila.total
+        ),
+      0
+    );
+
+
+  return {
+    titulo:
+      "Informe de facturas",
+
+    desde,
+    hasta,
+
+    indicadores: {
+      totalFacturas:
+        filas.length,
+
+      facturasVigentes:
+        vigentes.length,
+
+      facturasAnuladas:
+        anuladas.length,
+
+      totalFacturado,
+
+      totalDescuentos,
+
+      valorAnulado,
+    },
+
+    columnas: [
+      {
+        titulo:
+          "Fecha",
+        campo:
+          "fecha",
+      },
+      {
+        titulo:
+          "Factura",
+        campo:
+          "factura",
+      },
+      {
+        titulo:
+          "Pedido",
+        campo:
+          "pedido",
+      },
+      {
+        titulo:
+          "Cliente",
+        campo:
+          "cliente",
+      },
+      {
+        titulo:
+          "Documento",
+        campo:
+          "documento",
+      },
+      {
+        titulo:
+          "Forma de pago",
+        campo:
+          "metodoPago",
+      },
+      {
+        titulo:
+          "Subtotal",
+        campo:
+          "subtotal",
+      },
+      {
+        titulo:
+          "Descuento",
+        campo:
+          "descuento",
+      },
+      {
+        titulo:
+          "IVA",
+        campo:
+          "iva",
+      },
+      {
+        titulo:
+          "Total",
+        campo:
+          "total",
+      },
+      {
+        titulo:
+          "Estado",
+        campo:
+          "estado",
+      },
+      {
+        titulo:
+          "Generada por",
+        campo:
+          "generadoPor",
+      },
+    ],
+
+    filas,
+
+    totalFacturado,
+    totalDescuentos,
+    valorAnulado,
+  };
+}
+
+
+/* =========================================================
    PEDIDOS
 ========================================================= */
 
@@ -2244,6 +2579,13 @@ export async function obtenerDatosInforme({
 
     case "ventas":
       return obtenerInformeVentas({
+        desde,
+        hasta,
+      });
+
+
+    case "facturas":
+      return obtenerInformeFacturas({
         desde,
         hasta,
       });

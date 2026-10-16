@@ -23,6 +23,7 @@ const MODULOS = [
   { nombre: "Caja", ruta: "/caja", modulo: "caja" },
   { nombre: "Cartera", ruta: "/cartera", modulo: "cartera" },
   { nombre: "Empleados", ruta: "/empleados", modulo: "empleados" },
+
   {
     nombre: "Configuración",
     ruta: "/configuracion",
@@ -35,6 +36,7 @@ const MODULOS = [
       { nombre: "Numeración", ruta: "/configuracion/numeracion", modulo: "numeracion" },
       { nombre: "Auditoría", ruta: "/configuracion/auditoria", modulo: "auditoria" },
       { nombre: "Preferencias", ruta: "/configuracion/preferencias", modulo: "preferencias" },
+      { nombre: "Informes", ruta: "/configuracion/informes", modulo: "informes" },
     ],
   },
 ];

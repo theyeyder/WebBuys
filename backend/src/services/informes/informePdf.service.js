@@ -39,13 +39,20 @@ function normalizar(valor) {
 function esCampoMoneda(campo = "", titulo = "", fila = null) {
   const texto = normalizar(`${campo} ${titulo}`);
 
+  if (
+    normalizar(campo) === "factura" ||
+    normalizar(titulo) === "factura"
+  ) {
+    return false;
+  }
+
   if (campo === "valor" && fila?.indicador) {
     return /valor|venta|ingreso|egreso|cartera|pago|saldo|factur/.test(
       normalizar(fila.indicador)
     );
   }
 
-  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|factur/.test(
+  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur/.test(
     texto
   );
 }
@@ -152,6 +159,32 @@ function crearMetricas({ tipo, columnas, filas }) {
 
   if (tipo === "resumen") {
     return items;
+  }
+
+  if (tipo === "facturas") {
+    const vigentes = filas.filter((fila) => !fila.anulada);
+    const anuladas = filas.filter((fila) => fila.anulada);
+
+    const totalFacturado = vigentes.reduce((acumulado, fila) => {
+      const valor = Number(fila.total);
+      return acumulado + (Number.isFinite(valor) ? valor : 0);
+    }, 0);
+
+    return [
+      items[0],
+      {
+        etiqueta: "VIGENTES",
+        valor: new Intl.NumberFormat("es-CO").format(vigentes.length),
+      },
+      {
+        etiqueta: "ANULADAS",
+        valor: new Intl.NumberFormat("es-CO").format(anuladas.length),
+      },
+      {
+        etiqueta: "TOTAL FACTURADO",
+        valor: moneda(totalFacturado),
+      },
+    ];
   }
 
   const candidatas = [

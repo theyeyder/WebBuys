@@ -33,6 +33,7 @@ export const obtenerEstadoInformes =
       tipos: [
         "resumen",
         "ventas",
+        "facturas",
         "pedidos",
         "entregas",
         "inventario",

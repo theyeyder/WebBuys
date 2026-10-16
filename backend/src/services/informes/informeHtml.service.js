@@ -24,6 +24,13 @@ function esCampoMoneda(campo = "", titulo = "", fila = null) {
   const texto = normalizar(`${campo} ${titulo}`);
 
   if (
+    normalizar(campo) === "factura" ||
+    normalizar(titulo) === "factura"
+  ) {
+    return false;
+  }
+
+  if (
     campo === "valor" &&
     fila?.indicador
   ) {
@@ -34,7 +41,7 @@ function esCampoMoneda(campo = "", titulo = "", fila = null) {
     );
   }
 
-  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|factur/.test(
+  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur/.test(
     texto
   );
 }
@@ -127,6 +134,38 @@ function construirMetricas({ columnas, filas, tipo }) {
 
   if (tipo === "resumen") {
     return metricas;
+  }
+
+  if (tipo === "facturas") {
+    const vigentes = filas.filter((fila) => !fila.anulada);
+    const anuladas = filas.filter((fila) => fila.anulada);
+
+    const totalFacturado = vigentes.reduce(
+      (acumulado, fila) => {
+        const valor = Number(fila.total);
+        return acumulado + (Number.isFinite(valor) ? valor : 0);
+      },
+      0
+    );
+
+    return [
+      metricas[0],
+      {
+        etiqueta: "Vigentes",
+        valor: new Intl.NumberFormat("es-CO").format(vigentes.length),
+        clase: "",
+      },
+      {
+        etiqueta: "Anuladas",
+        valor: new Intl.NumberFormat("es-CO").format(anuladas.length),
+        clase: "",
+      },
+      {
+        etiqueta: "Total facturado",
+        valor: moneda(totalFacturado),
+        clase: "reporte-kpi--money",
+      },
+    ];
   }
 
   const candidatas = [

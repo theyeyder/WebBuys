@@ -33,13 +33,20 @@ function normalizar(valor) {
 function esCampoMoneda(campo = "", titulo = "", fila = null) {
   const texto = normalizar(`${campo} ${titulo}`);
 
+  if (
+    normalizar(campo) === "factura" ||
+    normalizar(titulo) === "factura"
+  ) {
+    return false;
+  }
+
   if (campo === "valor" && fila?.indicador) {
     return /valor|venta|ingreso|egreso|cartera|pago|saldo|factur/.test(
       normalizar(fila.indicador)
     );
   }
 
-  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|factur/.test(
+  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur/.test(
     texto
   );
 }
@@ -372,7 +379,21 @@ export async function generarInformeExcel({
   const totalRowNumber = Math.max(firstDataRow, lastDataRow + 2);
   const totalRow = worksheet.getRow(totalRowNumber);
 
-  totalRow.getCell(1).value = `Total registros: ${filas.length}`;
+  const filasVigentes =
+    tipo === "facturas"
+      ? filas.filter((fila) => !fila.anulada)
+      : filas;
+
+  const facturasAnuladas =
+    tipo === "facturas"
+      ? filas.length - filasVigentes.length
+      : 0;
+
+  totalRow.getCell(1).value =
+    tipo === "facturas"
+      ? `Total registros: ${filas.length} | Vigentes: ${filasVigentes.length} | Anuladas: ${facturasAnuladas}`
+      : `Total registros: ${filas.length}`;
+
   totalRow.getCell(1).font = {
     name: "Aptos",
     size: 10,
@@ -394,9 +415,22 @@ export async function generarInformeExcel({
       const letter = worksheet.getColumn(index + 1).letter;
       const cell = totalRow.getCell(index + 1);
 
-      cell.value = {
-        formula: `SUM(${letter}${firstDataRow}:${letter}${lastDataRow})`,
-      };
+      if (tipo === "facturas") {
+        const totalVigente = filasVigentes.reduce(
+          (acumulado, fila) => {
+            const valor = Number(fila[columna.campo]);
+            return acumulado + (Number.isFinite(valor) ? valor : 0);
+          },
+          0
+        );
+
+        cell.value = totalVigente;
+      } else {
+        cell.value = {
+          formula: `SUM(${letter}${firstDataRow}:${letter}${lastDataRow})`,
+        };
+      }
+
       cell.numFmt = '$ #,##0;[Red]-$ #,##0';
       cell.font = {
         name: "Aptos",

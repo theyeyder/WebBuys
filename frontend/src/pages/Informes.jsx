@@ -33,6 +33,10 @@ const TIPOS_INFORME = [
     nombre: "Ventas",
   },
   {
+    valor: "facturas",
+    nombre: "Facturas",
+  },
+  {
     valor: "pedidos",
     nombre: "Pedidos",
   },
@@ -141,11 +145,15 @@ function esCampoDinero(
     "pagosCartera",
     "subtotal",
     "descuento",
+    "iva",
     "total",
     "valorOriginal",
     "abonado",
     "saldo",
     "totalComprado",
+    "totalFacturado",
+    "totalDescuentos",
+    "valorAnulado",
   ].includes(campo);
 }
 
@@ -165,6 +173,27 @@ function formatearValor(
 
   return valor ?? "";
 }
+
+
+const NOMBRES_INDICADORES_FACTURAS = {
+  totalFacturas:
+    "Facturas",
+
+  facturasVigentes:
+    "Vigentes",
+
+  facturasAnuladas:
+    "Anuladas",
+
+  totalFacturado:
+    "Total facturado",
+
+  totalDescuentos:
+    "Descuentos",
+
+  valorAnulado:
+    "Valor anulado",
+};
 
 
 const MESES_CALENDARIO = [
@@ -1027,6 +1056,10 @@ export default function Informes() {
     tipo === "resumen";
 
 
+  const esFacturas =
+    tipo === "facturas";
+
+
   const indicadores =
     datos?.indicadores
       ? Object.entries(
@@ -1429,6 +1462,42 @@ export default function Informes() {
                     )}
 
                 </>
+
+              )}
+
+
+            {datos &&
+              esFacturas &&
+              indicadores.length > 0 && (
+
+                <div className="informes-indicadores">
+
+                  {indicadores.map(
+                    ([clave, valor]) => (
+
+                      <article
+                        key={clave}
+                        className="informes-kpi"
+                      >
+
+                        <span>
+                          {NOMBRES_INDICADORES_FACTURAS[clave] ||
+                            clave}
+                        </span>
+
+                        <strong>
+                          {formatearValor(
+                            clave,
+                            valor
+                          )}
+                        </strong>
+
+                      </article>
+
+                    )
+                  )}
+
+                </div>
 
               )}
 
