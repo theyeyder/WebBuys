@@ -19,6 +19,7 @@ import "../styles/configuracion-cabecera.css";
 import "../styles/informes.css";
 import "../styles/informes-calendario.css";
 
+
 import informeVentanaCss
   from "../styles/impresiones/informes-ventana.css?raw";
 

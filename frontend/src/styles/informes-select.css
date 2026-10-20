@@ -1,0 +1,293 @@
+/* =========================================================
+   SELECTOR PERSONALIZADO DE INFORMES - WEBBUYS
+   Complementa informes.css sin modificar sus estilos base.
+========================================================= */
+
+.informes-panel:has(.informes-select-custom.abierto) {
+  position: relative;
+  z-index: 12000;
+  overflow: visible;
+}
+
+.informes-control--select:has(.informes-select-custom.abierto) {
+  position: relative;
+  z-index: 12001;
+}
+
+.informes-select-custom {
+  position: relative;
+  z-index: 1;
+}
+
+.informes-select-custom.abierto {
+  z-index: 12002;
+}
+
+.informes-select-trigger {
+  width: 100%;
+  height: 54px;
+  padding: 0 52px 0 16px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  border: 1px solid #c9d9d4;
+  border-radius: 15px;
+  outline: none;
+
+  background: linear-gradient(180deg, #ffffff 0%, #f9fcfb 100%);
+  color: #1d302a;
+
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  text-align: left;
+
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.045);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.informes-select-trigger:hover,
+.informes-select-trigger.activo {
+  border-color: #7bc9b0;
+  background: #ffffff;
+}
+
+.informes-select-trigger:focus-visible {
+  border-color: #0f9f77;
+  box-shadow: 0 0 0 4px rgba(15, 159, 119, 0.11), 0 7px 18px rgba(15, 23, 42, 0.06);
+}
+
+.informes-select-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.informes-select-custom .informes-select-arrow {
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.informes-select-custom.abierto .informes-select-arrow {
+  transform: translateY(-50%) rotate(180deg);
+  background: #d8f4e9;
+}
+
+.informes-select-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 12003;
+
+  display: flex;
+  flex-direction: column;
+  max-height: min(440px, calc(100vh - 150px));
+  padding: 8px;
+  box-sizing: border-box;
+
+  border: 1px solid #d6e6df;
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.99);
+  box-shadow: 0 22px 48px rgba(22, 54, 43, 0.17), 0 7px 18px rgba(15, 143, 114, 0.07);
+  backdrop-filter: blur(12px);
+
+  animation: informesSelectIn 0.15s ease-out;
+}
+
+@keyframes informesSelectIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.informes-select-menu-header {
+  min-height: 34px;
+  padding: 2px 8px 9px;
+  margin-bottom: 4px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  border-bottom: 1px solid #edf3f0;
+  color: #667b73;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.informes-select-count {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #eef8f3;
+  color: #0b8967;
+  font-size: 9px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.informes-select-options {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1px 2px 2px 0;
+  max-height: 370px;
+  scrollbar-width: thin;
+  scrollbar-color: #b9ded0 transparent;
+}
+
+.informes-select-options::-webkit-scrollbar {
+  width: 6px;
+}
+
+.informes-select-options::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.informes-select-options::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #b9ded0;
+}
+
+.informes-select-option {
+  width: 100%;
+  min-height: 36px;
+  padding: 5px 9px;
+  box-sizing: border-box;
+
+  display: grid;
+  grid-template-columns: 27px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #273b35;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 750;
+  text-align: left;
+
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease, color 0.14s ease, transform 0.14s ease;
+}
+
+.informes-select-option + .informes-select-option {
+  margin-top: 2px;
+}
+
+.informes-select-option:hover,
+.informes-select-option:focus-visible {
+  outline: none;
+  border-color: #d8eee5;
+  background: #f2faf6;
+  color: #08745e;
+}
+
+.informes-select-option:hover {
+  transform: translateX(2px);
+}
+
+.informes-select-option.seleccionado {
+  border-color: #c7e9dc;
+  background: linear-gradient(110deg, #eaf8f2 0%, #f6fcf9 100%);
+  color: #08745e;
+}
+
+.informes-select-option-number {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #f1f6f4;
+  color: #80938b;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.informes-select-option.seleccionado .informes-select-option-number {
+  background: #0f9f77;
+  color: #ffffff;
+  box-shadow: 0 3px 7px rgba(15, 159, 119, 0.16);
+}
+
+.informes-select-option-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.informes-select-option-check {
+  width: 21px;
+  height: 21px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: #0f9f77;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.informes-select-option.seleccionado .informes-select-option-check {
+  background: #d7f3e7;
+}
+
+@media (max-width: 720px) {
+  .informes-select-trigger {
+    height: 50px;
+    font-size: 14px;
+  }
+
+  .informes-select-menu {
+    max-height: min(420px, calc(100vh - 140px));
+  }
+
+  .informes-select-options {
+    max-height: 350px;
+  }
+
+  .informes-select-option {
+    min-height: 36px;
+  }
+}
+
+@media (max-width: 360px) {
+  .informes-select-trigger {
+    height: 46px;
+    padding-left: 12px;
+    font-size: 13px;
+  }
+
+  .informes-select-menu {
+    padding: 6px;
+    border-radius: 14px;
+  }
+
+  .informes-select-option {
+    grid-template-columns: 25px minmax(0, 1fr) 20px;
+    gap: 7px;
+    padding: 5px 6px;
+    font-size: 12px;
+  }
+}
