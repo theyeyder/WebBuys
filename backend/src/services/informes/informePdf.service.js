@@ -52,13 +52,13 @@ function esCampoMoneda(campo = "", titulo = "", fila = null) {
     );
   }
 
-  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur/.test(
+  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar/.test(
     texto
   );
 }
 
 function esCampoNumerico(campo = "", titulo = "") {
-  return /cantidad|movimientos|registros|stock|unidades|numero/.test(
+  return /cantidad|movimientos|registros|stock|unidades|numero|pedidos|entregas/.test(
     normalizar(`${campo} ${titulo}`)
   );
 }
@@ -187,6 +187,20 @@ function crearMetricas({ tipo, columnas, filas }) {
     ];
   }
 
+  if (tipo === "repartidores" || tipo === "rutas-zonas") {
+    const sumar = (campo) => filas.reduce((acumulado, fila) => {
+      const valor = Number(fila[campo]);
+      return acumulado + (Number.isFinite(valor) ? valor : 0);
+    }, 0);
+
+    return [
+      { etiqueta: "EFECTIVO REGISTRADO", valor: moneda(sumar("efectivo")) },
+      { etiqueta: "TRANSFERENCIA REGISTRADA", valor: moneda(sumar("transferencia")) },
+      { etiqueta: "VENTAS A CRÉDITO", valor: moneda(sumar("credito")) },
+      { etiqueta: "TOTAL VENDIDO", valor: moneda(sumar("total")) },
+    ];
+  }
+
   const candidatas = [
     ["total", "TOTAL GENERAL"],
     ["subtotal", "SUBTOTAL"],
@@ -228,6 +242,7 @@ function crearMetricas({ tipo, columnas, filas }) {
 export async function generarInformePdf({
   tipo = "",
   titulo = "Informe",
+  nota = "",
   desde = "",
   hasta = "",
   usuario = "",
@@ -424,6 +439,13 @@ export async function generarInformePdf({
         color: COLORES.muted,
         margin: [0, 0, 0, 12],
       },
+
+      ...(nota ? [{
+        text: nota,
+        fontSize: 8,
+        color: COLORES.muted,
+        margin: [0, 0, 0, 10],
+      }] : []),
 
       {
         table: {

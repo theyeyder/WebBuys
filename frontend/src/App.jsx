@@ -37,8 +37,11 @@ import ZonasDespacho from "./pages/ZonasDespacho.jsx";
 import Informes from "./pages/Informes.jsx";
 import AccesoDenegado from "./pages/AccesoDenegado.jsx";
 
+
 import UserFooter from "./components/UserFooter.jsx";
 import ModuleSearch from "./components/ModuleSearch.jsx";
+import Notificaciones from "./components/Notificaciones.jsx";
+
 
 function ConPermiso({ modulo, children }) {
   return (
@@ -260,11 +263,12 @@ function AppContent() {
         />
       </Routes>
 
-      {mostrarFooter && (
-        <>
-          <ModuleSearch />
-          <UserFooter />
-        </>
+        {mostrarFooter && (
+    <>
+      <ModuleSearch />
+      <UserFooter />
+      <Notificaciones />
+    </>
       )}
     </>
   );

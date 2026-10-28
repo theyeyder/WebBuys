@@ -11,6 +11,7 @@ import ModulosMenu from "../components/ModulosMenu.jsx";
 import {
   obtenerArchivoInforme,
   obtenerInforme,
+  obtenerOpcionesRepartidoresInforme,
 } from "../services/informe.service.js";
 
 import calendarioIcon from "../assets/icons/calendario.webp";
@@ -68,6 +69,10 @@ const TIPOS_INFORME = [
   {
     valor: "rutas-zonas",
     nombre: "Rutas y zonas",
+  },
+  {
+    valor: "repartidores",
+    nombre: "Repartidores y recaudos",
   },
 ];
 
@@ -155,6 +160,11 @@ function esCampoDinero(
     "totalFacturado",
     "totalDescuentos",
     "valorAnulado",
+    "efectivo",
+    "transferencia",
+    "credito",
+    "sinClasificar",
+    "totalVendido",
   ].includes(campo);
 }
 
@@ -194,6 +204,17 @@ const NOMBRES_INDICADORES_FACTURAS = {
 
   valorAnulado:
     "Valor anulado",
+};
+
+
+const NOMBRES_INDICADORES_RECAUDOS = {
+  pedidosEntregados: "Pedidos entregados",
+  repartidores: "Repartidores",
+  totalVendido: "Total vendido",
+  efectivo: "Efectivo registrado",
+  transferencia: "Transferencia registrada",
+  credito: "Ventas a crédito",
+  sinClasificar: "Sin clasificar",
 };
 
 
@@ -691,6 +712,12 @@ export default function Informes() {
   ] =
     useState(null);
 
+  const [repartidorId, setRepartidorId] = useState("");
+  const [opcionesRepartidores, setOpcionesRepartidores] = useState([]);
+  const [cargandoRepartidores, setCargandoRepartidores] = useState(false);
+
+
+
 
   const [
     cargando,
@@ -711,6 +738,26 @@ export default function Informes() {
     setError,
   ] =
     useState("");
+
+  useEffect(() => {
+    if (tipo !== "repartidores") return undefined;
+
+    let activo = true;
+    setCargandoRepartidores(true);
+    obtenerOpcionesRepartidoresInforme()
+      .then((opciones) => {
+        if (activo) setOpcionesRepartidores(Array.isArray(opciones) ? opciones : []);
+      })
+      .catch((error) => {
+        console.error("No se pudieron cargar los repartidores:", error);
+        if (activo) setError("No se pudo cargar la lista de repartidores.");
+      })
+      .finally(() => {
+        if (activo) setCargandoRepartidores(false);
+      });
+
+    return () => { activo = false; };
+  }, [tipo]);
 
 
   /* =========================================================
@@ -791,6 +838,7 @@ export default function Informes() {
           tipo,
           desde,
           hasta,
+          repartidorId,
         });
 
 
@@ -904,6 +952,7 @@ export default function Informes() {
           desde,
           hasta,
           formato,
+          repartidorId,
         });
 
 
@@ -1060,6 +1109,8 @@ export default function Informes() {
   const esFacturas =
     tipo === "facturas";
 
+  const esRecaudos = tipo === "repartidores" || tipo === "rutas-zonas";
+
 
   const indicadores =
     datos?.indicadores
@@ -1120,7 +1171,7 @@ export default function Informes() {
                 La fila ahora tiene solo Tipo, Desde y Hasta.
             ========================================================= */}
 
-            <div className="informes-filtros">
+            <div className={`informes-filtros ${tipo === "repartidores" ? "informes-filtros--repartidores" : ""}`}>
 
               <div className="informes-control informes-control--select">
                 <span className="informes-control-label">
@@ -1132,6 +1183,7 @@ export default function Informes() {
                     value={tipo}
                     onChange={(event) => {
                       setTipo(event.target.value);
+                      setRepartidorId("");
                       setDatos(null);
                       setError("");
                     }}
@@ -1155,6 +1207,31 @@ export default function Informes() {
                 </div>
               </div>
 
+
+              {tipo === "repartidores" && (
+                <div className="informes-control informes-control--select">
+                  <span className="informes-control-label">Repartidor</span>
+                  <div className="informes-select-shell">
+                    <select
+                      value={repartidorId}
+                      onChange={(event) => {
+                        setRepartidorId(event.target.value);
+                        setDatos(null);
+                        setError("");
+                      }}
+                      disabled={cargandoRepartidores}
+                    >
+                      <option value="">Todos los repartidores</option>
+                      {opcionesRepartidores.map((empleado) => (
+                        <option key={empleado.id} value={empleado.id}>
+                          {empleado.nombre}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="informes-select-arrow" aria-hidden="true">▾</span>
+                  </div>
+                </div>
+              )}
 
               <div className="informes-control">
                 <span className="informes-control-label">
@@ -1468,7 +1545,7 @@ export default function Informes() {
 
 
             {datos &&
-              esFacturas &&
+              (esFacturas || esRecaudos) &&
               indicadores.length > 0 && (
 
                 <div className="informes-indicadores">
@@ -1482,8 +1559,9 @@ export default function Informes() {
                       >
 
                         <span>
-                          {NOMBRES_INDICADORES_FACTURAS[clave] ||
-                            clave}
+                          {esFacturas
+                            ? (NOMBRES_INDICADORES_FACTURAS[clave] || clave)
+                            : (NOMBRES_INDICADORES_RECAUDOS[clave] || clave)}
                         </span>
 
                         <strong>
@@ -1502,6 +1580,10 @@ export default function Informes() {
 
               )}
 
+
+            {datos?.nota && (
+              <p className="informes-nota">{datos.nota}</p>
+            )}
 
             {datos &&
               !esResumen &&

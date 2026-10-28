@@ -1433,3 +1433,21 @@ input::-webkit-calendar-picker-indicator {
   }
 
 }
+
+/* Repartidores: cuarto filtro sin alterar los informes existentes */
+@media (min-width: 1181px) {
+  .informes-filtros.informes-filtros--repartidores {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.informes-nota {
+  margin: 12px 20px 18px;
+  padding: 11px 14px;
+  border: 1px solid #d9e5e1;
+  border-radius: 10px;
+  color: #52665d;
+  background: #f7fbf9;
+  font-size: 12px;
+  line-height: 1.5;
+}

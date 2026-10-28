@@ -41,7 +41,7 @@ function esCampoMoneda(campo = "", titulo = "", fila = null) {
     );
   }
 
-  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur/.test(
+  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar/.test(
     texto
   );
 }
@@ -49,7 +49,7 @@ function esCampoMoneda(campo = "", titulo = "", fila = null) {
 function esCampoNumerico(campo = "", titulo = "") {
   const texto = normalizar(`${campo} ${titulo}`);
 
-  return /cantidad|movimientos|registros|stock|unidades|numero/.test(
+  return /cantidad|movimientos|registros|stock|unidades|numero|pedidos|entregas/.test(
     texto
   );
 }
@@ -168,6 +168,20 @@ function construirMetricas({ columnas, filas, tipo }) {
     ];
   }
 
+  if (tipo === "repartidores" || tipo === "rutas-zonas") {
+    const sumar = (campo) => filas.reduce((acumulado, fila) => {
+      const valor = Number(fila[campo]);
+      return acumulado + (Number.isFinite(valor) ? valor : 0);
+    }, 0);
+
+    return [
+      { etiqueta: "Efectivo registrado", valor: moneda(sumar("efectivo")), clase: "reporte-kpi--money" },
+      { etiqueta: "Transferencias registradas", valor: moneda(sumar("transferencia")), clase: "reporte-kpi--money" },
+      { etiqueta: "Ventas a crédito", valor: moneda(sumar("credito")), clase: "reporte-kpi--money" },
+      { etiqueta: "Total vendido", valor: moneda(sumar("total")), clase: "reporte-kpi--money" },
+    ];
+  }
+
   const candidatas = [
     ["total", "Total general"],
     ["subtotal", "Subtotal"],
@@ -212,6 +226,7 @@ function construirMetricas({ columnas, filas, tipo }) {
 export function generarInformeHtml({
   tipo = "",
   titulo = "Informe",
+  nota = "",
   desde = "",
   hasta = "",
   usuario = "",
@@ -287,6 +302,9 @@ export function generarInformeHtml({
     .join("");
 
   const generado = fechaGeneracion();
+  const aviso = nota
+    ? `<p style="margin:12px 30px;padding:10px 14px;background:#f6faf8;border:1px solid #dce7e2;border-radius:8px;color:#52665d;font-size:12px;">${escaparHtml(nota)}</p>`
+    : "";
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -687,6 +705,8 @@ export function generarInformeHtml({
     <section class="reporte-kpis">
       ${tarjetas}
     </section>
+
+    ${aviso}
 
     <section class="reporte-table-section">
       <div class="reporte-table-heading">

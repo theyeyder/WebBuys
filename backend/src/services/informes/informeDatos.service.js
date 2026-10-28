@@ -1296,6 +1296,13 @@ export async function obtenerInformeEntregas({
 
         estado:
           true,
+
+        repartidor: {
+          select: {
+            nombres: true,
+            apellidos: true,
+          },
+        },
       },
     });
 
@@ -1306,6 +1313,9 @@ export async function obtenerInformeEntregas({
 
         pedido:
           entrega.pedidoCodigo,
+
+        repartidor:
+          nombreRepartidorInforme(entrega.repartidor),
 
         cliente:
           entrega.clienteNombre,
@@ -1360,6 +1370,12 @@ export async function obtenerInformeEntregas({
           "Cliente",
         campo:
           "cliente",
+      },
+      {
+        titulo:
+          "Repartidor",
+        campo:
+          "repartidor",
       },
       {
         titulo:
@@ -2416,136 +2432,262 @@ export async function obtenerInformeRutasZonas({
   desde,
   hasta,
 }) {
-  const entregas =
-    await prisma.entrega.findMany({
+  const entregas = await prisma.entrega.findMany({
+    where: {
+      estado: "Entregado",
+      fechaEntregaReal: rangoTimestamp(desde, hasta),
+    },
+    select: {
+      rutaId: true,
+      rutaNombre: true,
+      zonaDespachoId: true,
+      zonaDespachoNombre: true,
+      metodoPago: true,
+      total: true,
+    },
+  });
 
-      where: {
-        fechaEntregaReal:
-          rangoTimestamp(
-            desde,
-            hasta
-          ),
-      },
+  const mapa = new Map();
+  const indicadores = indicadoresRecaudo(entregas);
 
-      select: {
-        rutaId:
-          true,
+  for (const entrega of entregas) {
+    const clave = [
+      entrega.rutaId || entrega.rutaNombre || "Sin ruta",
+      entrega.zonaDespachoId || entrega.zonaDespachoNombre || "Sin zona",
+    ].join("|");
 
-        rutaNombre:
-          true,
-
-        zonaDespachoId:
-          true,
-
-        zonaDespachoNombre:
-          true,
-
-        total:
-          true,
-      },
-    });
-
-
-  const mapa =
-    new Map();
-
-
-  entregas.forEach(
-    (entrega) => {
-
-      const clave =
-        `${entrega.rutaId || ""}|${entrega.zonaDespachoId || ""}|${entrega.rutaNombre}|${entrega.zonaDespachoNombre}`;
-
-
-      if (
-        !mapa.has(clave)
-      ) {
-        mapa.set(
-          clave,
-          {
-            ruta:
-              entrega
-                .rutaNombre ||
-              "Sin ruta",
-
-            zona:
-              entrega
-                .zonaDespachoNombre ||
-              "Sin zona",
-
-            entregas:
-              0,
-
-            total:
-              0,
-          }
-        );
-      }
-
-
-      const registro =
-        mapa.get(clave);
-
-      registro.entregas +=
-        1;
-
-      registro.total +=
-        numero(
-          entrega.total
-        );
-
+    if (!mapa.has(clave)) {
+      mapa.set(clave, {
+        ruta: entrega.rutaNombre || "Sin ruta",
+        zona: entrega.zonaDespachoNombre || "Sin zona",
+        entregas: 0,
+        efectivo: 0,
+        transferencia: 0,
+        credito: 0,
+        sinClasificar: 0,
+        total: 0,
+      });
     }
-  );
 
+    const fila = mapa.get(clave);
+    const valor = numero(entrega.total);
+    fila.entregas += 1;
+    fila.total += valor;
+    fila[clasificarMetodoPago(entrega.metodoPago)] += valor;
+  }
 
-  const filas =
-    Array.from(
-      mapa.values()
-    )
-      .sort(
-        (
-          a,
-          b
-        ) =>
-          b.total -
-          a.total
-      );
-
+  const filas = [...mapa.values()].sort((a, b) => b.total - a.total);
 
   return {
-    titulo:
-      "Informe de rutas y zonas",
-
+    titulo: "Informe de rutas y zonas",
     desde,
     hasta,
-
+    nota: "Solo incluye pedidos con entrega finalizada. Los valores se clasifican según la forma de pago registrada, no según la recepción comprobada del dinero.",
+    indicadores,
     columnas: [
-      {
-        titulo:
-          "Ruta",
-        campo:
-          "ruta",
-      },
-      {
-        titulo:
-          "Zona de despacho",
-        campo:
-          "zona",
-      },
-      {
-        titulo:
-          "Entregas",
-        campo:
-          "entregas",
-      },
-      {
-        titulo:
-          "Total vendido",
-        campo:
-          "total",
-      },
+      { titulo: "Ruta", campo: "ruta" },
+      { titulo: "Zona de despacho", campo: "zona" },
+      { titulo: "Entregas", campo: "entregas" },
+      { titulo: "Efectivo registrado", campo: "efectivo" },
+      { titulo: "Transferencia registrada", campo: "transferencia" },
+      { titulo: "Crédito", campo: "credito" },
+      { titulo: "Sin clasificar", campo: "sinClasificar" },
+      { titulo: "Total vendido", campo: "total" },
     ],
+    filas,
+  };
+}
 
+
+/* =========================================================
+   REPARTIDORES Y RECAUDOS REGISTRADOS
+   Reporte de solo lectura: no equivale a cierre de caja.
+========================================================= */
+
+function nombreRepartidorInforme(repartidor) {
+  return [repartidor?.nombres, repartidor?.apellidos]
+    .filter(Boolean)
+    .join(" ")
+    .trim() || "Sin repartidor";
+}
+
+function clasificarMetodoPago(valor) {
+  const metodo = String(valor || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  if (metodo === "efectivo") return "efectivo";
+  if (metodo === "transferencia") return "transferencia";
+  if (metodo === "credito") return "credito";
+  return "sinClasificar";
+}
+
+function indicadoresRecaudo(entregas) {
+  const resumen = {
+    pedidosEntregados: 0,
+    totalVendido: 0,
+    efectivo: 0,
+    transferencia: 0,
+    credito: 0,
+    sinClasificar: 0,
+  };
+
+  for (const entrega of entregas) {
+    const valor = numero(entrega.total);
+    resumen.pedidosEntregados += 1;
+    resumen.totalVendido += valor;
+    resumen[clasificarMetodoPago(entrega.metodoPago)] += valor;
+  }
+
+  return resumen;
+}
+
+export async function obtenerOpcionesRepartidoresInforme() {
+  const empleados = await prisma.empleado.findMany({
+    where: { entregasRepartidas: { some: {} } },
+    select: { id: true, codigo: true, nombres: true, apellidos: true },
+    orderBy: [{ nombres: "asc" }, { apellidos: "asc" }],
+  });
+
+  return empleados.map((empleado) => ({
+    id: empleado.id,
+    nombre: nombreRepartidorInforme(empleado),
+    codigo: empleado.codigo,
+  }));
+}
+
+export async function obtenerInformeRepartidores({
+  desde,
+  hasta,
+  repartidorId = "",
+}) {
+  const id = String(repartidorId || "").trim();
+
+  if (id && !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(id)) {
+    throw new Error("El identificador del repartidor no es válido.");
+  }
+
+  const repartidorSeleccionado = id
+    ? await prisma.empleado.findUnique({
+        where: { id },
+        select: { nombres: true, apellidos: true },
+      })
+    : null;
+
+  if (id && !repartidorSeleccionado) {
+    throw new Error("No existe el repartidor seleccionado.");
+  }
+
+  const entregas = await prisma.entrega.findMany({
+    where: {
+      estado: "Entregado",
+      fechaEntregaReal: rangoTimestamp(desde, hasta),
+      ...(id ? { repartidorId: id } : {}),
+    },
+    select: {
+      repartidorId: true,
+      repartidor: {
+        select: { nombres: true, apellidos: true },
+      },
+      pedidoCodigo: true,
+      clienteNombre: true,
+      rutaNombre: true,
+      zonaDespachoNombre: true,
+      fechaEntregaReal: true,
+      metodoPago: true,
+      total: true,
+    },
+    orderBy: { fechaEntregaReal: "asc" },
+  });
+
+  const indicadores = indicadoresRecaudo(entregas);
+  const nota = "Los importes corresponden a pedidos entregados y a su forma de pago registrada. No verifican si el dinero fue recibido por el repartidor o directamente por la empresa. Los abonos posteriores de cartera no se incluyen aquí.";
+
+  if (id) {
+    const nombre = nombreRepartidorInforme(repartidorSeleccionado);
+    const filas = entregas.map((entrega) => {
+      const valor = numero(entrega.total);
+      const metodo = clasificarMetodoPago(entrega.metodoPago);
+      return {
+        fecha: fechaBogota(entrega.fechaEntregaReal),
+        pedido: entrega.pedidoCodigo,
+        cliente: entrega.clienteNombre,
+        ruta: entrega.rutaNombre || "Sin ruta",
+        zona: entrega.zonaDespachoNombre || "Sin zona",
+        metodoPago: entrega.metodoPago || "Sin definir",
+        efectivo: metodo === "efectivo" ? valor : 0,
+        transferencia: metodo === "transferencia" ? valor : 0,
+        credito: metodo === "credito" ? valor : 0,
+        sinClasificar: metodo === "sinClasificar" ? valor : 0,
+        total: valor,
+      };
+    });
+
+    return {
+      titulo: `Entregas y recaudos registrados - ${nombre}`,
+      desde,
+      hasta,
+      nota,
+      indicadores,
+      columnas: [
+        { titulo: "Fecha", campo: "fecha" },
+        { titulo: "Pedido", campo: "pedido" },
+        { titulo: "Cliente", campo: "cliente" },
+        { titulo: "Ruta", campo: "ruta" },
+        { titulo: "Zona", campo: "zona" },
+        { titulo: "Forma de pago", campo: "metodoPago" },
+        { titulo: "Efectivo", campo: "efectivo" },
+        { titulo: "Transferencia", campo: "transferencia" },
+        { titulo: "Crédito", campo: "credito" },
+        { titulo: "Sin clasificar", campo: "sinClasificar" },
+        { titulo: "Total", campo: "total" },
+      ],
+      filas,
+    };
+  }
+
+  const mapa = new Map();
+
+  for (const entrega of entregas) {
+    const clave = entrega.repartidorId || "sin-repartidor";
+    if (!mapa.has(clave)) {
+      mapa.set(clave, {
+        repartidor: nombreRepartidorInforme(entrega.repartidor),
+        pedidos: 0,
+        efectivo: 0,
+        transferencia: 0,
+        credito: 0,
+        sinClasificar: 0,
+        total: 0,
+      });
+    }
+
+    const fila = mapa.get(clave);
+    const valor = numero(entrega.total);
+    fila.pedidos += 1;
+    fila.total += valor;
+    fila[clasificarMetodoPago(entrega.metodoPago)] += valor;
+  }
+
+  const filas = [...mapa.values()].sort((a, b) => b.total - a.total);
+
+  return {
+    titulo: "Repartidores y recaudos registrados",
+    desde,
+    hasta,
+    nota,
+    indicadores: { ...indicadores, repartidores: filas.length },
+    columnas: [
+      { titulo: "Repartidor", campo: "repartidor" },
+      { titulo: "Pedidos entregados", campo: "pedidos" },
+      { titulo: "Efectivo registrado", campo: "efectivo" },
+      { titulo: "Transferencia registrada", campo: "transferencia" },
+      { titulo: "Crédito", campo: "credito" },
+      { titulo: "Sin clasificar", campo: "sinClasificar" },
+      { titulo: "Total vendido", campo: "total" },
+    ],
     filas,
   };
 }
@@ -2559,6 +2701,7 @@ export async function obtenerDatosInforme({
   tipo,
   desde,
   hasta,
+  repartidorId = "",
 }) {
   const nombre =
     String(
@@ -2645,6 +2788,13 @@ export async function obtenerDatosInforme({
       return obtenerInformeRutasZonas({
         desde,
         hasta,
+      });
+
+    case "repartidores":
+      return obtenerInformeRepartidores({
+        desde,
+        hasta,
+        repartidorId,
       });
 
 

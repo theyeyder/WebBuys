@@ -4,6 +4,7 @@ import {
 
 import {
   obtenerEstadoInformes,
+  listarOpcionesRepartidores,
   generarInforme,
 } from "../controllers/postgresqlOnly/informe.controller.js";
 
@@ -17,6 +18,14 @@ const router =
 router.get(
   "/",
   obtenerEstadoInformes
+);
+
+
+/* Opciones del filtro de repartidor (antes de /:tipo) */
+
+router.get(
+  "/repartidores-opciones",
+  listarOpcionesRepartidores
 );
 
 

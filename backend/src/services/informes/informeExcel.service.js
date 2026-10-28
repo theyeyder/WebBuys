@@ -46,13 +46,13 @@ function esCampoMoneda(campo = "", titulo = "", fila = null) {
     );
   }
 
-  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur/.test(
+  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar/.test(
     texto
   );
 }
 
 function esCampoNumerico(campo = "", titulo = "") {
-  return /cantidad|movimientos|registros|stock|unidades|numero/.test(
+  return /cantidad|movimientos|registros|stock|unidades|numero|pedidos|entregas/.test(
     normalizar(`${campo} ${titulo}`)
   );
 }
@@ -148,6 +148,7 @@ function estilizarEstado(celda, valor) {
 export async function generarInformeExcel({
   tipo = "",
   titulo = "Informe",
+  nota = "",
   desde = "",
   hasta = "",
   usuario = "",
@@ -265,7 +266,16 @@ export async function generarInformeExcel({
     };
   });
 
-  worksheet.getRow(6).height = 8;
+  if (nota) {
+    if (cantidadColumnas > 1) worksheet.mergeCells(`A6:${ultimaColumna}6`);
+    const notaCell = worksheet.getCell("A6");
+    notaCell.value = nota;
+    notaCell.font = { name: "Aptos", size: 9, italic: true, color: { argb: COLORES.muted } };
+    notaCell.alignment = { wrapText: true, vertical: "middle" };
+    worksheet.getRow(6).height = 32;
+  } else {
+    worksheet.getRow(6).height = 8;
+  }
 
   /* =======================================================
      TABLA
