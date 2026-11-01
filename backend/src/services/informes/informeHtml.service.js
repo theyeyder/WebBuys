@@ -41,7 +41,7 @@ function esCampoMoneda(campo = "", titulo = "", fila = null) {
     );
   }
 
-  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar/.test(
+  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar|contado|vencido|diferencia/.test(
     texto
   );
 }
@@ -109,6 +109,8 @@ function claseEstado(valor) {
 function formatearCelda({ columna, fila }) {
   const valor = fila[columna.campo] ?? "";
 
+  if (valor === "") return "";
+
   if (esCampoMoneda(columna.campo, columna.titulo, fila)) {
     return moneda(valor);
   }
@@ -123,7 +125,7 @@ function formatearCelda({ columna, fila }) {
   return valor;
 }
 
-function construirMetricas({ columnas, filas, tipo }) {
+function construirMetricas({ columnas, filas, tipo, indicadores = null }) {
   const metricas = [
     {
       etiqueta: "Registros",
@@ -131,6 +133,17 @@ function construirMetricas({ columnas, filas, tipo }) {
       clase: "",
     },
   ];
+
+  if ((tipo === "caja" || tipo === "cartera") && indicadores) {
+    const campos = tipo === "caja"
+      ? [["ingresos", "Ingresos"], ["egresos", "Egresos"], ["neto", "Movimiento neto"], ["recaudosCartera", "Recaudos de cartera"]]
+      : [["saldoPendiente", "Saldo pendiente actual"], ["saldoVencido", "Saldo vencido actual"], ["pagosPeriodo", "Abonos del período"], ["cuentas", "Cuentas"]];
+    return campos.map(([campo, etiqueta]) => ({
+      etiqueta,
+      valor: campo === "cuentas" ? String(indicadores[campo] || 0) : moneda(indicadores[campo]),
+      clase: campo === "cuentas" ? "" : "reporte-kpi--money",
+    }));
+  }
 
   if (tipo === "resumen") {
     return metricas;
@@ -232,6 +245,8 @@ export function generarInformeHtml({
   usuario = "",
   columnas = [],
   filas = [],
+  indicadores = null,
+  secciones = [],
   empresa = {},
 }) {
   const nombreEmpresa =
@@ -288,6 +303,7 @@ export function generarInformeHtml({
     columnas,
     filas,
     tipo,
+    indicadores,
   });
 
   const tarjetas = metricas
@@ -300,6 +316,25 @@ export function generarInformeHtml({
       `
     )
     .join("");
+
+  const seccionesHtml = secciones.map((seccion) => {
+    const columnasSeccion = Array.isArray(seccion.columnas) ? seccion.columnas : [];
+    const filasSeccion = Array.isArray(seccion.filas) ? seccion.filas : [];
+    const cabeceras = columnasSeccion.map((columna) => `<th>${escaparHtml(columna.titulo)}</th>`).join("");
+    const celdas = filasSeccion.map((fila) => `<tr>${columnasSeccion.map((columna) => {
+      const valor = formatearCelda({ columna, fila });
+      const clase = esCampoMoneda(columna.campo, columna.titulo, fila) ||
+        esCampoNumerico(columna.campo, columna.titulo) ? "reporte-td--numero" : "";
+      return `<td class="${clase}">${escaparHtml(valor)}</td>`;
+    }).join("")}</tr>`).join("");
+    return `<section class="reporte-table-section">
+      <div class="reporte-table-heading"><h2>${escaparHtml(seccion.titulo || "Detalle adicional")}</h2>
+      <span>${filasSeccion.length} registros</span></div>
+      <div class="reporte-table-wrap">${filasSeccion.length
+        ? `<table><thead><tr>${cabeceras}</tr></thead><tbody>${celdas}</tbody></table>`
+        : `<div class="reporte-vacio">No hay registros en esta sección.</div>`}</div>
+    </section>`;
+  }).join("");
 
   const generado = fechaGeneracion();
   const aviso = nota
@@ -725,6 +760,8 @@ export function generarInformeHtml({
         }
       </div>
     </section>
+
+    ${seccionesHtml}
 
     <footer class="reporte-footer">
       <span>${escaparHtml(nombreEmpresa)}</span>

@@ -5,6 +5,7 @@ import {
 import {
   obtenerEstadoInformes,
   listarOpcionesRepartidores,
+  listarOpcionesCajas,
   generarInforme,
 } from "../controllers/postgresqlOnly/informe.controller.js";
 
@@ -28,6 +29,11 @@ router.get(
   listarOpcionesRepartidores
 );
 
+
+router.get(
+  "/cajas-opciones",
+  listarOpcionesCajas
+);
 
 /* Informe por tipo */
 

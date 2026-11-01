@@ -107,6 +107,15 @@ function abrirVentanaImpresion(
     };
   }
 
+  // V9: el navegador/impresora determina la orientacion y el papel.
+  // No fijar @page en horizontal/vertical porque bloquearia esa eleccion.
+  // El usuario selecciona papel Media carta / Statement en el dialogo.
+  // Los estilos existentes se adaptan mediante @media print (orientation).
+  const esIndividual = claseBody.split(/\s+/).includes("entrega-individual-body");
+  const estilosPagina = esIndividual
+    ? "@page { size: auto; margin: 5mm; }"
+    : "";
+
   ventana.document.open();
   ventana.document.write(`
     <!DOCTYPE html>
@@ -120,6 +129,7 @@ function abrirVentanaImpresion(
         <title>${escaparHtml(titulo)}</title>
         <style>
           ${estilosEntrega}
+          ${estilosPagina}
         </style>
       </head>
       <body class="${escaparHtml(claseBody)}">
@@ -143,7 +153,8 @@ function abrirVentanaImpresion(
 
 
 export function imprimirEntrega(
-  entrega
+  entrega,
+  opciones = {}
 ) {
 
   if (!entrega) {
@@ -154,6 +165,16 @@ export function imprimirEntrega(
         "Seleccione primero una entrega.",
     };
   }
+
+  if (opciones?.soloEntregado && entrega.estado !== "Entregado") {
+    return {
+      ok: false,
+      tipo: "info",
+      mensaje: "Solo se puede imprimir cuando la entrega esté en estado Entregado.",
+    };
+  }
+
+  const mostrarValores = opciones?.mostrarValores !== false;
 
   const items =
     Array.isArray(entrega.items)
@@ -250,6 +271,7 @@ export function imprimirEntrega(
               }
             </td>
 
+            ${mostrarValores ? `
             <td class="numero">
               ${escaparHtml(
                 moneda(precio)
@@ -264,6 +286,7 @@ export function imprimirEntrega(
             <td class="numero">
               ${escaparHtml(subtotal)}
             </td>
+            ` : ""}
           </tr>
         `;
       }
@@ -376,10 +399,13 @@ export function imprimirEntrega(
         <strong>${escaparHtml(nombreEmpleado(entrega.empacador))}</strong>
       </div>
 
+      ${mostrarValores ? `
       <div class="info-box">
         <span>Tipo de pago</span>
         <strong>${escaparHtml(entrega.metodoPago || "Pendiente")}</strong>
       </div>
+
+      ` : ""}
 
     </section>
 
@@ -433,8 +459,10 @@ export function imprimirEntrega(
           <col class="col-producto">
           <col class="col-cantidad">
           <col class="col-peso">
+          ${mostrarValores ? `
           <col class="col-precio">
           <col class="col-subtotal">
+          ` : ""}
         </colgroup>
 
         <thead>
@@ -443,21 +471,24 @@ export function imprimirEntrega(
             <th class="col-texto">Producto</th>
             <th class="col-numero">Cant.</th>
             <th class="col-peso-real">Peso real</th>
+            ${mostrarValores ? `
             <th class="col-numero">Precio</th>
             <th class="col-numero">Subtotal</th>
+            ` : ""}
           </tr>
         </thead>
 
         <tbody>
           ${
             filas ||
-            '<tr><td colspan="6" class="sin-datos">Sin productos.</td></tr>'
+            '<tr><td colspan="${mostrarValores ? 6 : 4}" class="sin-datos">Sin productos.</td></tr>'
           }
         </tbody>
       </table>
     </section>
 
 
+    ${mostrarValores ? `
     <section class="totales">
       <div>
         <span>Subtotal</span>
@@ -475,6 +506,8 @@ export function imprimirEntrega(
       </div>
     </section>
 
+
+    ` : ""}
 
     ${
       entrega.observaciones
@@ -503,7 +536,9 @@ export function imprimirEntrega(
   return abrirVentanaImpresion(
     `${entrega.pedidoCodigo || "Entrega"} - Entrega`,
     contenido,
-    "entrega-individual-body"
+    mostrarValores
+      ? "entrega-individual-body"
+      : "entrega-individual-body entrega-sin-valores"
   );
 }
 
@@ -511,6 +546,7 @@ export function imprimirEntrega(
 export function imprimirEntregasFiltradas({
   entregas = [],
   filtros = {},
+  mostrarValores = true,
 } = {}) {
 
   if (
@@ -583,9 +619,9 @@ export function imprimirEntregasFiltradas({
           <td>
             ${escaparHtml(entrega.estado || "—")}
           </td>
-          <td class="numero">
+          ${mostrarValores ? `<td class="numero">
             ${escaparHtml(moneda(entrega.total))}
-          </td>
+          </td>` : ""}
         </tr>
       `
     ).join("");
@@ -631,7 +667,7 @@ export function imprimirEntregasFiltradas({
             <th>Repartidor</th>
             <th>Pago</th>
             <th>Estado</th>
-            <th>Total</th>
+            ${mostrarValores ? "<th>Total</th>" : ""}
           </tr>
         </thead>
         <tbody>
@@ -641,10 +677,10 @@ export function imprimirEntregasFiltradas({
     </div>
 
 
-    <footer class="listado-total">
+    ${mostrarValores ? `<footer class="listado-total">
       <span>Total general:</span>
       <strong>${escaparHtml(moneda(totalGeneral))}</strong>
-    </footer>
+    </footer>` : ""}
   `;
 
   return abrirVentanaImpresion(

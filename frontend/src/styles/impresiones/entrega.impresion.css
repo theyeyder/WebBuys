@@ -406,3 +406,290 @@ td small {
     break-inside: avoid;
   }
 }
+
+
+/* WEBBUYS: impresión individual en Estamento / media carta horizontal.
+   Se aplica solo al comprobante individual, NO al listado de entregas. */
+@media print {
+  body.entrega-individual-body {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 9px;
+    line-height: 1.18;
+    overflow: visible !important;
+  }
+
+  .entrega-individual-body .documento-header {
+    padding: 7px 9px;
+    margin-bottom: 6px;
+    gap: 8px;
+    border-radius: 5px;
+    break-after: avoid;
+  }
+
+  .entrega-individual-body .documento-header h1 {
+    font-size: 15px;
+  }
+
+  .entrega-individual-body .documento-label {
+    font-size: 8px;
+    margin-bottom: 2px;
+  }
+
+  .entrega-individual-body .estado {
+    padding: 4px 7px;
+    font-size: 8px;
+  }
+
+  .entrega-individual-body .info-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+
+  .entrega-individual-body .info-box {
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+
+  .entrega-individual-body .info-box span,
+  .entrega-individual-body .info-entrega-item span,
+  .entrega-individual-body .nota span {
+    font-size: 7px;
+    margin-bottom: 2px;
+  }
+
+  .entrega-individual-body .info-box strong,
+  .entrega-individual-body .info-entrega-item strong {
+    font-size: 8.5px;
+    line-height: 1.2;
+  }
+
+  .entrega-individual-body .info-entrega-section {
+    padding: 5px 7px;
+    margin-bottom: 6px;
+    border-radius: 5px;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  .entrega-individual-body .info-entrega-title {
+    margin-bottom: 4px;
+    padding-bottom: 3px;
+    font-size: 8px;
+  }
+
+  .entrega-individual-body .info-entrega-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .entrega-individual-body .info-entrega-item {
+    padding: 4px 5px;
+    border-radius: 4px;
+    break-inside: avoid;
+  }
+
+  .entrega-individual-body .info-entrega-full {
+    grid-column: auto;
+  }
+
+  .entrega-individual-body .productos-section {
+    margin-bottom: 6px;
+    overflow: visible !important;
+    border-radius: 0;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  .entrega-individual-body .section-title {
+    padding: 5px 7px;
+    font-size: 8px;
+    break-after: avoid;
+  }
+
+  .entrega-individual-body .productos-table {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .entrega-individual-body .productos-table thead {
+    display: table-header-group;
+  }
+
+  .entrega-individual-body .productos-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .entrega-individual-body .productos-table th,
+  .entrega-individual-body .productos-table td {
+    padding: 3px 4px;
+    font-size: 8px;
+    line-height: 1.15;
+  }
+
+  .entrega-individual-body .productos-table td small {
+    margin-top: 1px;
+    font-size: 7px;
+  }
+
+  .entrega-individual-body .totales {
+    width: min(290px, 100%);
+    margin: 4px 0 6px auto;
+    padding: 5px 8px;
+    border-radius: 5px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .entrega-individual-body .totales > div {
+    gap: 8px;
+    padding: 2px 0;
+  }
+
+  .entrega-individual-body .total-final {
+    margin-top: 2px;
+    padding-top: 4px !important;
+  }
+
+  .entrega-individual-body .total-final strong {
+    font-size: 12px;
+  }
+
+  .entrega-individual-body .nota {
+    margin-bottom: 5px;
+    padding: 5px 7px;
+    break-inside: auto;
+  }
+
+  .entrega-individual-body .documento-footer {
+    margin-top: 5px;
+    padding-top: 4px;
+    gap: 8px;
+    font-size: 7.5px;
+    break-inside: avoid;
+  }
+}
+
+/* WEBBUYS: impresión individual de entrega sin importes; Caja conserva importes. */
+.entrega-sin-valores .productos-table .col-codigo { width: 18%; }
+.entrega-sin-valores .productos-table .col-producto { width: 48%; }
+.entrega-sin-valores .productos-table .col-cantidad { width: 14%; }
+.entrega-sin-valores .productos-table .col-peso { width: 20%; }
+
+/* =========================================
+   V5: MEDIA CARTA EN AMBAS ORIENTACIONES
+   El tamaño y la orientación los elige el usuario en la impresora.
+   Estas reglas solo afectan al comprobante INDIVIDUAL de entrega.
+========================================= */
+@media print {
+  .entrega-individual-body {
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+  }
+
+  .entrega-individual-body .documento-header,
+  .entrega-individual-body .info-box,
+  .entrega-individual-body .info-entrega-item,
+  .entrega-individual-body .totales,
+  .entrega-individual-body .documento-footer {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .entrega-individual-body .productos-section,
+  .entrega-individual-body .productos-table,
+  .entrega-individual-body .productos-table tbody {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  .entrega-individual-body .productos-table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .entrega-individual-body .productos-table thead {
+    display: table-header-group;
+  }
+
+  .entrega-individual-body .productos-table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .entrega-individual-body .productos-table th,
+  .entrega-individual-body .productos-table td {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  /* La presentación corta acompaña al nombre y evita una línea extra por producto. */
+  .entrega-individual-body .productos-table td small {
+    display: inline;
+    margin: 0 0 0 4px;
+    font-size: 7px;
+  }
+
+  .entrega-individual-body .productos-table td:first-child,
+  .entrega-individual-body .productos-table td:nth-child(5),
+  .entrega-individual-body .productos-table td:nth-child(6) {
+    white-space: normal;
+  }
+
+  .entrega-individual-body .info-grid,
+  .entrega-individual-body .info-entrega-grid {
+    min-width: 0;
+  }
+}
+
+/* Media carta vertical: menos columnas en los cuadros de datos. */
+@media print and (orientation: portrait) {
+  .entrega-individual-body .info-grid,
+  .entrega-individual-body .info-entrega-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .entrega-individual-body .info-box-wide {
+    grid-column: 1 / -1;
+  }
+
+  .entrega-individual-body .info-entrega-full {
+    grid-column: auto;
+  }
+
+  .entrega-individual-body .productos-table th,
+  .entrega-individual-body .productos-table td {
+    padding: 5px 3px;
+    font-size: 9px;
+  }
+
+  .entrega-individual-body .productos-table td small { font-size: 8px; }
+  .entrega-individual-body .info-box strong,
+  .entrega-individual-body .info-entrega-item strong { font-size: 9px; }
+
+  .entrega-individual-body .productos-table .col-codigo { width: 13%; }
+  .entrega-individual-body .productos-table .col-producto { width: 31%; }
+  .entrega-individual-body .productos-table .col-cantidad { width: 9%; }
+  .entrega-individual-body .productos-table .col-peso { width: 15%; }
+  .entrega-individual-body .productos-table .col-precio { width: 15%; }
+  .entrega-individual-body .productos-table .col-subtotal { width: 17%; }
+
+  .entrega-sin-valores .productos-table .col-codigo { width: 18%; }
+  .entrega-sin-valores .productos-table .col-producto { width: 48%; }
+  .entrega-sin-valores .productos-table .col-cantidad { width: 14%; }
+  .entrega-sin-valores .productos-table .col-peso { width: 20%; }
+}
+
+/* Media carta horizontal: cuadros de datos más anchos y compactos. */
+@media print and (orientation: landscape) {
+  .entrega-individual-body .info-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .entrega-individual-body .info-entrega-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

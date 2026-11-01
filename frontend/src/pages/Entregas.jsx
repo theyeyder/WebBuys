@@ -18,6 +18,8 @@ import ModulosMenu
 import Toast
   from "../components/Toast.jsx";
 
+import { useAuth } from "../context/AuthContext.jsx";
+
 import {
   listarEmpleadosPedidos,
 } from "../services/empleado.service.js";
@@ -37,6 +39,10 @@ import {
   imprimirEntregasFiltradas,
 } from "../utils/entrega.impresion.js";
 
+import {
+  imprimirEntregaTirilla,
+} from "../utils/entrega.tirilla.js";
+
 import imprimirIcon
   from "../assets/icons/imprimir.webp";
 
@@ -50,6 +56,7 @@ import cerrarEntregaIcon
   from "../assets/icons/cerrar-entrega.webp";
 
 import "../styles/entregas.css";
+import "../styles/entregas-formato-impresion.css";
 
 
 const ESTADOS_FILTRO = [
@@ -548,6 +555,34 @@ function EstadoSelect({
 
 
 export default function Entregas() {
+  const { usuario } = useAuth();
+  const esAdministrador = usuario?.rol === "Administrador";
+  const puedeImprimirEntregas =
+    esAdministrador || usuario?.permisos?.entregas?.imprimir === true;
+
+  // V9: la orientacion de media carta se elige en el dialogo de impresion.
+  // Mantener la preferencia de usuarios de V8 sin imponer horizontal o vertical.
+  const FORMATOS_COMPROBANTE = [
+    "media-carta",
+    "tirilla-80",
+    "tirilla-58",
+  ];
+
+  const [formatoComprobante, setFormatoComprobante] = useState(() => {
+    const guardado = localStorage.getItem("webbuys-entregas-formato-comprobante");
+    if (["media-carta-horizontal", "media-carta-vertical"].includes(guardado)) {
+      return "media-carta";
+    }
+    return FORMATOS_COMPROBANTE.includes(guardado)
+      ? guardado
+      : "media-carta";
+  });
+
+  function cambiarFormatoComprobante(formato) {
+    if (!FORMATOS_COMPROBANTE.includes(formato)) return;
+    setFormatoComprobante(formato);
+    localStorage.setItem("webbuys-entregas-formato-comprobante", formato);
+  }
 
   const [
     entregas,
@@ -961,10 +996,14 @@ export default function Entregas() {
     entrega
   ) {
 
-    const resultado =
-      imprimirEntrega(
-        entrega
-      );
+    if (!puedeImprimirEntregas) return;
+
+    const resultado = formatoComprobante === "media-carta"
+      ? imprimirEntrega(entrega, { mostrarValores: esAdministrador })
+      : imprimirEntregaTirilla(entrega, {
+          mostrarValores: esAdministrador,
+          anchoMm: formatoComprobante === "tirilla-58" ? 58 : 80,
+        });
 
     if (
       resultado &&
@@ -987,9 +1026,11 @@ export default function Entregas() {
 
 
   function manejarImpresionGeneral() {
+    if (!puedeImprimirEntregas) return;
 
     const resultado =
       imprimirEntregasFiltradas({
+        mostrarValores: esAdministrador,
         entregas:
           entregasFiltradas,
 
@@ -1895,11 +1936,28 @@ export default function Entregas() {
           </div>
 
 
+          {puedeImprimirEntregas && (
+            <label className="entregas-formato-selector">
+              <span>Formato comprobante</span>
+              <select
+                value={formatoComprobante}
+                onChange={(event) => cambiarFormatoComprobante(event.target.value)}
+                aria-label="Formato de impresión individual de entregas"
+                title="Este formato se aplica al botón de imprimir de cada entrega"
+              >
+                <option value="media-carta">Media carta (5,5 x 8,5 in)</option>
+                <option value="tirilla-80">Tirilla 80 mm</option>
+                <option value="tirilla-58">Tirilla 58 mm</option>
+              </select>
+            </label>
+          )}
+
+          {puedeImprimirEntregas && (
           <button
             type="button"
             className="entregas-top-icon-btn"
-            data-tooltip="Imprimir entregas"
-            aria-label="Imprimir entregas"
+            data-tooltip="Imprimir listado de entregas (media carta)"
+            aria-label="Imprimir listado de entregas (media carta)"
             onClick={
               manejarImpresionGeneral
             }
@@ -1912,6 +1970,7 @@ export default function Entregas() {
               alt=""
             />
           </button>
+          )}
 
         </div>
 
@@ -2055,10 +2114,11 @@ export default function Entregas() {
 
                       <div className="entrega-card-top-actions">
 
+                        {puedeImprimirEntregas && (
                         <button
                           type="button"
                           className="entrega-card-print-btn"
-                          title="Imprimir esta entrega"
+                          title={`Imprimir esta entrega: ${formatoComprobante === "media-carta" ? "media carta" : formatoComprobante === "tirilla-58" ? "tirilla 58 mm" : "tirilla 80 mm"}`}
                           aria-label={`Imprimir ${entrega.pedidoCodigo || "entrega"}`}
                           onClick={
                             (event) => {
@@ -2085,6 +2145,7 @@ export default function Entregas() {
                           />
 
                         </button>
+                        )}
 
 
                         <span
@@ -2495,10 +2556,11 @@ export default function Entregas() {
                           }
                         >
 
+                          {puedeImprimirEntregas && (
                           <button
                             type="button"
                             className="entregas-list-print-btn"
-                            title="Imprimir esta entrega"
+                            title={`Imprimir esta entrega: ${formatoComprobante === "media-carta" ? "media carta" : formatoComprobante === "tirilla-58" ? "tirilla 58 mm" : "tirilla 80 mm"}`}
                             aria-label={`Imprimir ${entrega.pedidoCodigo || "entrega"}`}
                             onClick={
                               (event) => {
@@ -2521,6 +2583,7 @@ export default function Entregas() {
                             />
 
                           </button>
+                          )}
 
                         </td>
 

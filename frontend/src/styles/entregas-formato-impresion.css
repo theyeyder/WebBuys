@@ -1,0 +1,38 @@
+/* Selector de formato individual: no afecta al reporte general de entregas. */
+.entregas-page .entregas-formato-selector {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-width: 138px;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+.entregas-page .entregas-formato-selector select {
+  width: 100%;
+  min-height: 30px;
+  padding: 4px 7px;
+  border: 1px solid rgba(255,255,255,.6);
+  border-radius: 6px;
+  background: #fff;
+  color: #17382d;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.entregas-page .entregas-formato-selector select:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+@media (max-width: 900px) {
+  .entregas-page .entregas-title-bar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .entregas-page .entregas-title-actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}

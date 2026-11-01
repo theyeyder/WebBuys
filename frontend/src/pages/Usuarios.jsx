@@ -832,12 +832,21 @@ export default function Usuarios() {
     editar: "Editar",
     eliminar: "Eliminar",
     imprimir: "Imprimir",
+    descontar: "Descuentos",
     anular: "Anular",
     cambiarEstado: "Cambiar estado",
     registrarMovimientos: "Movimientos",
   };
 
   function permisoPerfil(perfil, moduloClave, accion) {
+    // Estas operaciones se autorizan únicamente con el check individual.
+    if (
+      (moduloClave === "pedidos" && ["imprimir", "descontar"].includes(accion)) ||
+      (moduloClave === "entregas" && accion === "imprimir")
+    ) {
+      return false;
+    }
+
     const fila = perfil?.permisos?.find(
       (permiso) => permiso.modulo === moduloClave
     );
@@ -1315,6 +1324,16 @@ export default function Usuarios() {
                 )}
               </div>
 
+              <p className="usuarios-perfil-permisos-info">
+                <strong>Permisos de pedidos:</strong> marca <strong>Imprimir</strong> para permitir
+                imprimir pedidos y <strong>Descuentos</strong> para permitir aplicar descuentos.
+                En <strong>Entregas</strong>, el check <strong>Imprimir</strong> controla sus comprobantes.
+                Los empleados sin permiso de descuentos ven cantidades sin importes en Pedidos;
+                al autorizar descuentos pueden consultar los valores para calcularlos.
+                Sus impresiones siguen saliendo sin precios. Por defecto, imprimir y descontar
+                solo están disponibles para el Administrador.
+              </p>
+
               <div className="usuarios-permisos-leyenda">
                 <span>
                   <i className="usuarios-leyenda-check heredado" aria-hidden="true">✓</i>
@@ -1357,6 +1376,10 @@ export default function Usuarios() {
                         </td>
 
                         {catalogoPermisos.acciones.map((accion) => {
+                          if (accion === "descontar" && modulo.clave !== "pedidos") {
+                            return <td key={`${modulo.clave}-${accion}`} aria-label="No aplica">—</td>;
+                          }
+
                           const heredadoCombinado =
                             permisoPerfiles(modulo.clave, accion);
                           const heredadoVista =

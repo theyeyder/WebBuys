@@ -52,7 +52,7 @@ function esCampoMoneda(campo = "", titulo = "", fila = null) {
     );
   }
 
-  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar/.test(
+  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar|contado|vencido|diferencia/.test(
     texto
   );
 }
@@ -149,13 +149,23 @@ function anchoPdf(columna) {
   return 58;
 }
 
-function crearMetricas({ tipo, columnas, filas }) {
+function crearMetricas({ tipo, columnas, filas, indicadores = null }) {
   const items = [
     {
       etiqueta: "REGISTROS",
       valor: new Intl.NumberFormat("es-CO").format(filas.length),
     },
   ];
+
+  if ((tipo === "caja" || tipo === "cartera") && indicadores) {
+    const campos = tipo === "caja"
+      ? [["ingresos", "INGRESOS"], ["egresos", "EGRESOS"], ["neto", "MOVIMIENTO NETO"], ["recaudosCartera", "RECAUDOS DE CARTERA"]]
+      : [["saldoPendiente", "SALDO ACTUAL"], ["saldoVencido", "VENCIDO ACTUAL"], ["pagosPeriodo", "ABONOS DEL PERÍODO"], ["cuentas", "CUENTAS"]];
+    return campos.map(([campo, etiqueta]) => ({
+      etiqueta,
+      valor: campo === "cuentas" ? String(indicadores[campo] || 0) : moneda(indicadores[campo]),
+    }));
+  }
 
   if (tipo === "resumen") {
     return items;
@@ -248,6 +258,8 @@ export async function generarInformePdf({
   usuario = "",
   columnas = [],
   filas = [],
+  indicadores = null,
+  secciones = [],
   empresa = {},
 }) {
   const nombreEmpresa =
@@ -325,6 +337,7 @@ export async function generarInformePdf({
     tipo,
     columnas,
     filas,
+    indicadores,
   });
 
   const metricasTable = {
@@ -373,6 +386,43 @@ export async function generarInformePdf({
     totalAnchos > maxDisponible
       ? columnas.map(() => "*")
       : widths;
+
+  const contenidoAdicional = secciones.flatMap((seccion) => {
+    const columnasSeccion = Array.isArray(seccion.columnas) ? seccion.columnas : [];
+    const filasSeccion = Array.isArray(seccion.filas) ? seccion.filas : [];
+    if (!columnasSeccion.length) return [];
+    const anchoSeccion = columnasSeccion.map(anchoPdf);
+    const widths = anchoSeccion.reduce((suma, valor) => suma + valor, 0) > maxDisponible
+      ? columnasSeccion.map(() => "*") : anchoSeccion;
+    const cabecera = columnasSeccion.map((columna) => ({
+      text: String(columna.titulo || "").toUpperCase(), bold: true,
+      color: COLORES.white, fontSize: 7, margin: [3, 5, 3, 5],
+    }));
+    const filasTabla = filasSeccion.map((fila, index) => columnasSeccion.map((columna) => {
+      const valor = fila[columna.campo] ?? "";
+      const esMoneda = esCampoMoneda(columna.campo, columna.titulo, fila);
+      const esNumero = esCampoNumerico(columna.campo, columna.titulo);
+      const texto = valor === "" ? "" : esMoneda ? moneda(valor) : esNumero && Number.isFinite(Number(valor))
+        ? numero(valor) : String(valor);
+      return {
+        text: texto, fontSize: 7, margin: [3, 4, 3, 4],
+        fillColor: index % 2 === 0 ? COLORES.white : COLORES.soft,
+        alignment: esMoneda || esNumero ? "right" : "left",
+      };
+    }));
+    return [
+      { text: seccion.titulo || "Detalle adicional", bold: true, fontSize: 11,
+        color: COLORES.primary, margin: [0, 16, 0, 7] },
+      filasSeccion.length ? {
+        table: { headerRows: 1, dontBreakRows: true, widths, body: [cabecera, ...filasTabla] },
+        layout: {
+          fillColor: (i) => i === 0 ? COLORES.primary : null,
+          hLineWidth: () => 0.4, vLineWidth: () => 0.3,
+          hLineColor: () => COLORES.line, vLineColor: () => COLORES.line,
+        },
+      } : { text: "No hay registros en esta sección.", color: COLORES.muted, margin: [0, 6, 0, 12] },
+    ];
+  });
 
   const documentDefinition = {
     pageSize: "A4",
@@ -560,6 +610,7 @@ export async function generarInformePdf({
             fillColor: COLORES.soft,
             margin: [0, 24, 0, 24],
           },
+      ...contenidoAdicional,
     ],
 
     footer(currentPage, pageCount) {

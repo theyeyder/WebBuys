@@ -703,3 +703,213 @@ td:nth-child(6) {
   }
 
 }
+
+/* WEBBUYS: remisión de pedido sin precios (solo impresión individual desde Pedidos). */
+.pedido-sin-valores table {
+  table-layout: auto;
+}
+.pedido-sin-valores table th:last-child,
+.pedido-sin-valores table td:last-child {
+  text-align: center;
+  white-space: nowrap;
+}
+@media print {
+  .pedido-sin-valores table {
+    break-inside: auto;
+  }
+  .pedido-sin-valores thead {
+    display: table-header-group;
+  }
+  .pedido-sin-valores tbody tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+/* =========================================
+   V5: COMPROBANTE DE PEDIDO EN MEDIA CARTA
+   La orientación se selecciona en el diálogo de impresión.
+   No cambia la impresión de listados de pedidos.
+========================================= */
+@page pedidoIndividual {
+  size: auto;
+  margin: 5mm;
+}
+
+@media print {
+  body.pedido-individual-body {
+    page: pedidoIndividual;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 9px;
+    line-height: 1.18;
+  }
+
+  .pedido-individual-body .pedido-header {
+    gap: 8px;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .pedido-individual-body .pedido-header-label { font-size: 8px; }
+  .pedido-individual-body h1 { font-size: 17px; }
+  .pedido-individual-body .pedido-estado {
+    padding: 4px 7px;
+    font-size: 8px;
+  }
+
+  .pedido-individual-body .info {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 5px;
+    margin-bottom: 7px;
+  }
+
+  .pedido-individual-body .info-section {
+    padding: 6px;
+    border-radius: 5px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .pedido-individual-body .info-section-title {
+    margin-bottom: 4px;
+    padding-bottom: 3px;
+    font-size: 8px;
+  }
+
+  .pedido-individual-body .info-cliente-nombre {
+    margin-bottom: 4px;
+    padding: 4px 6px;
+    border-radius: 4px;
+  }
+
+  .pedido-individual-body .info-cliente-nombre strong { font-size: 10px; }
+  .pedido-individual-body .info-grid { gap: 4px; }
+  .pedido-individual-body .info-item {
+    padding: 4px 5px;
+    border-radius: 4px;
+  }
+
+  .pedido-individual-body .info-item strong {
+    font-size: 8px;
+    line-height: 1.18;
+  }
+
+  /* Dirección y ciudad comparten fila cuando hay espacio: evita hojas vacías. */
+  .pedido-individual-body .info-cliente .info-item-full {
+    grid-column: auto;
+  }
+
+  .pedido-individual-body .info-empleado {
+    gap: 8px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  .pedido-individual-body table {
+    width: 100%;
+    table-layout: fixed;
+    font-size: 8px;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  .pedido-individual-body table thead {
+    display: table-header-group;
+  }
+
+  .pedido-individual-body table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .pedido-individual-body table th,
+  .pedido-individual-body table td {
+    padding: 4px 4px;
+    font-size: 8px;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  /* En impresión, las presentaciones breves van junto al producto. */
+  .pedido-individual-body table td br { display: none; }
+  .pedido-individual-body table td small {
+    display: inline;
+    margin-left: 4px;
+    font-size: 7px;
+  }
+
+  .pedido-individual-body table th:nth-child(1),
+  .pedido-individual-body table td:nth-child(1) { width: 12%; }
+
+  .pedido-individual-body table th:nth-child(2),
+  .pedido-individual-body table td:nth-child(2) { width: 30%; }
+
+  .pedido-individual-body table th:nth-child(3),
+  .pedido-individual-body table td:nth-child(3) { width: 16%; }
+
+  .pedido-individual-body table th:nth-child(4),
+  .pedido-individual-body table td:nth-child(4) { width: 10%; }
+
+  .pedido-individual-body:not(.pedido-sin-valores) table th:nth-child(5),
+  .pedido-individual-body:not(.pedido-sin-valores) table td:nth-child(5),
+  .pedido-individual-body:not(.pedido-sin-valores) table th:nth-child(6),
+  .pedido-individual-body:not(.pedido-sin-valores) table td:nth-child(6) {
+    width: 16%;
+  }
+
+  .pedido-individual-body.pedido-sin-valores table th:nth-child(2),
+  .pedido-individual-body.pedido-sin-valores table td:nth-child(2) { width: 50%; }
+  .pedido-individual-body.pedido-sin-valores table th:nth-child(3),
+  .pedido-individual-body.pedido-sin-valores table td:nth-child(3) { width: 24%; }
+  .pedido-individual-body.pedido-sin-valores table th:nth-child(4),
+  .pedido-individual-body.pedido-sin-valores table td:nth-child(4) { width: 14%; }
+
+  .pedido-individual-body .totales {
+    width: min(245px, 100%);
+    margin: 7px 0 0 auto;
+    padding: 5px 8px;
+    border-radius: 5px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .pedido-individual-body .totales div {
+    gap: 8px;
+    padding: 2px 0;
+    font-size: 9px;
+  }
+
+  .pedido-individual-body .total-final {
+    margin-top: 2px;
+    padding-top: 4px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media print and (orientation: portrait) {
+  .pedido-individual-body .info {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  }
+
+  .pedido-individual-body table th,
+  .pedido-individual-body table td {
+    padding: 5px 3px;
+    font-size: 9px;
+  }
+
+  .pedido-individual-body table td small { font-size: 8px; }
+  .pedido-individual-body .info-item strong { font-size: 9px; }
+}
+
+@media print and (orientation: landscape) {
+  .pedido-individual-body .info {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  }
+}

@@ -2037,392 +2037,318 @@ export async function obtenerInformeClientes({
 
 
 /* =========================================================
-   CAJA
+   CAJA Y CARTERA — INFORMES DE GESTIÓN V10
+   Los movimientos son del período; los cierres y saldos de
+   cartera reflejan el estado actual almacenado.
 ========================================================= */
 
-export async function obtenerInformeCaja({
-  desde,
-  hasta,
-}) {
-  const movimientos =
-    await prisma.movimientoCaja.findMany({
+function nombreUsuarioInforme(usuario) {
+  if (!usuario) return "";
+  return [usuario.nombres, usuario.apellidos].filter(Boolean).join(" ").trim()
+    || usuario.usuario || "";
+}
 
-      where: {
-        createdAt:
-          rangoTimestamp(
-            desde,
-            hasta
-          ),
+function fechaHoyBogota() {
+  const partes = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Bogota", year: "numeric", month: "2-digit", day: "2-digit",
+  }).formatToParts(new Date());
+  const valor = Object.fromEntries(partes.map((p) => [p.type, p.value]));
+  return `${valor.year}-${valor.month}-${valor.day}`;
+}
 
-        estado:
-          "Activo",
+function sumarImportes(filas, campo) {
+  return Number(filas.reduce((suma, fila) => suma + numero(fila[campo]), 0).toFixed(2));
+}
+
+export async function obtenerOpcionesCajasInforme() {
+  const cajas = await prisma.caja.findMany({
+    select: { id: true, codigo: true, fechaApertura: true, estado: true },
+    orderBy: { fechaApertura: "desc" },
+  });
+  return cajas.map((caja) => ({
+    id: caja.id, codigo: caja.codigo, estado: caja.estado,
+    fechaApertura: fechaBogota(caja.fechaApertura),
+  }));
+}
+
+export async function obtenerInformeCaja({ desde, hasta, cajaId = "" }) {
+  const periodo = rangoTimestamp(desde, hasta);
+  const id = String(cajaId || "").trim();
+  const whereMovimiento = { createdAt: periodo, estado: "Activo", ...(id ? { cajaId: id } : {}) };
+
+  const [movimientos, cajas] = await Promise.all([
+    prisma.movimientoCaja.findMany({
+      where: whereMovimiento,
+      include: {
+        caja: { select: { codigo: true } },
+        usuario: { select: { nombres: true, apellidos: true, usuario: true } },
       },
-
-      orderBy: {
-        createdAt:
-          "asc",
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    }),
+    prisma.caja.findMany({
+      where: id ? { id } : {
+        OR: [
+          { fechaApertura: periodo },
+          { fechaCierre: periodo },
+          { movimientos: { some: whereMovimiento } },
+        ],
       },
-
-      select: {
-        createdAt:
-          true,
-
-        tipo:
-          true,
-
-        origen:
-          true,
-
-        concepto:
-          true,
-
-        valor:
-          true,
-
-        pedidoCodigo:
-          true,
-
-        entregaCodigo:
-          true,
-
-        facturaCodigo:
-          true,
-
-        clienteNombre:
-          true,
-
-        metodoPago:
-          true,
+      include: {
+        abiertoPor: { select: { nombres: true, apellidos: true, usuario: true } },
+        cerradoPor: { select: { nombres: true, apellidos: true, usuario: true } },
       },
-    });
+      orderBy: { fechaApertura: "asc" },
+    }),
+  ]);
 
+  if (id && cajas.length === 0) throw new Error("La caja seleccionada no existe.");
 
-  const filas =
-    movimientos.map(
-      (movimiento) => ({
+  const filas = movimientos.map((m) => ({
+    fecha: fechaBogota(m.createdAt),
+    caja: m.caja?.codigo || "",
+    tipo: m.tipo,
+    origen: m.origen,
+    concepto: m.concepto,
+    cliente: m.clienteNombre || "",
+    metodoPago: m.metodoPago || (m.origen === "Manual" ? "Efectivo" : "Sin especificar"),
+    referencia: m.facturaCodigo || m.pedidoCodigo || m.entregaCodigo || "",
+    valor: numero(m.valor),
+    registradoPor: nombreUsuarioInforme(m.usuario),
+  }));
 
-        fecha:
-          fechaBogota(
-            movimiento.createdAt
-          ),
+  const ingresos = movimientos.filter((m) => m.tipo === "Ingreso");
+  const egresos = movimientos.filter((m) => m.tipo === "Egreso");
+  const cierresPeriodo = cajas.filter((caja) =>
+    caja.estado === "Cerrada" && caja.fechaCierre &&
+    caja.fechaCierre >= periodo.gte && caja.fechaCierre < periodo.lt
+  );
 
-        tipo:
-          movimiento.tipo,
+  const resumenCajas = cajas.map((caja) => ({
+    caja: caja.codigo,
+    apertura: fechaBogota(caja.fechaApertura),
+    cierre: fechaBogota(caja.fechaCierre),
+    estado: caja.estado,
+    saldoInicial: numero(caja.saldoInicial),
+    saldoCierre: caja.estado === "Cerrada" ? numero(caja.saldoEsperado) : "",
+    contado: caja.efectivoContado === null ? "" : numero(caja.efectivoContado),
+    diferencia: caja.diferencia === null ? "" : numero(caja.diferencia),
+    abiertoPor: nombreUsuarioInforme(caja.abiertoPor),
+    cerradoPor: nombreUsuarioInforme(caja.cerradoPor),
+  }));
 
-        origen:
-          movimiento.origen,
-
-        concepto:
-          movimiento.concepto,
-
-        cliente:
-          movimiento
-            .clienteNombre,
-
-        metodoPago:
-          movimiento
-            .metodoPago,
-
-        referencia:
-          movimiento
-            .facturaCodigo ||
-          movimiento
-            .pedidoCodigo ||
-          movimiento
-            .entregaCodigo,
-
-        valor:
-          numero(
-            movimiento.valor
-          ),
-      })
-    );
-
+  const indicadores = {
+    cajas: cajas.length,
+    movimientos: movimientos.length,
+    ingresos: sumarImportes(ingresos, "valor"),
+    egresos: sumarImportes(egresos, "valor"),
+    neto: Number((sumarImportes(ingresos, "valor") - sumarImportes(egresos, "valor")).toFixed(2)),
+    efectivoIngresado: sumarImportes(ingresos.filter((m) => m.afectaEfectivo), "valor"),
+    transferencias: sumarImportes(ingresos.filter((m) => m.metodoPago === "Transferencia"), "valor"),
+    recaudosCartera: sumarImportes(ingresos.filter((m) => m.origen === "Cartera"), "valor"),
+    cierres: cierresPeriodo.length,
+    diferenciaCierres: sumarImportes(cierresPeriodo, "diferencia"),
+  };
 
   return {
-    titulo:
-      "Informe de caja",
-
-    desde,
-    hasta,
-
+    titulo: id ? `Informe de caja - ${cajas[0].codigo}` : "Informe de caja y cierres",
+    desde, hasta,
+    nota: "Los ingresos, egresos y recaudos corresponden a movimientos activos registrados en el período. Los abonos de cartera están incluidos en ingresos (no se suman otra vez). El resumen de cajas muestra su estado y cierre registrados actualmente, que pueden ser posteriores al período. La diferencia de cierres suma solo las cajas cerradas dentro del período; no equivale al efectivo de todas las cajas.",
+    indicadores,
     columnas: [
-      {
-        titulo:
-          "Fecha",
-        campo:
-          "fecha",
-      },
-      {
-        titulo:
-          "Tipo",
-        campo:
-          "tipo",
-      },
-      {
-        titulo:
-          "Origen",
-        campo:
-          "origen",
-      },
-      {
-        titulo:
-          "Concepto",
-        campo:
-          "concepto",
-      },
-      {
-        titulo:
-          "Cliente",
-        campo:
-          "cliente",
-      },
-      {
-        titulo:
-          "Pago",
-        campo:
-          "metodoPago",
-      },
-      {
-        titulo:
-          "Referencia",
-        campo:
-          "referencia",
-      },
-      {
-        titulo:
-          "Valor",
-        campo:
-          "valor",
-      },
+      { titulo: "Fecha", campo: "fecha" },
+      { titulo: "Caja", campo: "caja" },
+      { titulo: "Tipo", campo: "tipo" },
+      { titulo: "Origen", campo: "origen" },
+      { titulo: "Concepto", campo: "concepto" },
+      { titulo: "Cliente", campo: "cliente" },
+      { titulo: "Medio", campo: "metodoPago" },
+      { titulo: "Referencia", campo: "referencia" },
+      { titulo: "Valor", campo: "valor" },
+      { titulo: "Registrado por", campo: "registradoPor" },
     ],
-
     filas,
+    secciones: [{
+      titulo: "Cajas y cierres registrados",
+      columnas: [
+        { titulo: "Caja", campo: "caja" },
+        { titulo: "Apertura", campo: "apertura" },
+        { titulo: "Cierre", campo: "cierre" },
+        { titulo: "Estado", campo: "estado" },
+        { titulo: "Saldo inicial", campo: "saldoInicial" },
+        { titulo: "Saldo al cierre", campo: "saldoCierre" },
+        { titulo: "Contado", campo: "contado" },
+        { titulo: "Diferencia", campo: "diferencia" },
+        { titulo: "Abrió", campo: "abiertoPor" },
+        { titulo: "Cerró", campo: "cerradoPor" },
+      ],
+      filas: resumenCajas,
+    }],
   };
 }
 
-
-/* =========================================================
-   CARTERA
-========================================================= */
+function estadoCarteraInforme(cartera, hoy) {
+  const saldo = numero(cartera.saldoPendiente);
+  if (saldo <= 0 || cartera.estado === "Pagada") return "Pagada";
+  const vencimiento = fechaSolo(cartera.fechaVencimiento);
+  if (vencimiento && vencimiento < hoy) return "Vencida";
+  if (numero(cartera.totalAbonado) > 0) return "Abonada";
+  return "Pendiente";
+}
 
 export async function obtenerInformeCartera({
-  desde,
-  hasta,
+  desde, hasta, carteraEstado = "", carteraPeriodo = "entrega",
 }) {
-  const carteras =
-    await prisma.cartera.findMany({
+  const periodo = rangoTimestamp(desde, hasta);
+  const periodoEntrega = rangoDate(desde, hasta);
+  const estadoFiltro = String(carteraEstado || "").trim();
+  const modo = String(carteraPeriodo || "entrega").trim();
+  const estadosPermitidos = ["", "Pendiente", "Abonada", "Pagada", "Vencida", "Sin vencimiento"];
+  if (!estadosPermitidos.includes(estadoFiltro)) throw new Error("Estado de cartera no válido.");
+  if (!["entrega", "todas"].includes(modo)) throw new Error("Alcance de cartera no válido.");
 
-      where: {
-        fechaEntrega:
-          rangoDate(
-            desde,
-            hasta
-          ),
-      },
+  const cuentas = await prisma.cartera.findMany({
+    where: modo === "entrega" ? { fechaEntrega: periodoEntrega } : {},
+    orderBy: [{ fechaEntrega: "asc" }, { codigo: "asc" }],
+    select: {
+      id: true, codigo: true, pedidoCodigo: true, clienteCodigo: true,
+      clienteNombre: true, clienteDocumento: true, fechaEntrega: true,
+      fechaVencimiento: true, valorOriginal: true, totalAbonado: true,
+      saldoPendiente: true, estado: true,
+    },
+  });
 
-      orderBy: {
-        fechaEntrega:
-          "asc",
-      },
+  const hoy = fechaHoyBogota();
+  const carteras = cuentas.filter((c) => {
+    if (!estadoFiltro) return true;
+    if (estadoFiltro === "Sin vencimiento") {
+      return numero(c.saldoPendiente) > 0 && !c.fechaVencimiento;
+    }
+    if (estadoFiltro === "Abonada") {
+      return numero(c.saldoPendiente) > 0 && numero(c.totalAbonado) > 0;
+    }
+    if (estadoFiltro === "Pendiente") {
+      return numero(c.saldoPendiente) > 0 && numero(c.totalAbonado) === 0;
+    }
+    return estadoCarteraInforme(c, hoy) === estadoFiltro;
+  });
+  const cuentasPorId = new Map(carteras.map((c) => [c.id, c]));
+  const pagos = carteras.length ? await prisma.pagoCartera.findMany({
+    where: { carteraId: { in: carteras.map((c) => c.id) }, fechaPago: periodo, estado: "Activo" },
+    include: {
+      caja: { select: { codigo: true } },
+      usuario: { select: { nombres: true, apellidos: true, usuario: true } },
+    },
+    orderBy: [{ fechaPago: "asc" }, { id: "asc" }],
+  }) : [];
 
-      select: {
-        codigo:
-          true,
+  const filas = carteras.map((c) => {
+    const vencimiento = fechaSolo(c.fechaVencimiento);
+    const estado = estadoCarteraInforme(c, hoy);
+    return {
+      codigo: c.codigo, pedido: c.pedidoCodigo,
+      cliente: c.clienteNombre, documento: c.clienteDocumento,
+      fechaEntrega: fechaSolo(c.fechaEntrega), vencimiento,
+      estado, valorOriginal: numero(c.valorOriginal),
+      abonado: numero(c.totalAbonado), saldo: numero(c.saldoPendiente),
+      diasMora: estado === "Vencida"
+        ? Math.round((Date.parse(`${hoy}T00:00:00Z`) - Date.parse(`${vencimiento}T00:00:00Z`)) / 86400000)
+        : 0,
+    };
+  });
 
-        pedidoCodigo:
-          true,
+  const filasPagos = pagos.map((pago) => {
+    const cuenta = cuentasPorId.get(pago.carteraId);
+    return {
+      fecha: fechaBogota(pago.fechaPago),
+      cartera: cuenta?.codigo || "", pedido: cuenta?.pedidoCodigo || "",
+      cliente: cuenta?.clienteNombre || "", metodoPago: pago.metodoPago,
+      caja: pago.caja?.codigo || "", referencia: pago.referencia || "",
+      valor: numero(pago.valor), registradoPor: nombreUsuarioInforme(pago.usuario),
+    };
+  });
 
-        clienteCodigo:
-          true,
-
-        clienteNombre:
-          true,
-
-        clienteDocumento:
-          true,
-
-        fechaEntrega:
-          true,
-
-        fechaVencimiento:
-          true,
-
-        valorOriginal:
-          true,
-
-        totalAbonado:
-          true,
-
-        saldoPendiente:
-          true,
-
-        estado:
-          true,
-      },
+  const clientes = new Map();
+  const cuentasPorCodigo = new Map(carteras.map((c) => [c.codigo, c]));
+  for (const fila of filas) {
+    const cuenta = cuentasPorCodigo.get(fila.codigo);
+    const clave = cuenta?.clienteCodigo || `${fila.documento}|${fila.cliente}`;
+    if (!clientes.has(clave)) clientes.set(clave, {
+      cliente: fila.cliente, documento: fila.documento, cuentas: 0,
+      valorOriginal: 0, abonado: 0, saldo: 0, vencido: 0,
     });
+    const r = clientes.get(clave);
+    r.cuentas += 1;
+    r.valorOriginal += fila.valorOriginal;
+    r.abonado += fila.abonado;
+    r.saldo += fila.saldo;
+    if (fila.estado === "Vencida") r.vencido += fila.saldo;
+  }
 
-
-  const filas =
-    carteras.map(
-      (cartera) => ({
-
-        codigo:
-          cartera.codigo,
-
-        pedido:
-          cartera.pedidoCodigo,
-
-        cliente:
-          cartera.clienteNombre,
-
-        documento:
-          cartera
-            .clienteDocumento,
-
-        fechaEntrega:
-          fechaSolo(
-            cartera.fechaEntrega
-          ),
-
-        vencimiento:
-          fechaSolo(
-            cartera
-              .fechaVencimiento
-          ),
-
-        valorOriginal:
-          numero(
-            cartera
-              .valorOriginal
-          ),
-
-        abonado:
-          numero(
-            cartera
-              .totalAbonado
-          ),
-
-        saldo:
-          numero(
-            cartera
-              .saldoPendiente
-          ),
-
-        estado:
-          cartera.estado,
-      })
-    );
-
-
-  const pagos =
-    await prisma.pagoCartera.aggregate({
-
-      where: {
-        fechaPago:
-          rangoTimestamp(
-            desde,
-            hasta
-          ),
-
-        estado:
-          "Activo",
-      },
-
-      _count: {
-        _all: true,
-      },
-
-      _sum: {
-        valor: true,
-      },
-    });
-
+  const indicadores = {
+    cuentas: filas.length,
+    valorOriginal: sumarImportes(filas, "valorOriginal"),
+    abonadoHistorico: sumarImportes(filas, "abonado"),
+    saldoPendiente: sumarImportes(filas, "saldo"),
+    saldoVencido: sumarImportes(filas.filter((f) => f.estado === "Vencida"), "saldo"),
+    pagosPeriodo: sumarImportes(pagos, "valor"),
+    efectivoPeriodo: sumarImportes(pagos.filter((p) => p.metodoPago === "Efectivo"), "valor"),
+    transferenciaPeriodo: sumarImportes(pagos.filter((p) => p.metodoPago === "Transferencia"), "valor"),
+  };
 
   return {
-    titulo:
-      "Informe de cartera",
-
-    desde,
-    hasta,
-
+    titulo: "Informe de cartera y abonos",
+    desde, hasta,
+    nota: modo === "todas"
+      ? "Se muestran todas las cuentas con su saldo ACTUAL, independientemente de cuándo se originaron. Los abonos detallados corresponden únicamente al período seleccionado y a las cuentas filtradas. El saldo actual no representa un corte histórico a la fecha Hasta."
+      : "Se muestran las cuentas originadas (fecha de entrega) dentro del período, con su saldo ACTUAL. Los abonos detallados corresponden al período seleccionado y solo a esas cuentas. El saldo actual no representa un corte histórico a la fecha Hasta.",
+    indicadores,
     columnas: [
+      { titulo: "Cartera", campo: "codigo" },
+      { titulo: "Pedido", campo: "pedido" },
+      { titulo: "Cliente", campo: "cliente" },
+      { titulo: "Documento", campo: "documento" },
+      { titulo: "Entrega", campo: "fechaEntrega" },
+      { titulo: "Vencimiento", campo: "vencimiento" },
+      { titulo: "Estado actual", campo: "estado" },
+      { titulo: "Valor original", campo: "valorOriginal" },
+      { titulo: "Abonado", campo: "abonado" },
+      { titulo: "Saldo", campo: "saldo" },
+      { titulo: "Días mora", campo: "diasMora" },
+    ],
+    filas,
+    resumenPagos: { cantidad: pagos.length, valor: indicadores.pagosPeriodo },
+    secciones: [
       {
-        titulo:
-          "Cartera",
-        campo:
-          "codigo",
+        titulo: "Abonos recibidos en el período",
+        columnas: [
+          { titulo: "Fecha", campo: "fecha" },
+          { titulo: "Cartera", campo: "cartera" },
+          { titulo: "Pedido", campo: "pedido" },
+          { titulo: "Cliente", campo: "cliente" },
+          { titulo: "Medio", campo: "metodoPago" },
+          { titulo: "Caja", campo: "caja" },
+          { titulo: "Referencia", campo: "referencia" },
+          { titulo: "Valor", campo: "valor" },
+          { titulo: "Registrado por", campo: "registradoPor" },
+        ],
+        filas: filasPagos,
       },
       {
-        titulo:
-          "Pedido",
-        campo:
-          "pedido",
-      },
-      {
-        titulo:
-          "Cliente",
-        campo:
-          "cliente",
-      },
-      {
-        titulo:
-          "Documento",
-        campo:
-          "documento",
-      },
-      {
-        titulo:
-          "Entrega",
-        campo:
-          "fechaEntrega",
-      },
-      {
-        titulo:
-          "Vencimiento",
-        campo:
-          "vencimiento",
-      },
-      {
-        titulo:
-          "Valor original",
-        campo:
-          "valorOriginal",
-      },
-      {
-        titulo:
-          "Abonado",
-        campo:
-          "abonado",
-      },
-      {
-        titulo:
-          "Saldo",
-        campo:
-          "saldo",
-      },
-      {
-        titulo:
-          "Estado",
-        campo:
-          "estado",
+        titulo: "Resumen por cliente",
+        columnas: [
+          { titulo: "Cliente", campo: "cliente" },
+          { titulo: "Documento", campo: "documento" },
+          { titulo: "Cuentas", campo: "cuentas" },
+          { titulo: "Valor original", campo: "valorOriginal" },
+          { titulo: "Abonado", campo: "abonado" },
+          { titulo: "Saldo", campo: "saldo" },
+          { titulo: "Vencido", campo: "vencido" },
+        ],
+        filas: [...clientes.values()].sort((a, b) => a.cliente.localeCompare(b.cliente, "es")),
       },
     ],
-
-    filas,
-
-    resumenPagos: {
-      cantidad:
-        pagos._count._all,
-
-      valor:
-        numero(
-          pagos._sum.valor
-        ),
-    },
   };
 }
-
 
 /* =========================================================
    RUTAS Y ZONAS
@@ -2605,89 +2531,69 @@ export async function obtenerInformeRepartidores({
   const indicadores = indicadoresRecaudo(entregas);
   const nota = "Los importes corresponden a pedidos entregados y a su forma de pago registrada. No verifican si el dinero fue recibido por el repartidor o directamente por la empresa. Los abonos posteriores de cartera no se incluyen aquí.";
 
-  if (id) {
-    const nombre = nombreRepartidorInforme(repartidorSeleccionado);
-    const filas = entregas.map((entrega) => {
-      const valor = numero(entrega.total);
-      const metodo = clasificarMetodoPago(entrega.metodoPago);
-      return {
-        fecha: fechaBogota(entrega.fechaEntregaReal),
-        pedido: entrega.pedidoCodigo,
-        cliente: entrega.clienteNombre,
-        ruta: entrega.rutaNombre || "Sin ruta",
-        zona: entrega.zonaDespachoNombre || "Sin zona",
-        metodoPago: entrega.metodoPago || "Sin definir",
-        efectivo: metodo === "efectivo" ? valor : 0,
-        transferencia: metodo === "transferencia" ? valor : 0,
-        credito: metodo === "credito" ? valor : 0,
-        sinClasificar: metodo === "sinClasificar" ? valor : 0,
-        total: valor,
-      };
-    });
+  // El filtro solo cambia qué repartidores se consultan.
+  // Tanto "Todos" como un repartidor específico muestran
+  // el mismo detalle por pedido, sin sustituirlo por un resumen.
+  const filas = entregas.map((entrega) => {
+    const valor = numero(entrega.total);
+    const metodo = clasificarMetodoPago(entrega.metodoPago);
 
     return {
-      titulo: `Entregas y recaudos registrados - ${nombre}`,
-      desde,
-      hasta,
-      nota,
-      indicadores,
-      columnas: [
-        { titulo: "Fecha", campo: "fecha" },
-        { titulo: "Pedido", campo: "pedido" },
-        { titulo: "Cliente", campo: "cliente" },
-        { titulo: "Ruta", campo: "ruta" },
-        { titulo: "Zona", campo: "zona" },
-        { titulo: "Forma de pago", campo: "metodoPago" },
-        { titulo: "Efectivo", campo: "efectivo" },
-        { titulo: "Transferencia", campo: "transferencia" },
-        { titulo: "Crédito", campo: "credito" },
-        { titulo: "Sin clasificar", campo: "sinClasificar" },
-        { titulo: "Total", campo: "total" },
-      ],
-      filas,
+      repartidor: nombreRepartidorInforme(entrega.repartidor),
+      fecha: fechaBogota(entrega.fechaEntregaReal),
+      pedido: entrega.pedidoCodigo,
+      cliente: entrega.clienteNombre,
+      ruta: entrega.rutaNombre || "Sin ruta",
+      zona: entrega.zonaDespachoNombre || "Sin zona",
+      metodoPago: entrega.metodoPago || "Sin definir",
+      efectivo: metodo === "efectivo" ? valor : 0,
+      transferencia: metodo === "transferencia" ? valor : 0,
+      credito: metodo === "credito" ? valor : 0,
+      sinClasificar: metodo === "sinClasificar" ? valor : 0,
+      total: valor,
     };
+  });
+
+  // Al consultar a todos, agrupamos visualmente los pedidos por
+  // repartidor; se conserva el orden cronológico dentro de cada grupo.
+  if (!id) {
+    filas.sort((a, b) =>
+      a.repartidor.localeCompare(b.repartidor, "es", {
+        sensitivity: "base",
+      })
+    );
   }
 
-  const mapa = new Map();
+  const columnas = [
+    { titulo: "Repartidor", campo: "repartidor" },
+    { titulo: "Fecha", campo: "fecha" },
+    { titulo: "Pedido", campo: "pedido" },
+    { titulo: "Cliente", campo: "cliente" },
+    { titulo: "Ruta", campo: "ruta" },
+    { titulo: "Zona", campo: "zona" },
+    { titulo: "Forma de pago", campo: "metodoPago" },
+    { titulo: "Efectivo", campo: "efectivo" },
+    { titulo: "Transferencia", campo: "transferencia" },
+    { titulo: "Crédito", campo: "credito" },
+    { titulo: "Sin clasificar", campo: "sinClasificar" },
+    { titulo: "Total", campo: "total" },
+  ];
 
-  for (const entrega of entregas) {
-    const clave = entrega.repartidorId || "sin-repartidor";
-    if (!mapa.has(clave)) {
-      mapa.set(clave, {
-        repartidor: nombreRepartidorInforme(entrega.repartidor),
-        pedidos: 0,
-        efectivo: 0,
-        transferencia: 0,
-        credito: 0,
-        sinClasificar: 0,
-        total: 0,
-      });
-    }
+  const titulo = id
+    ? `Entregas y recaudos registrados - ${nombreRepartidorInforme(repartidorSeleccionado)}`
+    : "Repartidores y recaudos registrados";
 
-    const fila = mapa.get(clave);
-    const valor = numero(entrega.total);
-    fila.pedidos += 1;
-    fila.total += valor;
-    fila[clasificarMetodoPago(entrega.metodoPago)] += valor;
-  }
-
-  const filas = [...mapa.values()].sort((a, b) => b.total - a.total);
+  const repartidores = new Set(
+    entregas.map((entrega) => entrega.repartidorId || "sin-repartidor")
+  ).size;
 
   return {
-    titulo: "Repartidores y recaudos registrados",
+    titulo,
     desde,
     hasta,
     nota,
-    indicadores: { ...indicadores, repartidores: filas.length },
-    columnas: [
-      { titulo: "Repartidor", campo: "repartidor" },
-      { titulo: "Pedidos entregados", campo: "pedidos" },
-      { titulo: "Efectivo registrado", campo: "efectivo" },
-      { titulo: "Transferencia registrada", campo: "transferencia" },
-      { titulo: "Crédito", campo: "credito" },
-      { titulo: "Sin clasificar", campo: "sinClasificar" },
-      { titulo: "Total vendido", campo: "total" },
-    ],
+    indicadores: { ...indicadores, repartidores },
+    columnas,
     filas,
   };
 }
@@ -2702,6 +2608,9 @@ export async function obtenerDatosInforme({
   desde,
   hasta,
   repartidorId = "",
+  cajaId = "",
+  carteraEstado = "",
+  carteraPeriodo = "entrega",
 }) {
   const nombre =
     String(
@@ -2773,6 +2682,7 @@ export async function obtenerDatosInforme({
       return obtenerInformeCaja({
         desde,
         hasta,
+        cajaId,
       });
 
 
@@ -2780,6 +2690,8 @@ export async function obtenerDatosInforme({
       return obtenerInformeCartera({
         desde,
         hasta,
+        carteraEstado,
+        carteraPeriodo,
       });
 
 

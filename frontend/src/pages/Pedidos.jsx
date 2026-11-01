@@ -301,6 +301,7 @@ const ESTADOS_PEDIDO = [
 const ESTADOS_FILTRO_PEDIDO = [
   "Todos",
   ...ESTADOS_PEDIDO,
+  "Entregado",
 ];
 
 function claseEstadoPedido(estado) {
@@ -1011,9 +1012,14 @@ export default function Pedidos() {
   } = useAuth();
 
 
+  const esAdministrador = usuario?.rol === "Administrador";
   const puedeDarDescuento =
-    usuario?.rol ===
-    "Administrador";
+    esAdministrador || usuario?.permisos?.pedidos?.descontar === true;
+  // Los empleados sin autorización de descuentos solo ven cantidades.
+  // Quien puede aplicar descuentos necesita consultar los importes.
+  const mostrarValoresPedido = esAdministrador || puedeDarDescuento;
+  const puedeImprimirPedidos =
+    esAdministrador || usuario?.permisos?.pedidos?.imprimir === true;
 
 
   const [
@@ -3913,8 +3919,10 @@ export default function Pedidos() {
   ========================================= */
 
   function manejarImprimirPedidosFiltrados() {
+    if (!puedeImprimirPedidos) return;
 
     const resultado = imprimirPedidosFiltrados({
+      mostrarValores: esAdministrador,
       pedidos: pedidosFiltrados,
       filtros: {
         busqueda: filtro,
@@ -4079,6 +4087,7 @@ export default function Pedidos() {
             </button>
 
             {/* IMPRIMIR PEDIDOS FILTRADOS */}
+            {puedeImprimirPedidos && (
             <button
               type="button"
               className="pedidos-top-icon-btn"
@@ -4091,6 +4100,7 @@ export default function Pedidos() {
                 alt=""
               />
             </button>
+            )}
 
         </div>
 
@@ -4315,6 +4325,7 @@ export default function Pedidos() {
 
                           {/* IMPRIMIR ESTE PEDIDO */}
 
+                          {puedeImprimirPedidos && (
                           <button
                             type="button"
                             className="pedidos-card-print-btn"
@@ -4325,7 +4336,9 @@ export default function Pedidos() {
                                 event.stopPropagation();
 
                                 imprimirPedido(
-                                  pedido
+                                  pedido,
+                                  null,
+                                  { mostrarValores: esAdministrador }
                                 );
 
                               }
@@ -4346,6 +4359,7 @@ export default function Pedidos() {
                             />
 
                           </button>
+                          )}
 
 
                           {/* ESTADO */}
@@ -4516,6 +4530,7 @@ export default function Pedidos() {
 
                       {/* TOTAL */}
 
+                      {mostrarValoresPedido && (
                       <div className="pedidos-client-card-total">
 
                         <span>
@@ -4535,6 +4550,7 @@ export default function Pedidos() {
                         </strong>
 
                       </div>
+                      )}
 
 
                       {/* ABRIR */}
@@ -4641,9 +4657,11 @@ export default function Pedidos() {
                       Productos
                     </th>
 
+                    {mostrarValoresPedido && (
                     <th>
                       Total
                     </th>
+                    )}
 
                     <th>
                       Estado
@@ -4852,6 +4870,7 @@ export default function Pedidos() {
 
                           {/* TOTAL */}
 
+                          {mostrarValoresPedido && (
                           <td>
 
                             <strong className="pedidos-list-total">
@@ -4869,6 +4888,7 @@ export default function Pedidos() {
                             </strong>
 
                           </td>
+                          )}
                           {/* ESTADO */}
 
                           <td
@@ -4909,6 +4929,7 @@ export default function Pedidos() {
                             }
                           >
 
+                            {puedeImprimirPedidos && (
                             <button
                               type="button"
 
@@ -4920,7 +4941,9 @@ export default function Pedidos() {
                                   event.stopPropagation();
 
                                   imprimirPedido(
-                                    pedido
+                                    pedido,
+                                    null,
+                                    { mostrarValores: esAdministrador }
                                   );
 
                                 }
@@ -4939,6 +4962,7 @@ export default function Pedidos() {
                               />
 
                             </button>
+                            )}
 
                           </td>
 
@@ -5547,7 +5571,7 @@ export default function Pedidos() {
                     </label>
 
 
-                    {productoActual && (
+                    {mostrarValoresPedido && productoActual && (
 
                       <div className="pedidos-price-preview">
 
@@ -5621,8 +5645,8 @@ export default function Pedidos() {
                           <th>Producto</th>
                           <th>Marca</th>
                           <th>Cantidad</th>
-                          <th>Precio</th>
-                          <th>Subtotal</th>
+                          {mostrarValoresPedido && <th>Precio</th>}
+                          {mostrarValoresPedido && <th>Subtotal</th>}
                           <th></th>
                         </tr>
 
@@ -5637,7 +5661,7 @@ export default function Pedidos() {
                           <tr>
 
                             <td
-                              colSpan="6"
+                              colSpan={mostrarValoresPedido ? 6 : 4}
                               className="pedidos-empty"
                             >
                               Agregue productos al pedido.
@@ -5690,6 +5714,8 @@ export default function Pedidos() {
                                 </td>
 
 
+                                {mostrarValoresPedido && (
+                                <>
                                 <td>
 
                                   <strong>
@@ -5726,6 +5752,8 @@ export default function Pedidos() {
                                   </strong>
 
                                 </td>
+                                </>
+                                )}
 
 
                                 <td>
@@ -5937,6 +5965,7 @@ export default function Pedidos() {
                     </label>
 
 
+                    {puedeDarDescuento && (
                     <label>
 
                       Descuento
@@ -5993,6 +6022,7 @@ export default function Pedidos() {
                       />
 
                     </label>
+                    )}
 
 
                     <label className="pedidos-observaciones">
@@ -6034,6 +6064,7 @@ export default function Pedidos() {
 
                 {/* TOTALES */}
 
+                {mostrarValoresPedido && (
                 <div className="pedidos-summary">
 
                   <div>
@@ -6090,6 +6121,7 @@ export default function Pedidos() {
                   )}
 
                 </div>
+                )}
 
 
                 </fieldset>
@@ -6316,6 +6348,7 @@ export default function Pedidos() {
 
                 {/* IMPRIMIR SOLO LOS RESULTADOS DE ESTA BÚSQUEDA */}
 
+                {puedeImprimirPedidos && (
                 <div className="pedidos-search-print-actions">
 
                   <button
@@ -6336,6 +6369,7 @@ export default function Pedidos() {
                   </button>
 
                 </div>
+                )}
 
               </div>
 
@@ -6401,6 +6435,7 @@ export default function Pedidos() {
 
                       </span>
 
+                      {mostrarValoresPedido && (
                       <strong>
                         {pedidoTieneProductosPorPeso(
                           pedido
@@ -6412,6 +6447,7 @@ export default function Pedidos() {
                               pedido.total
                             )}
                       </strong>
+                      )}
 
                     </button>
 

@@ -89,13 +89,18 @@ async function prepararDatos(req, actual = null) {
 
   /*
     REGLA DE SEGURIDAD:
-    los usuarios con rol Empleado no pueden aplicar ni modificar descuentos.
+    el empleado solo puede aplicar o modificar descuentos cuando
+    el Administrador habilitó individualmente Pedidos > Descuentos.
 
     - Pedido nuevo: el descuento debe ser 0.
     - Pedido existente: se conserva exactamente el descuento que ya tenía
       (por ejemplo, uno autorizado previamente por un Administrador).
   */
-  if (esEmpleado) {
+  const autorizadoParaDescontar =
+    req.usuario?.rol === "Administrador" ||
+    req.usuario?.permisos?.pedidos?.descontar === true;
+
+  if (esEmpleado && !autorizadoParaDescontar) {
     if (!actual) {
       if (
         Number.isFinite(descuento) &&

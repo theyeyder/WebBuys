@@ -4,6 +4,7 @@ export const ACCIONES_PERMISO = [
   "editar",
   "eliminar",
   "imprimir",
+  "descontar",
   "anular",
   "cambiarEstado",
   "registrarMovimientos",
@@ -123,6 +124,23 @@ export function construirPermisosEfectivos(usuario) {
       }
     }
   }
+
+  /*
+    Operaciones sensibles: NO se heredan de los perfiles del empleado.
+    El Administrador puede habilitarlas mediante los checks individuales
+    en Configuración > Usuarios > Administrar permisos de este usuario.
+    Sin autorización explícita, permanecen desactivadas.
+  */
+  const individuales = personalizados.find(
+    (fila) => fila.modulo === "pedidos"
+  );
+  permisos.pedidos.imprimir = individuales?.imprimir === true;
+  permisos.pedidos.descontar = individuales?.descontar === true;
+
+  const individualesEntregas = personalizados.find(
+    (fila) => fila.modulo === "entregas"
+  );
+  permisos.entregas.imprimir = individualesEntregas?.imprimir === true;
 
   return permisos;
 }

@@ -1,7 +1,11 @@
 import {
   obtenerDatosInforme,
   obtenerEmpresaInforme,
+  obtenerOpcionesRepartidoresInforme,
+  obtenerOpcionesCajasInforme,
 } from "../../services/informes/informeDatos.service.js";
+
+import { puede } from "../../utils/permisos.js";
 
 import {
   generarInformeHtml,
@@ -42,6 +46,7 @@ export const obtenerEstadoInformes =
         "caja",
         "cartera",
         "rutas-zonas",
+        "repartidores",
       ],
 
       formatos: [
@@ -54,6 +59,35 @@ export const obtenerEstadoInformes =
 
   };
 
+
+/* =========================================================
+   OPCIONES DE REPARTIDORES PARA EL FILTRO
+========================================================= */
+
+export const listarOpcionesRepartidores = async (_req, res) => {
+  try {
+    return res.json(await obtenerOpcionesRepartidoresInforme());
+  } catch (error) {
+    console.error("Error consultando repartidores del informe:", error);
+    return res.status(500).json({
+      mensaje: "No fue posible cargar los repartidores del informe.",
+    });
+  }
+};
+
+
+/* Opciones de caja: solo usuarios con acceso a Caja. */
+export const listarOpcionesCajas = async (req, res) => {
+  if (!puede(req.usuario, "caja", "ver")) {
+    return res.status(403).json({ mensaje: "No tienes permiso para consultar Caja." });
+  }
+  try {
+    return res.json(await obtenerOpcionesCajasInforme());
+  } catch (error) {
+    console.error("Error consultando cajas para informe:", error);
+    return res.status(500).json({ mensaje: "No fue posible cargar las cajas." });
+  }
+};
 
 /* =========================================================
    RESUMEN GENERAL → TABLA EXPORTABLE
@@ -241,6 +275,12 @@ export const generarInforme =
       }
 
 
+      /* Los informes financieros respetan los permisos de lectura. */
+      if ((tipo === "caja" || tipo === "cartera") &&
+          !puede(req.usuario, tipo, "ver")) {
+        return res.status(403).json({ mensaje: `No tienes permiso para consultar ${tipo}.` });
+      }
+
       /* =========================================
          CONSULTAR POSTGRESQL
       ========================================= */
@@ -250,6 +290,12 @@ export const generarInforme =
           tipo,
           desde,
           hasta,
+          repartidorId: tipo === "repartidores"
+            ? String(req.query.repartidorId || "").trim()
+            : "",
+          cajaId: tipo === "caja" ? String(req.query.cajaId || "").trim() : "",
+          carteraEstado: tipo === "cartera" ? String(req.query.carteraEstado || "").trim() : "",
+          carteraPeriodo: tipo === "cartera" ? String(req.query.carteraPeriodo || "entrega").trim() : "entrega",
         });
 
 
@@ -300,6 +346,8 @@ export const generarInforme =
         titulo:
           datos.titulo,
 
+        nota: datos.nota || "",
+
         desde,
         hasta,
 
@@ -312,6 +360,9 @@ export const generarInforme =
         filas:
           datos.filas ||
           [],
+
+        indicadores: datos.indicadores || null,
+        secciones: datos.secciones || [],
 
       };
 

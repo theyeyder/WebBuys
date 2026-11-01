@@ -46,7 +46,7 @@ function esCampoMoneda(campo = "", titulo = "", fila = null) {
     );
   }
 
-  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar/.test(
+  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar|contado|vencido|diferencia/.test(
     texto
   );
 }
@@ -154,6 +154,8 @@ export async function generarInformeExcel({
   usuario = "",
   columnas = [],
   filas = [],
+  indicadores = null,
+  secciones = [],
   empresa = {},
 }) {
   const workbook = new ExcelJS.Workbook();
@@ -418,7 +420,9 @@ export async function generarInformeExcel({
         columna.titulo
       );
 
-      if (!esMoneda) {
+      // En Caja los ingresos y egresos tienen signos contables diferentes;
+      // sumar el valor absoluto de todos los movimientos sería engañoso.
+      if (!esMoneda || (tipo === "caja" && columna.campo === "valor")) {
         return;
       }
 
@@ -494,6 +498,81 @@ export async function generarInformeExcel({
     `&L${nombreEmpresa}&CGenerado por WebBuys&R&P de &N`;
 
   worksheet.pageSetup.printTitlesRow = `${headerRowNumber}:${headerRowNumber}`;
+
+  if ((tipo === "caja" || tipo === "cartera") && indicadores) {
+    const nombres = {
+      cajas: "Cajas registradas", movimientos: "Movimientos", ingresos: "Ingresos",
+      egresos: "Egresos", neto: "Movimiento neto", efectivoIngresado: "Ingresos en efectivo",
+      transferencias: "Transferencias", recaudosCartera: "Recaudos de cartera",
+      cierres: "Cierres del período", diferenciaCierres: "Diferencia de cierres",
+      cuentas: "Cuentas", valorOriginal: "Valor original", abonadoHistorico: "Total abonado actual",
+      saldoPendiente: "Saldo pendiente actual", saldoVencido: "Saldo vencido actual",
+      pagosPeriodo: "Abonos del período", efectivoPeriodo: "Abonos en efectivo",
+      transferenciaPeriodo: "Abonos por transferencia",
+    };
+    const contadores = new Set(["cajas", "movimientos", "cierres", "cuentas"]);
+    const hoja = workbook.addWorksheet("Resumen financiero");
+    hoja.columns = [{ width: 36 }, { width: 24 }];
+    hoja.mergeCells("A1:B1");
+    hoja.getCell("A1").value = `${titulo} · Indicadores`;
+    hoja.getCell("A1").font = { bold: true, size: 16, color: { argb: COLORES.primary } };
+    hoja.getRow(1).height = 30;
+    hoja.addRow(["Período", `${desde} a ${hasta}`]);
+    hoja.addRow(["Alcance", nota]);
+    hoja.getRow(3).height = 48;
+    hoja.getCell("B3").alignment = { wrapText: true, vertical: "top" };
+    const cabecera = hoja.addRow(["Indicador", "Valor"]);
+    cabecera.eachCell((cell) => {
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: COLORES.primary } };
+      cell.font = { bold: true, color: { argb: COLORES.white } };
+    });
+    for (const [clave, valor] of Object.entries(indicadores)) {
+      const fila = hoja.addRow([nombres[clave] || clave, Number(valor) || 0]);
+      fila.getCell(2).numFmt = contadores.has(clave) ? '#,##0' : '$ #,##0;[Red]-$ #,##0';
+      fila.getCell(2).alignment = { horizontal: "right" };
+    }
+    hoja.views = [{ state: "frozen", ySplit: 4 }];
+  }
+
+  secciones.forEach((seccion, indice) => {
+    const columnasSeccion = Array.isArray(seccion.columnas) ? seccion.columnas : [];
+    const filasSeccion = Array.isArray(seccion.filas) ? seccion.filas : [];
+    if (!columnasSeccion.length) return;
+    const hoja = workbook.addWorksheet(`Detalle ${indice + 1}`);
+    const ultima = hoja.getColumn(columnasSeccion.length).letter;
+    hoja.mergeCells(`A1:${ultima}1`);
+    hoja.getCell("A1").value = seccion.titulo || "Detalle adicional";
+    hoja.getCell("A1").font = { bold: true, size: 16, color: { argb: COLORES.primary } };
+    hoja.getRow(1).height = 32;
+    const encabezado = hoja.getRow(3);
+    columnasSeccion.forEach((columna, indiceColumna) => {
+      const celda = encabezado.getCell(indiceColumna + 1);
+      celda.value = columna.titulo;
+      celda.font = { bold: true, color: { argb: COLORES.white } };
+      celda.fill = { type: "pattern", pattern: "solid", fgColor: { argb: COLORES.primary } };
+      celda.alignment = { wrapText: true, vertical: "middle" };
+      hoja.getColumn(indiceColumna + 1).width = anchoColumna(columna);
+    });
+    encabezado.height = 28;
+    filasSeccion.forEach((fila, indiceFila) => {
+      const r = hoja.getRow(4 + indiceFila);
+      columnasSeccion.forEach((columna, indiceColumna) => {
+        const celda = r.getCell(indiceColumna + 1);
+        const valor = fila[columna.campo] ?? "";
+        const esMoneda = esCampoMoneda(columna.campo, columna.titulo, fila);
+        const esNumero = esCampoNumerico(columna.campo, columna.titulo);
+        celda.value = (esMoneda || esNumero) && Number.isFinite(Number(valor)) && valor !== ""
+          ? Number(valor) : valor;
+        if (esMoneda && typeof celda.value === "number") celda.numFmt = '$ #,##0;[Red]-$ #,##0';
+        celda.alignment = { wrapText: true, horizontal: esMoneda || esNumero ? "right" : "left" };
+        celda.fill = { type: "pattern", pattern: "solid",
+          fgColor: { argb: indiceFila % 2 === 0 ? COLORES.white : COLORES.soft } };
+      });
+    });
+    hoja.autoFilter = { from: { row: 3, column: 1 },
+      to: { row: Math.max(3, 3 + filasSeccion.length), column: columnasSeccion.length } };
+    hoja.views = [{ state: "frozen", ySplit: 3 }];
+  });
 
   return workbook.xlsx.writeBuffer();
 }

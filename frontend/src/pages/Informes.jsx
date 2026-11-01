@@ -12,6 +12,7 @@ import {
   obtenerArchivoInforme,
   obtenerInforme,
   obtenerOpcionesRepartidoresInforme,
+  obtenerOpcionesCajasInforme,
 } from "../services/informe.service.js";
 
 import calendarioIcon from "../assets/icons/calendario.webp";
@@ -165,6 +166,10 @@ function esCampoDinero(
     "credito",
     "sinClasificar",
     "totalVendido",
+    "ingresos", "egresos", "neto", "efectivoIngresado", "transferencias",
+    "recaudosCartera", "diferenciaCierres", "abonadoHistorico",
+    "saldoPendiente", "saldoVencido", "pagosPeriodo", "efectivoPeriodo",
+    "transferenciaPeriodo", "vencido", "saldoInicial", "saldoCierre", "contado", "diferencia",
   ].includes(campo);
 }
 
@@ -206,6 +211,17 @@ const NOMBRES_INDICADORES_FACTURAS = {
     "Valor anulado",
 };
 
+
+const NOMBRES_INDICADORES_FINANCIEROS = {
+  cajas: "Cajas registradas", movimientos: "Movimientos", ingresos: "Ingresos",
+  egresos: "Egresos", neto: "Movimiento neto", efectivoIngresado: "Ingresos en efectivo",
+  transferencias: "Transferencias", recaudosCartera: "Recaudos de cartera",
+  cierres: "Cierres del período", diferenciaCierres: "Diferencia de cierres",
+  cuentas: "Cuentas", valorOriginal: "Valor original", abonadoHistorico: "Total abonado actual",
+  saldoPendiente: "Saldo pendiente actual", saldoVencido: "Saldo vencido actual",
+  pagosPeriodo: "Abonos del período", efectivoPeriodo: "Abonos en efectivo",
+  transferenciaPeriodo: "Abonos por transferencia",
+};
 
 const NOMBRES_INDICADORES_RECAUDOS = {
   pedidosEntregados: "Pedidos entregados",
@@ -713,6 +729,11 @@ export default function Informes() {
     useState(null);
 
   const [repartidorId, setRepartidorId] = useState("");
+  const [cajaId, setCajaId] = useState("");
+  const [opcionesCajas, setOpcionesCajas] = useState([]);
+  const [cargandoCajas, setCargandoCajas] = useState(false);
+  const [carteraEstado, setCarteraEstado] = useState("");
+  const [carteraPeriodo, setCarteraPeriodo] = useState("entrega");
   const [opcionesRepartidores, setOpcionesRepartidores] = useState([]);
   const [cargandoRepartidores, setCargandoRepartidores] = useState(false);
 
@@ -759,6 +780,22 @@ export default function Informes() {
     return () => { activo = false; };
   }, [tipo]);
 
+
+  useEffect(() => {
+    if (tipo !== "caja") return undefined;
+    let activo = true;
+    setCargandoCajas(true);
+    obtenerOpcionesCajasInforme()
+      .then((opciones) => {
+        if (activo) setOpcionesCajas(Array.isArray(opciones) ? opciones : []);
+      })
+      .catch((error) => {
+        console.error("No se pudieron cargar las cajas:", error);
+        if (activo) setError("No se pudo cargar la lista de cajas.");
+      })
+      .finally(() => { if (activo) setCargandoCajas(false); });
+    return () => { activo = false; };
+  }, [tipo]);
 
   /* =========================================================
      CAMBIO: se elimina cambiarMes()
@@ -839,6 +876,9 @@ export default function Informes() {
           desde,
           hasta,
           repartidorId,
+          cajaId,
+          carteraEstado,
+          carteraPeriodo,
         });
 
 
@@ -953,6 +993,9 @@ export default function Informes() {
           hasta,
           formato,
           repartidorId,
+          cajaId,
+          carteraEstado,
+          carteraPeriodo,
         });
 
 
@@ -1110,6 +1153,7 @@ export default function Informes() {
     tipo === "facturas";
 
   const esRecaudos = tipo === "repartidores" || tipo === "rutas-zonas";
+  const esFinanciero = tipo === "caja" || tipo === "cartera";
 
 
   const indicadores =
@@ -1171,7 +1215,7 @@ export default function Informes() {
                 La fila ahora tiene solo Tipo, Desde y Hasta.
             ========================================================= */}
 
-            <div className={`informes-filtros ${tipo === "repartidores" ? "informes-filtros--repartidores" : ""}`}>
+            <div className={`informes-filtros ${["repartidores", "caja", "cartera"].includes(tipo) ? "informes-filtros--ampliados" : ""}`}>
 
               <div className="informes-control informes-control--select">
                 <span className="informes-control-label">
@@ -1184,6 +1228,9 @@ export default function Informes() {
                     onChange={(event) => {
                       setTipo(event.target.value);
                       setRepartidorId("");
+                      setCajaId("");
+                      setCarteraEstado("");
+                      setCarteraPeriodo("entrega");
                       setDatos(null);
                       setError("");
                     }}
@@ -1231,6 +1278,57 @@ export default function Informes() {
                     <span className="informes-select-arrow" aria-hidden="true">▾</span>
                   </div>
                 </div>
+              )}
+
+              {tipo === "caja" && (
+                <div className="informes-control informes-control--select">
+                  <span className="informes-control-label">Caja</span>
+                  <div className="informes-select-shell">
+                    <select value={cajaId} disabled={cargandoCajas}
+                      onChange={(event) => { setCajaId(event.target.value); setDatos(null); setError(""); }}>
+                      <option value="">Todas las cajas</option>
+                      {opcionesCajas.map((caja) => (
+                        <option key={caja.id} value={caja.id}>
+                          {caja.codigo} · {caja.estado}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="informes-select-arrow" aria-hidden="true">▾</span>
+                  </div>
+                </div>
+              )}
+
+              {tipo === "cartera" && (
+                <>
+                  <div className="informes-control informes-control--select">
+                    <span className="informes-control-label">Alcance de cuentas</span>
+                    <div className="informes-select-shell">
+                      <select value={carteraPeriodo} onChange={(event) => {
+                        setCarteraPeriodo(event.target.value); setDatos(null); setError("");
+                      }}>
+                        <option value="entrega">Cuentas originadas en el período</option>
+                        <option value="todas">Todas las cuentas actuales</option>
+                      </select>
+                      <span className="informes-select-arrow" aria-hidden="true">▾</span>
+                    </div>
+                  </div>
+                  <div className="informes-control informes-control--select">
+                    <span className="informes-control-label">Estado de cartera</span>
+                    <div className="informes-select-shell">
+                      <select value={carteraEstado} onChange={(event) => {
+                        setCarteraEstado(event.target.value); setDatos(null); setError("");
+                      }}>
+                        <option value="">Todos los estados</option>
+                        <option value="Pendiente">Pendientes sin abonos</option>
+                        <option value="Abonada">Abonadas parcialmente</option>
+                        <option value="Pagada">Pagadas</option>
+                        <option value="Vencida">Vencidas</option>
+                        <option value="Sin vencimiento">Sin fecha de vencimiento</option>
+                      </select>
+                      <span className="informes-select-arrow" aria-hidden="true">▾</span>
+                    </div>
+                  </div>
+                </>
               )}
 
               <div className="informes-control">
@@ -1545,7 +1643,7 @@ export default function Informes() {
 
 
             {datos &&
-              (esFacturas || esRecaudos) &&
+              (esFacturas || esRecaudos || esFinanciero) &&
               indicadores.length > 0 && (
 
                 <div className="informes-indicadores">
@@ -1561,7 +1659,9 @@ export default function Informes() {
                         <span>
                           {esFacturas
                             ? (NOMBRES_INDICADORES_FACTURAS[clave] || clave)
-                            : (NOMBRES_INDICADORES_RECAUDOS[clave] || clave)}
+                            : esFinanciero
+                              ? (NOMBRES_INDICADORES_FINANCIEROS[clave] || clave)
+                              : (NOMBRES_INDICADORES_RECAUDOS[clave] || clave)}
                         </span>
 
                         <strong>
@@ -1680,6 +1780,31 @@ export default function Informes() {
                 </div>
 
               )}
+
+            {datos && esFinanciero && Array.isArray(datos.secciones) &&
+              datos.secciones.map((seccion, indice) => (
+                <div className="informes-seccion-adicional" key={`${seccion.titulo}-${indice}`}>
+                  <div className="informes-seccion-titulo">
+                    <h3>{seccion.titulo}</h3>
+                    <span>{(seccion.filas || []).length} registros</span>
+                  </div>
+                  <div className="informes-table-wrap">
+                    <table className="informes-table">
+                      <thead><tr>{(seccion.columnas || []).map((columna) => (
+                        <th key={columna.campo}>{columna.titulo}</th>
+                      ))}</tr></thead>
+                      <tbody>{(seccion.filas || []).map((fila, filaIndice) => (
+                        <tr key={filaIndice}>{(seccion.columnas || []).map((columna) => (
+                          <td key={columna.campo}>{formatearValor(columna.campo, fila[columna.campo])}</td>
+                        ))}</tr>
+                      ))}</tbody>
+                    </table>
+                    {!(seccion.filas || []).length && (
+                      <div className="informes-empty">No hay registros en esta sección.</div>
+                    )}
+                  </div>
+                </div>
+              ))}
 
           </section>
 

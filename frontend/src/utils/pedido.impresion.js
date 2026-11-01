@@ -28,7 +28,8 @@
 
   export function imprimirPedido(
     pedido,
-    ventanaExistente = null
+    ventanaExistente = null,
+    opciones = {}
   ) {
 
     if (!pedido) {
@@ -42,6 +43,8 @@
 
     }
 
+
+    const mostrarValores = opciones?.mostrarValores !== false;
 
     /* =========================================
       PRODUCTOS
@@ -89,6 +92,7 @@
                 ${item.cantidad || 0}
               </td>
 
+              ${mostrarValores ? `
               <td>
                 ${moneda(
                   item.precioAplicado
@@ -100,6 +104,8 @@
                   item.subtotal
                 )}
               </td>
+
+              ` : ""}
 
             </tr>
           `
@@ -198,7 +204,7 @@
         </head>
 
 
-        <body>
+        <body class="pedido-individual-body${mostrarValores ? "" : " pedido-sin-valores"}">
 
 
           <!-- =================================
@@ -278,6 +284,7 @@
                 </div>
 
 
+                ${mostrarValores ? `
                 <div class="info-item">
 
                   <span>
@@ -293,6 +300,8 @@
 
                 </div>
 
+
+                ` : ""}
 
                 <div class="info-item info-item-full">
 
@@ -442,6 +451,7 @@
                   Cantidad
                 </th>
 
+                ${mostrarValores ? `
                 <th>
                   Precio
                 </th>
@@ -449,6 +459,8 @@
                 <th>
                   Subtotal
                 </th>
+
+                ` : ""}
 
               </tr>
 
@@ -466,6 +478,7 @@
               TOTALES
           ================================== -->
 
+          ${mostrarValores ? `
           <div class="totales">
 
             <div>
@@ -513,6 +526,8 @@
             </div>
 
           </div>
+
+          ` : ""}
 
         </body>
 
@@ -591,6 +606,7 @@ function fechaVista(valor) {
 export function imprimirPedidosFiltrados({
   pedidos = [],
   filtros = {},
+  mostrarValores = true,
 } = {}) {
 
   if (
@@ -750,13 +766,9 @@ export function imprimirPedidosFiltrados({
                 )}
               </td>
 
-              <td class="pedidos-listado-numero">
-                ${escaparHtml(
-                  moneda(
-                    pedido.total
-                  )
-                )}
-              </td>
+              ${mostrarValores ? `<td class="pedidos-listado-numero">
+                ${escaparHtml(moneda(pedido.total))}
+              </td>` : ""}
             </tr>
           `;
 
@@ -883,7 +895,7 @@ export function imprimirPedidosFiltrados({
                 <th>Entrega</th>
                 <th>Pago</th>
                 <th>Estado</th>
-                <th>Total</th>
+                ${mostrarValores ? "<th>Total</th>" : ""}
               </tr>
 
             </thead>
@@ -897,7 +909,7 @@ export function imprimirPedidosFiltrados({
         </div>
 
 
-        <footer class="pedidos-listado-total">
+        ${mostrarValores ? `<footer class="pedidos-listado-total">
 
           <span>
             Total general:
@@ -909,7 +921,7 @@ export function imprimirPedidosFiltrados({
             )}
           </strong>
 
-        </footer>
+        </footer>` : ""}
 
       </body>
 

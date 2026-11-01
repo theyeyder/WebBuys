@@ -1,0 +1,184 @@
+/* Diseño compacto para comprobantes de entrega en rollos térmicos de 58/80 mm.
+   El controlador de la impresora define el tamaño y el alto del papel. */
+@page { size: auto; margin: 0; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  color: #000;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  line-height: 1.35;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+body.ticket-rollo-80 { width: 80mm; }
+body.ticket-rollo-58 { width: 58mm; font-size: 10px; }
+
+.ticket {
+  width: 72mm;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 3mm 0 5mm;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+.ticket-rollo-58 .ticket { width: 48mm; }
+
+.ticket-cabecera {
+  text-align: center;
+  padding: 0 0 3mm;
+}
+.ticket-cabecera h1 {
+  margin: 0 0 2mm;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: .01em;
+}
+.ticket-rollo-58 .ticket-cabecera h1 { font-size: 11.5px; }
+.ticket-codigo {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.ticket-rollo-58 .ticket-codigo { font-size: 15px; }
+.ticket-estado {
+  display: inline-block;
+  margin-top: 1.5mm;
+  padding: .6mm 2.5mm;
+  border: 1px solid #000;
+  border-radius: 2px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .035em;
+}
+
+.ticket-seccion {
+  padding: 2.4mm 0;
+  border-top: 1px dashed #000;
+}
+.ticket-seccion h2 {
+  margin: 0 0 1.7mm;
+  font-size: 10px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: .055em;
+}
+.ticket-seccion h2 span { font-weight: 600; }
+.ticket-rollo-58 .ticket-seccion h2 { font-size: 9.5px; }
+.ticket-cliente {
+  margin: 0 0 1.8mm;
+  font-size: 11.5px;
+  line-height: 1.25;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.ticket-rollo-58 .ticket-cliente { font-size: 10.5px; }
+
+.ticket-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1.5mm;
+  margin: 0 0 1mm;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.ticket-fila-etiqueta { flex: 0 0 34%; min-width: 0; }
+.ticket-fila-valor {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.ticket-rollo-58 .ticket-fila-etiqueta { flex-basis: 39%; }
+.ticket-fila-larga {
+  display: block;
+  margin-bottom: 1.4mm;
+}
+.ticket-fila-larga .ticket-fila-etiqueta {
+  display: block;
+  font-size: 9px;
+  font-weight: 400;
+}
+.ticket-fila-larga .ticket-fila-valor {
+  display: block;
+  text-align: left;
+  line-height: 1.25;
+}
+
+.ticket-producto {
+  padding: 2mm 0;
+  border-top: 1px dotted #888;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.ticket-producto:first-of-type { border-top: 0; padding-top: .4mm; }
+.ticket-producto-nombre { display: flex; align-items: baseline; gap: 1.2mm; }
+.ticket-producto-indice { flex: 0 0 auto; font-weight: 800; }
+.ticket-producto-nombre strong { min-width: 0; font-weight: 800; overflow-wrap: anywhere; }
+.ticket-producto-meta {
+  margin: .7mm 0 .7mm 3.8mm;
+  color: #333;
+  font-size: 9px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.ticket-producto-linea {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 1mm;
+  margin-left: 3.8mm;
+}
+.ticket-producto-cantidad { min-width: 0; }
+.ticket-producto-cantidad small { font-size: 9px; }
+.ticket-producto-subtotal {
+  margin-left: auto;
+  font-size: 11px;
+  white-space: nowrap;
+  font-weight: 800;
+}
+.ticket-rollo-58 .ticket-producto-meta,
+.ticket-rollo-58 .ticket-producto-cantidad small { font-size: 8.5px; }
+.ticket-rollo-58 .ticket-producto-subtotal { font-size: 10px; }
+.ticket-vacio { margin: 1mm 0; }
+
+.ticket-totales .ticket-fila { margin-bottom: 1.2mm; }
+.ticket-total {
+  margin-top: 2mm;
+  padding: 1.8mm 0 0;
+  border-top: 2px solid #000;
+  font-size: 14px;
+  font-weight: 800;
+}
+.ticket-total .ticket-fila-etiqueta,
+.ticket-total .ticket-fila-valor { font-weight: 800; }
+.ticket-rollo-58 .ticket-total { font-size: 12px; }
+.ticket-nota p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.ticket-fechas { font-size: 9px; }
+.ticket-fechas h2 { font-size: 9px; }
+.ticket-pie {
+  padding: 3.5mm 0 1.5mm;
+  border-top: 1px dashed #000;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.ticket-rollo-58 .ticket-pie { font-size: 11px; }
+
+@media print {
+  html, body { margin: 0 !important; padding: 0 !important; }
+  .ticket { margin-left: auto; margin-right: auto; }
+  .ticket-producto, .ticket-fila, .ticket-total, .ticket-pie {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

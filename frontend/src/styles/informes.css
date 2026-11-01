@@ -1451,3 +1451,17 @@ input::-webkit-calendar-picker-indicator {
   font-size: 12px;
   line-height: 1.5;
 }
+
+/* Informes de Caja y Cartera — filtros y secciones V10 */
+@media (min-width: 1181px) {
+  .informes-filtros.informes-filtros--ampliados {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  }
+}
+.informes-seccion-adicional { margin-top: 24px; }
+.informes-seccion-titulo {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin: 0 0 12px;
+}
+.informes-seccion-titulo h3 { margin: 0; font-size: 17px; color: #172b25; }
+.informes-seccion-titulo span { font-size: 12px; color: #667085; }
