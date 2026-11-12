@@ -1829,6 +1829,14 @@ export default function Clientes() {
                   Persona Natural
                 </option>
 
+                <option value="Persona Natural">
+                  Carniceria
+                </option>
+
+                <option value="Persona Natural">
+                  Panadería
+                </option>
+
                 <option value="Otro">
                   Otro
                 </option>

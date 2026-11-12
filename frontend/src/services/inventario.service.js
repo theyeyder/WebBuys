@@ -171,3 +171,14 @@ export async function cerrarPeriodoInventario(
 
   return respuesta.data;
 }
+
+
+/* Descargar un cierre mensual historico como archivo Excel real. */
+export async function descargarExcelCierreInventario(anio, mes) {
+  const respuesta = await api.get(
+    `${url}/cierres/${anio}/${mes}/excel`,
+    { responseType: "blob", timeout: 60000 }
+  );
+
+  return respuesta.data;
+}

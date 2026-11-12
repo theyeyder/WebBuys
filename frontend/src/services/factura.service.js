@@ -86,7 +86,7 @@ export async function anularFactura(
     await api.patch(
       `${url}/${id}/anular`,
       {
-        motivo,
+        motivoAnulacion: motivo,
       }
     );
 

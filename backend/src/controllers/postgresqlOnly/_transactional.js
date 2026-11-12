@@ -346,7 +346,18 @@ export async function crearMovimientoInventarioTx(tx, {
   });
 }
 
+// La preferencia es global y se consulta en cada operación de inventario.
+// Si aún no hay registro, se mantiene el comportamiento seguro: no permitir negativos.
+export async function permitirInventarioNegativoTx(tx) {
+  const preferencia = await tx.preferencia.findUnique({
+    where: { clave: "principal" },
+    select: { permitirInventarioNegativo: true },
+  });
+  return preferencia?.permitirInventarioNegativo === true;
+}
+
 export async function reservarItemsUnidadTx(tx, pedido, usuarioId) {
+  const permitirNegativo = await permitirInventarioNegativoTx(tx);
   const items = await tx.pedidoItem.findMany({
     where: { pedidoId: pedido.id },
     include: { producto: true, presentacion: true },
@@ -359,7 +370,7 @@ export async function reservarItemsUnidadTx(tx, pedido, usuarioId) {
     const stock = numero(fuente.stock);
     const reservado = numero(fuente.stockReservado);
     const cantidad = numero(item.cantidad);
-    if (stock - reservado < cantidad) {
+    if (!permitirNegativo && stock - reservado < cantidad) {
       throw new Error(`Stock insuficiente para ${item.nombre}.`);
     }
     if (item.presentacion) {

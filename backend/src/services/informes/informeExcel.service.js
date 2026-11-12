@@ -46,7 +46,7 @@ function esCampoMoneda(campo = "", titulo = "", fila = null) {
     );
   }
 
-  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar|contado|vencido|diferencia/.test(
+  return /precio|valor|subtotal|descuento|total|saldo|abono|abonad|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar|contado|vencido|diferencia/.test(
     texto
   );
 }
@@ -87,6 +87,19 @@ function anchoColumna(columna) {
   }
 
   return 16;
+}
+
+function fechaCorta(valor) {
+  const fecha = String(valor || "");
+  const coincidencia = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha);
+  return coincidencia ? `${coincidencia[3]}/${coincidencia[2]}/${coincidencia[1]}` : fecha;
+}
+
+function fechaExcelCartera(campo, valor, tipo) {
+  if (tipo !== "cartera" || !["fechaEntrega", "vencimiento"].includes(campo)) return null;
+  if (typeof valor !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return null;
+  const fecha = new Date(`${valor}T00:00:00.000Z`);
+  return Number.isFinite(fecha.getTime()) && fecha.toISOString().slice(0, 10) === valor ? fecha : null;
 }
 
 function fechaGeneracion() {
@@ -239,7 +252,7 @@ export async function generarInformeExcel({
   worksheet.getRow(2).height = 28;
 
   const meta = [
-    ["Período", `${desde || "No definido"}  →  ${hasta || "No definido"}`],
+    ["Período", `${tipo === "caja" || tipo === "cartera" ? fechaCorta(desde) : (desde || "No definido")}  →  ${tipo === "caja" || tipo === "cartera" ? fechaCorta(hasta) : (hasta || "No definido")}`],
     ["Usuario", usuario || "No definido"],
     ["Generado", fechaGeneracion()],
   ];
@@ -334,7 +347,11 @@ export async function generarInformeExcel({
         columna.titulo
       );
 
-      if ((moneda || numerico) && Number.isFinite(Number(valor))) {
+      const fechaExcel = fechaExcelCartera(columna.campo, valor, tipo);
+      if (fechaExcel) {
+        cell.value = fechaExcel;
+        cell.numFmt = "dd/mm/yyyy";
+      } else if ((moneda || numerico) && valor !== "" && Number.isFinite(Number(valor))) {
         cell.value = Number(valor);
       } else {
         cell.value = valor;
@@ -517,7 +534,7 @@ export async function generarInformeExcel({
     hoja.getCell("A1").value = `${titulo} · Indicadores`;
     hoja.getCell("A1").font = { bold: true, size: 16, color: { argb: COLORES.primary } };
     hoja.getRow(1).height = 30;
-    hoja.addRow(["Período", `${desde} a ${hasta}`]);
+    hoja.addRow(["Período", `${fechaCorta(desde)} a ${fechaCorta(hasta)}`]);
     hoja.addRow(["Alcance", nota]);
     hoja.getRow(3).height = 48;
     hoja.getCell("B3").alignment = { wrapText: true, vertical: "top" };
@@ -561,8 +578,10 @@ export async function generarInformeExcel({
         const valor = fila[columna.campo] ?? "";
         const esMoneda = esCampoMoneda(columna.campo, columna.titulo, fila);
         const esNumero = esCampoNumerico(columna.campo, columna.titulo);
-        celda.value = (esMoneda || esNumero) && Number.isFinite(Number(valor)) && valor !== ""
-          ? Number(valor) : valor;
+        const fechaExcel = fechaExcelCartera(columna.campo, valor, tipo);
+        celda.value = fechaExcel || ((esMoneda || esNumero) && Number.isFinite(Number(valor)) && valor !== ""
+          ? Number(valor) : valor);
+        if (fechaExcel) celda.numFmt = "dd/mm/yyyy";
         if (esMoneda && typeof celda.value === "number") celda.numFmt = '$ #,##0;[Red]-$ #,##0';
         celda.alignment = { wrapText: true, horizontal: esMoneda || esNumero ? "right" : "left" };
         celda.fill = { type: "pattern", pattern: "solid",

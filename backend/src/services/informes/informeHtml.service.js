@@ -41,7 +41,7 @@ function esCampoMoneda(campo = "", titulo = "", fila = null) {
     );
   }
 
-  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar|contado|vencido|diferencia/.test(
+  return /precio|valor|subtotal|descuento|total|saldo|abono|abonad|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar|contado|vencido|diferencia/.test(
     texto
   );
 }
@@ -80,6 +80,12 @@ function numero(valor) {
   }).format(dato);
 }
 
+function fechaCorta(valor) {
+  const fecha = String(valor || "");
+  const coincidencia = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha);
+  return coincidencia ? `${coincidencia[3]}/${coincidencia[2]}/${coincidencia[1]}` : fecha;
+}
+
 function fechaGeneracion() {
   return new Intl.DateTimeFormat("es-CO", {
     timeZone: "America/Bogota",
@@ -106,10 +112,14 @@ function claseEstado(valor) {
   return "reporte-estado";
 }
 
-function formatearCelda({ columna, fila }) {
+function formatearCelda({ columna, fila, tipo }) {
   const valor = fila[columna.campo] ?? "";
 
   if (valor === "") return "";
+
+  if (tipo === "cartera" && ["fechaEntrega", "vencimiento"].includes(columna.campo)) {
+    return fechaCorta(valor);
+  }
 
   if (esCampoMoneda(columna.campo, columna.titulo, fila)) {
     return moneda(valor);
@@ -275,6 +285,7 @@ export function generarInformeHtml({
           const valor = formatearCelda({
             columna,
             fila,
+            tipo,
           });
 
           const esEstado =
@@ -322,7 +333,7 @@ export function generarInformeHtml({
     const filasSeccion = Array.isArray(seccion.filas) ? seccion.filas : [];
     const cabeceras = columnasSeccion.map((columna) => `<th>${escaparHtml(columna.titulo)}</th>`).join("");
     const celdas = filasSeccion.map((fila) => `<tr>${columnasSeccion.map((columna) => {
-      const valor = formatearCelda({ columna, fila });
+      const valor = formatearCelda({ columna, fila, tipo });
       const clase = esCampoMoneda(columna.campo, columna.titulo, fila) ||
         esCampoNumerico(columna.campo, columna.titulo) ? "reporte-td--numero" : "";
       return `<td class="${clase}">${escaparHtml(valor)}</td>`;
@@ -721,11 +732,11 @@ export function generarInformeHtml({
     <section class="reporte-meta">
       <div class="reporte-meta-item">
         <span>Desde</span>
-        <strong>${escaparHtml(desde || "No definido")}</strong>
+        <strong>${escaparHtml(tipo === "caja" || tipo === "cartera" ? fechaCorta(desde) : (desde || "No definido"))}</strong>
       </div>
       <div class="reporte-meta-item">
         <span>Hasta</span>
-        <strong>${escaparHtml(hasta || "No definido")}</strong>
+        <strong>${escaparHtml(tipo === "caja" || tipo === "cartera" ? fechaCorta(hasta) : (hasta || "No definido"))}</strong>
       </div>
       <div class="reporte-meta-item">
         <span>Usuario</span>

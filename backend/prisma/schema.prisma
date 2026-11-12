@@ -100,6 +100,7 @@ model PerfilPermiso {
   editar               Boolean @default(false)
   eliminar             Boolean @default(false)
   imprimir             Boolean @default(false)
+  descontar            Boolean @default(false)
   anular               Boolean @default(false)
   cambiarEstado        Boolean @default(false)
   registrarMovimientos Boolean @default(false)
@@ -119,6 +120,7 @@ model UsuarioPermiso {
   editar               Boolean?
   eliminar             Boolean?
   imprimir             Boolean?
+  descontar            Boolean?
   anular               Boolean?
   cambiarEstado        Boolean?
   registrarMovimientos Boolean?

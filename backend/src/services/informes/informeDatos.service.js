@@ -2284,6 +2284,16 @@ export async function obtenerInformeCartera({
     if (fila.estado === "Vencida") r.vencido += fila.saldo;
   }
 
+  // Aviso informativo: nunca cambiar vencimientos ni fechas de entrega desde un informe.
+  const fechasPorRevisar = carteras.filter((cuenta) => {
+    const entrega = fechaSolo(cuenta.fechaEntrega);
+    const vencimiento = fechaSolo(cuenta.fechaVencimiento);
+    return Boolean(entrega && vencimiento && vencimiento < entrega);
+  });
+  const avisoFechas = fechasPorRevisar.length
+    ? `REVISAR FECHAS: ${fechasPorRevisar.length} cuenta(s) con vencimiento anterior a la entrega (${fechasPorRevisar.slice(0, 5).map((cuenta) => cuenta.codigo).join(", ")}${fechasPorRevisar.length > 5 ? ", ..." : ""}). Verifique la fecha en Cartera; este informe no modifica los registros.`
+    : "";
+
   const indicadores = {
     cuentas: filas.length,
     valorOriginal: sumarImportes(filas, "valorOriginal"),
@@ -2298,9 +2308,9 @@ export async function obtenerInformeCartera({
   return {
     titulo: "Informe de cartera y abonos",
     desde, hasta,
-    nota: modo === "todas"
+    nota: [modo === "todas"
       ? "Se muestran todas las cuentas con su saldo ACTUAL, independientemente de cuándo se originaron. Los abonos detallados corresponden únicamente al período seleccionado y a las cuentas filtradas. El saldo actual no representa un corte histórico a la fecha Hasta."
-      : "Se muestran las cuentas originadas (fecha de entrega) dentro del período, con su saldo ACTUAL. Los abonos detallados corresponden al período seleccionado y solo a esas cuentas. El saldo actual no representa un corte histórico a la fecha Hasta.",
+      : "Se muestran las cuentas originadas (fecha de entrega) dentro del período, con su saldo ACTUAL. Los abonos detallados corresponden al período seleccionado y solo a esas cuentas. El saldo actual no representa un corte histórico a la fecha Hasta.", avisoFechas].filter(Boolean).join(" "),
     indicadores,
     columnas: [
       { titulo: "Cartera", campo: "codigo" },

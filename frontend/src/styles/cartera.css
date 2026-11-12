@@ -1905,3 +1905,19 @@ button.selected.current-week {
 }
 
 
+
+/* V13 - Acciones de impresión y acceso directo a Pedidos */
+.cartera-toolbar-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 9px; }
+.cartera-print-list-btn { min-height: 34px; padding: 0 13px; border: 1px solid #0f766e; border-radius: 9px; background: #0f766e; color: #fff; font: inherit; font-size: 9px; font-weight: 900; white-space: nowrap; cursor: pointer; }
+.cartera-print-list-btn:hover, .cartera-print-account-btn:hover { filter: brightness(.94); }
+.cartera-print-list-btn:disabled { opacity: .55; cursor: not-allowed; }
+.cartera-row-actions { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+.cartera-print-account-btn { min-height: 31px; padding: 0 9px; border: 1px solid #b3d5c8; border-radius: 8px; background: #eaf8f2; color: #087858; font: inherit; font-size: 8px; font-weight: 900; cursor: pointer; }
+.cartera-pedido-enlace { padding: 2px 1px; border: 0; border-bottom: 1px dashed #159a75; border-radius: 0; background: transparent; color: #087858; font: inherit; font-size: inherit; font-weight: 950; text-decoration: none; cursor: pointer; }
+.cartera-pedido-enlace:hover, .cartera-pedido-enlace:focus-visible { color: #075f4d; border-bottom-style: solid; outline-offset: 3px; }
+.cartera-modal-header-actions { display: flex; align-items: center; gap: 9px; }
+.cartera-print-modal-btn { min-height: 34px; padding: 0 13px; border: 1px solid rgba(255,255,255,.6); border-radius: 8px; background: #fff; color: #0f766e; font: inherit; font-size: 10px; font-weight: 900; cursor: pointer; }
+@media (max-width: 950px) {
+  .cartera-toolbar { flex-wrap: wrap; }
+  .cartera-toolbar-actions { width: 100%; justify-content: flex-start; }
+}

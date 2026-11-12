@@ -12,12 +12,17 @@ import {
 
 import { proteger } from "../middlewares/auth.middleware.js";
 import { soloAdmin } from "../middlewares/role.middleware.js";
+import { obtenerReporteUsuarios, exportarReporteUsuariosExcel } from "../controllers/reporteUsuarios.controller.js";
 
 const router = Router();
 
 /* Todas las rutas requieren autenticación y rol Administrador */
 router.use(proteger);
 router.use(soloAdmin);
+
+/* Reportes de solo lectura; deben conservar protección Administrador */
+router.get("/reporte", obtenerReporteUsuarios);
+router.get("/reporte/excel", exportarReporteUsuariosExcel);
 
 /* Listar usuarios */
 router.get("/", listarUsuarios);

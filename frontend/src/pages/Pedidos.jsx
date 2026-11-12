@@ -8,6 +8,8 @@ import {
 import useAutoRefresh
   from "../hooks/useAutoRefresh.js";
 
+import { useSearchParams } from "react-router-dom";
+
 import {
   createPortal,
 } from "react-dom";
@@ -1006,6 +1008,8 @@ function PedidoSelectVisual({
 ========================================= */
 
 export default function Pedidos() {
+
+  const [parametrosRuta, setParametrosRuta] = useSearchParams();
 
   const {
     usuario,
@@ -2891,7 +2895,8 @@ export default function Pedidos() {
   ========================================= */
 
   function abrirPedido(
-    pedido
+    pedido,
+    { soloConsulta = false } = {}
   ) {
 
     if (!pedido) {
@@ -2910,7 +2915,7 @@ export default function Pedidos() {
 
     if (
       pedido.estado ===
-      "Cancelado"
+      "Cancelado" && !soloConsulta
     ) {
 
       setMensaje(
@@ -2927,8 +2932,7 @@ export default function Pedidos() {
 
 
     setPedidoSoloLectura(
-      pedido.estado ===
-      "Listo para entrega"
+      soloConsulta || pedido.estado === "Listo para entrega"
     );
 
 
@@ -3107,6 +3111,29 @@ export default function Pedidos() {
     );
 
   }
+
+
+  // Desde Cartera, el consecutivo abre el pedido real en modo consulta.
+  // Se limpia el parámetro después de resolverlo para evitar reaperturas.
+  useEffect(() => {
+    const codigo = parametrosRuta.get("abrirPedido");
+    if (!codigo || cargando) return;
+
+    const pedido = pedidos.find((item) =>
+      String(item.codigo || "").toLowerCase() === codigo.toLowerCase()
+    );
+    const siguientes = new URLSearchParams(parametrosRuta);
+    siguientes.delete("abrirPedido");
+    setParametrosRuta(siguientes, { replace: true });
+
+    if (!pedido) {
+      setMensaje(`No se encontró el pedido ${codigo}.`);
+      setTipoMensaje("error");
+      return;
+    }
+
+    abrirPedido(pedido, { soloConsulta: true });
+  }, [cargando, pedidos, parametrosRuta, setParametrosRuta]);
 
 
   /* =========================================

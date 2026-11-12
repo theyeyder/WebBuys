@@ -57,6 +57,7 @@ function AppContent() {
   const {
     isAuthenticated,
     cargando,
+    usuario,
   } = useAuth();
 
   const mostrarFooter =
@@ -184,6 +185,20 @@ function AppContent() {
             element={
               <ConPermiso modulo="usuarios">
                 <Usuarios />
+              </ConPermiso>
+            }
+          />
+
+          {/* Enlaces antiguos: el reporte ahora pertenece a Informes. */}
+          <Route
+            path="/configuracion/usuarios/reporte"
+            element={
+              <ConPermiso modulo="configuracion">
+                {usuario?.rol === "Administrador" ? (
+                  <Navigate to="/configuracion/informes?tipo=usuarios" replace />
+                ) : (
+                  <Navigate to="/sin-acceso" replace />
+                )}
               </ConPermiso>
             }
           />

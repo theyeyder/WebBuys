@@ -8,6 +8,7 @@ import {
   cerrarPeriodoInventario,
   listarCierresInventario,
   obtenerPeriodoInventario,
+  descargarExcelCierreInventario,
 } from "../services/inventario.service.js";
 
 import cerrarIcono
@@ -243,6 +244,11 @@ export default function CierresInventario({
     setDetalleTecnico,
   ] = useState("");
 
+  const [
+    descargandoPeriodo,
+    setDescargandoPeriodo,
+  ] = useState("");
+
 
   const anios =
     useMemo(
@@ -465,6 +471,40 @@ export default function CierresInventario({
       );
     } finally {
       setCerrando(false);
+    }
+  }
+
+
+  async function descargarExcel(item) {
+    if (descargandoPeriodo || item?.estado !== "CERRADO") {
+      return;
+    }
+
+    const periodo = `${item.anio}-${String(item.mes).padStart(2, "0")}`;
+
+    try {
+      setDescargandoPeriodo(periodo);
+
+      const archivo = await descargarExcelCierreInventario(
+        item.anio,
+        item.mes
+      );
+
+      const enlaceTemporal = URL.createObjectURL(archivo);
+      const enlace = document.createElement("a");
+      enlace.href = enlaceTemporal;
+      enlace.download = `WebBuys_Cierre_Inventario_${periodo}.xlsx`;
+      document.body.appendChild(enlace);
+      enlace.click();
+      enlace.remove();
+      window.setTimeout(() => URL.revokeObjectURL(enlaceTemporal), 10000);
+    } catch (error) {
+      onError?.(
+        error?.response?.data?.mensaje ||
+        "No fue posible descargar el cierre en Excel."
+      );
+    } finally {
+      setDescargandoPeriodo("");
     }
   }
 
@@ -1038,36 +1078,39 @@ export default function CierresInventario({
               </p>
             ) : (
               <div className="cierre-inventario-history-list">
-                {cierres.map(
-                  (item) => (
-                    <button
-                      type="button"
-                      key={item.id}
-                      className={
-                        item.anio === Number(anio) &&
-                        item.mes === Number(mes)
-                          ? "active"
-                          : ""
-                      }
-                      onClick={
-                        () =>
-                          seleccionarCierre(
-                            item
-                          )
-                      }
-                    >
-                      <span>
-                        {MESES[item.mes - 1]}
-                      </span>
-                      <strong>
-                        {item.anio}
-                      </strong>
-                      <small>
-                        {numero(item.totalVendidoNeto, 4)} vendidos
-                      </small>
-                    </button>
-                  )
-                )}
+                {cierres.map((item) => {
+                  const periodo = `${item.anio}-${String(item.mes).padStart(2, "0")}`;
+                  const seleccionado =
+                    item.anio === Number(anio) &&
+                    item.mes === Number(mes);
+                  const descargando = descargandoPeriodo === periodo;
+
+                  return (
+                    <div className="cierre-inventario-history-item" key={item.id}>
+                      <button
+                        type="button"
+                        className={`cierre-inventario-history-select${seleccionado ? " active" : ""}`}
+                        onClick={() => seleccionarCierre(item)}
+                        title={`Consultar ${MESES[item.mes - 1]} de ${item.anio}`}
+                      >
+                        <span>{MESES[item.mes - 1]}</span>
+                        <strong>{item.anio}</strong>
+                        <small>{numero(item.totalVendidoNeto, 4)} vendidos</small>
+                      </button>
+                      <button
+                        type="button"
+                        className="cierre-inventario-history-download"
+                        onClick={() => descargarExcel(item)}
+                        disabled={Boolean(descargandoPeriodo) || item.estado !== "CERRADO"}
+                        aria-label={`Descargar Excel del cierre ${MESES[item.mes - 1]} de ${item.anio}`}
+                        title={`Descargar Excel de ${MESES[item.mes - 1]} de ${item.anio}`}
+                      >
+                        <span aria-hidden="true">{descargando ? "…" : "↓"}</span>
+                        <small>{descargando ? "Espere" : "Excel"}</small>
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </aside>

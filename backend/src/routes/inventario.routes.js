@@ -15,6 +15,7 @@ import {
   cerrarPeriodoInventario,
   listarCierresInventario,
   obtenerPeriodoInventario,
+  descargarExcelCierreInventario,
 } from "../controllers/cierreInventario.controller.js";
 
 import {
@@ -59,6 +60,12 @@ router.get(
 router.get(
   "/cierres",
   listarCierresInventario
+);
+
+
+router.get(
+  "/cierres/:anio/:mes/excel",
+  descargarExcelCierreInventario
 );
 
 

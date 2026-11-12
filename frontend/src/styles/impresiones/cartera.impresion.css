@@ -1,0 +1,96 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #f3f7f5; color: #213c32; font: 12px/1.45 Arial, Helvetica, sans-serif; }
+.documento { max-width: 1120px; margin: 18px auto; padding: 28px; background: white; border: 1px solid #e1e9e5; border-radius: 12px; }
+.encabezado { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; border-bottom: 3px solid #128a78; padding-bottom: 15px; }
+.empresa { margin: 0; font-size: 18px; font-weight: 800; color: #0d766b; }
+.subempresa { font-size: 10px; color: #6a8077; }
+.etiqueta { text-transform: uppercase; color: #69867b; font-size: 10px; letter-spacing: .09em; font-weight: 700; }
+h1 { margin: 4px 0 3px; font-size: 21px; color: #163d33; }
+.fecha-emision { text-align: right; color: #50695f; font-size: 10px; }
+.meta { display: flex; flex-wrap: wrap; gap: 14px; margin: 15px 0; color: #526e63; font-size: 11px; }
+.meta b { color: #243d34; }
+.resumen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 15px 0 20px; }
+.resumen.tres { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.indicador { border: 1px solid #dceae3; background: #f6faf8; padding: 12px; border-radius: 8px; }
+.indicador small { display: block; font-size: 10px; font-weight: 700; color: #607e72; text-transform: uppercase; }
+.indicador strong { display: block; font-size: 16px; color: #0b765f; margin-top: 3px; }
+h2 { font-size: 13px; color: #173f33; margin: 19px 0 9px; }
+table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+th { background: #0f766e; color: #fff; font-size: 9px; text-transform: uppercase; letter-spacing: .02em; text-align: left; }
+th,td { border: 1px solid #e0e9e4; padding: 7px 8px; vertical-align: top; overflow-wrap: anywhere; }
+td { font-size: 10px; }
+tbody tr:nth-child(even) { background: #f5faf7; }
+.dinero { text-align: right; white-space: nowrap; }
+.total { font-weight: 800; color: #087858; }
+.nota { margin: 15px 0 0; font-size: 10px; color: #62786d; }
+.pie { margin-top: 24px; border-top: 1px solid #e3ede7; padding-top: 9px; font-size: 9px; color: #71857c; display: flex; justify-content: space-between; }
+.datos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 17px 0; }
+.dato { padding: 9px 11px; background: #f5faf7; border: 1px solid #e0ece5; border-radius: 7px; }
+.dato small { display: block; color: #70887e; text-transform: uppercase; font-size: 9px; font-weight: 700; }
+.dato strong { display: block; color: #1d4638; margin-top: 3px; font-size: 11px; overflow-wrap: anywhere; }
+@media print {
+ body { background: white; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+ .documento { border: 0; margin: 0; padding: 0; max-width: none; border-radius: 0; }
+ .encabezado, .resumen, .datos, .pie { break-inside: avoid; page-break-inside: avoid; }
+ tr { break-inside: avoid; page-break-inside: avoid; }
+ thead { display: table-header-group; }
+ tfoot { display: table-footer-group; }
+ h2 { break-after: avoid; }
+}
+@media screen and (max-width: 720px) {
+ .documento { margin: 0; padding: 14px; }
+ .resumen, .resumen.tres { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+ .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+
+
+/* En pantalla se ve el listado tabular; el navegador decide el papel.
+   Al imprimir vertical se usan fichas legibles sin perder datos ni abonos. */
+.solo-vertical { display: none; }
+.solo-horizontal { display: block; }
+.lista-fichas { display: grid; gap: 8px; }
+.cuenta-ficha, .pago-ficha { border: 1px solid #dce9e2; border-radius: 7px;
+  background: #fff; padding: 9px 12px; break-inside: avoid; page-break-inside: avoid; }
+.ficha-cabecera, .pago-ficha-cabecera { display: flex; justify-content: space-between;
+  align-items: center; gap: 10px; }
+.ficha-cabecera strong { font-size: 12px; color: #0b7660; }
+.ficha-cabecera span { border: 1px solid #d1e7db; background: #edf7f1;
+  border-radius: 12px; padding: 2px 8px; font-size: 9px; font-weight: 700; }
+.ficha-cliente { display: flex; justify-content: space-between; flex-wrap: wrap;
+  gap: 5px 12px; margin-top: 5px; font-size: 11px; }
+.ficha-cliente small { color: #547064; }
+.ficha-fechas { display: flex; gap: 20px; flex-wrap: wrap; font-size: 9px;
+  color: #547064; margin-top: 5px; }
+.ficha-fechas b { color: #263f33; }
+.ficha-valores { display: grid; grid-template-columns: repeat(3, minmax(0,1fr));
+  border-top: 1px solid #e3eee7; gap: 8px; margin-top: 8px; padding-top: 7px; }
+.ficha-valores span { display: flex; flex-direction: column; gap: 2px;
+  font-size: 9px; color: #62776c; }
+.ficha-valores b { color: #244338; font-size: 11px; }
+.ficha-valores .saldo-ficha { color: #067e5a; }
+.pago-ficha-cabecera { border-bottom: 1px solid #e1ebe6; padding-bottom: 6px; }
+.pago-ficha-cabecera b { font-size: 10px; }
+.pago-ficha-cabecera strong { color: #087858; font-size: 13px; }
+.pago-ficha-datos { display: grid; grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 7px 15px; margin-top: 7px; }
+.pago-ficha-datos span { font-size: 10px; overflow-wrap: anywhere; }
+.pago-ficha-datos small { display: block; text-transform: uppercase; font-size: 8px;
+  color: #6b8175; font-weight: 700; }
+.sin-abonos { padding: 10px; border: 1px solid #e1ebe6; }
+
+/* No usar size: A4/landscape/portrait en @page: lo decide el navegador. */
+@page { margin: 10mm; }
+@media print {
+  .cuenta-ficha, .pago-ficha { box-shadow: none; }
+}
+@media print and (orientation: portrait) {
+  .solo-horizontal { display: none !important; }
+  .solo-vertical { display: grid !important; }
+  .resumen { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .datos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media print and (orientation: landscape) {
+  .solo-horizontal { display: block !important; }
+  .solo-vertical { display: none !important; }
+}

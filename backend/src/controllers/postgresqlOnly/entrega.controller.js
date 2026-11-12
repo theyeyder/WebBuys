@@ -2,7 +2,7 @@ import {
   prisma, idCompatibilidad, numero, texto, resolverCompat, usuarioIdReq,
   registrarAuditoriaPostgreSQL, responderError, salidaCliente, salidaEmpleado,
   salidaProducto, salidaPresentacion, crearMovimientoInventarioTx, cajaAbierta,
-  codigoCartera, sincronizarEntregaDesdePedidoTx
+  codigoCartera, sincronizarEntregaDesdePedidoTx, permitirInventarioNegativoTx
 } from "./_transactional.js";
 
 const includeEntrega = {
@@ -132,6 +132,7 @@ async function liberarReservaOriginalUnidadPedidoTx(tx, pedido, usuarioId, entre
 }
 
 async function reservarInventarioEntregaTx(tx, e, uid) {
+  const permitirNegativo = await permitirInventarioNegativoTx(tx);
   for (const item of e.items) {
     const cantidad = cantidadRealItem(item);
     if (cantidad <= 0) throw new Error(`Debe indicar una cantidad válida para ${item.nombre}.`);
@@ -142,7 +143,7 @@ async function reservarInventarioEntregaTx(tx, e, uid) {
     const stock = numero(fuente.stock);
     const reservado = numero(fuente.stockReservado);
 
-    if (stock - reservado < cantidad) {
+    if (!permitirNegativo && stock - reservado < cantidad) {
       throw new Error(`Stock insuficiente para ${item.nombre}. Disponible: ${Math.max(0, stock - reservado)}.`);
     }
 
@@ -191,6 +192,7 @@ async function liberarInventarioEntregaTx(tx, e, uid, motivo = "Liberación de r
 }
 
 async function descontarInventarioTx(tx, e, uid) {
+  const permitirNegativo = await permitirInventarioNegativoTx(tx);
   for (const item of e.items) {
     const cantidad = cantidadRealItem(item);
     const { producto, presentacion, fuente } = await fuenteActualTx(tx, item);
@@ -198,7 +200,7 @@ async function descontarInventarioTx(tx, e, uid) {
 
     const stock = numero(fuente.stock);
     const reservado = numero(fuente.stockReservado);
-    if (stock < cantidad) throw new Error(`Stock insuficiente para finalizar ${item.nombre}.`);
+    if (!permitirNegativo && stock < cantidad) throw new Error(`Stock insuficiente para finalizar ${item.nombre}.`);
 
     const nuevoStock = stock - cantidad;
     const nuevoReservado = Math.max(0, reservado - cantidad);
@@ -286,7 +288,7 @@ async function ajustarReservaPesoTx(tx, item, pesoAnterior, pesoNuevo, e, uid) {
   const stock = numero(actual.stock);
   const reservado = numero(actual.stockReservado);
 
-  if (diferencia > 0 && stock - reservado < diferencia) {
+  if (diferencia > 0 && !(await permitirInventarioNegativoTx(tx)) && stock - reservado < diferencia) {
     throw new Error(`Stock insuficiente para aumentar el peso de ${item.nombre}. Disponible: ${Math.max(0, stock - reservado)}.`);
   }
 

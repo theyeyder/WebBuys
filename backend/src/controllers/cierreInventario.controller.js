@@ -8,6 +8,8 @@ import {
   registrarAuditoria,
 } from "../utils/registrarAuditoria.js";
 
+import { generarExcelCierreInventario } from "../services/cierreInventarioExcel.service.js";
+
 
 function usuarioNombre(
   usuario
@@ -150,3 +152,37 @@ export const cerrarPeriodoInventario =
         });
     }
   };
+
+
+/* Descarga el snapshot historico del mes, sin recalcular existencias. */
+export const descargarExcelCierreInventario = async (req, res) => {
+  try {
+    const cierre = await obtenerResumenMensualInventario(
+      req.params.anio,
+      req.params.mes
+    );
+
+    if (cierre?.estado !== "CERRADO") {
+      return res.status(404).json({
+        mensaje: "Este periodo no tiene un cierre mensual registrado."
+      });
+    }
+
+    const archivo = await generarExcelCierreInventario(cierre);
+    const nombre = `WebBuys_Cierre_Inventario_${cierre.periodo}.xlsx`;
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename="${nombre}"`);
+    res.setHeader("Cache-Control", "private, no-store");
+
+    return res.send(Buffer.from(archivo));
+  } catch (error) {
+    console.error("Error descargando cierre mensual Excel:", error);
+    return res.status(500).json({
+      mensaje: "No fue posible generar el Excel del cierre mensual."
+    });
+  }
+};

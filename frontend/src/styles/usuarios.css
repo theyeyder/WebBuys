@@ -2056,3 +2056,12 @@
     padding: 10px 11px;
   }
 }
+
+/* V13: acceso al reporte de usuarios, perfiles y permisos */
+.usuarios-reporte-btn {
+  min-height: 38px; padding: 7px 15px; border: 1px solid #0c756a;
+  border-radius: 8px; background: #0f766e; color: #fff;
+  font: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+  white-space: nowrap;
+}
+.usuarios-reporte-btn:hover { background: #07564f; }

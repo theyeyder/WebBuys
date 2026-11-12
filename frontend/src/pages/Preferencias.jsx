@@ -515,10 +515,8 @@ export default function Preferencias() {
                   </strong>
 
                   <span>
-                    Permite registrar
-                    movimientos aunque
-                    la existencia quede
-                    por debajo de cero.
+                    Permite reservar y entregar pedidos sin existencias suficientes.
+                    Al finalizar la entrega, el inventario puede quedar negativo.
                   </span>
                 </div>
 

@@ -8,6 +8,16 @@ import {
 import useAutoRefresh
   from "../hooks/useAutoRefresh.js";
 
+import { useAuth } from "../context/AuthContext.jsx";
+import { obtenerConfiguracion } from "../services/configuracion.service.js";
+import { obtenerEntrega } from "../services/entrega.service.js";
+import { imprimirEntrega } from "../utils/entrega.impresion.js";
+import {
+  abrirVentanaCartera,
+  imprimirListadoCartera,
+  imprimirCuentaCartera,
+} from "../utils/cartera.impresion.js";
+
 import Toast
   from "../components/Toast.jsx";
 
@@ -1115,49 +1125,28 @@ function fecha(
 }
 
 
-function fechaInput(
-  valor
-) {
+// Fecha de vencimiento: conservar el dia calendario de PostgreSQL/UTC.
+// No convertir el ISO a hora local, porque en Colombia restaria un dia.
+function fechaInput(valor) {
+  if (!valor) return "";
 
-  if (!valor) {
-    return "";
-  }
+  const texto = String(valor);
+  const fechaISO = texto.match(/^(\d{4}-\d{2}-\d{2})(?:T|$)/);
+  if (fechaISO) return fechaISO[1];
 
-
-  const f =
-    new Date(
-      valor
-    );
-
-
-  if (
-    Number.isNaN(
-      f.getTime()
-    )
-  ) {
-    return "";
-  }
-
-
+  const f = new Date(valor);
+  if (Number.isNaN(f.getTime())) return "";
   return [
     f.getFullYear(),
-    String(
-      f.getMonth() +
-      1
-    ).padStart(
-      2,
-      "0"
-    ),
-    String(
-      f.getDate()
-    ).padStart(
-      2,
-      "0"
-    ),
+    String(f.getMonth() + 1).padStart(2, "0"),
+    String(f.getDate()).padStart(2, "0"),
   ].join("-");
-
 }
 
+function fechaVencimientoVisible(valor) {
+  const fechaLocal = fechaDesdeInput(fechaInput(valor));
+  return fechaLocal ? fechaLocal.toLocaleDateString("es-CO") : "—";
+}
 
 
 function fechaCarteraLocal(
@@ -1418,6 +1407,19 @@ function nombreUsuario(
 
 
 export default function Cartera() {
+
+  const { usuario } = useAuth();
+  const puedeImprimir = usuario?.rol === "Administrador" ||
+    usuario?.permisos?.cartera?.imprimir === true;
+  const esAdministrador = usuario?.rol === "Administrador";
+
+  const [empresa, setEmpresa] = useState(null);
+
+  useEffect(() => {
+    obtenerConfiguracion()
+      .then((respuesta) => setEmpresa(respuesta?.configuracion || respuesta || null))
+      .catch(() => setEmpresa(null));
+  }, []);
 
   const [
     cuentas,
@@ -1709,6 +1711,147 @@ export default function Cartera() {
       ]
     );
 
+
+  async function abrirComprobanteEntregaDesdeCartera(cuenta) {
+    // Cartera se genera a partir de una ENTREGA finalizada a credito.
+    // El pedido original no contiene necesariamente los pesos ni los precios
+    // definitivos, por lo que nunca debe utilizarse para este comprobante.
+    if (!puedeImprimir) {
+      setMensaje("No tienes permiso para imprimir comprobantes desde Cartera.");
+      setTipoMensaje("error");
+      return;
+    }
+
+    const codigo = String(cuenta?.pedidoCodigo || "").trim();
+    const entregaId =
+      typeof cuenta?.entrega === "string"
+        ? cuenta.entrega
+        : cuenta?.entrega?._id || cuenta?.entrega?.id || cuenta?.entrega?.postgresId;
+
+    if (!codigo || !entregaId) {
+      setMensaje("Esta cuenta no tiene una entrega vinculada para consultar el comprobante final.");
+      setTipoMensaje("error");
+      return;
+    }
+
+    // La ventana debe abrirse durante el doble clic, antes de esperar la API.
+    // Se reutiliza esta misma ventana en el impresor del modulo Entregas.
+    const ventana = abrirVentanaCartera();
+    if (!ventana) {
+      setMensaje("El navegador bloqueó la ventana emergente. Permite ventanas emergentes para WebBuys.");
+      setTipoMensaje("error");
+      return;
+    }
+
+    ventana.document.title = `Cargando entrega ${codigo}`;
+    ventana.document.body.textContent = `Cargando comprobante final de entrega ${codigo}...`;
+
+    try {
+      // GET /entregas/:id devuelve la entrega completa con items, pesoReal,
+      // precioUnitario, metodoPago, descuentos y totales definitivos.
+      const entrega = await obtenerEntrega(entregaId);
+
+      // Evitar imprimir una referencia resumida o una entrega equivocada.
+      if (!entrega ||
+          String(entrega.pedidoCodigo || "").trim() !== codigo ||
+          entrega.estado !== "Entregado" ||
+          !Array.isArray(entrega.items) ||
+          entrega.items.length === 0) {
+        throw new Error(
+          `La entrega final de ${codigo} no está completa o no coincide con la cuenta de Cartera.`
+        );
+      }
+
+      // El valor original de Cartera se crea con el total final de Entrega.
+      // Si ya no coinciden, mostrar el problema en vez de emitir dos
+      // comprobantes contradictorios.
+      const totalEntrega = Number(entrega.total);
+      const totalCartera = Number(cuenta.valorOriginal);
+      if (!Number.isFinite(totalEntrega) ||
+          !Number.isFinite(totalCartera) ||
+          Math.abs(totalEntrega - totalCartera) > 0.01) {
+        throw new Error(
+          `El total de Entrega (${totalEntrega}) no coincide con el valor original de Cartera (${totalCartera}). Revisa la cuenta antes de imprimir.`
+        );
+      }
+
+      const resultado = imprimirEntrega(entrega, {
+        // Misma regla de visibilidad de precios que el modulo Entregas.
+        mostrarValores: esAdministrador,
+        ventana,
+      });
+
+      if (resultado?.ok === false) {
+        throw new Error(resultado.mensaje || "No fue posible abrir el comprobante final de entrega.");
+      }
+    } catch (error) {
+      if (!ventana.closed) ventana.close();
+      console.error("Error abriendo comprobante final desde Cartera:", error);
+      setMensaje(
+        error?.response?.data?.mensaje ||
+        error?.message ||
+        "No fue posible cargar el comprobante final de entrega."
+      );
+      setTipoMensaje("error");
+    }
+  }
+
+  function imprimirListado() {
+    if (!puedeImprimir) return;
+    const resultado = imprimirListadoCartera({
+      cuentas: cuentasFiltradas,
+      filtro,
+      estado: estadoFiltro,
+      empresa,
+    });
+    if (!resultado.ok) {
+      setMensaje(resultado.mensaje);
+      setTipoMensaje("error");
+    }
+  }
+
+  async function imprimirCuenta(cuenta) {
+    if (!puedeImprimir || !cuenta?._id) return;
+    const ventana = abrirVentanaCartera();
+    if (!ventana) {
+      setMensaje("El navegador bloqueó la ventana de impresión.");
+      setTipoMensaje("error");
+      return;
+    }
+    try {
+      ventana.document.write("<title>Preparando estado de cuenta</title><p>Preparando impresión...</p>");
+      const datos = await obtenerCartera(cuenta._id);
+      const resultado = imprimirCuentaCartera({
+        cartera: datos?.cartera
+          ? { ...datos.cartera, estadoVisual: estadoVisualCartera(datos.cartera) }
+          : null,
+        pagos: datos?.pagos || [],
+        empresa,
+        ventana,
+      });
+      if (!resultado.ok) throw new Error(resultado.mensaje);
+    } catch (error) {
+      if (!ventana.closed) ventana.close();
+      setMensaje(error?.response?.data?.mensaje || error.message || "No fue posible imprimir la cuenta.");
+      setTipoMensaje("error");
+    }
+  }
+
+  function imprimirCuentaAbierta() {
+    if (!puedeImprimir || !detalle?.cartera) return;
+    const resultado = imprimirCuentaCartera({
+      cartera: {
+        ...detalle.cartera,
+        estadoVisual: estadoVisualCartera(detalle.cartera),
+      },
+      pagos: detalle.pagos || [],
+      empresa,
+    });
+    if (!resultado.ok) {
+      setMensaje(resultado.mensaje);
+      setTipoMensaje("error");
+    }
+  }
 
   async function abrirDetalle(
     cuenta
@@ -2123,7 +2266,8 @@ export default function Cartera() {
             </div>
 
 
-            <div className="cartera-filter-buttons">
+            <div className="cartera-toolbar-actions">
+              <div className="cartera-filter-buttons">
 
               {[
                 "Todas",
@@ -2152,6 +2296,19 @@ export default function Cartera() {
                 )
               )}
 
+              </div>
+
+              {puedeImprimir && (
+                <button
+                  type="button"
+                  className="cartera-print-list-btn"
+                  onClick={imprimirListado}
+                  disabled={cargando || cuentasFiltradas.length === 0}
+                  title="Imprimir las cuentas que coinciden con los filtros"
+                >
+                  Imprimir cartera
+                </button>
+              )}
             </div>
 
           </div>
@@ -2228,9 +2385,25 @@ export default function Cartera() {
                         </td>
 
                         <td>
-                          <strong>
-                            {cuenta.pedidoCodigo}
-                          </strong>
+                          <button
+                            type="button"
+                            className="cartera-pedido-enlace"
+                            onDoubleClick={(event) => {
+                              event.stopPropagation();
+                              abrirComprobanteEntregaDesdeCartera(cuenta);
+                            }}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                abrirComprobanteEntregaDesdeCartera(cuenta);
+                              }
+                            }}
+                            title="Doble clic para abrir el comprobante final de entrega"
+                            aria-label={`Abrir comprobante final de entrega ${cuenta.pedidoCodigo} con doble clic`}
+                          >
+                            {cuenta.pedidoCodigo || "—"}
+                          </button>
                         </td>
 
                         <td>
@@ -2253,9 +2426,7 @@ export default function Cartera() {
 
                         <td>
                           <strong className="cartera-due-date">
-                            {fecha(
-                              cuenta.fechaVencimiento
-                            )}
+                            {fechaVencimientoVisible(cuenta.fechaVencimiento)}
                           </strong>
 
                           <small
@@ -2307,17 +2478,25 @@ export default function Cartera() {
                         </td>
 
                         <td>
-                          <button
-                            type="button"
-                            className="cartera-manage-btn"
-                            onClick={() =>
-                              abrirDetalle(
-                                cuenta
-                              )
-                            }
-                          >
-                            Gestionar
-                          </button>
+                          <div className="cartera-row-actions">
+                            <button
+                              type="button"
+                              className="cartera-manage-btn"
+                              onClick={() => abrirDetalle(cuenta)}
+                            >
+                              Gestionar
+                            </button>
+                            {puedeImprimir && (
+                              <button
+                                type="button"
+                                className="cartera-print-account-btn"
+                                onClick={() => imprimirCuenta(cuenta)}
+                                title={`Imprimir cuenta ${cuenta.codigo}`}
+                              >
+                                Imprimir
+                              </button>
+                            )}
+                          </div>
                         </td>
 
                       </tr>
@@ -2372,19 +2551,27 @@ export default function Cartera() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                className="cartera-modal-close"
-                onClick={cerrarDetalle}
-                disabled={procesando}
-                aria-label="Cerrar"
-              >
-                <img
-                  src={cerrarIcon}
-                  alt=""
-                  className="cartera-modal-close-icon"
-                />
-              </button>
+              <div className="cartera-modal-header-actions">
+                {puedeImprimir && cuentaDetalle && (
+                  <button
+                    type="button"
+                    className="cartera-print-modal-btn"
+                    onClick={imprimirCuentaAbierta}
+                    disabled={procesando}
+                  >
+                    Imprimir cuenta
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="cartera-modal-close"
+                  onClick={cerrarDetalle}
+                  disabled={procesando}
+                  aria-label="Cerrar"
+                >
+                  <img src={cerrarIcon} alt="" className="cartera-modal-close-icon" />
+                </button>
+              </div>
 
             </header>
 
@@ -2403,9 +2590,23 @@ export default function Cartera() {
 
                   <div>
                     <span>Pedido</span>
-                    <strong>
-                      {cuentaDetalle.pedidoCodigo}
-                    </strong>
+                    <button
+                      type="button"
+                      className="cartera-pedido-enlace"
+                      onDoubleClick={(event) => {
+                        event.stopPropagation();
+                        abrirComprobanteEntregaDesdeCartera(cuentaDetalle);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          abrirComprobanteEntregaDesdeCartera(cuentaDetalle);
+                        }
+                      }}
+                      title="Doble clic para abrir el comprobante final de entrega"
+                    >
+                      {cuentaDetalle.pedidoCodigo || "—"}
+                    </button>
                   </div>
 
                   <div>
@@ -2432,9 +2633,7 @@ export default function Cartera() {
                     <span>Vencimiento</span>
 
                     <strong>
-                      {fecha(
-                        cuentaDetalle.fechaVencimiento
-                      )}
+                      {fechaVencimientoVisible(cuentaDetalle.fechaVencimiento)}
                     </strong>
 
                     <small>

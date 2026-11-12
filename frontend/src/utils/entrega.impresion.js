@@ -89,16 +89,17 @@ function nombreEmpleado(empleado) {
 function abrirVentanaImpresion(
   titulo,
   contenido,
-  claseBody = ""
+  claseBody = "",
+  ventanaExistente = null
 ) {
 
-  const ventana = window.open(
+  const ventana = ventanaExistente || window.open(
     "",
     "_blank",
     "width=1100,height=820"
   );
 
-  if (!ventana) {
+  if (!ventana || ventana.closed) {
     return {
       ok: false,
       tipo: "error",
@@ -538,7 +539,8 @@ export function imprimirEntrega(
     contenido,
     mostrarValores
       ? "entrega-individual-body"
-      : "entrega-individual-body entrega-sin-valores"
+      : "entrega-individual-body entrega-sin-valores",
+    opciones?.ventana || null
   );
 }
 

@@ -52,7 +52,7 @@ function esCampoMoneda(campo = "", titulo = "", fila = null) {
     );
   }
 
-  return /precio|valor|subtotal|descuento|total|saldo|abono|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar|contado|vencido|diferencia/.test(
+  return /precio|valor|subtotal|descuento|total|saldo|abono|abonad|costo|ingreso|egreso|iva|factur|efectivo|transferencia|credito|sinclasificar|contado|vencido|diferencia/.test(
     texto
   );
 }
@@ -87,6 +87,12 @@ function numero(valor) {
   return new Intl.NumberFormat("es-CO", {
     maximumFractionDigits: 2,
   }).format(dato);
+}
+
+function fechaCorta(valor) {
+  const fecha = String(valor || "");
+  const coincidencia = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fecha);
+  return coincidencia ? `${coincidencia[3]}/${coincidencia[2]}/${coincidencia[1]}` : fecha;
 }
 
 function fechaGeneracion() {
@@ -314,7 +320,9 @@ export async function generarInformePdf({
 
         let texto = String(valor ?? "");
 
-        if (esMoneda) {
+        if (tipo === "cartera" && ["fechaEntrega", "vencimiento"].includes(columna.campo)) {
+          texto = fechaCorta(valor);
+        } else if (esMoneda) {
           texto = moneda(valor);
         } else if (esNumerico && Number.isFinite(Number(valor))) {
           texto = numero(valor);
@@ -402,7 +410,9 @@ export async function generarInformePdf({
       const valor = fila[columna.campo] ?? "";
       const esMoneda = esCampoMoneda(columna.campo, columna.titulo, fila);
       const esNumero = esCampoNumerico(columna.campo, columna.titulo);
-      const texto = valor === "" ? "" : esMoneda ? moneda(valor) : esNumero && Number.isFinite(Number(valor))
+      const texto = valor === "" ? ""
+        : tipo === "cartera" && ["fechaEntrega", "vencimiento"].includes(columna.campo) ? fechaCorta(valor)
+        : esMoneda ? moneda(valor) : esNumero && Number.isFinite(Number(valor))
         ? numero(valor) : String(valor);
       return {
         text: texto, fontSize: 7, margin: [3, 4, 3, 4],
@@ -511,7 +521,7 @@ export async function generarInformePdf({
                 fillColor: COLORES.soft2,
               },
               {
-                text: desde || "No definido",
+                text: tipo === "caja" || tipo === "cartera" ? fechaCorta(desde) : (desde || "No definido"),
                 fontSize: 8,
                 margin: [4, 5, 8, 5],
                 fillColor: COLORES.soft,
@@ -525,7 +535,7 @@ export async function generarInformePdf({
                 fillColor: COLORES.soft2,
               },
               {
-                text: hasta || "No definido",
+                text: tipo === "caja" || tipo === "cartera" ? fechaCorta(hasta) : (hasta || "No definido"),
                 fontSize: 8,
                 margin: [4, 5, 8, 5],
                 fillColor: COLORES.soft,

@@ -1,10 +1,14 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 
+import { useSearchParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import ReporteUsuarios from "./ReporteUsuarios.jsx";
 import AppLayout from "../layouts/AppLayout.jsx";
 import ModulosMenu from "../components/ModulosMenu.jsx";
 
@@ -74,6 +78,11 @@ const TIPOS_INFORME = [
   {
     valor: "repartidores",
     nombre: "Repartidores y recaudos",
+  },
+  {
+    valor: "usuarios",
+    nombre: "Reporte de usuarios",
+    soloAdministrador: true,
   },
 ];
 
@@ -176,8 +185,16 @@ function esCampoDinero(
 
 function formatearValor(
   campo,
-  valor
+  valor,
+  tipoInforme = ""
 ) {
+  if (
+    tipoInforme === "cartera" &&
+    ["fechaEntrega", "vencimiento"].includes(campo) &&
+    /^\d{4}-\d{2}-\d{2}$/.test(String(valor || ""))
+  ) {
+    return `${valor.slice(8, 10)}/${valor.slice(5, 7)}/${valor.slice(0, 4)}`;
+  }
   if (
     esCampoDinero(campo) &&
     typeof valor === "number"
@@ -683,6 +700,24 @@ function WebBuysCalendario({
 
 
 export default function Informes() {
+  const { usuario: usuarioSesion } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const esAdministrador = usuarioSesion?.rol === "Administrador";
+  const reporteUsuariosRef = useRef(null);
+  const [estadoReporteUsuarios, setEstadoReporteUsuarios] = useState({
+    cargando: false,
+    disponible: false,
+    exportando: false,
+    error: "",
+  });
+  const sincronizarEstadoReporteUsuarios = useCallback((siguiente) => {
+    setEstadoReporteUsuarios((actual) =>
+      actual.cargando === siguiente.cargando &&
+      actual.disponible === siguiente.disponible &&
+      actual.exportando === siguiente.exportando &&
+      actual.error === siguiente.error ? actual : siguiente
+    );
+  }, []);
 
   const periodoInicial =
     useMemo(
@@ -696,7 +731,7 @@ export default function Informes() {
     tipo,
     setTipo,
   ] =
-    useState("resumen");
+    useState(() => searchParams.get("tipo") === "usuarios" ? "usuarios" : "resumen");
 
 
   /* =========================================================
@@ -727,6 +762,22 @@ export default function Informes() {
     setDatos,
   ] =
     useState(null);
+
+  useEffect(() => {
+    if (!usuarioSesion) return;
+    if (searchParams.get("tipo") === "usuarios" && esAdministrador) {
+      setTipo("usuarios");
+    } else {
+      setTipo((actual) => actual === "usuarios" ? "resumen" : actual);
+    }
+  }, [searchParams, usuarioSesion, esAdministrador]);
+
+  useEffect(() => {
+    if (tipo === "usuarios" && usuarioSesion && !esAdministrador) {
+      setTipo("resumen");
+      setSearchParams({}, { replace: true });
+    }
+  }, [tipo, usuarioSesion, esAdministrador, setSearchParams]);
 
   const [repartidorId, setRepartidorId] = useState("");
   const [cajaId, setCajaId] = useState("");
@@ -1167,7 +1218,7 @@ export default function Informes() {
   return (
     <AppLayout title="Informes">
 
-      <section className="informes-page">
+      <section className={`informes-page ${tipo === "usuarios" ? "informes-page--usuarios" : ""}`}>
 
         <ModulosMenu />
 
@@ -1181,7 +1232,7 @@ export default function Informes() {
             </h1>
 
             <p>
-              Consulta y exporta la información de WebBuys por período.
+              Consulta y exporta la información de WebBuys.
             </p>
 
           </div>
@@ -1226,16 +1277,19 @@ export default function Informes() {
                   <select
                     value={tipo}
                     onChange={(event) => {
-                      setTipo(event.target.value);
+                      const siguienteTipo = event.target.value;
+                      setTipo(siguienteTipo);
+                      setSearchParams(siguienteTipo === "usuarios" ? { tipo: "usuarios" } : {}, { replace: true });
                       setRepartidorId("");
                       setCajaId("");
                       setCarteraEstado("");
                       setCarteraPeriodo("entrega");
                       setDatos(null);
                       setError("");
+                      setEstadoReporteUsuarios({ cargando: false, disponible: false, exportando: false, error: "" });
                     }}
                   >
-                    {TIPOS_INFORME.map((opcion) => (
+                    {TIPOS_INFORME.filter((opcion) => !opcion.soloAdministrador || esAdministrador).map((opcion) => (
                       <option
                         key={opcion.valor}
                         value={opcion.valor}
@@ -1255,6 +1309,7 @@ export default function Informes() {
               </div>
 
 
+              {tipo !== "usuarios" && <>
               {tipo === "repartidores" && (
                 <div className="informes-control informes-control--select">
                   <span className="informes-control-label">Repartidor</span>
@@ -1354,10 +1409,25 @@ export default function Informes() {
                   alineacion="derecha"
                 />
               </div>
+              </>}
+
+              {tipo === "usuarios" && (
+                <>
+                  <div className="informes-control">
+                    <span className="informes-control-label">Alcance</span>
+                    <div className="informes-control-informativo">Usuarios, perfiles y permisos actuales</div>
+                  </div>
+                  <div className="informes-control">
+                    <span className="informes-control-label">Período</span>
+                    <div className="informes-control-informativo">No aplica (información actual)</div>
+                  </div>
+                </>
+              )}
 
             </div>
 
 
+            {tipo !== "usuarios" && <>
             <div className="informes-actions">
 
               <button
@@ -1472,10 +1542,80 @@ export default function Informes() {
               </div>
 
             )}
+            </>}
+
+            {tipo === "usuarios" && (
+              <div className="informes-actions">
+                <button
+                  type="button"
+                  className="informes-preview-btn"
+                  onClick={() => reporteUsuariosRef.current?.actualizar()}
+                  disabled={estadoReporteUsuarios.cargando}
+                >
+                  <span className="informes-preview-btn-icon">◉</span>
+                  <span>{estadoReporteUsuarios.cargando ? "Consultando..." : "Vista previa"}</span>
+                </button>
+                <div className="informes-export-group">
+                  <span className="informes-export-label">Exportar informe</span>
+                  <div className="informes-formatos">
+                    <button
+                      type="button"
+                      className="informes-formato-btn informes-formato-pdf"
+                      onClick={() => reporteUsuariosRef.current?.pdf()}
+                      disabled={!estadoReporteUsuarios.disponible || estadoReporteUsuarios.cargando}
+                      title="Imprimir o guardar como PDF desde el navegador"
+                    >
+                      <span className="informes-formato-extension">PDF</span>
+                      <span className="informes-formato-copy"><strong>Documento PDF</strong><small>Ver o imprimir</small></span>
+                    </button>
+                    <button
+                      type="button"
+                      className="informes-formato-btn informes-formato-excel"
+                      onClick={() => reporteUsuariosRef.current?.excel()}
+                      disabled={estadoReporteUsuarios.exportando}
+                    >
+                      <span className="informes-formato-extension">XLSX</span>
+                      <span className="informes-formato-copy"><strong>Excel</strong><small>Hoja de cálculo</small></span>
+                    </button>
+                    <button
+                      type="button"
+                      className="informes-formato-btn informes-formato-html"
+                      onClick={() => reporteUsuariosRef.current?.html()}
+                      disabled={!estadoReporteUsuarios.disponible || estadoReporteUsuarios.cargando}
+                    >
+                      <span className="informes-formato-extension">HTML</span>
+                      <span className="informes-formato-copy"><strong>Página web</strong><small>Abrir en navegador</small></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
           </section>
 
 
+          {tipo === "usuarios" ? (
+            <section className="informes-preview">
+              <div className="informes-preview-header">
+                <div>
+                  <span className="eyebrow">Vista previa</span>
+                  <h2>{estadoReporteUsuarios.disponible ? "Reporte de usuarios, perfiles y permisos" : "Sin informe generado"}</h2>
+                </div>
+                {estadoReporteUsuarios.disponible && <span className="informes-periodo">Información actual</span>}
+              </div>
+              {!estadoReporteUsuarios.disponible && !estadoReporteUsuarios.cargando && !estadoReporteUsuarios.error && (
+                <div className="informes-empty">Pulsa <strong>Vista previa</strong> para consultar los usuarios, perfiles y permisos.</div>
+              )}
+              {estadoReporteUsuarios.cargando && !estadoReporteUsuarios.disponible && (
+                <div className="informes-empty">Consultando información...</div>
+              )}
+              <ReporteUsuarios
+                ref={reporteUsuariosRef}
+                autoCargar={false}
+                onEstado={sincronizarEstadoReporteUsuarios}
+              />
+            </section>
+          ) : (
           <section className="informes-preview">
 
 
@@ -1498,7 +1638,7 @@ export default function Informes() {
               {datos && (
 
                 <span className="informes-periodo">
-                  {desde} — {hasta}
+                  {esFinanciero ? fechaVisible(desde) : desde} — {esFinanciero ? fechaVisible(hasta) : hasta}
                 </span>
 
               )}
@@ -1750,7 +1890,8 @@ export default function Informes() {
                                       columna.campo,
                                       fila[
                                         columna.campo
-                                      ]
+                                      ],
+                                      tipo
                                     )}
 
                                   </td>
@@ -1795,7 +1936,7 @@ export default function Informes() {
                       ))}</tr></thead>
                       <tbody>{(seccion.filas || []).map((fila, filaIndice) => (
                         <tr key={filaIndice}>{(seccion.columnas || []).map((columna) => (
-                          <td key={columna.campo}>{formatearValor(columna.campo, fila[columna.campo])}</td>
+                          <td key={columna.campo}>{formatearValor(columna.campo, fila[columna.campo], tipo)}</td>
                         ))}</tr>
                       ))}</tbody>
                     </table>
@@ -1807,6 +1948,7 @@ export default function Informes() {
               ))}
 
           </section>
+          )}
 
         </div>
 
