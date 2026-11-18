@@ -1,0 +1,362 @@
+/* =========================================================
+   NUMERACIÓN - PÁGINA
+========================================================= */
+
+.numeracion-page {
+  position: relative;
+
+  width: 100%;
+  min-height: 100vh;
+
+  padding: 0 0 70px;
+
+  box-sizing: border-box;
+
+  background:
+    radial-gradient(
+      circle at 12% 8%,
+      rgb(241, 255, 241),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 88% 16%,
+      rgba(69, 123, 157, 0.12),
+      transparent 28%
+    ),
+    linear-gradient(
+      135deg,
+      #a8f7e3 0%,
+      #b1cdb7 55%,
+      #99a89b 100%
+    );
+}
+
+
+/* =========================================================
+   CABECERA FIJA
+========================================================= */
+
+.numeracion-header {
+  position: sticky;
+  top: 0;
+
+  z-index: 8000;
+
+  width: 100%;
+  min-height: 72px;
+
+  padding: 5px 70px 18px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e 0%,
+      #159a75 52%,
+      #20afb2 100%
+    );
+
+  box-shadow:
+    0 4px 12px
+    rgba(15, 23, 42, 0.10);
+
+  overflow: visible;
+}
+
+
+.numeracion-header-left {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+}
+
+
+.numeracion-header-left h1 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 24px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   CONTENIDO
+========================================================= */
+
+.numeracion-content {
+  width: 100%;
+
+  padding: 28px 20px;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   PANEL PRINCIPAL
+========================================================= */
+
+.numeracion-panel {
+  width: min(
+    1050px,
+    100%
+  );
+
+  margin: 0 auto;
+
+  overflow: hidden;
+
+  border:
+    1px solid #6d6868ad;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 10px 26px
+    rgba(15, 23, 42, 0.08);
+}
+
+
+/* =========================================================
+   CABECERA INTERNA
+========================================================= */
+
+.numeracion-panel-header {
+  padding: 16px 18px;
+
+  border-bottom:
+    1px solid #e7eeea;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f6faf8
+    );
+}
+
+
+.numeracion-panel-header h2 {
+  margin:
+    0
+    0
+    4px;
+
+  color: #172033;
+
+  font-size: 17px;
+  font-weight: 900;
+}
+
+
+.numeracion-panel-header p {
+  margin: 0;
+
+  color: #667085;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   TABLA
+========================================================= */
+
+.numeracion-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+
+  background: #ffffff;
+}
+
+
+.numeracion-table {
+  width: 100%;
+
+  min-width: 760px;
+
+  border-collapse: collapse;
+
+  table-layout: fixed;
+}
+
+
+.numeracion-table thead {
+  position: sticky;
+  top: 0;
+
+  z-index: 5;
+}
+
+
+.numeracion-table th {
+  padding: 11px 12px;
+
+  background: #218476;
+
+  color: #ffffff;
+
+  text-align: center;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+}
+
+
+.numeracion-table td {
+  padding: 12px;
+
+  border-bottom:
+    1px solid #e7eeea;
+
+  color: #25333d;
+
+  text-align: center;
+  vertical-align: middle;
+
+  font-size: 12px;
+}
+
+
+.numeracion-table tbody tr:nth-child(even) {
+  background: #f5faf8;
+}
+
+
+.numeracion-table tbody tr:hover {
+  background: #ddf5ea;
+
+  box-shadow:
+    inset 4px 0 0 #12b76a;
+}
+
+
+/* =========================================================
+   CÓDIGOS
+========================================================= */
+
+.numeracion-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 105px;
+
+  padding: 6px 10px;
+
+  border:
+    1px solid #d8e5df;
+
+  border-radius: 8px;
+
+  background: #f7faf9;
+
+  color: #344054;
+
+  font-weight: 800;
+}
+
+
+.numeracion-next-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 105px;
+
+  padding: 6px 10px;
+
+  border:
+    1px solid #abefc6;
+
+  border-radius: 8px;
+
+  background: #ecfdf3;
+
+  color: #067647;
+
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.numeracion-error {
+  margin: 14px 16px;
+
+  padding: 10px 12px;
+
+  border:
+    1px solid #fecdca;
+
+  border-radius: 8px;
+
+  background: #fef3f2;
+
+  color: #b42318;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   SIN DATOS / CARGANDO
+========================================================= */
+
+.numeracion-empty {
+  padding: 30px !important;
+
+  color: #98a2b3 !important;
+
+  text-align: center !important;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 768px) {
+
+  .numeracion-header {
+    min-height: 60px;
+
+    padding: 10px 14px;
+  }
+
+
+  .numeracion-header-left h1 {
+    font-size: 20px;
+  }
+
+
+  .numeracion-content {
+    padding: 18px 10px;
+  }
+
+
+  .numeracion-panel-header {
+    padding: 14px;
+  }
+}

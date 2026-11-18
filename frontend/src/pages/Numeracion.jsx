@@ -193,9 +193,10 @@ export default function Numeracion() {
                     (item) => {
 
                       const ultimoCodigo =
-                        item.ultimoNumero > 0
+                        item.ultimoCodigo ||
+                        (item.ultimoNumero > 0
                           ? `${item.prefijo}-${item.ultimoFormateado}`
-                          : "Sin registros";
+                          : "Sin registros");
 
                       return (
 
@@ -205,6 +206,11 @@ export default function Numeracion() {
                             <strong>
                               {item.modulo}
                             </strong>
+                            {item.descripcion && (
+                              <small className="numeracion-origen" title={item.descripcion}>
+                                {item.descripcion}
+                              </small>
+                            )}
                           </td>
 
                           <td>
@@ -212,7 +218,7 @@ export default function Numeracion() {
                           </td>
 
                           <td>
-                            {item.ultimoNumero}
+                            {item.ultimoNumero ?? "—"}
                           </td>
 
                           <td>
@@ -222,7 +228,7 @@ export default function Numeracion() {
                           </td>
 
                           <td>
-                            <span className="numeracion-next-code">
+                            <span className={`numeracion-next-code${item.tipo === "vinculado" ? " numeracion-next-derived" : ""}`}>
                               {item.siguienteCodigo}
                             </span>
                           </td>
@@ -241,6 +247,11 @@ export default function Numeracion() {
             </table>
 
           </div>
+
+          <p className="numeracion-panel-note">
+            Los códigos de Cartera y Entregas dependen del pedido y no tienen
+            consecutivo independiente. Esta pantalla es de solo lectura.
+          </p>
 
         </div>
 

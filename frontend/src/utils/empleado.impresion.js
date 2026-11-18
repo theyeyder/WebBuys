@@ -126,7 +126,7 @@ export function imprimirEmpleados({
       empleados
     ) ||
     empleados.length ===
-      0
+    0
   ) {
 
     return {
@@ -164,74 +164,73 @@ export function imprimirEmpleados({
 
               <td class="empleados-listado-codigo">
                 ${escaparHtml(
-                  empleado?.codigo ||
-                  "-"
-                )}
+            empleado?.codigo ||
+            "-"
+          )}
               </td>
 
               <td>
                 ${escaparHtml(
-                  documento ||
-                  "-"
-                )}
+            documento ||
+            "-"
+          )}
               </td>
 
               <td class="empleados-listado-nombre">
                 ${escaparHtml(
-                  nombreCompleto(
-                    empleado
-                  )
-                )}
+            nombreCompleto(
+              empleado
+            )
+          )}
               </td>
 
               <td>
                 ${escaparHtml(
-                  empleado?.cargo ||
-                  "-"
-                )}
+            empleado?.cargo ||
+            "-"
+          )}
               </td>
 
               <td>
                 ${escaparHtml(
-                  empleado?.telefono ||
-                  "-"
-                )}
+            empleado?.telefono ||
+            "-"
+          )}
               </td>
 
               <td>
                 ${escaparHtml(
-                  empleado?.ciudad ||
-                  "-"
-                )}
+            empleado?.ciudad ||
+            "-"
+          )}
               </td>
 
               <td>
                 ${escaparHtml(
-                  nombreRuta(
-                    empleado
-                  )
-                )}
+            nombreRuta(
+              empleado
+            )
+          )}
               </td>
 
               <td>
                 ${escaparHtml(
-                  fechaVista(
-                    empleado?.fechaIngreso
-                  )
-                )}
+            fechaVista(
+              empleado?.fechaIngreso
+            )
+          )}
               </td>
 
               <td>
-                <span class="${
-                  empleado?.estado ===
-                  "Activo"
-                    ? "empleados-listado-estado activo"
-                    : "empleados-listado-estado inactivo"
-                }">
+                <span class="${empleado?.estado ===
+              "Activo"
+              ? "empleados-listado-estado activo"
+              : "empleados-listado-estado inactivo"
+            }">
                   ${escaparHtml(
-                    empleado?.estado ||
-                    "-"
-                  )}
+              empleado?.estado ||
+              "-"
+            )}
                 </span>
               </td>
 
@@ -261,7 +260,7 @@ export function imprimirEmpleados({
   if (
     filtros?.estado &&
     filtros.estado !==
-      "Todos"
+    "Todos"
   ) {
 
     filtrosAplicados.push(
@@ -273,12 +272,12 @@ export function imprimirEmpleados({
 
   const textoFiltros =
     filtrosAplicados.length >
-    0
+      0
       ? escaparHtml(
-          filtrosAplicados.join(
-            " · "
-          )
+        filtrosAplicados.join(
+          " · "
         )
+      )
       : "Sin filtros: se muestran todos los empleados";
 
 
