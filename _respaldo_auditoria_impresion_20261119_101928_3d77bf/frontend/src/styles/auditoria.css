@@ -1,0 +1,1083 @@
+/* =========================================================
+   AUDITORÍA
+========================================================= */
+
+.auditoria-page {
+  position: relative;
+
+  width: 100%;
+  min-height: 100vh;
+
+  padding: 0 0 70px;
+
+  box-sizing: border-box;
+
+  background:
+    radial-gradient(
+      circle at 12% 8%,
+      rgb(241, 255, 241),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 88% 16%,
+      rgba(69, 123, 157, 0.12),
+      transparent 28%
+    ),
+    linear-gradient(
+      135deg,
+      #a8f7e3 0%,
+      #b1cdb7 55%,
+      #99a89b 100%
+    );
+}
+
+
+/* CABECERA */
+
+.auditoria-header {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 8000;
+
+  width: 100%;
+  min-height: 72px;
+
+  padding: 5px 70px 18px;
+
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f766e 0%,
+      #159a75 52%,
+      #20afb2 100%
+    );
+
+  box-shadow:
+    0 4px 12px
+    rgba(15, 23, 42, 0.10);
+
+  overflow: visible;
+}
+
+
+.auditoria-header-left {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+}
+
+
+.auditoria-header-left h1 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-size: 24px;
+  font-weight: 800;
+}
+
+
+/* CONTENIDO */
+
+.auditoria-content {
+  width: 100%;
+
+  padding: 28px 20px;
+
+  box-sizing: border-box;
+}
+
+
+.auditoria-panel {
+  width: min(
+    1250px,
+    100%
+  );
+
+  margin: 0 auto;
+
+  overflow: hidden;
+
+  border:
+    1px solid #6d6868ad;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 10px 26px
+    rgba(15, 23, 42, 0.08);
+}
+
+
+/* =========================================================
+   CABECERA REGISTRO DE ACTIVIDAD
+========================================================= */
+
+.auditoria-panel-header {
+  padding: 12px 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  border-bottom: 1px solid #e7eeea;
+
+  background:
+    linear-gradient(
+      180deg,
+      #ffffff,
+      #f6faf8
+    );
+}
+
+.auditoria-panel-title h2 {
+  margin: 0;
+
+  color: #172033;
+
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.auditoria-panel-actions {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+}
+
+
+/* FILTROS - GRID MEJORADO */
+
+.auditoria-filters {
+  padding: 12px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(320px, 1fr)
+    170px
+    180px
+    155px
+    155px;
+
+  gap: 9px;
+
+  align-items: center;
+
+  border-bottom: 1px solid #e7eeea;
+
+  background: #f8fbfa;
+}
+
+
+/* =========================================================
+   BUSCADOR SIN LUPA
+========================================================= */
+
+.auditoria-search {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  border: 1px solid #d0d9d5;
+  border-radius: 8px;
+
+  background: #ffffff;
+}
+
+.auditoria-search input {
+  width: 100%;
+  height: 38px;
+
+  padding: 0 42px 0 12px;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  font-size: 13px;
+  color: #172033;
+}
+
+.auditoria-search input::placeholder {
+  color: #98a2b3;
+  font-weight: 500;
+}
+
+.auditoria-search-clear {
+  position: absolute;
+
+  right: 6px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  width: 28px;
+  height: 28px;
+
+  padding: 4px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: #f2f4f7;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+}
+
+.auditoria-search-clear:hover {
+  background: #e4e7ec;
+}
+
+.auditoria-search-clear img {
+  width: 19px;
+  height: 19px;
+
+  object-fit: contain;
+}
+
+
+/* SELECTS */
+
+.auditoria-filters select {
+  height: 40px;
+
+  padding: 0 9px;
+
+  border:
+    1px solid #d0d9d5;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  outline: none;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   DATEPICKER WEBBUYS
+========================================================= */
+
+.auditoria-date-trigger {
+  width: 155px;
+  height: 40px;
+
+  padding: 0 12px;
+
+  border:
+    1px solid
+    rgba(8, 116, 67, 0.32);
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  cursor: pointer;
+}
+
+
+.auditoria-date-trigger span {
+  color: #087443;
+
+  font-size: 10px;
+  font-weight: 900;
+}
+
+
+.auditoria-date-trigger strong {
+  color: #344054;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* OVERLAY */
+
+.auditoria-datepicker-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 110000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    rgba(15, 23, 42, 0.10);
+}
+
+
+/* CAJA */
+
+.auditoria-datepicker {
+  width: 375px;
+  min-height: 402px;
+
+  padding: 22px;
+
+  box-sizing: border-box;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  filter:
+    drop-shadow(
+      35px
+      45px
+      73px
+      rgba(32, 32, 35, 0.07)
+    );
+}
+
+
+/* CABECERA */
+
+.auditoria-datepicker-header {
+  display: grid;
+
+  grid-template-columns:
+    38px
+    1fr
+    38px;
+
+  align-items: center;
+
+  margin-bottom: 22px;
+}
+
+
+.auditoria-datepicker-header strong {
+  text-align: center;
+
+  color: #172033;
+
+  font-size: 15px;
+  font-weight: 900;
+
+  text-transform: capitalize;
+}
+
+
+.auditoria-datepicker-header button {
+  width: 34px;
+  height: 34px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #12a05c;
+
+  font-size: 25px;
+
+  cursor: pointer;
+}
+
+
+.auditoria-datepicker-header button:hover {
+  background: #ecfdf3;
+}
+
+
+/* DÍAS SEMANA */
+
+.auditoria-datepicker-weekdays {
+  display: grid;
+
+  grid-template-columns:
+    repeat(7, 1fr);
+
+  margin-bottom: 8px;
+}
+
+
+.auditoria-datepicker-weekdays span {
+  text-align: center;
+
+  color: #19a361;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+
+/* DÍAS */
+
+.auditoria-datepicker-days {
+  display: grid;
+
+  grid-template-columns:
+    repeat(7, 1fr);
+
+  row-gap: 7px;
+}
+
+
+.auditoria-datepicker-days button {
+  position: relative;
+
+  width: 100%;
+  height: 32px;
+
+  border: none;
+
+  background: transparent;
+
+  color: #2c3440;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  z-index: 1;
+}
+
+
+.auditoria-datepicker-days button.outside {
+  color: #c3cac6;
+}
+
+
+/* RANGO */
+
+.auditoria-datepicker-days button.range {
+  background: #27a95f;
+
+  color: #ffffff;
+
+  border-radius: 0;
+}
+
+
+.auditoria-datepicker-days button.start {
+  border-radius:
+    18px
+    0
+    0
+    18px;
+}
+
+
+.auditoria-datepicker-days button.end {
+  border-radius:
+    0
+    18px
+    18px
+    0;
+}
+
+
+.auditoria-datepicker-days button.start.end {
+  border-radius: 18px;
+}
+
+
+/* HOVER */
+
+.auditoria-datepicker-days
+button:not(.range):hover {
+  background: #ecfdf3;
+
+  border-radius: 50%;
+
+  color: #087443;
+}
+
+
+/* =========================================================
+   SEMANA ACTUAL
+========================================================= */
+
+.auditoria-datepicker-days
+button.current-week {
+  background: #20a05a;
+
+  color: #ffffff;
+
+  border-radius: 0;
+}
+
+
+/* PRIMER DÍA DE LA SEMANA */
+
+.auditoria-datepicker-days
+button.current-week-start {
+  border-radius:
+    18px
+    0
+    0
+    18px;
+}
+
+
+/* ÚLTIMO DÍA DE LA SEMANA */
+
+.auditoria-datepicker-days
+button.current-week-end {
+  border-radius:
+    0
+    18px
+    18px
+    0;
+}
+
+
+/* SEMANA ACTUAL + HOVER */
+
+.auditoria-datepicker-days
+button.current-week:hover {
+  background: #168b4b;
+
+  color: #ffffff;
+
+  border-radius: 0;
+}
+
+
+.auditoria-datepicker-days
+button.current-week-start:hover {
+  border-radius:
+    18px
+    0
+    0
+    18px;
+}
+
+
+.auditoria-datepicker-days
+button.current-week-end:hover {
+  border-radius:
+    0
+    18px
+    18px
+    0;
+}
+
+
+/* FOOTER */
+
+.auditoria-datepicker-footer {
+  margin-top: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+.auditoria-datepicker-footer button {
+  height: 40px;
+
+  padding: 0 20px;
+
+  border-radius: 6px;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.datepicker-cancel {
+  border: none;
+
+  background: transparent;
+
+  color: #344054;
+}
+
+
+.datepicker-done {
+  min-width: 92px;
+
+  border: none;
+
+  background: #20a45c;
+
+  color: #ffffff;
+}
+
+
+.datepicker-done:hover {
+  background: #15864a;
+}
+
+
+/* TABLA */
+
+.auditoria-table-wrapper {
+  max-height: 560px;
+
+  overflow: auto;
+}
+
+
+.auditoria-table {
+  width: 100%;
+
+  min-width: 1000px;
+
+  border-collapse: collapse;
+}
+
+
+.auditoria-table thead {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 5;
+}
+
+
+.auditoria-table th {
+  padding: 10px;
+
+  background: #218476;
+
+  color: #ffffff;
+
+  font-size: 11px;
+  font-weight: 900;
+
+  text-align: center;
+
+  text-transform: uppercase;
+}
+
+
+.auditoria-table td {
+  padding: 10px;
+
+  border-bottom:
+    1px solid #e7eeea;
+
+  color: #25333d;
+
+  font-size: 12px;
+
+  text-align: center;
+}
+
+
+.auditoria-table tbody tr {
+  cursor: pointer;
+}
+
+
+.auditoria-table tbody tr:nth-child(even) {
+  background: #f5faf8;
+}
+
+
+.auditoria-table tbody tr:hover {
+  background: #ddf5ea;
+}
+
+
+/* USUARIO */
+
+.auditoria-user {
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+
+.auditoria-user strong {
+  color: #087443;
+}
+
+
+.auditoria-user span {
+  color: #667085;
+
+  font-size: 10px;
+}
+
+
+/* ACCIÓN */
+
+.auditoria-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 90px;
+
+  padding: 5px 8px;
+
+  border-radius: 999px;
+
+  background: #f2f4f7;
+
+  font-size: 10px;
+  font-weight: 900;
+}
+
+
+.auditoria-action-crear,
+.auditoria-action-activar,
+.auditoria-action-desbloquear {
+  background: #ecfdf3;
+
+  color: #067647;
+}
+
+
+.auditoria-action-actualizar,
+.auditoria-action-cambiar-password,
+.auditoria-action-reset-password {
+  background: #eff8ff;
+
+  color: #175cd3;
+}
+
+
+.auditoria-action-eliminar,
+.auditoria-action-desactivar,
+.auditoria-action-bloquear {
+  background: #fef3f2;
+
+  color: #b42318;
+}
+
+
+.auditoria-record-code {
+  color: #087443;
+}
+
+
+.auditoria-empty {
+  padding: 30px !important;
+
+  color: #98a2b3 !important;
+}
+
+
+/* PAGINACIÓN */
+
+.auditoria-pagination {
+  padding: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 15px;
+
+  border-top:
+    1px solid #e7eeea;
+}
+
+
+.auditoria-pagination button {
+  min-width: 90px;
+  height: 34px;
+
+  border:
+    1px solid #d8e0dc;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  cursor: pointer;
+
+  font-weight: 700;
+}
+
+
+.auditoria-pagination button:disabled {
+  opacity: 0.4;
+
+  cursor: not-allowed;
+}
+
+
+.auditoria-pagination span {
+  color: #667085;
+
+  font-size: 12px;
+}
+
+
+/* MODAL DETALLE */
+
+.auditoria-detail-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 100000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background:
+    rgba(15, 23, 42, 0.25);
+}
+
+
+.auditoria-detail-modal {
+  width: min(
+    760px,
+    96vw
+  );
+
+  max-height: 85vh;
+
+  overflow: hidden;
+
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 24px 65px
+    rgba(15, 23, 42, 0.28);
+}
+
+
+.auditoria-detail-header {
+  min-height: 58px;
+
+  padding: 10px 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background:
+    linear-gradient(
+      135deg,
+      #087f69,
+      #20afb2
+    );
+
+  color: #ffffff;
+}
+
+
+.auditoria-detail-header span {
+  font-size: 10px;
+
+  opacity: 0.8;
+}
+
+
+.auditoria-detail-header h3 {
+  margin: 2px 0 0;
+
+  font-size: 16px;
+}
+
+
+.auditoria-detail-header button {
+  width: 34px;
+  height: 34px;
+
+  padding: 5px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  cursor: pointer;
+}
+
+
+.auditoria-detail-header img {
+  width: 23px;
+  height: 23px;
+}
+
+
+.auditoria-detail-body {
+  max-height:
+    calc(85vh - 58px);
+
+  overflow-y: auto;
+
+  padding: 16px;
+}
+
+
+.auditoria-detail-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 10px;
+}
+
+
+.auditoria-detail-grid > div {
+  padding: 10px;
+
+  border:
+    1px solid #e7eeea;
+
+  border-radius: 8px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+
+.auditoria-detail-grid span,
+.auditoria-description > span {
+  color: #667085;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+}
+
+
+.auditoria-detail-grid strong {
+  color: #172033;
+
+  font-size: 12px;
+}
+
+
+.auditoria-description {
+  margin-top: 14px;
+}
+
+
+.auditoria-description p {
+  margin: 5px 0 0;
+
+  color: #344054;
+
+  font-size: 12px;
+}
+
+
+.auditoria-json-block {
+  margin-top: 14px;
+}
+
+
+.auditoria-json-block h4 {
+  margin: 0 0 6px;
+
+  color: #087443;
+
+  font-size: 12px;
+}
+
+
+.auditoria-json-block pre {
+  max-height: 230px;
+
+  overflow: auto;
+
+  margin: 0;
+
+  padding: 12px;
+
+  border-radius: 8px;
+
+  background: #172033;
+
+  color: #ffffff;
+
+  font-size: 11px;
+
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+
+  .auditoria-filters {
+    grid-template-columns:
+      1fr
+      1fr;
+  }
+
+}
+
+
+@media (max-width: 768px) {
+
+  .auditoria-header {
+    min-height: 60px;
+
+    padding: 10px 14px;
+  }
+
+
+  .auditoria-header-left h1 {
+    font-size: 20px;
+  }
+
+
+  .auditoria-content {
+    padding: 18px 10px;
+  }
+
+
+  .auditoria-filters {
+    grid-template-columns: 1fr;
+  }
+
+
+  .auditoria-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
