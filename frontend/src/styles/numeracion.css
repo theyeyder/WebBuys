@@ -387,3 +387,52 @@
   line-height: 1.5;
   background: #f8faf9;
 }
+
+
+/* Botón de impresión: mantiene el diseño de Configuración. */
+.numeracion-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.numeracion-print-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border: 1px solid #0f766e;
+  border-radius: 9px;
+  background: #0f766e;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color .15s ease, transform .15s ease;
+}
+
+.numeracion-print-button:hover:not(:disabled) {
+  background: #0b5e57;
+  transform: translateY(-1px);
+}
+
+.numeracion-print-button:focus-visible {
+  outline: 3px solid #99e8cf;
+  outline-offset: 2px;
+}
+
+.numeracion-print-button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 480px) {
+  .numeracion-print-button {
+    padding: 9px 11px;
+    font-size: 12px;
+  }
+}

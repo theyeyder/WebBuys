@@ -364,7 +364,7 @@ function coincideRuta(
     nombreRuta &&
     nombreEntidad &&
     nombreRuta ===
-      nombreEntidad
+    nombreEntidad
   );
 
 }
@@ -624,7 +624,7 @@ export default function Dashboard() {
 
       if (
         resultados[0].status ===
-          "fulfilled"
+        "fulfilled"
       ) {
 
         setPedidos(
@@ -641,7 +641,7 @@ export default function Dashboard() {
 
       if (
         resultados[1].status ===
-          "fulfilled"
+        "fulfilled"
       ) {
 
         setClientes(
@@ -658,7 +658,7 @@ export default function Dashboard() {
 
       if (
         resultados[2].status ===
-          "fulfilled"
+        "fulfilled"
       ) {
 
         setProductos(
@@ -675,7 +675,7 @@ export default function Dashboard() {
 
       if (
         resultados[3].status ===
-          "fulfilled"
+        "fulfilled"
       ) {
 
         setCategorias(
@@ -692,7 +692,7 @@ export default function Dashboard() {
 
       if (
         resultados[4].status ===
-          "fulfilled"
+        "fulfilled"
       ) {
 
         setEntregas(
@@ -709,7 +709,7 @@ export default function Dashboard() {
 
       if (
         resultados[5].status ===
-          "fulfilled"
+        "fulfilled"
       ) {
 
         setDatosCaja(
@@ -722,7 +722,7 @@ export default function Dashboard() {
 
       if (
         resultados[6].status ===
-          "fulfilled"
+        "fulfilled"
       ) {
 
         setMovimientosCaja(
@@ -739,7 +739,7 @@ export default function Dashboard() {
 
       if (
         resultados[7].status ===
-          "fulfilled"
+        "fulfilled"
       ) {
 
         setCuentasCartera(
@@ -757,7 +757,7 @@ export default function Dashboard() {
 
       if (
         resultados[8].status ===
-          "fulfilled"
+        "fulfilled"
       ) {
 
         setResumenCartera(
@@ -770,7 +770,7 @@ export default function Dashboard() {
 
       if (
         resultados[9].status ===
-          "fulfilled"
+        "fulfilled"
       ) {
 
         setFacturables(
@@ -788,7 +788,7 @@ export default function Dashboard() {
 
       if (
         resultados[10].status ===
-          "fulfilled"
+        "fulfilled"
       ) {
 
         setRutas(
@@ -811,7 +811,7 @@ export default function Dashboard() {
 
           if (
             resultado.status ===
-              "rejected"
+            "rejected"
           ) {
 
             console.warn(
@@ -1206,9 +1206,9 @@ export default function Dashboard() {
         cliente
       ) =>
         cliente.estado !==
-          false &&
+        false &&
         cliente.estado !==
-          "Inactivo"
+        "Inactivo"
     ).length;
 
 
@@ -1218,9 +1218,9 @@ export default function Dashboard() {
         producto
       ) =>
         producto.estado ===
-          "Activo" ||
+        "Activo" ||
         producto.estado ===
-          true
+        true
     );
 
 
@@ -1581,7 +1581,7 @@ export default function Dashboard() {
         actual:
           moneda(
             ventasHoyPorPago[
-              "Crédito"
+            "Crédito"
             ]
           ),
         anterior:
@@ -1590,7 +1590,7 @@ export default function Dashboard() {
           ),
         ...variacionPorcentual(
           ventasHoyPorPago[
-            "Crédito"
+          "Crédito"
           ],
           valorCreditoAyer
         ),
@@ -1679,7 +1679,7 @@ export default function Dashboard() {
             fechaCambio.getTime()
           ) &&
           fechaCambio <
-            rangos.inicioHoy
+          rangos.inicioHoy
         );
 
       }
@@ -1782,7 +1782,7 @@ export default function Dashboard() {
           "Caja cerrada",
         valor:
           !cajaAbierta &&
-          totalPorEntregar >
+            totalPorEntregar >
             0
             ? totalPorEntregar
             : 0,
@@ -1793,7 +1793,7 @@ export default function Dashboard() {
         activa:
           !cajaAbierta &&
           totalPorEntregar >
-            0,
+          0,
         tipo:
           "danger",
       },
@@ -1818,7 +1818,7 @@ export default function Dashboard() {
 
   const diaAtencionActual =
     nombresDias[
-      rangos.ahora.getDay()
+    rangos.ahora.getDay()
     ];
 
 
@@ -1892,36 +1892,36 @@ export default function Dashboard() {
 
               const clientesRuta =
                 clientesActivos ===
-                0
+                  0
                   ? 0
                   : clientes.filter(
-                      (
-                        cliente
-                      ) => {
+                    (
+                      cliente
+                    ) => {
 
-                        const clienteActivo =
-                          cliente.estado !==
-                            false &&
-                          cliente.estado !==
-                            "Inactivo";
-
-
-                        const zonaCliente =
-                          idReferencia(
-                            cliente.zonaDespacho
-                          );
+                      const clienteActivo =
+                        cliente.estado !==
+                        false &&
+                        cliente.estado !==
+                        "Inactivo";
 
 
-                        return (
-                          clienteActivo &&
-                          zonaCliente &&
-                          zonasRuta.has(
-                            zonaCliente
-                          )
+                      const zonaCliente =
+                        idReferencia(
+                          cliente.zonaDespacho
                         );
 
-                      }
-                    ).length;
+
+                      return (
+                        clienteActivo &&
+                        zonaCliente &&
+                        zonasRuta.has(
+                          zonaCliente
+                        )
+                      );
+
+                    }
+                  ).length;
 
 
               const pedidosListosRuta =
@@ -1930,7 +1930,7 @@ export default function Dashboard() {
                     pedido
                   ) =>
                     pedido.estado ===
-                      "Listo para entrega" &&
+                    "Listo para entrega" &&
                     coincideRuta(
                       pedido,
                       ruta
@@ -2127,12 +2127,11 @@ export default function Dashboard() {
               <button
                 type="button"
                 className={
-                  `dashboard-metric dashboard-metric-wallet ${
-                    carteraVencida
-                      .cantidad >
+                  `dashboard-metric dashboard-metric-wallet ${carteraVencida
+                    .cantidad >
                     0
-                      ? "dashboard-metric-alert"
-                      : ""
+                    ? "dashboard-metric-alert"
+                    : ""
                   }`
                 }
                 onClick={() =>
@@ -2160,10 +2159,9 @@ export default function Dashboard() {
               <button
                 type="button"
                 className={
-                  `dashboard-metric dashboard-metric-cash ${
-                    cajaAbierta
-                      ? "dashboard-metric-open"
-                      : "dashboard-metric-closed"
+                  `dashboard-metric dashboard-metric-cash ${cajaAbierta
+                    ? "dashboard-metric-open"
+                    : "dashboard-metric-closed"
                   }`
                 }
                 onClick={() =>
@@ -2185,9 +2183,9 @@ export default function Dashboard() {
                 <small>
                   {cajaAbierta
                     ? `${cajaActual?.codigo || "Caja"} · ${moneda(
-                        resumenCaja
-                          .saldoActual
-                      )}`
+                      resumenCaja
+                        .saldoActual
+                    )}`
                     : "Abrir caja para registrar ventas"}
                 </small>
               </button>
@@ -2242,7 +2240,7 @@ export default function Dashboard() {
 
 
               {alertasAtencion.length ===
-              0 ? (
+                0 ? (
 
                 <div className="dashboard-attention-ok">
                   No hay alertas operativas pendientes en este momento.
@@ -2329,7 +2327,7 @@ export default function Dashboard() {
 
 
                 {rutasHoy.length ===
-                0 ? (
+                  0 ? (
 
                   <div className="dashboard-empty dashboard-empty-small">
                     No hay rutas activas programadas para hoy.
@@ -2366,8 +2364,8 @@ export default function Dashboard() {
                                   ruta.diasAtencion
                                 )
                                   ? ruta.diasAtencion.join(
-                                      " · "
-                                    )
+                                    " · "
+                                  )
                                   : diaAtencionActual}
                               </span>
                             </div>
@@ -2484,7 +2482,7 @@ export default function Dashboard() {
                         >
                           <b aria-hidden="true">
                             {item.tendencia ===
-                            "up"
+                              "up"
                               ? "↑"
                               : item.tendencia ===
                                 "down"
@@ -2543,7 +2541,7 @@ export default function Dashboard() {
                 <div className="dashboard-recent-list">
 
                   {pedidosRecientes.length ===
-                  0 ? (
+                    0 ? (
 
                     <div className="dashboard-empty">
                       No hay pedidos registrados.
@@ -2872,7 +2870,7 @@ export default function Dashboard() {
                     <strong>
                       {moneda(
                         ventasHoyPorPago[
-                          "Crédito"
+                        "Crédito"
                         ]
                       )}
                     </strong>
@@ -2944,7 +2942,7 @@ export default function Dashboard() {
                     className={
                       carteraVencida
                         .cantidad >
-                      0
+                        0
                         ? "warning"
                         : ""
                     }
@@ -3089,7 +3087,7 @@ export default function Dashboard() {
 
                   {movimientosRecientes
                     .length ===
-                  0 ? (
+                    0 ? (
 
                     <div className="dashboard-empty dashboard-empty-small">
                       No hay movimientos de caja hoy.
